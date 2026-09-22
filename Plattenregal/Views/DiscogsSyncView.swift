@@ -44,7 +44,7 @@ struct DiscogsSyncStatusView: View {
             if sync.busy {
                 HStack { ProgressView().controlSize(.small); Text(sync.status); Button("Abbrechen") { sync.cancel() } }
             } else if !sync.status.isEmpty { Text(sync.status) }
-            if let error = sync.error { Text(error).foregroundStyle(.red).textSelection(.enabled) }
+            if let error = sync.error { Text(error).foregroundStyle(AppStyle.errorColor).textSelection(.enabled) }
             if let summary = sync.summary { Text(summary).font(.caption).foregroundStyle(.secondary) }
         }
     }
@@ -102,17 +102,9 @@ struct WantlistView: View {
     }
 
     private func controls(count: Int) -> some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                TextField("Wantlist durchsuchen", text: $query)
-                    .textFieldStyle(.plain)
-            }
-            .padding(.horizontal, 12)
-            .frame(minWidth: 260, maxWidth: 460, minHeight: 32)
-            .background(.background.opacity(0.72), in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.primary.opacity(0.12)))
+        HStack(spacing: AppStyle.rowSpacing) {
+            AppSearchField(placeholder: "Wantlist durchsuchen", text: $query)
+                .frame(minWidth: 260, maxWidth: 460)
 
             Text(count == 1 ? "1 Veröffentlichung" : "\(count) Veröffentlichungen")
                 .font(.callout)
@@ -136,53 +128,42 @@ struct WantlistView: View {
 private struct WantlistCard: View {
     let entry: WantlistEntry
     @Environment(\.openURL) private var openURL
-    @State private var hovering = false
 
     private var sourceURL: URL {
         entry.release?.sourceURL ?? URL(string: "https://www.discogs.com/release/\(entry.releaseID)")!
     }
 
     var body: some View {
-        Button { openURL(sourceURL) } label: {
-            HStack(alignment: .top, spacing: 14) {
-                CoverView(url: entry.release?.coverURL, size: 104)
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(entry.release?.displayTitle ?? "Release #\(entry.releaseID)")
-                        .font(.headline)
-                        .lineLimit(2)
-                    Text(entry.release?.displayArtist ?? "Unbekannter Interpret")
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                    if let date = WantlistPresentation.date(entry.dateAdded) {
-                        Label("Hinzugefügt \(date.formatted(date: .abbreviated, time: .omitted))", systemImage: "clock")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    if let rating = entry.rating, rating > 0 {
-                        Label("Bewertung: \(rating)/5", systemImage: "star")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    if let notes = entry.notes, !notes.isEmpty {
-                        Text(notes)
-                            .font(.callout)
-                            .lineLimit(3)
-                            .padding(.top, 2)
-                    }
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "arrow.up.forward.square")
+        LinkResultCard(coverURL: entry.release?.coverURL, onOpen: { openURL(sourceURL) }) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(entry.release?.displayTitle ?? "Release #\(entry.releaseID)")
+                    .font(.headline)
+                    .lineLimit(2)
+                Text(entry.release?.displayArtist ?? "Unbekannter Interpret")
                     .foregroundStyle(.secondary)
-                    .opacity(hovering ? 1 : 0.4)
+                    .lineLimit(2)
+                if let date = WantlistPresentation.date(entry.dateAdded) {
+                    Label("Hinzugefügt \(date.formatted(date: .abbreviated, time: .omitted))", systemImage: "clock")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if let rating = entry.rating, rating > 0 {
+                    Label("Bewertung: \(rating)/5", systemImage: "star")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if let notes = entry.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.callout)
+                        .lineLimit(3)
+                        .padding(.top, 2)
+                }
             }
-            .padding(AppStyle.cardPadding)
-            .frame(maxWidth: .infinity, minHeight: 136, alignment: .topLeading)
+        } trailing: { hovering in
+            Image(systemName: "arrow.up.forward.square")
+                .foregroundStyle(.secondary)
+                .opacity(hovering ? 1 : 0.4)
         }
-        .buttonStyle(.plain)
-        .background(hovering ? Color.primary.opacity(0.04) : Color.clear)
-        .appControlSurface()
-        .onHover { hovering = $0 }
-        .help("Auf Discogs öffnen")
     }
 }
 

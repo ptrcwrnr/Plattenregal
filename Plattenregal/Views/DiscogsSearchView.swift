@@ -8,17 +8,17 @@ struct DiscogsSearchView: View {
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 AppPageHeading(title: "Finde die richtige Pressung.",
                     subtitle: "Die Suche zeigt konkrete Vinyl-Releases. Prüfe Land, Katalognummer und Format vor dem Übernehmen.")
-                HStack(spacing: 12) {
+                HStack(spacing: AppStyle.rowSpacing) {
                     Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                     TextField("Zum Beispiel: Depeche Mode Violator", text: $model.query)
                         .textFieldStyle(.plain).frame(maxWidth: .infinity)
                         .onSubmit { Task { await model.search() } }
                     if model.busy { ProgressView().controlSize(.small) }
-                    Button("Suchen") { Task { await model.search() } }
-                        .buttonStyle(.borderedProminent).fixedSize()
+                    PrimaryButton(title: "Suchen") { Task { await model.search() } }
+                        .fixedSize()
                         .disabled(model.busy || model.query.trimmingCharacters(in: .whitespaces).isEmpty)
                 }.padding(AppStyle.cardPadding).appControlSurface()
-                if let error = model.error { Text(error).foregroundStyle(.red) }
+                if let error = model.error { AppBanner(message: error, kind: .error) }
             }
         } content: {
             if model.fresh && !model.results.isEmpty {
@@ -55,29 +55,20 @@ private struct DiscogsSearchResultCard: View {
     let busy: Bool
     let onSelect: () -> Void
     @Environment(\.openURL) private var openURL
-    @State private var hovering = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            Button { openURL(result.sourceURL) } label: {
-                HStack(alignment: .top, spacing: 14) {
-                    CoverView(url: result.thumb, size: 104)
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(result.title).font(.headline).lineLimit(2)
-                        Text([result.year, result.country, result.catno].compactMap { $0 }.joined(separator: " · "))
-                            .font(.caption).foregroundStyle(.secondary)
-                        Text((result.label ?? []).joined(separator: ", "))
-                            .font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                        Text((result.format ?? []).joined(separator: " · "))
-                            .font(.caption2).foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 0)
-                }
+        LinkResultCard(coverURL: result.thumb, onOpen: { openURL(result.sourceURL) }) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(result.title).font(.headline).lineLimit(2)
+                Text([result.year, result.country, result.catno].compactMap { $0 }.joined(separator: " · "))
+                    .font(.caption).foregroundStyle(.secondary)
+                Text((result.label ?? []).joined(separator: ", "))
+                    .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                Text((result.format ?? []).joined(separator: " · "))
+                    .font(.caption2).foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
-            .help("Auf Discogs öffnen")
-
-            VStack(spacing: 10) {
+        } trailing: { hovering in
+            VStack(spacing: AppStyle.rowSpacing) {
                 Button(action: onSelect) {
                     Image(systemName: "list.bullet")
                         .font(.title3)
@@ -93,11 +84,6 @@ private struct DiscogsSearchResultCard: View {
                     .opacity(hovering ? 1 : 0.4)
             }
         }
-        .padding(AppStyle.cardPadding)
-        .frame(maxWidth: .infinity, minHeight: 136, alignment: .topLeading)
-        .background(hovering ? Color.primary.opacity(0.04) : Color.clear)
-        .appControlSurface()
-        .onHover { hovering = $0 }
     }
 }
 struct DiscogsPreviewView: View {
@@ -107,11 +93,7 @@ struct DiscogsPreviewView: View {
     var body: some View {
         let _ = metadataClock
         VStack(spacing: 0) {
-            HStack {
-                Text("Tracklist · Release #\(release.discogsID ?? 0)").font(AppStyle.dialogTitle)
-                Spacer(); Button("Schließen") { dismiss() }.keyboardShortcut(.cancelAction)
-            }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
-            Divider()
+            AppSheetHeader(title: "Tracklist · Release #\(release.discogsID ?? 0)", onClose: { dismiss() })
             ScrollView { ReleaseMetadataView(release: release).padding(AppStyle.pagePadding) }
         }.frame(width: 820, height: 700)
     }

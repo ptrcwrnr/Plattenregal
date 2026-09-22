@@ -253,11 +253,45 @@ struct AppSheetHeader: View {
                 Spacer()
                 if let onClose {
                     GhostButton(title: closeTitle, action: onClose)
+                        .keyboardShortcut(.cancelAction)
                 }
             }
             .padding(AppStyle.pagePadding)
             Divider()
         }
+    }
+}
+
+/// A "cover + details + trailing action" result card: the shared shape behind
+/// every Discogs/wantlist result row, so they read as one component instead of
+/// independently duplicated hover/glass/layout code. `trailing` receives the
+/// current hover state (e.g. to fade an affordance icon in/out).
+struct LinkResultCard<Details: View, Trailing: View>: View {
+    let coverURL: String?
+    var coverSize: Double = 104
+    let onOpen: () -> Void
+    @ViewBuilder let details: Details
+    @ViewBuilder var trailing: (Bool) -> Trailing
+    @State private var hovering = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
+            Button(action: onOpen) {
+                HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
+                    CoverView(url: coverURL, size: coverSize)
+                    details
+                    Spacer(minLength: 0)
+                }
+            }
+            .buttonStyle(.plain)
+            trailing(hovering)
+        }
+        .padding(AppStyle.cardPadding)
+        .frame(maxWidth: .infinity, minHeight: 136, alignment: .topLeading)
+        .appGlassSurface(cornerRadius: AppStyle.controlRadius)
+        .appHoverable(hovering, cornerRadius: AppStyle.controlRadius)
+        .onHover { hovering = $0 }
+        .help("Auf Discogs öffnen")
     }
 }
 
