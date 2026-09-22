@@ -36,11 +36,11 @@ struct DiscogsSettingsView: View {
                 SecureField("Discogs-Token", text: $model.token)
                 Text("Der Token wird ausschließlich im macOS-Schlüsselbund gespeichert. Ein leeres Feld beim Speichern entfernt den Token.").font(.caption).foregroundStyle(.secondary)
                 HStack {
-                    Button("Token speichern") { model.save() }.disabled(model.busy || DiscogsSyncService.shared.busy)
-                    Button("Speichern & Verbindung testen") { Task { await model.test() } }.disabled(model.busy || DiscogsSyncService.shared.busy)
+                    SecondaryButton(title: "Token speichern") { model.save() }.disabled(model.busy || DiscogsSyncService.shared.busy)
+                    PrimaryButton(title: "Speichern & Verbindung testen") { Task { await model.test() } }.disabled(model.busy || DiscogsSyncService.shared.busy)
                     if model.busy { ProgressView().controlSize(.small) }
                 }
-                if !model.status.isEmpty { Text(model.status).foregroundStyle(model.failed ? .red : .secondary) }
+                if !model.status.isEmpty { Text(model.status).foregroundStyle(model.failed ? AppStyle.errorColor : .secondary) }
                 Link("Token bei Discogs erstellen ↗", destination: URL(string: "https://www.discogs.com/settings/developers")!)
             }
             DiscogsSyncView()

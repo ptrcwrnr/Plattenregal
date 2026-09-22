@@ -12,16 +12,16 @@ struct RecordDetailView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Meine Schallplatte").font(AppStyle.dialogTitle); Spacer()
-                Button("Bearbeiten") { editing = true }
-                Button("Schließen") { dismiss() }.keyboardShortcut(.cancelAction)
+                GhostButton(title: "Bearbeiten") { editing = true }
+                GhostButton(title: "Schließen") { dismiss() }.keyboardShortcut(.cancelAction)
             }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
             Divider()
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                     if let r = copy.release {
                         ReleaseMetadataView(release: r)
                         if !r.isFresh {
-                            Button("Discogs-Daten aktualisieren") { Task { await refresh.refresh([r], context: context) } }.disabled(refresh.busy)
+                            GhostButton(title: "Discogs-Daten aktualisieren") { Task { await refresh.refresh([r], context: context) } }.disabled(refresh.busy)
                         }
                     }
                     if let instance = copy.discogsInstanceID {
@@ -38,8 +38,8 @@ struct RecordDetailView: View {
                     HStack {
                         Label(copy.location, systemImage: "square.grid.3x3").font(AppStyle.dialogTitle).foregroundStyle(.tint)
                         Spacer()
-                        if let showShelf { Button("Im Regal anzeigen", action: showShelf) }
-                        Button("Platz ändern") { editing = true }
+                        if let showShelf { GhostButton(title: "Im Regal anzeigen", action: showShelf) }
+                        GhostButton(title: "Platz ändern") { editing = true }
                     }
                     Grid(alignment: .leading, horizontalSpacing: 30, verticalSpacing: 12) {
                         GridRow { Text("Zustand").foregroundStyle(.secondary); Text(copy.condition) }
@@ -49,7 +49,7 @@ struct RecordDetailView: View {
                     }
                     Text("Notizen").font(.headline)
                     Text(copy.notes.isEmpty ? "Noch keine Notizen." : copy.notes).textSelection(.enabled)
-                    if let error = refresh.error { Text(error).foregroundStyle(.red) }
+                    if let error = refresh.error { AppBanner(message: error, kind: .error) }
                 }.padding(AppStyle.pagePadding)
             }
         }.frame(width: 800, height: 760)
@@ -61,8 +61,8 @@ struct ReleaseMetadataView: View {
     let release: Release
     var body: some View {
         let _ = metadataClock
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .top, spacing: 24) {
+        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
+            HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
                 CoverView(url: release.coverURL, size: 220)
                 VStack(alignment: .leading, spacing: 10) {
                     Text(release.displayArtist).font(.title2).foregroundStyle(.secondary)

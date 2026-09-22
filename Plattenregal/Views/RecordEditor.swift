@@ -81,10 +81,10 @@ struct RecordEditor: View {
             }.formStyle(.grouped)
             Divider()
             HStack {
-                Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
+                SecondaryButton(title: "Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
                 Spacer()
-                Button(copy == nil ? "Zur Sammlung hinzufügen" : "Speichern", action: save)
-                    .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
+                PrimaryButton(title: copy == nil ? "Zur Sammlung hinzufügen" : "Speichern", action: save)
+                    .keyboardShortcut(.defaultAction)
             }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
         }.frame(width: 640, height: 780)
         .alert("Speichern nicht möglich", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
