@@ -48,10 +48,11 @@ struct StatisticsView: View {
     var body: some View {
         GeometryReader { geometry in
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 header
                 if let error = model.error {
-                    Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.orange).textSelection(.enabled)
+                    AppBanner(message: error, kind: .warning)
+                        .textSelection(.enabled)
                 }
                 if model.calculating { ProgressView("Lokale Statistik wird berechnet …").controlSize(.small) }
                 Text("Bereiche am Griff ziehen, um sie anzuordnen. Die Reihenfolge bleibt gespeichert.")
@@ -98,7 +99,7 @@ struct StatisticsView: View {
         .onDisappear { reloadTask?.cancel() }
         .sheet(item: $filter) { group in
             VStack(spacing: 0) {
-                HStack { Text(group.name).font(AppStyle.dialogTitle); Spacer(); Button("Schließen") { filter = nil } }.padding()
+                AppSheetHeader(title: group.name, onClose: { filter = nil })
                 CollectionView(mode: .all, query: "", showShelf: { copy in filter = nil; showShelf(copy) }, analyticsFilter: group)
             }.frame(minWidth: 850, minHeight: 650)
         }
@@ -175,7 +176,7 @@ struct StatisticsView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
             AppPageHeading(title: "Deine Sammlung in Zahlen", subtitle: "Entdecken · Vergleichen · Entwicklung verfolgen")
-            HStack(spacing: 16) {
+            HStack(spacing: AppStyle.rowSpacing) {
                 Button { Task { await model.refresh(container: context.container) } } label: {
                     Label("Statistik aktualisieren", systemImage: "arrow.clockwise")
                 }.buttonStyle(.borderless).fixedSize().disabled(model.busy || DiscogsSyncService.shared.busy)
@@ -198,7 +199,7 @@ struct StatisticsView: View {
             Text("Sammlung · Highlights").font(AppStyle.dialogTitle)
             LazyVGrid(columns: columns, alignment: .leading) {
                 ForEach(model.statistics.highlights, id: \.self) { text in
-                    Label(text, systemImage: "chart.bar.fill").font(.callout).frame(maxWidth: .infinity, alignment: .leading).padding().background(.tint.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                    Label(text, systemImage: "chart.bar.fill").font(.callout).frame(maxWidth: .infinity, alignment: .leading).padding().background(.tint.opacity(0.06), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
                 }
             }
         }
@@ -223,7 +224,7 @@ struct StatisticsView: View {
             else {
                 Chart(bins) { bin in
                     BarMark(x: .value("Datum", bin.date, unit: additionsByYear ? .year : .month), y: .value("Exemplare", bin.count))
-                        .foregroundStyle(.teal.gradient)
+                        .foregroundStyle(AppStyle.chartColors[0].gradient)
                 }.frame(height: 200)
                 if let peak = bins.max(by: { $0.count < $1.count }) {
                     Text("Meiste Neuzugänge: \(peak.date.formatted(.dateTime.year().month(.wide))) · \(peak.count) Exemplare").font(.caption).foregroundStyle(.secondary)
@@ -239,8 +240,8 @@ struct StatisticsView: View {
                     if let copy = model.copies.first(where: { $0.id == id }) {
                         Button { opened = copy } label: {
                             StatisticsReleaseRow(copy: copy, showsAddedDate: true)
-                                .padding(12)
-                                .background(.primary.opacity(0.025), in: RoundedRectangle(cornerRadius: 12))
+                                .padding(AppStyle.rowSpacing)
+                                .background(.primary.opacity(0.025), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
                                 .contentShape(Rectangle())
                         }.buttonStyle(.plain)
                     }
@@ -279,10 +280,11 @@ private struct StatisticsMovableArea<Content: View>: View {
             return move(first, section)
         } isTargeted: { isTargeted = $0 }
         .overlay {
-            RoundedRectangle(cornerRadius: 18)
-                .strokeBorder(isTargeted ? Color.accentColor : .clear, lineWidth: 2)
+            RoundedRectangle(cornerRadius: AppStyle.controlRadius)
+                .strokeBorder(isTargeted ? AppStyle.selectedBorder : .clear, lineWidth: 2)
                 .allowsHitTesting(false)
         }
+        .animation(AppStyle.quickAnimation, value: isTargeted)
     }
 }
 struct StatisticsReleaseRow: View {
@@ -308,12 +310,11 @@ struct DashboardCard<Content: View>: View {
     let title: String
     @ViewBuilder let content: Content
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             Text(title).font(AppStyle.sectionTitle)
             content
         }.frame(maxWidth: .infinity, alignment: .leading).padding(AppStyle.cardPadding)
-            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.primary.opacity(0.06)))
+            .appGlassSurface(cornerRadius: AppStyle.cardRadius)
     }
 }
 struct MetricCard: View {
@@ -322,11 +323,12 @@ struct MetricCard: View {
     let symbol: String
     var prominent = false
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             Label(title, systemImage: symbol).font(.callout).foregroundStyle(.secondary).frame(minHeight: 32, alignment: .top)
-            Text(value).font(.system(.title, design: .rounded, weight: .semibold)).minimumScaleFactor(0.65).lineLimit(1)
+            Text(value).font(AppStyle.pageTitle).minimumScaleFactor(0.65).lineLimit(1)
         }.frame(maxWidth: .infinity, alignment: .leading).padding(AppStyle.cardPadding)
-            .background(prominent ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 16))
+            .background(prominent ? AppStyle.selectedBackground : Color.clear, in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
+            .appGlassSurface(cornerRadius: AppStyle.cardRadius)
     }
 }
 struct GroupStatisticsCard: View {
@@ -367,7 +369,7 @@ struct YearDistributionChart: View {
     var body: some View {
         Chart(groups) { group in
             BarMark(x: .value("Jahr", Int(group.id) ?? 0), y: .value("Exemplare", group.count))
-                .foregroundStyle(.indigo.gradient)
+                .foregroundStyle(AppStyle.chartColors[1].gradient)
         }.chartXAxis { AxisMarks(values: .automatic(desiredCount: 8)) { value in
             AxisGridLine(); AxisTick(); AxisValueLabel { if let year = value.as(Int.self) { Text(String(year)) } }
         }}.chartXScale(domain: domain).frame(height: 220)

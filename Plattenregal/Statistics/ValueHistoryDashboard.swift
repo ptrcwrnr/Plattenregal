@@ -26,10 +26,10 @@ struct ValueHistoryDashboard: View {
     private var sameCurrency: [CollectionValueSnapshot] { snapshots.filter { $0.currency == currency } }
     private var visible: [CollectionValueSnapshot] { sameCurrency.filter { $0.date >= period.start() } }
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
             Text("Geschätzter Wert der Sammlung").font(AppStyle.dialogTitle)
             if let latest = sameCurrency.last {
-                HStack(spacing: 14) {
+                HStack(spacing: AppStyle.rowSpacing) {
                     MetricCard(title: "Niedrig", value: money(latest.minimumValue), symbol: "arrow.down.right")
                     MetricCard(title: "Mittelwert · Median", value: money(latest.medianValue), symbol: "chart.line.uptrend.xyaxis", prominent: true)
                     MetricCard(title: "Hoch", value: money(latest.maximumValue), symbol: "arrow.up.right")
@@ -118,8 +118,8 @@ struct HistoryLineChart: View {
                 Chart {
                     ForEach(points) { point in
                         // Swift Charts receives a rendering conversion only. Storage and arithmetic stay Decimal.
-                        LineMark(x: .value("Datum", point.date), y: .value("Wert", NSDecimalNumber(decimal: point.value).doubleValue)).foregroundStyle(.teal)
-                        PointMark(x: .value("Datum", point.date), y: .value("Wert", NSDecimalNumber(decimal: point.value).doubleValue)).foregroundStyle(.teal).symbolSize(points.count == 1 ? 60 : 16)
+                        LineMark(x: .value("Datum", point.date), y: .value("Wert", NSDecimalNumber(decimal: point.value).doubleValue)).foregroundStyle(AppStyle.chartColors[0])
+                        PointMark(x: .value("Datum", point.date), y: .value("Wert", NSDecimalNumber(decimal: point.value).doubleValue)).foregroundStyle(AppStyle.chartColors[0]).symbolSize(points.count == 1 ? 60 : 16)
                     }
                     if let selected { RuleMark(x: .value("Datum", selected.date)).foregroundStyle(.secondary.opacity(0.4)) }
                 }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? "Exemplare")
@@ -155,6 +155,6 @@ struct ChangeLabel: View {
             if let percent = change.percent {
                 Text((percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(1)))).font(.caption)
             }
-        }.foregroundStyle(change.amount < 0 ? Color.orange : change.amount > 0 ? Color.teal : Color.secondary)
+        }.foregroundStyle(change.amount < 0 ? AppStyle.warningColor : change.amount > 0 ? AppStyle.successColor : Color.secondary)
     }
 }
