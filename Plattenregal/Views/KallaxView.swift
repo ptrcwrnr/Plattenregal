@@ -250,7 +250,7 @@ struct KallaxView: View {
 
     private func selectShelf(_ shelf: Shelf) {
         searchQuery = ""; focusCopy = nil; previewCopy = nil; focusIsFromSearch = false
-        withAnimation(.easeInOut(duration: 0.25)) { highlight = shelf.id }
+        withAnimation(AppStyle.standardAnimation) { highlight = shelf.id }
     }
 
     private func previewSearchResult(_ copy: RecordCopy?) {
@@ -261,7 +261,7 @@ struct KallaxView: View {
         previewCopy = nil
         focusCopy = copy
         focusIsFromSearch = true
-        withAnimation(.easeInOut(duration: 0.35)) { highlight = copy.shelf?.id }
+        withAnimation(AppStyle.standardAnimation) { highlight = copy.shelf?.id }
     }
 
     private func clearSearch() {
@@ -269,7 +269,7 @@ struct KallaxView: View {
         focusCopy = nil
         previewCopy = nil
         if focusIsFromSearch {
-            withAnimation(.easeInOut(duration: 0.25)) { highlight = nil }
+            withAnimation(AppStyle.standardAnimation) { highlight = nil }
             focusIsFromSearch = false
         }
     }
@@ -341,7 +341,7 @@ private struct ShelfSearchField: View {
                                     onPreview(nil)
                                 }
                             }
-                            .background(hoveredID == copy.id ? Color.primary.opacity(0.06) : .clear, in: RoundedRectangle(cornerRadius: 8))
+                            .appHoverable(hoveredID == copy.id, cornerRadius: AppStyle.surfaceRadius)
                         }
                     }
                     .padding(6)
@@ -411,14 +411,14 @@ private struct RecordRackStrip: View {
             ForEach(1...max(count, 1), id: \.self) { position in
                 let isTarget = position == highlightPosition
                 RoundedRectangle(cornerRadius: 1.5)
-                    .fill(isTarget ? Color.accentColor : Color.primary.opacity(0.12))
+                    .fill(isTarget ? AppStyle.selectedBorder : AppStyle.borderColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: isTarget ? 22 : 12)
-                    .shadow(color: isTarget ? Color.accentColor.opacity(0.35) : .clear, radius: 2, y: 1)
+                    .shadow(color: isTarget ? AppStyle.selectedBorder.opacity(0.35) : .clear, radius: 2, y: 1)
             }
         }
         .frame(height: 24, alignment: .bottom)
-        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: highlightPosition)
+        .animation(AppStyle.springAnimation, value: highlightPosition)
     }
 }
 
@@ -429,24 +429,11 @@ private struct ShelfOverviewStrip: View {
     let shelves: [Shelf]
 
     var body: some View {
-        HStack(spacing: 10) {
-            metric("Einsortiert", value: "\(copies.filter { $0.shelf != nil }.count)", symbol: "checkmark.circle")
-            metric("Ohne Fach", value: "\(copies.filter { $0.shelf == nil }.count)", symbol: "tray")
-            metric("Freie Plätze", value: "\(max(0, shelves.reduce(0) { $0 + $1.capacity } - copies.filter { $0.shelf != nil }.count))", symbol: "square.grid.3x3")
+        HStack(spacing: AppStyle.rowSpacing) {
+            StatCard(systemImage: "checkmark.circle", label: "Einsortiert", value: "\(copies.filter { $0.shelf != nil }.count)")
+            StatCard(systemImage: "tray", label: "Ohne Fach", value: "\(copies.filter { $0.shelf == nil }.count)")
+            StatCard(systemImage: "square.grid.3x3", label: "Freie Plätze", value: "\(max(0, shelves.reduce(0) { $0 + $1.capacity } - copies.filter { $0.shelf != nil }.count))")
         }
-    }
-
-    private func metric(_ title: String, value: String, symbol: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: symbol).foregroundStyle(.tint)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(value).font(.headline.monospacedDigit())
-                Text(title).font(.caption).foregroundStyle(.secondary)
-            }
-        }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .appGlassSurface(cornerRadius: AppStyle.surfaceRadius)
     }
 }
 
@@ -471,13 +458,12 @@ struct ShelfCard: View {
         }
         .padding(AppStyle.cardPadding)
         .frame(maxWidth: .infinity, minHeight: 138, alignment: .leading)
-        .background(selected ? Color.accentColor.opacity(0.1) : Color.clear, in: RoundedRectangle(cornerRadius: 16))
-        .appGlassSurface(cornerRadius: 16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(selected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: selected ? 2 : 1))
+        .appGlassSurface(cornerRadius: AppStyle.cardRadius)
+        .appSelectable(selected, cornerRadius: AppStyle.cardRadius)
+        .overlay(RoundedRectangle(cornerRadius: AppStyle.cardRadius).stroke(selected ? Color.clear : AppStyle.borderColor, lineWidth: 1))
         .opacity(dimmed ? 0.4 : 1)
         .scaleEffect(dimmed ? 0.98 : 1)
-        .animation(.easeInOut(duration: 0.25), value: dimmed)
-        .animation(.easeInOut(duration: 0.2), value: selected)
+        .animation(AppStyle.standardAnimation, value: dimmed)
         .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel("\(shelf.title), \(stats.count) von \(stats.capacity) Platten, \(stats.occupancyPercent) Prozent belegt")
@@ -495,20 +481,20 @@ private struct ShelfFillGauge: View {
         case .low: return Color.accentColor.opacity(0.55)
         case .medium: return Color.accentColor.opacity(0.8)
         case .high: return Color.accentColor
-        case .full: return Color.orange
+        case .full: return AppStyle.warningColor
         }
     }
 
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.primary.opacity(0.08))
+                Capsule().fill(AppStyle.borderColor)
                 Capsule().fill(tint)
                     .frame(width: max(3, geometry.size.width * fraction))
             }
         }
         .frame(height: 6)
-        .animation(.easeInOut(duration: 0.3), value: fraction)
+        .animation(AppStyle.standardAnimation, value: fraction)
     }
 }
 
@@ -520,32 +506,14 @@ private struct ShelfStyleBreakdown: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "waveform").foregroundStyle(.secondary)
-            StyleBadge(text: stats.dominantStyleLabel, prominent: true)
+            AppBadge(title: stats.dominantStyleLabel, prominent: true)
             if stats.styleShares.count > 1 {
                 ForEach(stats.styleShares.dropFirst().prefix(3)) { share in
-                    StyleBadge(text: "\(share.style) \(Int((share.fraction * 100).rounded())) %")
+                    AppBadge(title: "\(share.style) \(Int((share.fraction * 100).rounded())) %")
                 }
             }
         }
         .lineLimit(1)
-    }
-}
-
-/// One consistent look for every style label in the shelf view — the shelf
-/// card's dominant style, the header breakdown, and each record's style in
-/// the copy list all use this instead of ad hoc text or capsule styling.
-struct StyleBadge: View {
-    let text: String
-    var prominent = false
-
-    var body: some View {
-        Text(text)
-            .font(.caption2.weight(prominent ? .semibold : .regular))
-            .lineLimit(1)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 3)
-            .foregroundStyle(prominent ? Color.accentColor : .secondary)
-            .background(prominent ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.06), in: Capsule())
     }
 }
 
@@ -629,7 +597,7 @@ private struct ShelfCopyRow: View {
                         .font(.callout.monospacedDigit().weight(.semibold))
                         .foregroundStyle(isFocused ? Color.white : .secondary)
                         .frame(width: 30, height: 22)
-                        .background(isFocused ? Color.accentColor : Color.primary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+                        .background(isFocused ? AppStyle.selectedBorder : AppStyle.borderColor, in: RoundedRectangle(cornerRadius: 6))
                     CoverView(url: copy.release?.coverURL, size: 42)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(copy.release?.displayArtist ?? "—").font(.headline)
@@ -662,7 +630,7 @@ private struct ShelfCopyRow: View {
             .appGlassButton()
             .fixedSize()
         }
-        .listRowBackground(isFocused ? Color.accentColor.opacity(0.12) : hovering ? Color.primary.opacity(0.04) : Color.clear)
+        .listRowBackground(isFocused ? AppStyle.selectedBackground : hovering ? AppStyle.hoverBackground : Color.clear)
         .contextMenu {
             Button("Details öffnen", action: open)
             Button("Position / Exemplar bearbeiten", action: edit)
@@ -691,11 +659,11 @@ struct ShelfEditor: View {
                 .lineLimit(2...4)
             TextField("Kapazität", value: $capacity, format: .number)
             Text("Aktuell \(shelf.copies.count) Platten").foregroundStyle(.secondary)
-            if let error { Text(error).foregroundStyle(.red) }
+            if let error { Text(error).foregroundStyle(AppStyle.errorColor) }
             HStack {
-                Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
+                SecondaryButton(title: "Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
                 Spacer()
-                Button("Speichern") {
+                PrimaryButton(title: "Speichern") {
                     do {
                         try PositionService(context: context).configure(
                             shelf,
@@ -740,12 +708,12 @@ private struct ShelfAssignmentView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Fertig") { dismiss() }.keyboardShortcut(.cancelAction)
+                GhostButton(title: "Fertig") { dismiss() }.keyboardShortcut(.cancelAction)
             }
             .padding(AppStyle.pagePadding)
             Divider()
             if let error {
-                Text(error).foregroundStyle(.red).padding(.horizontal, AppStyle.pagePadding).padding(.top, 10)
+                Text(error).foregroundStyle(AppStyle.errorColor).padding(.horizontal, AppStyle.pagePadding).padding(.top, AppStyle.itemSpacing)
             }
             if availableCopies.isEmpty {
                 AppEmptyState(
@@ -763,8 +731,7 @@ private struct ShelfAssignmentView: View {
                             Text(labelName(for: copy)).font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Button("Einordnen") { assign(copy) }
-                            .buttonStyle(.borderedProminent)
+                        PrimaryButton(title: "Einordnen") { assign(copy) }
                             .disabled(shelf.copies.count >= shelf.capacity)
                     }
                     .padding(.vertical, 3)

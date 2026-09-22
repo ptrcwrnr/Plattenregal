@@ -125,8 +125,8 @@ struct CollectionView: View {
                                 .scrollTargetLayout()
                                 if let dragRectangle {
                                     Rectangle()
-                                        .fill(Color.accentColor.opacity(0.12))
-                                        .overlay(Rectangle().stroke(Color.accentColor, lineWidth: 1))
+                                        .fill(AppStyle.selectedBackground)
+                                        .overlay(Rectangle().stroke(AppStyle.selectedBorder, lineWidth: 1))
                                         .frame(width: dragRectangle.width, height: dragRectangle.height)
                                         .offset(x: dragRectangle.minX, y: dragRectangle.minY)
                                         .allowsHitTesting(false)
@@ -239,7 +239,7 @@ struct CollectionView: View {
 
     private func navigateToLetter(_ symbol: String, anchors: [String: UUID]) {
         guard let id = anchors[symbol] else { return }
-        withAnimation(.easeOut(duration: 0.2)) { scrollPosition = id }
+        withAnimation(AppStyle.quickAnimation) { scrollPosition = id }
     }
 
     @ViewBuilder private func bulkMenus(for ids: Set<UUID>, items: [RecordCopy]) -> some View {
@@ -386,15 +386,13 @@ struct CollectionView: View {
             }
             .disabled(selection.isEmpty)
             .help(selection.isEmpty ? "Wähle Schallplatten aus, um sie einem Fach zuzuweisen" : "Ausgewählte Schallplatten einem Fach zuweisen")
-            Button { selection.removeAll() } label: { Image(systemName: "xmark.circle.fill") }
-                .buttonStyle(.borderless)
+            IconButton(systemImage: "xmark.circle.fill", help: "Auswahl aufheben") { selection.removeAll() }
                 .foregroundStyle(.secondary)
                 .disabled(selection.isEmpty)
                 .opacity(selection.isEmpty ? 0.35 : 1)
-                .help("Auswahl aufheben")
         }
         .fixedSize()
-        .animation(.easeOut(duration: 0.15), value: selection.count)
+        .animation(AppStyle.quickAnimation, value: selection.count)
     }
     private var folderPicker: some View {
         HStack(spacing: 8) {
@@ -477,12 +475,8 @@ struct RecordCard: View {
         }
         .padding(6)
         .frame(width: coverSize + 12, alignment: .leading)
-        .background(selected ? Color.accentColor.opacity(0.12) : hovering ? Color.primary.opacity(0.05) : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(selected ? Color.accentColor : Color.clear, lineWidth: 2)
-        }
+        .appHoverable(hovering, cornerRadius: AppStyle.cardRadius)
+        .appSelectable(selected, cornerRadius: AppStyle.cardRadius)
         .overlay(alignment: .topTrailing) {
             if selected {
                 Image(systemName: "checkmark.circle.fill")
@@ -527,7 +521,7 @@ private struct AlphabetIndex: View {
                 .disabled(!available)
                 .scaleEffect(scale)
                 .zIndex(scale)
-                .animation(.spring(response: 0.22, dampingFraction: 0.6), value: hoveredSymbol)
+                .animation(AppStyle.springAnimation, value: hoveredSymbol)
                 .onHover { isHovering in
                     guard available else { return }
                     if isHovering { hoveredSymbol = symbol }

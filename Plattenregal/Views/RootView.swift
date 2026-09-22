@@ -102,11 +102,9 @@ struct RootView: View {
     private func detailContent(size: CGSize) -> some View {
         VStack(spacing: 0) {
             if let error = refresh.error {
-                HStack {
-                    Image(systemName: "exclamationmark.triangle"); Text(error)
-                    Spacer(); Button("Erneut versuchen") { refreshNow() }
-                    Button { refresh.error = nil } label: { Image(systemName: "xmark") }.buttonStyle(.plain)
-                }.font(.callout).padding(10).background(.orange.opacity(0.1))
+                AppBanner(message: error, kind: .warning, actionTitle: "Erneut versuchen", action: { refreshNow() }, onDismiss: { refresh.error = nil })
+                    .padding(.horizontal, AppStyle.pagePadding)
+                    .padding(.top, AppStyle.itemSpacing)
             }
             pageContent(activePage)
                 .environment(\.isActivePage, true)
@@ -120,16 +118,12 @@ struct RootView: View {
     }
 
     private var sidebarButton: some View {
-        Button {
+        IconButton(
+            systemImage: "sidebar.left",
+            help: columnVisibility == .detailOnly ? "Seitenleiste einblenden" : "Seitenleiste ausblenden"
+        ) {
             columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-        } label: {
-            Image(systemName: "sidebar.left")
-                .font(.system(size: 16))
-                .frame(width: 28, height: 28)
-                .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .help(columnVisibility == .detailOnly ? "Seitenleiste einblenden" : "Seitenleiste ausblenden")
         .accessibilityLabel("Seitenleiste umschalten")
     }
     private var activePage: Destination { query.isEmpty ? destination ?? .all : .all }
