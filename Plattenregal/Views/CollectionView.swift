@@ -52,6 +52,8 @@ struct CollectionView: View {
     @State private var opened: RecordCopy?
     /// Copy whose popover is open (single click on a cover).
     @State private var quickLook: UUID?
+    /// The cover whose right-click menu is open, and where it was clicked.
+    @State private var contextMenu: (id: UUID, anchor: UnitPoint)?
     /// The popover closes on the mouse-down of a click outside it; if that
     /// click lands on the same cover, it should stay closed, not reopen.
     @State private var quickLookDismissed: (id: UUID, at: Date)?
@@ -277,7 +279,15 @@ struct CollectionView: View {
                                                     opened = group.primary
                                                 }
                                             }
-                                            .contextMenu { gridContextMenu(group, items: items) }
+                                            .onSecondaryClick { point in
+                                                quickLook = nil
+                                                contextMenu = (copy.id, point)
+                                            }
+                                            .popover(isPresented: contextMenuBinding(for: copy.id),
+                                                     attachmentAnchor: .point(contextMenu?.anchor ?? .center),
+                                                     arrowEdge: .trailing) {
+                                                AppMenu(dismiss: { contextMenu = nil }) { gridContextMenu(group, items: items) }
+                                            }
                                             .help("\(copy.release?.displayArtist ?? "Unbekannt") · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? " · \(group.copies.count) Exemplare" : "")")
                                             .accessibilityLabel("\(copy.release?.displayArtist ?? "Unbekannt"), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? ", \(group.copies.count) Exemplare" : "")")
                                         }
@@ -457,7 +467,9 @@ struct CollectionView: View {
         } else if group.copies.count > 1 {
             ForEach(Array(group.copies.enumerated()), id: \.element.id) { index, copy in
                 let excluded = excludedIDs.contains(copy.id)
-                Menu("Exemplar \(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excluded))") { actions(copy) }
+                if index > 0 { Divider() }
+                AppMenuSection(title: "Exemplar \(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excluded))")
+                actions(copy)
             }
         } else {
             actions(group.primary)
@@ -501,6 +513,13 @@ struct CollectionView: View {
             let justClosed = quickLookDismissed.map { $0.id == copy.id && Date().timeIntervalSince($0.at) < 0.4 } ?? false
             if !justClosed { quickLook = copy.id }
         }
+    }
+
+    private func contextMenuBinding(for id: UUID) -> Binding<Bool> {
+        Binding(
+            get: { contextMenu?.id == id },
+            set: { if !$0, contextMenu?.id == id { contextMenu = nil } }
+        )
     }
 
     private func quickLookBinding(for id: UUID) -> Binding<Bool> {

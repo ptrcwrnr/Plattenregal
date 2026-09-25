@@ -513,3 +513,104 @@ extension View {
         modifier(PullToRefresh(disabled: disabled, allowsMouseDrag: allowsMouseDrag, action: action))
     }
 }
+
+/// The app's own context menu: a popover with hover rows instead of the
+/// native macOS menu. Plain `Button`s and `Divider`s inside `content` are
+/// styled as menu rows; choosing one closes the menu first, then runs the
+/// action (so a sheet it opens isn't fighting the closing popover).
+struct AppMenu<Content: View>: View {
+    let dismiss: () -> Void
+    @ViewBuilder let content: Content
+    var body: some View {
+        VStack(alignment: .leading, spacing: 1) { content }
+            .buttonStyle(AppMenuButtonStyle(dismiss: dismiss))
+            .padding(5)
+            .frame(minWidth: 220, alignment: .leading)
+            .fixedSize()
+    }
+}
+
+/// Small caption over a group of rows in an `AppMenu`.
+struct AppMenuSection: View {
+    let title: String
+    var body: some View {
+        Text(title.uppercased())
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .padding(.horizontal, 8)
+            .padding(.top, 6)
+            .padding(.bottom, 2)
+    }
+}
+
+private struct AppMenuButtonStyle: PrimitiveButtonStyle {
+    let dismiss: () -> Void
+    func makeBody(configuration: Configuration) -> some View {
+        AppMenuRow(configuration: configuration, dismiss: dismiss)
+    }
+}
+
+private struct AppMenuRow: View {
+    let configuration: PrimitiveButtonStyleConfiguration
+    let dismiss: () -> Void
+    @Environment(\.isEnabled) private var isEnabled
+    @State private var hovering = false
+    var body: some View {
+        Button {
+            dismiss()
+            DispatchQueue.main.async { configuration.trigger() }
+        } label: {
+            configuration.label
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .font(.callout)
+        .foregroundStyle(configuration.role == .destructive ? AnyShapeStyle(AppStyle.errorColor) : AnyShapeStyle(.primary))
+        .opacity(isEnabled ? 1 : 0.4)
+        .appHoverable(hovering && isEnabled, cornerRadius: 6)
+        .onHover { hovering = $0 }
+    }
+}
+
+extension View {
+    /// Right-click (or Control-click) on this view runs `action` with the
+    /// click position as a unit point, e.g. to anchor an `AppMenu` popover
+    /// there. Other clicks pass straight through to the view underneath.
+    func onSecondaryClick(perform action: @escaping (UnitPoint) -> Void) -> some View {
+        overlay(SecondaryClickCatcher(action: action))
+    }
+}
+
+private struct SecondaryClickCatcher: NSViewRepresentable {
+    let action: (UnitPoint) -> Void
+    func makeNSView(context: Context) -> CatcherView { CatcherView() }
+    func updateNSView(_ view: CatcherView, context: Context) { view.action = action }
+
+    final class CatcherView: NSView {
+        var action: ((UnitPoint) -> Void)?
+        override var isFlipped: Bool { true }
+        private static func isSecondary(_ event: NSEvent?) -> Bool {
+            guard let event else { return false }
+            return event.type == .rightMouseDown
+                || (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
+        }
+        // Only claims the secondary click; everything else (clicks, hover,
+        // drags, tooltips) goes to the SwiftUI view below.
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            Self.isSecondary(NSApp.currentEvent) ? super.hitTest(point) : nil
+        }
+        override func rightMouseDown(with event: NSEvent) { fire(event) }
+        override func mouseDown(with event: NSEvent) {
+            if Self.isSecondary(event) { fire(event) } else { super.mouseDown(with: event) }
+        }
+        private func fire(_ event: NSEvent) {
+            let p = convert(event.locationInWindow, from: nil)
+            guard bounds.width > 0, bounds.height > 0 else { return }
+            action?(UnitPoint(x: p.x / bounds.width, y: p.y / bounds.height))
+        }
+    }
+}
