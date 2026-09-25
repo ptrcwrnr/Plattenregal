@@ -3,15 +3,15 @@ import SwiftData
 
 enum Destination: String, CaseIterable, Identifiable {
     case overview = "Übersicht"
-    case statistics = "Statistik"
     case shelf = "Regal"
+    case statistics = "Statistik"
     var id: String { rawValue }
     /// ⌘1 … ⌘3, in the order of the switch in the toolbar.
     var shortcut: KeyEquivalent {
         switch self {
         case .overview: "1"
-        case .statistics: "2"
-        case .shelf: "3"
+        case .shelf: "2"
+        case .statistics: "3"
         }
     }
     /// Pages with a search that ⌘F reveals.

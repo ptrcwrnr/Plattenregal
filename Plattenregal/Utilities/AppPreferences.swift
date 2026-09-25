@@ -3,7 +3,7 @@ import SwiftUI
 
 /// The page the main window opens with.
 enum StartPage: String, CaseIterable, Identifiable {
-    case collection, wantlist, statistics, shelf
+    case collection, wantlist, shelf, statistics
     var id: Self { self }
     var title: String {
         switch self {
