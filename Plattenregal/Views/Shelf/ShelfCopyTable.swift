@@ -67,6 +67,8 @@ struct ShelfCopyTable: View {
     /// Shelf the rows were last built for: only a new shelf scrolls to the
     /// selected record, not every data refresh.
     @State private var loadedShelfID: UUID?
+    /// Row under the pointer: its action buttons come forward.
+    @State private var hoveredID: UUID?
 
     private func quickEditBinding(_ id: UUID) -> Binding<Bool> {
         Binding(get: { quickEditID == id }, set: { if !$0, quickEditID == id { quickEditID = nil } })
@@ -150,15 +152,27 @@ struct ShelfCopyTable: View {
                 }
                 .width(min: 80, ideal: 130)
                 TableColumn("") { item in
+                    let active = hoveredID == item.id || focusCopy?.id == item.id
                     HStack(spacing: 2) {
+                        if item.missing {
+                            RowIconButton(systemImage: "checkmark.circle", filledOnHover: true, help: "Wieder gefunden",
+                                          hoverColor: AppStyle.successColor) { setMissing(item.copy, false) }
+                        }
                         RowIconButton(systemImage: "scope", help: "Zeigen, zwischen welchen Platten sie steht") { find(item.copy) }
+                            .opacity(active ? 1 : 0.4)
                         RowIconButton(systemImage: "trash", help: "Aus Fach entfernen", hoverColor: AppStyle.errorColor) { unplace(item.copy) }
+                            .opacity(active ? 1 : 0.4)
                     }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .animation(AppStyle.quickAnimation, value: active)
                 }
-                .width(46)
+                .width(68)
             }
             .tableStyle(.inset)
             .background(QuietIconColumnHeaders())
+            .background(TableRowHover { row in
+                hoveredID = row.flatMap { items.indices.contains($0) ? items[$0].id : nil }
+            })
             // Like a spine in the strip: clicking the picked record again puts it back.
             .background(TableRowClickToggle { select(nil) })
             .alternatingRowBackgrounds(.disabled)
@@ -360,6 +374,8 @@ private struct PositionNudgeButton: View {
 /// color at rest, red only while hovered.
 private struct RowIconButton: View {
     let systemImage: String
+    /// Swaps to the symbol's filled variant while hovered.
+    var filledOnHover = false
     let help: String
     var hoverColor: Color = AppStyle.accent
     let action: () -> Void
@@ -367,13 +383,15 @@ private struct RowIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage)
+            Image(systemName: filledOnHover && hovering ? systemImage + ".fill" : systemImage)
+                .contentTransition(.symbolEffect(.replace))
                 .foregroundStyle(hovering ? hoverColor : .secondary)
                 .frame(width: 20, height: 18)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
+        .animation(AppStyle.quickAnimation, value: hovering)
         .help(help)
         .accessibilityLabel(help)
     }
@@ -419,6 +437,118 @@ private struct QuietIconColumnHeaders: NSViewRepresentable {
             super.draw(dirtyRect)
             NSGraphicsContext.restoreGraphicsState()
         }
+    }
+}
+
+/// Soft highlight under the row the pointer is over, gliding from row to row,
+/// and the hovered row index for the cells. Only a hint: selection stays with
+/// clicks and the keyboard. `Table` has no per-row hover, so this tracks the
+/// pointer on the underlying `NSTableView` and draws behind its row views.
+private struct TableRowHover: NSViewRepresentable {
+    let changed: (Int?) -> Void
+
+    func makeNSView(context: Context) -> Anchor { Anchor() }
+    func updateNSView(_ view: Anchor, context: Context) { view.changed = changed }
+    static func dismantleNSView(_ view: Anchor, coordinator: ()) { view.stop() }
+
+    final class Anchor: NSView {
+        var changed: ((Int?) -> Void)?
+        private weak var table: NSTableView?
+        private var tracking: NSTrackingArea?
+        private var scrollObserver: NSObjectProtocol?
+        private let highlight = Highlight()
+        private var row: Int?
+
+        override func viewDidMoveToWindow() {
+            stop()
+            guard window != nil else { return }
+            DispatchQueue.main.async { [weak self] in self?.install() }
+        }
+
+        private func install() {
+            guard table == nil, let table = nearbyTable() else { return }
+            self.table = table
+            let area = NSTrackingArea(rect: .zero, options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect],
+                                      owner: self, userInfo: nil)
+            table.addTrackingArea(area)
+            tracking = area
+            highlight.alphaValue = 0
+            table.addSubview(highlight, positioned: .below, relativeTo: nil)
+            // Scrolling moves rows under a resting pointer.
+            if let clip = table.enclosingScrollView?.contentView {
+                clip.postsBoundsChangedNotifications = true
+                scrollObserver = NotificationCenter.default.addObserver(
+                    forName: NSView.boundsDidChangeNotification, object: clip, queue: .main
+                ) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.updateFromPointer() }
+                }
+            }
+        }
+
+        func stop() {
+            if let tracking { table?.removeTrackingArea(tracking) }
+            if let scrollObserver { NotificationCenter.default.removeObserver(scrollObserver) }
+            tracking = nil; scrollObserver = nil
+            highlight.removeFromSuperview()
+            table = nil; row = nil
+        }
+
+        override func mouseEntered(with event: NSEvent) { update(event.locationInWindow) }
+        override func mouseMoved(with event: NSEvent) { update(event.locationInWindow) }
+        override func mouseExited(with event: NSEvent) { set(nil) }
+
+        private func updateFromPointer() {
+            guard let window = table?.window else { return }
+            update(window.mouseLocationOutsideOfEventStream)
+        }
+
+        private func update(_ location: NSPoint) {
+            guard let table else { return }
+            let point = table.convert(location, from: nil)
+            let index = table.visibleRect.contains(point) ? table.row(at: point) : -1
+            set(index >= 0 ? index : nil)
+        }
+
+        private func set(_ index: Int?) {
+            guard index != row, let table else { return }
+            let wasShown = row != nil
+            row = index
+            changed?(index)
+            guard let index else {
+                NSAnimationContext.runAnimationGroup { $0.duration = 0.15; highlight.animator().alphaValue = 0 }
+                return
+            }
+            // Same inset as the selection of the inset table style.
+            let frame = table.rect(ofRow: index).insetBy(dx: 10, dy: 0)
+            if wasShown, !AppStyle.reduceMotion {
+                NSAnimationContext.runAnimationGroup {
+                    $0.duration = 0.12
+                    $0.allowsImplicitAnimation = true
+                    highlight.animator().frame = frame
+                    highlight.animator().alphaValue = 1
+                }
+            } else {
+                highlight.frame = frame
+                NSAnimationContext.runAnimationGroup { $0.duration = 0.1; highlight.animator().alphaValue = 1 }
+            }
+        }
+    }
+
+    /// Rounded fill in the app's hover color, redrawn for light and dark.
+    final class Highlight: NSView {
+        override init(frame: NSRect) {
+            super.init(frame: frame)
+            wantsLayer = true
+            layer?.cornerRadius = 6
+        }
+        required init?(coder: NSCoder) { nil }
+        override var wantsUpdateLayer: Bool { true }
+        override func updateLayer() {
+            effectiveAppearance.performAsCurrentDrawingAppearance {
+                layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(0.05).cgColor
+            }
+        }
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
     }
 }
 
