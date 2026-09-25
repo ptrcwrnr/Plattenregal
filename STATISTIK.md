@@ -52,6 +52,8 @@ Die Berechnung läuft im Hintergrund: SwiftData-Objekte werden auf dem Main Acto
 | `Statistics/CollectionValueHistoryService.swift` | Wertabruf, Regeln für Verlaufspunkte, Veränderungen |
 | `Statistics/StatisticsViewModel.swift` | Laden, Hintergrundberechnung, Zustand der Seite |
 | `Statistics/StatisticsView.swift` | Seite, Abschnitte, Drill-down |
+| `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
+| `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
 | `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V13 |
 

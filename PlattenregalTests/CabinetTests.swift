@@ -242,6 +242,21 @@ extension AllTests {
             #expect(!context.hasChanges)
         }
 
+        @Test func secondInstanceDoesNotOpenALockedStore() throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let store = dir.appendingPathComponent("Collection.store")
+            // The "other instance": its own open file holding the lock.
+            let other = open(dir.appendingPathComponent(".Plattenregal.lock").path, O_RDWR | O_CREAT, 0o644)
+            #expect(other >= 0)
+            defer { close(other) }
+            #expect(flock(other, LOCK_EX | LOCK_NB) == 0)
+            #expect(throws: StorageError.self) {
+                try LibraryStorage.acquireInstanceLock(next: store, wait: .milliseconds(300))
+            }
+        }
+
         @Test func kallaxPresetsCarryTheBoxMeasures() {
             #expect(KallaxPreset.all.count == 11)
             #expect(KallaxPreset.matching(columns: 2, rows: 4)?.title == "2 × 4 · 77 × 147 cm")

@@ -54,9 +54,9 @@ Alle Daten liegen in der App-Sandbox unter
 | `Collection.store` (+ `-wal`, `-shm`) | Datenbank (Schema V13): Platten, Standorte, „Nicht auffindbar“, Wantlist, Statistik-Verlauf |
 | `Covers/` | Cover-Cache; wird bei Bedarf neu von Discogs geladen |
 | `Sicherungen/` | Automatische Sicherungen der Belegung, falls kein eigener Ordner gewählt ist |
-| `Logs/Plattenregal.log` | Protokoll (dazu `Plattenregal.old.log` ab 2 MB) |
+| `Logs/Plattenregal.log` | Protokoll (dazu `Plattenregal.old.log` ab 2 MB, auch während einer Sitzung) |
 
-Die Datenbank wird beim Start nur geöffnet, nie neu angelegt oder automatisch geleert – auch nicht nach einem Fehler; dann zeigt die App eine Fehlerseite mit Hinweis auf das Protokoll.
+Die Datenbank wird beim Start nur geöffnet, nie neu angelegt oder automatisch geleert – auch nicht nach einem Fehler; dann zeigt die App eine Fehlerseite mit Hinweis auf das Protokoll. Nur eine Instanz öffnet die Sammlung (Sperrdatei `.Plattenregal.lock` im selben Ordner): Läuft Plattenregal schon, etwa aus Xcode, zeigt eine zweite Instanz einen Hinweis statt die Datenbank zu öffnen.
 
 **Sicherung.** Die Platten selbst kommen jederzeit wieder aus Discogs – wo sie stehen, gibt es nur lokal. Die Sicherung hält genau das fest: Regale, Fach und Position jedes Exemplars, gesperrte Fächer und „Nicht im Regal“, als JSON. „Nicht auffindbar“ gehört nicht dazu: Es beschreibt die Suche im Moment, nicht die Belegung, und bleibt beim Wiederherstellen stehen (außer bei Platten, die laut Sicherung „Nicht im Regal“ sind). Automatisch einige Sekunden nach jeder Regal-Änderung und beim Beenden (Standard: die letzten 10 Stände plus der letzte Stand jedes Tages der vergangenen 14 Tage), auf Wunsch in einem eigenen Ordner, z. B. in iCloud Drive. Ein leeres Regal wird nie automatisch gesichert, damit es nach einem Datenverlust keine guten Stände verdrängt. Wiederhergestellt wird über die Discogs-Exemplar-ID; vorher zeigt eine Vorschau, was passiert, und der aktuelle Stand wird gesichert.
 
@@ -92,15 +92,16 @@ atos -o Plattenregal.app/Contents/MacOS/Plattenregal -l <Ladeadresse> <Adresse> 
 |---|---|---|
 | Start | `PlattenregalApp.swift` | Szenen, Öffnen der Datenbank, Fehlerseite, Protokollstart |
 | Modelle | `Models/LibraryModels.swift`, `Models/LibrarySchemas.swift` | Versioniertes SwiftData-Schema und Migrationen |
-| Speicherung | `Storage/LibraryStorage.swift`, `Storage/KeychainStore.swift` | Datenbank-Container, Fächer, Token im Schlüsselbund |
-| Regal | `Services/PositionService.swift`, `Services/CabinetService.swift`, `Views/KallaxView.swift` | Positionen, Regale, „Nicht im Regal“ und „Nicht auffindbar“, jede Änderung als eine Transaktion; Regalseite |
+| Speicherung | `Storage/LibraryStorage.swift`, `Storage/KeychainStore.swift` | Datenbank-Container, Einzelinstanz-Sperre, Fächer, Token im Schlüsselbund |
+| Regal | `Services/PositionService.swift`, `Services/CabinetService.swift`, `Views/Shelf/` | Positionen, Regale, „Nicht im Regal“ und „Nicht auffindbar“, jede Änderung als eine Transaktion; Regalseite |
 | Sicherung | `Services/ShelfBackupService.swift` | Sichern, Wiederherstellen, automatische Sicherung |
 | Export | `Services/CollectionExportService.swift`, `Services/ScheduledExportService.swift` | CSV/PDF, automatischer Export |
 | Zurücksetzen | `Services/ResetService.swift` | Standorte, Einstellungen, alles |
+| Änderungen | `Services/LibraryChanges.swift` | Zähler, an denen Seiten ihre zwischengespeicherten Listen, Suchindizes und Fach-Beschriftungen neu aufbauen |
 | Discogs | `Discogs/DiscogsAPIClient.swift`, `Discogs/DiscogsSyncService.swift` | API, Taktung, Abgleich, Tracklisten |
 | Statistik | `Statistics/` | Auswertungen und Wertverlauf |
 | Fehler & Protokoll | `Utilities/ErrorMessages.swift`, `Utilities/AppLog.swift` | Verständliche Meldungen, Protokoll, Absturz-Handler |
-| Oberfläche | `Views/`, `Utilities/AppAppearance.swift` | Fenster, Regalansicht, Einstellungen, gemeinsames Design |
+| Oberfläche | `Views/`, `Views/Shelf/`, `Views/Settings/`, `Utilities/AppAppearance.swift` | Fenster, Regalseite (Seite, Suche, Regalbild, Fach-Tabelle, „Platte hinzufügen“), ein Einstellungs-Tab pro Datei, gemeinsames Design |
 | Tests | `PlattenregalTests/` | Regal, Sicherung, Export, Discogs-Abgleich, Statistik, Einstellungen |
 
 ## Entwicklung und Prüfung

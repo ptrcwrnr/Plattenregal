@@ -1,0 +1,204 @@
+import SwiftUI
+import SwiftData
+import UniformTypeIdentifiers
+
+// MARK: - Discogs
+
+struct DiscogsSettingsView: View {
+    @Environment(\.modelContext) private var context
+    @Query private var accounts: [DiscogsAccount]
+    @Query(sort: \DiscogsFolder.folderID) private var folders: [DiscogsFolder]
+    @State private var model = DiscogsSettingsModel()
+    @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
+    @State private var confirmingRemoval = false
+
+    /// The account the stored token belongs to. After a successful test with
+    /// a token for another account, the old account's tiles and folders are
+    /// no longer shown (nil until the new one has been synced).
+    private var account: DiscogsAccount? {
+        if case .success(let name) = model.verified { return accounts.first { $0.username == name } }
+        // Also after reopening: the account last synced with the stored token.
+        if let fingerprint = model.storedFingerprint {
+            if let match = accounts.first(where: { $0.credentialFingerprint == fingerprint }) { return match }
+            // Accounts synced before fingerprints were kept can't be told apart.
+            let current = DiscogsAccount.current(in: accounts)
+            return current?.credentialFingerprint == nil ? current : nil
+        }
+        return DiscogsAccount.current(in: accounts)
+    }
+    /// A token is stored – or the keychain couldn't be read, in which case the
+    /// sync itself reports the problem instead of silently locking the buttons.
+    private var canSync: Bool { model.hasStoredToken || model.keychainUnreadable }
+
+    var body: some View {
+        @Bindable var model = model
+        SettingsPage {
+            SettingsCard(title: "Konto",
+                         subtitle: DemoMode.isActive ? "Im Demo-Modus ist Discogs ausgeschaltet – Token und Synchronisierung sind gesperrt, dein gespeicherter Token wird nicht gelesen." : accountStatus) {
+                SecureField("Persönlicher API-Token", text: $model.token)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 10)
+                    .frame(height: AppStyle.controlHeight)
+                    .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
+                    .onSubmit { if canTest { model.startTest() } }
+                    // The tested token replaces the field when the test ends.
+                    .disabled(model.busy || DemoMode.isActive)
+                HStack(spacing: AppStyle.itemSpacing) {
+                    PrimaryButton(title: "Speichern & testen") { model.startTest() }
+                        .disabled(!canTest || DemoMode.isActive)
+                    if model.busy {
+                        GhostButton(title: "Abbrechen") { model.cancelTest() }
+                    }
+                    if model.hasStoredToken {
+                        GhostButton(title: "Token entfernen") { confirmingRemoval = true }
+                            .disabled(model.busy || sync.isRunning)
+                            .confirmationDialog("Token entfernen?", isPresented: $confirmingRemoval) {
+                                Button("Entfernen", role: .destructive) { model.remove() }
+                            } message: {
+                                Text("Ohne Token kann nicht mehr mit Discogs synchronisiert werden. Deine Sammlung und die Standorte bleiben erhalten.")
+                            }
+                    }
+                    if model.keychainUnreadable {
+                        SecondaryButton(title: "Erneut lesen") { model.load() }
+                            .disabled(model.busy)
+                    }
+                    if model.busy { ProgressView().controlSize(.small) }
+                    Spacer()
+                    Link("Token erstellen ↗", destination: URL(string: "https://www.discogs.com/settings/developers")!)
+                        .font(.callout)
+                }
+                if !model.status.isEmpty {
+                    AppBanner(message: model.status, kind: model.failed ? .error : .success)
+                        .transition(AppStyle.funnelTransition())
+                }
+                if sync.isRunning {
+                    SettingsNote("Während der Synchronisierung lässt sich der Token nicht ändern.")
+                } else if model.hasUnsavedToken && !model.busy {
+                    SettingsNote(model.hasStoredToken
+                        ? "Der eingegebene Token ist noch nicht gespeichert – synchronisiert wird weiter mit dem gespeicherten."
+                        : "Der eingegebene Token ist noch nicht gespeichert.")
+                }
+                SettingsNote("Der Token liegt ausschließlich im macOS-Schlüsselbund.")
+            }
+            .animation(AppStyle.standardAnimation, value: model.status)
+
+            SettingsCard(title: "Synchronisierung",
+                         subtitle: "Collection und Wantlist lassen sich auch auf ihrer Seite mit ⌘R oder durch Herunterziehen aktualisieren.") {
+                if let account {
+                    HStack(spacing: AppStyle.itemSpacing) {
+                        let counts = counts(for: account.username)
+                        syncTile("Collection", count: counts.collection,
+                                 date: account.lastCollectionSync, systemImage: "square.stack")
+                        syncTile("Wantlist", count: counts.wantlist,
+                                 date: account.lastWantlistSync, systemImage: "heart.text.clipboard")
+                    }
+                }
+                HStack(spacing: AppStyle.itemSpacing) {
+                    PrimaryButton(title: "Alles synchronisieren") { start(.all) }
+                    SecondaryButton(title: "Nur Collection") { start(.collection) }
+                    SecondaryButton(title: "Nur Wantlist") { start(.wantlist) }
+                }
+                .disabled(sync.busy || model.busy || !canSync)
+                if sync.hasStatus {
+                    DiscogsSyncStatusView()
+                        .font(.callout)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .transition(AppStyle.funnelTransition())
+                }
+            }
+            .animation(AppStyle.standardAnimation, value: sync.hasStatus)
+
+            let ownFolders = folders.filter { $0.owner == account?.username }
+            if !ownFolders.isEmpty {
+                SettingsCard(title: "Discogs-Ordner",
+                             subtitle: "Ordner organisieren die Collection bei Discogs. Die Fächer im Regal sind davon unabhängig.") {
+                    VStack(spacing: 0) {
+                        ForEach(Array(ownFolders.enumerated()), id: \.element.key) { index, folder in
+                            if index > 0 { Divider() }
+                            HStack {
+                                Text(folder.name)
+                                Spacer()
+                                Text(AppStyle.records(folder.count)).monospacedDigit().foregroundStyle(.secondary)
+                                IconButton(systemImage: "arrow.triangle.2.circlepath", help: "Ordner „\(folder.name)“ synchronisieren") {
+                                    sync.start(.folder(folder.folderID), container: context.container, expectedOwner: folder.owner)
+                                }
+                                .disabled(sync.busy || model.busy || !canSync)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+            }
+
+            SettingsCard(title: "Hinweise", subtitle: "Speicherplatz und Cover-Cache stehen unter „Daten“.") {
+                SettingsNote("Release-Daten werden bei jeder Synchronisierung aktualisiert; ältere Einträge lassen sich in der Detailansicht einzeln neu laden. Ohne Verbindung bleiben eigene Exemplar- und Standortdaten vollständig verfügbar.")
+                SettingsNote("This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. ‘Discogs’ is a trademark of Zink Media, LLC.")
+                Link("Discogs API-Nutzungsbedingungen ↗", destination: URL(string: "https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use")!)
+                    .font(.callout)
+            }
+        }
+        // Not on every activation: after a declined keychain prompt the window
+        // becomes active again, which would ask again – over and over.
+        .onAppear { model.loadIfNeeded() }
+        .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in model.forgetAfterReset() }
+    }
+
+    /// Not while anything talks to Discogs: a new token mid-download would
+    /// switch accounts under the running sync or tracklist backfill.
+    private var canTest: Bool {
+        !model.busy && !sync.isRunning && !model.token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    /// The last test wins over the last sync, so a new token for a different
+    /// account doesn't keep showing the old name. Without a test in this
+    /// session only the last sync is known – "connected" would be a guess.
+    private var accountStatus: String {
+        if model.keychainUnreadable { return "Schlüsselbund nicht lesbar" }
+        guard model.hasStoredToken else { return "Kein Token gespeichert" }
+        switch model.verified {
+        case .success(let name): return "Verbunden als \(name)"
+        case .failure: return "Token gespeichert · Die Verbindung zu Discogs hat nicht geklappt"
+        case nil:
+            if let fingerprint = model.storedFingerprint, fingerprint == sync.rejectedFingerprint {
+                return "Token ungültig · Discogs hat ihn bei der letzten Synchronisierung abgelehnt"
+            }
+            return account.map { "Zuletzt synchronisiert als \($0.username)" } ?? "Token gespeichert · noch nicht synchronisiert"
+        }
+    }
+
+    /// Counted in the store instead of loading every copy into the view;
+    /// `libraryVersion` re-renders after each committed sync.
+    private func counts(for owner: String) -> (collection: Int, wantlist: Int) {
+        _ = changes.libraryVersion
+        let collection = (try? context.fetchCount(FetchDescriptor<RecordCopy>(
+            predicate: #Predicate { $0.discogsOwner == owner && $0.discogsActive == true }))) ?? 0
+        let wantlist = (try? context.fetchCount(FetchDescriptor<WantlistEntry>(
+            predicate: #Predicate { $0.owner == owner }))) ?? 0
+        return (collection, wantlist)
+    }
+
+    private func start(_ scope: DiscogsSyncScope) { sync.start(scope, container: context.container) }
+
+    private func syncTile(_ title: String, count: Int, date: Date?, systemImage: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(AppStyle.accent)
+                .frame(width: 28, height: 28)
+                .background(AppStyle.accent.opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title).font(.headline)
+                // Ticks along while the window stays open ("vor 2 Minuten" …).
+                TimelineView(.everyMinute) { _ in
+                    Text(AppStyle.records(count) + " · " + (date.map { "Stand \($0.formatted(.relative(presentation: .named)))" } ?? "noch nicht synchronisiert"))
+                        .monospacedDigit()
+                }
+                .font(.caption).foregroundStyle(.secondary)
+                .help(date?.formatted(date: .abbreviated, time: .shortened) ?? "")
+            }
+        }
+        .padding(StatisticsLayout.tilePadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background.opacity(0.6), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
+    }
+}

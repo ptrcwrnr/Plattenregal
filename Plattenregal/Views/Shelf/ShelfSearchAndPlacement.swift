@@ -1,0 +1,360 @@
+import SwiftUI
+import SwiftData
+
+// MARK: - Search
+
+/// Slim search field; matches float over the rack like a popover so the page
+/// layout never shifts while typing.
+struct ShelfSearchField: View {
+    /// Committed query, updated after a short pause in typing so the page
+    /// behind the field isn't rebuilt on every keystroke.
+    @Binding var query: String
+    var focused: FocusState<Bool>.Binding
+    let matches: [RecordCopy]
+    /// Records without a shelf; picking one shows where it belongs, picking
+    /// a placed match shows where it stands.
+    let unplaced: [RecordCopy]
+    /// Matches beyond the listed ones.
+    let hidden: Int
+    let labels: ShelfLabels
+    /// Copies marked "Nicht auffindbar".
+    let missing: Set<UUID>
+    let onClear: () -> Void
+    let place: (RecordCopy) -> Void
+    @State private var text = ""
+
+    /// Only words count: a field of spaces searches nothing.
+    private static func hasWords(_ value: String) -> Bool { !SearchIndex<UUID>.words(value).isEmpty }
+
+    private func clear() {
+        text = ""
+        onClear()
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            TextField("Platte im Regal suchen …", text: $text)
+                .textFieldStyle(.plain)
+                .focused(focused)
+                .onExitCommand(perform: clear)
+            if !text.isEmpty {
+                Button(action: clear) {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 30)
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(alignment: .topLeading) {
+            if Self.hasWords(text) && Self.hasWords(query) {
+                results.offset(y: 36)
+                    // Still the previous query's matches while typing pauses.
+                    .opacity(query == text ? 1 : 0.6)
+                    .animation(AppStyle.quickAnimation, value: query == text)
+            }
+        }
+        .task(id: text) {
+            // Clearing is immediate; typing waits for a short pause.
+            if !text.isEmpty {
+                try? await Task.sleep(for: .milliseconds(120))
+                guard !Task.isCancelled else { return }
+            }
+            if query != text { query = text }
+        }
+        // Cleared from outside (picking a shelf or a result).
+        .onChange(of: query) { _, new in if new.isEmpty { text = "" } }
+    }
+
+    @ViewBuilder private var results: some View {
+        Group {
+            if matches.isEmpty && unplaced.isEmpty {
+                Text("Keine Treffer im Regal.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                VStack(alignment: .leading, spacing: 1) {
+                    ForEach(matches) { copy in
+                        Button { place(copy) } label: {
+                            SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id))
+                        }
+                        .buttonStyle(.plain)
+                        .help("Zeigt, zwischen welchen Platten sie steht")
+                    }
+                    if !unplaced.isEmpty {
+                        if !matches.isEmpty { Divider().padding(.vertical, 3) }
+                        ForEach(unplaced) { copy in
+                            Button { place(copy) } label: {
+                                SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id), placeable: true)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Zeigt, wo die Platte alphabetisch hingehört")
+                        }
+                    }
+                    if hidden > 0 {
+                        Text("\(hidden) weitere Treffer – Suche genauer eingrenzen")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 4)
+                    }
+                }
+                .padding(5)
+            }
+        }
+        // Same glass as the system popovers in the overview.
+        .appGlassSurface(cornerRadius: 12)
+    }
+}
+
+private struct SearchResultRow: View {
+    let copy: RecordCopy
+    let labels: ShelfLabels
+    var missing = false
+    var placeable = false
+    @State private var hovering = false
+    var body: some View {
+        HStack(spacing: 10) {
+            CoverView(url: copy.release?.coverURL, size: 28)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(copy.release?.displayArtist ?? "—").font(.callout).lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(copy.release?.displayTitle ?? "—").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    if missing { MissingBadge() }
+                }
+            }
+            Spacer(minLength: 8)
+            Text(placeable ? "Ohne Fach · Platz finden" : ShelfRangeLabels.location(of: copy, labels: labels))
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 6)
+        .contentShape(Rectangle())
+        .appHoverable(hovering, cornerRadius: 8)
+        .onHover { hovering = $0 }
+    }
+}
+
+/// Full-width strip of the selected compartment: an abstracted row of record
+/// spines standing left to right, matching how the physical copies sit in the
+/// shelf. Clicking a spine pulls it out; the line underneath carries both the
+/// selection and the genre legend so the colors are explained right where
+/// they're used.
+struct ShelfPositionStrip: View {
+    let stats: ShelfStatistics
+    let slots: Int
+    let palette: StylePalette
+    let selectedCopy: RecordCopy?
+    /// 1-based index of `selectedCopy` among the drawn spines.
+    let selectedSlot: Int?
+    /// Where a record being sorted in would go; drawn as a marker between spines.
+    var insertionPosition: Int? = nil
+    /// 1-based spines marked "Nicht auffindbar"; drawn as an outline.
+    var missingSlots: Set<Int> = []
+    let select: (Int) -> Void
+
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            SpineRack(
+                styles: stats.spineStyles,
+                slots: slots,
+                palette: palette,
+                selectedPosition: selectedSlot,
+                insertionPosition: insertionPosition,
+                missingPositions: missingSlots,
+                selectable: true,
+                onSelect: select
+            )
+            .frame(height: 46)
+            HStack(spacing: AppStyle.rowSpacing) {
+                Group {
+                    if let insertionPosition {
+                        Text("Neue Platte an Position \(insertionPosition) · \(AppStyle.records(stats.count)) im Fach")
+                            .foregroundStyle(AppStyle.accent)
+                    } else if let copy = selectedCopy {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(palette.color(for: copy.release?.primaryStyle ?? "", solid: true))
+                                .frame(width: 7, height: 7)
+                            Text("Position \(selectedSlot ?? copy.positionInShelf) von \(stats.count) · \(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")")
+                                .foregroundStyle(.primary)
+                            if let slot = selectedSlot, missingSlots.contains(slot) { MissingBadge() }
+                        }
+                    } else {
+                        Text("\(AppStyle.records(stats.count)) · von links nach rechts"
+                             + (missingSlots.isEmpty ? "" : " · \(missingSlots.count) nicht auffindbar"))
+                    }
+                }
+                .lineLimit(1)
+                .truncationMode(.tail)
+                Spacer(minLength: AppStyle.rowSpacing)
+                ShelfStyleLegend(stats: stats, palette: palette)
+                    .layoutPriority(-1)
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+    }
+}
+
+// MARK: - Placement
+
+/// What the shelf search found: placed records (listed with their location),
+/// records without a shelf (offered for sorting in) and the shelves to keep
+/// lit. `litShelfIDs == nil` while not searching, so nothing is dimmed.
+struct ShelfSearchResults {
+    static let placedLimit = 8
+    static let unplacedLimit = 4
+    var placed: [RecordCopy] = []
+    var unplaced: [RecordCopy] = []
+    /// Matches left out by the limits above.
+    var hidden = 0
+    var litShelfIDs: Set<UUID>? = nil
+}
+
+/// A record being sorted in: the spots it fits (one, or two at a shelf
+/// boundary) and the one currently shown. For a record that already has a
+/// shelf (`found`) the single spot is where it stands, to put it back there.
+struct Placement {
+    let copy: RecordCopy
+    let found: Bool
+    let spots: [AlphabeticalPlacement.Spot]
+    var chosen = 0
+    /// Marked "Nicht im Regal"; sorting it in lifts that.
+    var excluded = false
+    /// Marked "Nicht auffindbar"; sorting it in counts as found.
+    var missing = false
+    /// Name of the deactivated cabinet the record stands in: its shelf isn't
+    /// on this page, so there is no spot to show.
+    let putAwayIn: String?
+
+    init(copy: RecordCopy, shelves: [Shelf]) {
+        self.copy = copy
+        found = copy.shelf != nil
+        if let shelf = copy.shelf, !shelf.isInUse {
+            putAwayIn = shelf.cabinet?.name ?? ""
+            spots = []
+            return
+        }
+        putAwayIn = nil
+        spots = found
+            ? AlphabeticalPlacement.current(for: copy, in: shelves).map { [$0] } ?? []
+            : AlphabeticalPlacement.spots(for: copy, in: shelves)
+    }
+    var spot: AlphabeticalPlacement.Spot? { spots.indices.contains(chosen) ? spots[chosen] : nil }
+}
+
+/// Sits above the compartment that was picked for the record: what goes
+/// where, between which two records, and — at a shelf boundary — the other
+/// shelf that fits just as well, with how many records each already holds.
+struct PlacementCard: View {
+    let placement: Placement
+    let labels: ShelfLabels
+    /// Copies marked "Nicht auffindbar": no help as a landmark at the shelf.
+    let missing: Set<UUID>
+    let choose: (Int) -> Void
+    let confirm: () -> Void
+    let cancel: () -> Void
+
+    var body: some View {
+        let release = placement.copy.release
+        HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
+            CoverView(url: release?.coverURL, size: 52)
+            VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                Text("\(placement.found ? "Hier steht" : "Einsortieren"): \(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
+                    .font(.headline)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                if placement.excluded && !placement.found {
+                    Label("Steht auf „Nicht im Regal“ – beim Einsortieren wird das aufgehoben.", systemImage: "info.circle")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                if placement.missing && placement.putAwayIn == nil {
+                    Label(placement.found
+                          ? "Als nicht auffindbar markiert – hier sollte sie stehen."
+                          : "Als nicht auffindbar markiert – beim Einsortieren gilt sie als gefunden.",
+                          systemImage: "pause.circle")
+                        .font(.callout)
+                        .foregroundStyle(AppStyle.errorColor)
+                }
+                if let spot = placement.spot {
+                    Text(location(spot))
+                        .font(.callout)
+                    Text(neighbours(spot))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                    ForEach(Array(placement.spots.enumerated()), id: \.element.id) { index, other in
+                        if index != placement.chosen {
+                            Button { choose(index) } label: {
+                                Text("Passt genauso \(other.position == 1 ? "an den Anfang" : "ans Ende") von „\(name(other.shelf))“ (\(AppStyle.records(other.shelf.copies.count))) – dorthin wechseln")
+                            }
+                            .buttonStyle(.link)
+                            .font(.callout)
+                            .padding(.top, 2)
+                        }
+                    }
+                } else if let cabinet = placement.putAwayIn {
+                    Text("Steht im deaktivierten Regal „\(cabinet)“. Aktiviere es in den Einstellungen unter „Regale“, um sie hier zu sehen.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("Es steht noch keine Platte im Regal, an der sich die Platte ausrichten könnte. Wähle ein Fach und füge sie dort über „+“ hinzu.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: AppStyle.itemSpacing)
+            HStack(spacing: AppStyle.itemSpacing) {
+                SecondaryButton(title: "Abbrechen", action: cancel)
+                if placement.spot != nil {
+                    PrimaryButton(title: placement.found ? "Gefunden" : "Hier einsortieren", action: confirm)
+                        .keyboardShortcut(.defaultAction)
+                }
+            }
+        }
+        .padding(AppStyle.cardPadding)
+        .background(AppStyle.selectedBackground, in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
+        .overlay(RoundedRectangle(cornerRadius: AppStyle.cardRadius).strokeBorder(AppStyle.selectedBorder.opacity(0.35)))
+    }
+
+    /// As chosen in the settings; shelves are never named by their internal number.
+    private func name(_ shelf: Shelf) -> String { labels.prefix(for: shelf) + (labels[shelf.id] ?? "Leeres Fach") }
+
+    private func location(_ spot: AlphabeticalPlacement.Spot) -> String {
+        let count = spot.shelf.copies.count
+        let place = spot.position == 1 ? "ganz links" : spot.position > count ? "ganz rechts" : "Position \(spot.position)"
+        return "Fach „\(name(spot.shelf))“ · \(place) · \(AppStyle.records(count)) im Fach"
+    }
+
+    private func neighbours(_ spot: AlphabeticalPlacement.Spot) -> String {
+        func title(_ copy: RecordCopy) -> String {
+            let text = "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“"
+            let note = missing.contains(copy.id) ? " – nicht auffindbar" : ""
+            guard let shelf = copy.shelf, shelf.id != spot.shelf.id else { return text + note }
+            return text + " (Fach „\(name(shelf))“\(note))"
+        }
+        switch (spot.before, spot.after) {
+        case let (before?, after?): return "Zwischen \(title(before)) und \(title(after))"
+        case let (before?, nil): return "Nach \(title(before))"
+        case let (nil, after?): return "Vor \(title(after))"
+        case (nil, nil): return ""
+        }
+    }
+}
+
+struct UnplacedCopy {
+    let id = UUID()
+    let copy: RecordCopy
+    let shelf: Shelf
+    let position: Int
+}
