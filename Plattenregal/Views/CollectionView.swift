@@ -55,7 +55,6 @@ struct CollectionView: View {
     /// The popover closes on the mouse-down of a click outside it; if that
     /// click lands on the same cover, it should stay closed, not reopen.
     @State private var quickLookDismissed: (id: UUID, at: Date)?
-    @State private var editing: RecordCopy?
     @State private var refresh = MetadataRefreshService()
     @Environment(\.openURL) private var openURL
     @State private var error: String?
@@ -366,7 +365,6 @@ struct CollectionView: View {
         // The sync status line slides in/out and the content below follows smoothly.
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
-        .sheet(item: $editing) { RecordEditor(copy: $0) }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
@@ -589,7 +587,6 @@ struct CollectionView: View {
     }
     @ViewBuilder private func actions(_ copy: RecordCopy) -> some View {
         Button("Öffnen") { opened = copy }
-        Button("Bearbeiten") { editing = copy }
         Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen") { showShelf(copy) }
         if let url = copy.release?.sourceURL {
             Button("Bei Discogs öffnen") { openURL(url) }

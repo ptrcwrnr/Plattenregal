@@ -54,9 +54,4 @@ enum PreviewData {
 }
 #Preview("Übersicht") { RootView().modelContainer(PreviewData.container).frame(width: 1250, height: 850) }
 #Preview("KALLAX") { KallaxView(highlight: .constant(nil), placing: .constant(nil)).modelContainer(PreviewData.container).frame(width: 1000, height: 800) }
-#Preview("Exemplar bearbeiten") {
-    let container = PreviewData.container
-    let copy = try! container.mainContext.fetch(FetchDescriptor<RecordCopy>()).first!
-    return RecordEditor(copy: copy).modelContainer(container)
-}
 #endif

@@ -3,6 +3,7 @@ import SwiftData
 
 struct RecordDetailView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
     @Query private var exclusions: [OptimizationExclusion]
     @Query private var shelves: [Shelf]
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
@@ -11,12 +12,11 @@ struct RecordDetailView: View {
     var labels: ShelfLabels? = nil
     var showShelf: (() -> Void)?
     @State private var labelCache = ShelfLabelCache()
-    @State private var editing = false
+    @State private var error: String?
     var body: some View {
         VStack(spacing: 0) {
             HStack {
                 Text("Meine Schallplatte").font(AppStyle.dialogTitle); Spacer()
-                GhostButton(title: "Bearbeiten") { editing = true }
                 GhostButton(title: "Schließen") { dismiss() }.keyboardShortcut(.cancelAction)
             }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
             Divider()
@@ -26,23 +26,28 @@ struct RecordDetailView: View {
                         ReleaseHeaderView(release: r, removedFromDiscogs: !copy.discogsActive)
                     }
                     locationCard
+                    if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
                     if let r = copy.release, !r.tracks.isEmpty { TracklistView(tracks: r.tracks) }
                 }.padding(AppStyle.pagePadding)
+                .animation(AppStyle.standardAnimation, value: error)
             }
         }.frame(width: 800, height: 760)
         .appGlassSurface(cornerRadius: 0)
         .presentationBackground(.clear)
-        .sheet(isPresented: $editing) { RecordEditor(copy: copy) }
     }
 
-    /// Where the copy stands, large and with the way to the shelf right next to it.
+    private var excluded: Bool { exclusions.contains { $0.copyID == copy.id } }
+
+    /// Where the copy stands, large and with the way to the shelf right next to
+    /// it, and whether it belongs in the shelf at all ("Nicht im Regal").
     private var locationCard: some View {
         let location = ShelfRangeLabels.location(
             of: copy,
             labels: labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf),
-            excluded: exclusions.contains { $0.copyID == copy.id }
+            excluded: excluded
         )
-        return HStack(spacing: AppStyle.rowSpacing) {
+        return VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+          HStack(spacing: AppStyle.rowSpacing) {
             Image(systemName: "square.grid.3x3.fill")
                 .font(.system(size: 30))
                 .foregroundStyle(copy.shelf == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
@@ -56,9 +61,32 @@ struct RecordDetailView: View {
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
             }
+          }
+          Divider()
+          Toggle(isOn: Binding(get: { excluded }, set: setExcluded)) {
+              VStack(alignment: .leading, spacing: 2) {
+                  Text("Nicht im Regal")
+                  Text(excluded
+                       ? "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen."
+                       : "Fach und Position vergibst du in der Rubrik Regal.")
+                      .font(.caption).foregroundStyle(.secondary)
+              }
+          }
+          .toggleStyle(.switch)
         }
         .padding(AppStyle.cardPadding + 4)
         .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+    }
+
+    /// Excluding takes the copy out of its shelf; including puts it back among
+    /// the records waiting to be sorted in.
+    private func setExcluded(_ value: Bool) {
+        // Removed while the sheet was open ("Alles zurücksetzen" in the settings window).
+        guard !copy.isDeleted, copy.modelContext != nil else {
+            error = LibraryError.missingRelease.errorDescription; return
+        }
+        do { try PositionService(context: context).setExcluded([copy], value); error = nil }
+        catch { self.error = error.reportedMessage() }
     }
 }
 struct ReleaseHeaderView: View {

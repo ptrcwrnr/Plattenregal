@@ -20,7 +20,6 @@ struct KallaxView: View {
     @State private var placement: Placement?
     @State private var showsShelfOptions = false
     @State private var lockPreview = ShelfLockPreview()
-    @State private var editCopy: RecordCopy?
     /// The open "Platte hinzufügen" sheet. A new session per opening, so a
     /// reopened sheet always starts from fresh data.
     @State private var assignment: ShelfAssignmentSession?
@@ -127,7 +126,7 @@ struct KallaxView: View {
     private func forgetCopies() {
         closingAssignment = nil; assignment = nil
         focusCopy = nil; placement = nil; recentUnplace = nil
-        editCopy = nil; pendingDelete = nil; confirmRemoveSold = false
+        pendingDelete = nil; confirmRemoveSold = false
     }
 
     private func setMissing(_ copy: RecordCopy, _ missing: Bool) {
@@ -255,7 +254,6 @@ struct KallaxView: View {
         // "Alles zurücksetzen" deleted every record: nothing here may keep
         // pointing at one – reading a deleted model crashes.
         .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in forgetCopies() }
-        .sheet(item: $editCopy) { RecordEditor(copy: $0) }
         .sheet(item: $assignment, onDismiss: {
             // The shelf behind the sheet follows the additions only now, so
             // nothing rebuilds the sheet while records are being added.
@@ -439,7 +437,6 @@ struct KallaxView: View {
                         select: { copy in
                             if let copy { if focusCopy?.id != copy.id { focusCopy = copy } } else { deselect() }
                         },
-                        edit: { editCopy = $0 },
                         placed: showPlaced,
                         find: startPlacement,
                         unplace: unplace,
@@ -693,7 +690,6 @@ struct KallaxView: View {
         if focusCopy?.id == copy.id { focusCopy = nil }
         if recentUnplace?.copy.id == copy.id { recentUnplace = nil }
         if placement?.copy.id == copy.id { placement = nil }
-        if editCopy?.id == copy.id { editCopy = nil }
         do { try PositionService(context: context).delete(copy) }
         catch { self.error = error.reportedMessage() }
     }

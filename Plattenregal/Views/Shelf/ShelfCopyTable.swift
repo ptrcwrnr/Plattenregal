@@ -45,7 +45,6 @@ struct ShelfCopyTable: View {
     let missing: Set<UUID>
     let focusCopy: RecordCopy?
     let select: (RecordCopy?) -> Void
-    let edit: (RecordCopy) -> Void
     let placed: (RecordCopy) -> Void
     /// Shows the card with the records this one stands between.
     let find: (RecordCopy) -> Void
@@ -165,7 +164,7 @@ struct ShelfCopyTable: View {
             .scrollContentBackground(.hidden)
             .contextMenu(forSelectionType: UUID.self) { ids in
                 if let id = ids.first, let copy = items.first(where: { $0.id == id })?.copy {
-                    Button("Exemplar bearbeiten") { edit(copy) }
+                    Button("Exemplar bearbeiten") { quickEditID = copy.id }
                     Button("Platz im Regal zeigen") { find(copy) }
                     if missing.contains(copy.id) {
                         Button("Wieder gefunden") { setMissing(copy, false) }
@@ -203,7 +202,7 @@ struct ShelfCopyTable: View {
 
 /// Double-click on a row in the compartment table: the release at a glance,
 /// whether the copy belongs in the shelf at all, and which compartment and
-/// position it stands at. Everything else stays in the full `RecordEditor`.
+/// position it stands at.
 private struct ShelfCopyQuickEditor: View {
     let copy: RecordCopy
     let shelves: [Shelf]

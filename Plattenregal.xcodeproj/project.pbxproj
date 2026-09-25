@@ -35,7 +35,6 @@
 		32E1D935C0C8C0391AFFF4D8 /* Plattenregal/PlattenregalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60635B88B91F3EEFB155C2C /* Plattenregal/PlattenregalApp.swift */; };
 		3E95B2BDE98C47FC3A0124C2 /* PlattenregalTests/LibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81099FF1C0BF4C1C166E06C /* PlattenregalTests/LibraryTests.swift */; };
 		48DC48083636F94264CBD20F /* Plattenregal/Sorting/SortingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A335583DF28095E79A0F590 /* Plattenregal/Sorting/SortingService.swift */; };
-		63F268F8A3E7F79CCB6B69C2 /* Plattenregal/Views/RecordEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA37F7835F3B4CE50B86638B /* Plattenregal/Views/RecordEditor.swift */; };
 		6566C7AC1470738E11F8FE66 /* Plattenregal/Utilities/PreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2333417451DBF96C6D0E8 /* Plattenregal/Utilities/PreviewData.swift */; };
 		6B090CAE3C3F70EDFF41E871 /* Plattenregal/Statistics/StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C0FF87FB8B623B08B35F8F6 /* Plattenregal/Statistics/StatisticsView.swift */; };
 		6CE58895D0157E81E6D3E3E0 /* Plattenregal/Views/RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7326E43CAB42FD70589F5501 /* Plattenregal/Views/RootView.swift */; };
@@ -143,7 +142,6 @@
 		F219C0274590DA45E4BEF1EA /* PlattenregalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = PlattenregalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60635B88B91F3EEFB155C2C /* Plattenregal/PlattenregalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/PlattenregalApp.swift; sourceTree = "<group>"; };
 		F81099FF1C0BF4C1C166E06C /* PlattenregalTests/LibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/LibraryTests.swift; sourceTree = "<group>"; };
-		FA37F7835F3B4CE50B86638B /* Plattenregal/Views/RecordEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/RecordEditor.swift; sourceTree = "<group>"; };
 		81DBC184AF98C763E6527CB8 /* Plattenregal/Services/CabinetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/CabinetService.swift; sourceTree = "<group>"; };
 		01B09D2C8BF218778FB6E9D2 /* Plattenregal/Utilities/AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/AppPreferences.swift; sourceTree = "<group>"; };
 		EBC86593C4E0C6B4DBFD485A /* Plattenregal/Utilities/FolderAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/FolderAccess.swift; sourceTree = "<group>"; };
@@ -254,7 +252,6 @@
 				57AF03A5D9192B3C48928D65 /* Plattenregal/Views/CollectionView.swift */,
 				1C3F3637D69FF6FD7DD08D48 /* Plattenregal/Views/Shelf/KallaxView.swift */,
 				56D13B317B8B52745B4AA0E9 /* Plattenregal/Views/RecordDetailView.swift */,
-				FA37F7835F3B4CE50B86638B /* Plattenregal/Views/RecordEditor.swift */,
 				7326E43CAB42FD70589F5501 /* Plattenregal/Views/RootView.swift */,
 			);
 			name = Views;
@@ -481,7 +478,6 @@
 				E27805207D78C25CB646D32A /* Plattenregal/Views/CollectionView.swift in Sources */,
 				C4CCBDD5D67B742E2C954590 /* Plattenregal/Views/Shelf/KallaxView.swift in Sources */,
 				C60ED484EF79070BBD2D0D51 /* Plattenregal/Views/RecordDetailView.swift in Sources */,
-				63F268F8A3E7F79CCB6B69C2 /* Plattenregal/Views/RecordEditor.swift in Sources */,
 				6CE58895D0157E81E6D3E3E0 /* Plattenregal/Views/RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
