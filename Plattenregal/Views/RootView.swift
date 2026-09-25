@@ -50,8 +50,6 @@ struct RootView: View {
         #endif
         return AppPreferences.shared.startPage.destination
     }()
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
-    @State private var windowWidth: CGFloat = 0
     @State private var highlight: UUID?
     /// A record without a shelf whose alphabetical place the shelf page should show.
     @State private var placing: UUID?
@@ -69,42 +67,38 @@ struct RootView: View {
             .task { CoverCache.shared.pruneDisk() }
     }
 
-    /// Matches `navigationSplitViewColumnWidth(ideal:)` below.
-    private static let sidebarWidth: CGFloat = 225
-
+    /// No sidebar: the three pages sit in a segmented switch in the middle of
+    /// the toolbar (Liquid Glass), the settings as a gear on the right.
     private var library: some View {
-        // The window width doesn't change when the sidebar toggles — unlike the
-        // detail width, which AppKit only updates at the end of the slide.
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            List(selection: $destination) {
-                nav([.overview, .statistics])
-                nav([.shelf])
-            }
-            .navigationTitle("Plattenregal")
-            .toolbar(removing: .sidebarToggle)
-            .navigationSplitViewColumnWidth(min: 190, ideal: Self.sidebarWidth)
-            .safeAreaInset(edge: .bottom) {
-                VStack(alignment: .leading, spacing: 6) {
-                    SettingsLink { Label("Einstellungen", systemImage: "gearshape") }.buttonStyle(.plain)
-                }.padding().frame(maxWidth: .infinity, alignment: .leading)
-            }
-        } detail: {
-            GeometryReader { geometry in
-                detailContent(size: geometry.size)
-            }
-            .environment(\.gridReferenceWidth, windowWidth > 0 ? windowWidth - Self.sidebarWidth : nil)
-            .navigationTitle(activePage.rawValue)
+        GeometryReader { geometry in
+            detailContent(size: geometry.size)
         }
+        .navigationTitle(activePage.rawValue)
+        .toolbar(removing: .title)
         .toolbar {
-            ToolbarItem(placement: .navigation) { sidebarButton }
-                .sharedBackgroundVisibility(.hidden)
+            ToolbarItem(placement: .principal) { pagePicker }
+            ToolbarItem(placement: .primaryAction) {
+                SettingsLink { Label("Einstellungen", systemImage: "gearshape") }
+                    .help("Einstellungen")
+            }
         }
-        .onGeometryChange(for: CGFloat.self, of: \.size.width) { windowWidth = $0 }
+    }
+
+    private var pagePicker: some View {
+        Picker("Rubrik", selection: Binding(get: { activePage }, set: { destination = $0 })) {
+            ForEach(Destination.allCases) { page in
+                Label(page.rawValue, systemImage: page.symbol).labelStyle(.titleAndIcon).tag(page)
+            }
+        }
+        .labelsHidden()
+        .pickerStyle(.segmented)
+        .controlSize(.large)
+        .fixedSize()
     }
 
     /// Every page is built once and kept alive; switching only changes which
     /// one is visible. Pages therefore keep their loaded data, sorting and
-    /// scroll position, and clicking through the sidebar is instant instead
+    /// scroll position, and switching pages is instant instead
     /// of rebuilding (and re-sorting the whole collection) on every visit.
     private func detailContent(size: CGSize) -> some View {
         ZStack {
@@ -121,17 +115,6 @@ struct RootView: View {
         .frame(width: size.width, height: size.height, alignment: .topLeading)
     }
 
-    private var sidebarButton: some View {
-        IconButton(
-            systemImage: "sidebar.left",
-            help: columnVisibility == .detailOnly ? "Seitenleiste einblenden" : "Seitenleiste ausblenden"
-        ) {
-            withAnimation(AppStyle.layoutAnimation) {
-                columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-            }
-        }
-        .accessibilityLabel("Seitenleiste umschalten")
-    }
     private var activePage: Destination { destination ?? .overview }
     @ViewBuilder private func pageContent(_ page: Destination) -> some View {
         switch page {
@@ -139,9 +122,6 @@ struct RootView: View {
         case .statistics: StatisticsView(model: statisticsModel, showShelf: showShelf)
         case .shelf: KallaxView(highlight: $highlight, placing: $placing)
         }
-    }
-    private func nav(_ items: [Destination]) -> some View {
-        ForEach(items) { item in Label(item.rawValue, systemImage: item.symbol).tag(item) }
     }
     /// Opens the shelf page with the card for this record: where it stands
     /// and between which records, or — without a shelf — where it belongs.
