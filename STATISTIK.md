@@ -9,7 +9,7 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 - **Aktualisieren** – die Seite nach unten ziehen oder **⌘R** – rechnet die Auswertungen neu und ruft den Sammlungswert ab. Nach jedem erfolgreichen Collection-Sync wird der Wert ebenfalls geladen; scheitert nur dieser Abruf, bleibt der Sync gespeichert und eine eigene Meldung erscheint.
 - Genres, Styles, Künstler, Labels, Jahre, Formate und Länder öffnen die passenden Platten als gefilterte Collection-Liste. Einzelne Platten öffnen ihre Detailansicht oder zeigen ihren Platz im Regal.
 - Reihenfolge der Abschnitte: **Einstellungen → Darstellung**.
-- Regal-Markierungen ändern die Statistik nicht: Platten mit „Nicht im Regal“ oder „Nicht auffindbar“ gehören weiter zur Collection und zählen voll mit.
+- Regal-Markierungen ändern die Statistik nicht: Platten mit „Nicht im Regal“ oder „Vermisst“ gehören weiter zur Collection und zählen voll mit.
 
 ## Abschnitte
 

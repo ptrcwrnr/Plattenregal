@@ -993,7 +993,7 @@ enum LibrarySchemaV12: VersionedSchema {
     }
 }
 
-// V13 adds a local-only "Nicht auffindbar" mark for records that should stand
+// V13 adds a local-only "Vermisst" mark for records that should stand
 // in a shelf but weren't found there while sorting. Stored separately (like
 // OptimizationExclusion), so every existing model is carried over unchanged.
 enum LibrarySchemaV13: VersionedSchema {
@@ -1145,7 +1145,7 @@ enum LibrarySchemaV14: VersionedSchema {
 // the copy's Discogs rating, notes and sync date; the wantlist entry's rating
 // and sync date; the folder's and account's folder-sync dates; the snapshot's
 // unique-release count; the creation dates of "Nicht im Regal" and
-// "Nicht auffindbar"; and `ReleaseMarketValue`, which was never filled.
+// "Vermisst"; and `ReleaseMarketValue`, which was never filled.
 enum LibrarySchemaV15: VersionedSchema {
     static let versionIdentifier = Schema.Version(15, 0, 0)
     static var models: [any PersistentModel.Type] {
@@ -1308,7 +1308,7 @@ enum LibrarySchemaV15: VersionedSchema {
         init(copyID: UUID) { self.copyID = copyID }
     }
 
-    /// "Nicht auffindbar": should stand in a shelf but wasn't found there.
+    /// "Vermisst": should stand in a shelf but wasn't found there.
     @Model final class MissingCopyMark {
         @Attribute(.unique) var copyID: UUID
         init(copyID: UUID) { self.copyID = copyID }

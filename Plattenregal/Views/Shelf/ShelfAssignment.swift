@@ -25,7 +25,7 @@ final class ShelfAssignmentSession: Identifiable {
     private(set) var loaded = false
     private(set) var addedCount = 0
     private(set) var lastAdded: RecordCopy?
-    /// Candidates marked "Nicht auffindbar": they stay in the list, paused.
+    /// Candidates marked "Vermisst": they stay in the list, paused.
     private(set) var missing: Set<UUID> = []
     var error: String?
     @ObservationIgnored let table = ShelfAssignmentTableController()
@@ -157,7 +157,7 @@ struct ShelfAssignmentView: View {
                         .lineLimit(1).truncationMode(.middle)
                     // Its own text, so a long anchor name never cuts it off.
                     if pausedCount > 0 {
-                        Text(" · \(pausedCount) nicht auffindbar").foregroundStyle(AppStyle.errorColor)
+                        Text(" · \(pausedCount) vermisst").foregroundStyle(AppStyle.errorColor)
                             .lineLimit(1).fixedSize()
                     }
                 }
@@ -266,7 +266,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
         scrollView.contentInsets = NSEdgeInsets(top: AppStyle.tightSpacing, left: 0, bottom: AppStyle.tightSpacing, right: 0)
     }
 
-    /// Redraws only the rows whose "Nicht auffindbar" state changed.
+    /// Redraws only the rows whose "Vermisst" state changed.
     func setMissing(_ new: Set<UUID>) {
         guard new != missing else { return }
         let changed = new.symmetricDifference(missing)
@@ -331,7 +331,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
 
 private struct ShelfAssignmentRow: View {
     let copy: RecordCopy
-    /// Marked "Nicht auffindbar": shown paused, still addable once it turns up.
+    /// Marked "Vermisst": shown paused, still addable once it turns up.
     let missing: Bool
     let toggleMissing: () -> Void
     let add: () -> Void
@@ -361,8 +361,8 @@ private struct ShelfAssignmentRow: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(missing ? AppStyle.errorColor : .secondary)
-            .help(missing ? "Wieder gefunden" : "Nicht auffindbar – vorerst zurückstellen")
-            .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als nicht auffindbar markieren")
+            .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
+            .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als vermisst markieren")
             Button(action: add) {
                 Image(systemName: "plus")
                     .font(.system(size: 13, weight: .semibold))

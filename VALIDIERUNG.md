@@ -44,9 +44,9 @@ Stand nach drei Prüfrunden auf Robustheit, dem Entfernen von totem Code und dem
 - 10.000 Platten (Debug): Sortieren 1,58 → 1,29 s, Platz finden 531 → 115 ms, Export-Tabelle 3,2 → 1,5 s; der Rest entfällt in diesem Test auf das erstmalige Laden der Releases.
 - Ursachen per Time Profiler (Instruments) belegt: SwiftData-Lesezugriffe in Sortier-Vergleichen und einzeln nachgeladene Releases nach jedem Neuladen der Exemplare.
 
-# Älterer Stand · 24.09.2026 („Nicht auffindbar“ und Regalseite)
+# Älterer Stand · 24.09.2026 („Vermisst“ und Regalseite)
 
-Stand nach der neuen Markierung „Nicht auffindbar“ und vier Prüfungen der Regalseite auf Grenzfälle (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+Stand nach der neuen Markierung „Vermisst“ und vier Prüfungen der Regalseite auf Grenzfälle (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 
 ## Ergebnis
 
@@ -59,15 +59,15 @@ Stand nach der neuen Markierung „Nicht auffindbar“ und vier Prüfungen der R
   - `CabinetTests.inactiveCabinetsAreSkippedWhenSortingIn` – „Im Regal anzeigen“ für eine Platte in einem deaktivierten Regal nennt das Regal statt eines Platzes.
 - Migration V12 → V13 (neues Modell `MissingCopyMark`) über die bestehenden Migrations-Tests, die ältere Datenbanken bis zum aktuellen Schema öffnen.
 - **Laufende App** (`--demo`, frischer Build, Klicks per Bedienungshilfen und Maus-Ereignissen):
-  - Regalseite: rote Übersicht „1 nicht auffindbar“; „Im Fach zeigen“ springt ins Fach „A – Be“ und wählt die Platte.
+  - Regalseite: rote Übersicht „1 vermisst“; „Im Fach zeigen“ springt ins Fach „A – Be“ und wählt die Platte.
   - Die markierte Platte trägt in der Tabelle und unter dem Streifen das Etikett und ist im Streifen als roter Umriss gezeichnet.
-  - „Platte hinzufügen“: Pause markiert (Zeile blass, Etikett, roter Knopf, Unterzeile „· 1 nicht auffindbar“ bleibt sichtbar), ein zweiter Klick hebt auf.
-  - Nach dem Schließen steigt die Übersicht auf „2 nicht auffindbar“; „+“ bei einer markierten Platte sortiert ein und senkt sie wieder auf 1.
-  - Gefunden und behoben dabei: die Übersicht war schwarz statt rot, die Unterzeile schnitt „nicht auffindbar“ ab.
+  - „Platte hinzufügen“: Pause markiert (Zeile blass, Etikett, roter Knopf, Unterzeile „· 1 vermisst“ bleibt sichtbar), ein zweiter Klick hebt auf.
+  - Nach dem Schließen steigt die Übersicht auf „2 vermisst“; „+“ bei einer markierten Platte sortiert ein und senkt sie wieder auf 1.
+  - Gefunden und behoben dabei: die Übersicht war schwarz statt rot, die Unterzeile schnitt „vermisst“ ab.
 
 ## Nicht geprüft (dieser Durchgang)
 
-- In der laufenden App nicht angeklickt: Platzsuche-Karte einer markierten Platte (Hinweis, Nachbar „– nicht auffindbar“, „Gefunden“), Rechtsklick-Menü der Fach-Tabelle, Schließen von „Platte hinzufügen“ bei Änderungen im Einstellungsfenster, Regalseite nach „Alles zurücksetzen“. Die Logik dahinter ist über Tests bzw. Code-Durchsicht abgedeckt.
+- In der laufenden App nicht angeklickt: Platzsuche-Karte einer markierten Platte (Hinweis, Nachbar „– vermisst“, „Gefunden“), Rechtsklick-Menü der Fach-Tabelle, Schließen von „Platte hinzufügen“ bei Änderungen im Einstellungsfenster, Regalseite nach „Alles zurücksetzen“. Die Logik dahinter ist über Tests bzw. Code-Durchsicht abgedeckt.
 - Das Umstellen der echten Datenbank auf V13 – die eigene Sammlung wurde nicht geöffnet; das passiert beim ersten Start der neuen Version.
 - Eine fehlschlagende Datenbank-Speicherung lässt sich nicht gezielt herbeiführen; geprüft ist der Meldungstext.
 

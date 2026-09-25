@@ -26,7 +26,7 @@ struct ResetService {
     let context: ModelContext
 
     /// Every record leaves its compartment, locks and names are lifted and
-    /// "Nicht im Regal" and "Nicht auffindbar" marks are dropped. Cabinets and their sizes stay.
+    /// "Nicht im Regal" and "Vermisst" marks are dropped. Cabinets and their sizes stay.
     func resetLocations() throws {
         guard !DiscogsSyncService.shared.busy else { throw ResetError.syncRunning }
         try safetyBackup()

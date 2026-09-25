@@ -3,13 +3,13 @@ import SwiftData
 
 enum LibraryError: LocalizedError {
     case reserved, invalidPosition, missingRelease, reservedNotEmpty
-    /// Saving "Nicht auffindbar" / "Wieder gefunden" failed; the database
+    /// Saving "Vermisst" / "Wieder gefunden" failed; the database
     /// error is kept for the protocol.
     case missingMarkNotSaved(found: Bool, any Error)
     var errorDescription: String? {
         switch self {
         case .missingMarkNotSaved(let found, _):
-            "\(found ? "„Wieder gefunden“" : "„Nicht auffindbar“") konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
+            "\(found ? "„Wieder gefunden“" : "„Vermisst“") konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
         case .reserved: "Dieses Fach ist gesperrt und nimmt keine Platten auf. Die Sperre lässt sich in den Fachoptionen aufheben."
         case .invalidPosition: "Diese Position gibt es in dem Fach nicht. Wähle eine Zahl zwischen 1 und der Stelle direkt hinter der letzten Platte."
         case .missingRelease: "Die Platte oder das Fach gibt es nicht mehr – vielleicht wurde gerade etwas geändert. Bitte versuche es noch einmal."
@@ -71,7 +71,7 @@ struct PositionService {
     }
     #endif
     /// `found`: the record was just taken in hand and put there (sorting in),
-    /// so a "Nicht auffindbar" mark goes in the same transaction. Plain
+    /// so a "Vermisst" mark goes in the same transaction. Plain
     /// moves (quick editor, undo) keep the mark.
     func move(_ copy: RecordCopy, to shelf: Shelf, position: Int, found: Bool = false) throws {
         try validate(shelf: shelf, position: position, excluding: copy.id)
@@ -87,7 +87,7 @@ struct PositionService {
             try markExcluded([copy.id], false)
             if found { foundAgain = try markMissing([copy.id], false) }
         }
-        AppLog.info("Regal", "\(Self.name(copy)): \(from) → \(Self.name(shelf)), Position \(position)\(foundAgain ? " · nicht mehr „Nicht auffindbar“" : "")")
+        AppLog.info("Regal", "\(Self.name(copy)): \(from) → \(Self.name(shelf)), Position \(position)\(foundAgain ? " · nicht mehr „Vermisst“" : "")")
     }
     func unplace(_ copy: RecordCopy) throws {
         let from = copy.shelf.map(Self.name) ?? "ohne Fach"
@@ -123,7 +123,7 @@ struct PositionService {
             try markExcluded(Set(copies.map(\.id)), excluded)
             // Deliberately kept out of the shelves: nothing left to look for.
             if excluded, try markMissing(Set(copies.map(\.id)), false) {
-                AppLog.info("Regal", "„Nicht auffindbar“ aufgehoben, weil „Nicht im Regal“ gesetzt wurde")
+                AppLog.info("Regal", "„Vermisst“ aufgehoben, weil „Nicht im Regal“ gesetzt wurde")
             }
         }
         AppLog.info("Regal", "\(excluded ? "Nicht im Regal" : "Wieder fürs Regal vorgesehen"): \(copies.map(Self.name).joined(separator: ", "))")
@@ -137,13 +137,13 @@ struct PositionService {
             for row in existing where ids.contains(row.copyID) { context.delete(row) }
         }
     }
-    /// Marks copies as "Nicht auffindbar" (they should stand in their shelf
+    /// Marks copies as "Vermisst" (they should stand in their shelf
     /// but weren't found there) or as found again. Only a note for the shelf
     /// page: shelf and position stay untouched. Stored as `MissingCopyMark` rows.
     func setMissing(_ copies: [RecordCopy], _ missing: Bool) throws {
         do { try save { _ = try markMissing(Set(copies.map(\.id)), missing) } }
         catch { throw LibraryError.missingMarkNotSaved(found: !missing, error) }
-        AppLog.info("Regal", "\(missing ? "Nicht auffindbar" : "Wieder gefunden"): \(copies.map(Self.name).joined(separator: ", "))")
+        AppLog.info("Regal", "\(missing ? "Vermisst" : "Wieder gefunden"): \(copies.map(Self.name).joined(separator: ", "))")
     }
     /// Whether any mark changed, so callers can note it in the protocol.
     @discardableResult private func markMissing(_ ids: Set<UUID>, _ missing: Bool) throws -> Bool {

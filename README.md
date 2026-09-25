@@ -14,7 +14,7 @@ Das Projekt ist für lokales Ad-hoc-Signing eingerichtet und braucht kein bezahl
 
 - **Collection und Wantlist aus Discogs.** Es gibt keine manuell angelegten Platten: Alles kommt aus dem Discogs-Konto. Abgeglichen wird auf Wunsch: die Collection auf ihrer Seite (nach unten ziehen oder ⌘R) oder in den Einstellungen, die Wantlist in ihrer eigenen Ansicht. Danach werden die Tracklisten im Hintergrund nachgeladen; ein unterbrochener Download läuft beim nächsten Start weiter.
 - **Regale und Fächer.** Beliebig viele Regale (IKEA-KALLAX-Größen oder eigene, 1–6 Spalten und Reihen), jedes Fach zeigt, wie viele Platten darin stehen. Platten einsortieren, verschieben, herausnehmen, Fächer alphabetisch sortieren, Fächer sperren (z. B. für Deko) und Platten als „Nicht im Regal“ markieren. Fächer heißen nach Buchstabenbereich („A – Be“) oder Nummer.
-- **„Nicht auffindbar“ beim Einsortieren.** Nur auf der Regalseite: Eine Platte, die gerade nicht zu finden ist, lässt sich zurückstellen (Pause-Knopf in „Platte hinzufügen“, Rechtsklick in der Fach-Tabelle) und später als „Wieder gefunden“ markieren. Eine rote Übersicht neben der Suche listet alle markierten Platten; im Streifen der Plattenrücken erscheinen sie als roter Umriss. Einsortieren von Hand gilt als gefunden. Collection, Statistik und Export bleiben davon unberührt.
+- **„Vermisst“ beim Einsortieren.** Nur auf der Regalseite: Eine Platte, die gerade nicht zu finden ist, lässt sich zurückstellen (Pause-Knopf in „Platte hinzufügen“, Rechtsklick in der Fach-Tabelle) und später als „Wieder gefunden“ markieren. Die Übersicht „Vermisst“ neben der Suche listet alle markierten Platten; im Streifen der Plattenrücken erscheinen sie als roter Umriss. Einsortieren von Hand gilt als gefunden. Collection, Statistik und Export bleiben davon unberührt.
 - **Suche und Sortierung** über Interpret, Titel, Label, Katalognummer, Genre, Style und mehr; Raster oder Liste mit einstellbarer Covergröße.
 - **Statistik** mit Verteilungen und dem Verlauf des Sammlungswerts (Details in [STATISTIK.md](STATISTIK.md)).
 - **Sicherung** der Regal-Belegung, **Export** als CSV oder PDF, **Protokoll** für die Fehlersuche – siehe unten.
@@ -50,7 +50,7 @@ Alle Daten liegen in der App-Sandbox unter
 
 | Ordner/Datei | Inhalt |
 |---|---|
-| `Collection.store` (+ `-wal`, `-shm`) | Datenbank (Schema V15): Platten, Standorte, „Nicht auffindbar“, Wantlist, Statistik-Verlauf |
+| `Collection.store` (+ `-wal`, `-shm`) | Datenbank (Schema V15): Platten, Standorte, „Vermisst“, Wantlist, Statistik-Verlauf |
 | `Covers/` | Cover-Cache; wird bei Bedarf neu von Discogs geladen |
 | `Sicherungen/` | Automatische Sicherungen der Belegung, falls kein eigener Ordner gewählt ist |
 | `Logs/Plattenregal.log` | Protokoll (dazu `Plattenregal.old.log` ab 2 MB, auch während einer Sitzung) |
@@ -58,15 +58,15 @@ Alle Daten liegen in der App-Sandbox unter
 
 Die Datenbank wird beim Start nur geöffnet, nie neu angelegt oder automatisch geleert – auch nicht nach einem Fehler; dann zeigt die App eine Fehlerseite mit Hinweis auf das Protokoll. Nur eine Instanz öffnet die Sammlung (Sperrdatei `.Plattenregal.lock` im selben Ordner): Läuft Plattenregal schon, etwa aus Xcode, zeigt eine zweite Instanz einen Hinweis statt die Datenbank zu öffnen.
 
-**Sicherung.** Die Platten selbst kommen jederzeit wieder aus Discogs – wo sie stehen, gibt es nur lokal. Die Sicherung hält genau das fest: Regale, Fach und Position jedes Exemplars, gesperrte Fächer und „Nicht im Regal“, als JSON. „Nicht auffindbar“ gehört nicht dazu: Es beschreibt die Suche im Moment, nicht die Belegung, und bleibt beim Wiederherstellen stehen (außer bei Platten, die laut Sicherung „Nicht im Regal“ sind). Automatisch einige Sekunden nach jeder Regal-Änderung und beim Beenden (Standard: die letzten 10 Stände plus der letzte Stand jedes Tages der vergangenen 14 Tage), auf Wunsch in einem eigenen Ordner, z. B. in iCloud Drive. Ein leeres Regal wird nie automatisch gesichert, damit es nach einem Datenverlust keine guten Stände verdrängt. Wiederhergestellt wird über die Discogs-Exemplar-ID; vorher zeigt eine Vorschau, was passiert, und der aktuelle Stand wird gesichert.
+**Sicherung.** Die Platten selbst kommen jederzeit wieder aus Discogs – wo sie stehen, gibt es nur lokal. Die Sicherung hält genau das fest: Regale, Fach und Position jedes Exemplars, gesperrte Fächer und „Nicht im Regal“, als JSON. „Vermisst“ gehört nicht dazu: Es beschreibt die Suche im Moment, nicht die Belegung, und bleibt beim Wiederherstellen stehen (außer bei Platten, die laut Sicherung „Nicht im Regal“ sind). Automatisch einige Sekunden nach jeder Regal-Änderung und beim Beenden (Standard: die letzten 10 Stände plus der letzte Stand jedes Tages der vergangenen 14 Tage), auf Wunsch in einem eigenen Ordner, z. B. in iCloud Drive. Ein leeres Regal wird nie automatisch gesichert, damit es nach einem Datenverlust keine guten Stände verdrängt. Wiederhergestellt wird über die Discogs-Exemplar-ID; vorher zeigt eine Vorschau, was passiert, und der aktuelle Stand wird gesichert.
 
 **Export.** CSV (Spalten wählbar, Semikolon oder Komma, UTF-8 mit BOM für Excel, Formel-Schutz) oder druckfertige PDF-Liste, in Regal- oder alphabetischer Reihenfolge. Der automatische Export schreibt täglich, wöchentlich oder monatlich in einen Ordner und ersetzt dort immer dieselbe Datei – außer die Liste wäre leer.
 
-**Zurücksetzen** (Tab „Daten“): Standorte (samt „Nicht im Regal“ und „Nicht auffindbar“), Einstellungen oder alles. Vor jedem Zurücksetzen, das die Belegung betrifft, wird gesichert; Sicherungen samt Speicherort und Aufbewahrung bleiben immer erhalten.
+**Zurücksetzen** (Tab „Daten“): Standorte (samt „Nicht im Regal“ und „Vermisst“), Einstellungen oder alles. Vor jedem Zurücksetzen, das die Belegung betrifft, wird gesichert; Sicherungen samt Speicherort und Aufbewahrung bleiben immer erhalten.
 
 ## Demo
 
-**Plattenregal → Demo starten …** (oder **Einstellungen → Allgemein**) startet die App neu mit einer Beispielsammlung: rund 50 bekannte Alben mit gezeichneten Covern, zwei Regale („Wohnzimmer“, „Flur“ mit gesperrtem Deko-Fach), einige Platten ohne Fach, eine als „Nicht auffindbar“ markierte Platte, Wantlist und 18 Monate Wertverlauf. Alles lässt sich ausprobieren – einsortieren, verschieben, Regale anlegen, Einstellungen ändern, exportieren, zurücksetzen. Ein Banner auf jeder Seite zeigt die Demo an; **Demo beenden** startet wieder mit der eigenen Sammlung, **Demo neu starten** holt die Beispielsammlung im Ausgangszustand zurück (etwa nach „Alles zurücksetzen“).
+**Plattenregal → Demo starten …** (oder **Einstellungen → Allgemein**) startet die App neu mit einer Beispielsammlung: rund 50 bekannte Alben mit gezeichneten Covern, zwei Regale („Wohnzimmer“, „Flur“ mit gesperrtem Deko-Fach), einige Platten ohne Fach, eine als „Vermisst“ markierte Platte, Wantlist und 18 Monate Wertverlauf. Alles lässt sich ausprobieren – einsortieren, verschieben, Regale anlegen, Einstellungen ändern, exportieren, zurücksetzen. Ein Banner auf jeder Seite zeigt die Demo an; **Demo beenden** startet wieder mit der eigenen Sammlung, **Demo neu starten** holt die Beispielsammlung im Ausgangszustand zurück (etwa nach „Alles zurücksetzen“).
 
 Die Demo ist vollständig von den echten Daten getrennt: Die Sammlung liegt nur im Arbeitsspeicher, Einstellungen in einer eigenen Domäne (`de.private.Plattenregal.demo`, bei jedem Start leer), Sicherungen und Cover in einem temporären Ordner. Discogs ist ausgeschaltet, der Schlüsselbund wird nicht gelesen. Gemeinsam ist nur das Protokoll; jede Zeile aus der Demo trägt dort „Demo ·“ vor ihrer Kategorie. Außerdem in der Demo: keine Discogs-Links und -Aktualisierungen (die Beispiel-IDs gehören bei Discogs zu fremden Releases), keine Tracklisten, keine automatische Sicherung; Speicherort und Aufbewahrung der Sicherungen sind gesperrt, damit die Demo nie echte Sicherungen aufräumt. Dateien, die die Demo vorschlägt oder schreibt, tragen „(Demo)“ im Namen – ein Export in denselben Ordner ersetzt so nie die echte Datei.
 
@@ -74,9 +74,9 @@ Läuft Plattenregal noch ein zweites Mal, wird der Wechsel abgelehnt, damit nie 
 
 ## Fehlermeldungen und Protokoll
 
-Meldungen sind kurz, auf Deutsch und sagen, was passiert ist und was zu tun ist – ohne englische Systemtexte. Die technischen Details landen im Protokoll: Jede angezeigte Fehlermeldung wird dort mit Ursache und Code-Stelle festgehalten, außerdem Starts, Abgleiche, Regal-Änderungen (auch „Nicht auffindbar“ und „Wieder gefunden“ mit Plattenname), Sicherungen, Exporte und Zurücksetzen. Der Discogs-Token steht nie darin.
+Meldungen sind kurz, auf Deutsch und sagen, was passiert ist und was zu tun ist – ohne englische Systemtexte. Die technischen Details landen im Protokoll: Jede angezeigte Fehlermeldung wird dort mit Ursache und Code-Stelle festgehalten, außerdem Starts, Abgleiche, Regal-Änderungen (auch „Vermisst“ und „Wieder gefunden“ mit Plattenname), Sicherungen, Exporte und Zurücksetzen. Der Discogs-Token steht nie darin.
 
-Beispiele: Schlägt das Speichern einer Markierung fehl, heißt es „„Nicht auffindbar“ konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal …“; ein Einsortieren in ein gesperrtes Fach erklärt, wo sich die Sperre aufheben lässt. Werden im Einstellungsfenster Regale umgebaut, während „Platte hinzufügen“ offen ist, schließt es sich, statt in ein gelöschtes Fach zu schreiben – auch das steht im Protokoll.
+Beispiele: Schlägt das Speichern einer Markierung fehl, heißt es „„Vermisst“ konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal …“; ein Einsortieren in ein gesperrtes Fach erklärt, wo sich die Sperre aufheben lässt. Werden im Einstellungsfenster Regale umgebaut, während „Platte hinzufügen“ offen ist, schließt es sich, statt in ein gelöschtes Fach zu schreiben – auch das steht im Protokoll.
 
 Weitere Fälle:
 
@@ -103,7 +103,7 @@ atos -o Plattenregal.app/Contents/MacOS/Plattenregal -l <Ladeadresse> <Adresse> 
 | Start | `PlattenregalApp.swift` | Szenen, Öffnen der Datenbank, Fehlerseite, Protokollstart |
 | Modelle | `Models/LibraryModels.swift`, `Models/LibrarySchemas.swift` | Versioniertes SwiftData-Schema und Migrationen |
 | Speicherung | `Storage/LibraryStorage.swift`, `Storage/KeychainStore.swift` | Datenbank-Container, Einzelinstanz-Sperre, Fächer, Token im Schlüsselbund |
-| Regal | `Services/PositionService.swift`, `Services/CabinetService.swift`, `Views/Shelf/` | Positionen, Regale, „Nicht im Regal“ und „Nicht auffindbar“, jede Änderung als eine Transaktion; Regalseite |
+| Regal | `Services/PositionService.swift`, `Services/CabinetService.swift`, `Views/Shelf/` | Positionen, Regale, „Nicht im Regal“ und „Vermisst“, jede Änderung als eine Transaktion; Regalseite |
 | Sicherung | `Services/ShelfBackupService.swift` | Sichern, Wiederherstellen, automatische Sicherung |
 | Export | `Services/CollectionExportService.swift`, `Services/ScheduledExportService.swift` | CSV/PDF, automatischer Export |
 | Zurücksetzen | `Services/ResetService.swift` | Standorte, Einstellungen, alles |

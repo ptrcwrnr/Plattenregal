@@ -191,9 +191,9 @@ extension AllTests {
             // System errors never show their English wording or codes.
             let saveFailure = NSError(domain: NSCocoaErrorDomain, code: 134030)
             #expect(saveFailure.userMessage == ErrorMessages.saveFailed)
-            // A failed "Nicht auffindbar" names the action instead of a general save error.
+            // A failed "Vermisst" names the action instead of a general save error.
             let mark = LibraryError.missingMarkNotSaved(found: false, saveFailure).userMessage
-            #expect(mark.hasPrefix("„Nicht auffindbar“ konnte nicht gespeichert werden"))
+            #expect(mark.hasPrefix("„Vermisst“ konnte nicht gespeichert werden"))
             #expect(LibraryError.missingMarkNotSaved(found: true, saveFailure).userMessage.hasPrefix("„Wieder gefunden“"))
             #expect(!mark.contains("134030"))
             #expect(URLError(.notConnectedToInternet).userMessage == DiscogsError.offline.errorDescription)

@@ -227,10 +227,10 @@ struct ShelfStatusControl: View {
     }
 }
 
-/// Small tag on a record marked "Nicht auffindbar" (table, search, "Platte hinzufügen").
+/// Small tag on a record marked "Vermisst" (table, search, "Platte hinzufügen").
 struct MissingBadge: View {
     var body: some View {
-        Text("Nicht auffindbar")
+        Text("Vermisst")
             .font(.caption2.weight(.medium))
             .foregroundStyle(AppStyle.errorColor)
             .padding(.horizontal, 5).padding(.vertical, 1)
@@ -239,7 +239,7 @@ struct MissingBadge: View {
     }
 }
 
-/// Status next to the search field: records marked "Nicht auffindbar" while
+/// Status next to the search field: records marked "Vermisst" while
 /// sorting. The menu lists them by shelf; picking one shows it in its shelf.
 struct MissingCopiesControl: View {
     let copies: [RecordCopy]
@@ -260,12 +260,12 @@ struct MissingCopiesControl: View {
             // menu draws it in the default text color).
             // Outlined like the result button next to the overview search.
             HStack(spacing: 3) {
-                Text("\(copies.count) nicht auffindbar").monospacedDigit().lineLimit(1)
+                Text("Vermisst").lineLimit(1)
                 Image(systemName: "chevron.down").font(.caption2.weight(.semibold))
             }
             .padding(.horizontal, 12)
-            .frame(height: 30)
-            .foregroundStyle(AppStyle.errorColor)
+            .frame(height: AppStyle.controlHeight)
+            .foregroundStyle(.secondary)
             .overlay {
                 RoundedRectangle(cornerRadius: 6)
                     .strokeBorder(Color.primary.opacity(0.22), lineWidth: 1)
@@ -278,6 +278,7 @@ struct MissingCopiesControl: View {
         .fixedSize()
         .font(.callout)
         .help("Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach")
+        .accessibilityLabel("\(copies.count) vermisst")
     }
 
     private static func name(_ copy: RecordCopy) -> String {

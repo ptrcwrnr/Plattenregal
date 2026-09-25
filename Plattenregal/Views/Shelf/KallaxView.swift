@@ -104,7 +104,7 @@ struct KallaxView: View {
 
     private var missingIDs: Set<UUID> { Set(missingMarks.map(\.copyID)) }
 
-    /// Records marked "Nicht auffindbar": those still standing in a shelf in
+    /// Records marked "Vermisst": those still standing in a shelf in
     /// use (shelf order) and those waiting to be sorted in (by artist) – the
     /// list to work through while sorting the rest.
     private var missingCopies: [RecordCopy] {
@@ -135,7 +135,7 @@ struct KallaxView: View {
         catch { self.error = error.reportedMessage() }
     }
 
-    /// Jumps to a record from the "Nicht auffindbar" list: its shelf with the
+    /// Jumps to a record from the "Vermisst" list: its shelf with the
     /// record picked, or – without a shelf – where it belongs alphabetically.
     private func showMissing(_ copy: RecordCopy) {
         guard let shelf = copy.shelf else { startPlacement(copy); return }
@@ -358,26 +358,28 @@ struct KallaxView: View {
 
     private var header: some View {
         HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
-            ShelfSearchField(
-                query: $searchQuery,
-                focused: $searchFocused,
-                matches: searchResults.placed,
-                unplaced: searchResults.unplaced,
-                hidden: searchResults.hidden,
-                labels: rangeLabels,
-                missing: missingIDs,
-                onClear: { searchQuery = "" },
-                place: startPlacement
-            )
-            .frame(maxWidth: .infinity)
-            let missing = missingCopies
-            if !missing.isEmpty {
-                MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
-                                     found: { setMissing($0, false) })
+            HStack(alignment: .top, spacing: 4) {
+                ShelfSearchField(
+                    query: $searchQuery,
+                    focused: $searchFocused,
+                    matches: searchResults.placed,
+                    unplaced: searchResults.unplaced,
+                    hidden: searchResults.hidden,
+                    labels: rangeLabels,
+                    missing: missingIDs,
+                    onClear: { searchQuery = "" },
+                    place: startPlacement
+                )
+                .frame(maxWidth: .infinity)
+                let missing = missingCopies
+                if !missing.isEmpty {
+                    MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
+                                         found: { setMissing($0, false) })
+                }
             }
             if !soldInShelves.isEmpty {
                 ShelfStatusControl(soldInShelves: soldInShelves.count, removeSold: { confirmRemoveSold = true })
-                    .frame(height: 30)
+                    .frame(height: AppStyle.controlHeight)
             }
         }
     }
@@ -638,7 +640,7 @@ struct KallaxView: View {
     private func confirmPlacement() {
         guard let placement, let spot = placement.spot else { return }
         if placement.found {
-            // Standing where it should: a "Nicht auffindbar" mark is settled.
+            // Standing where it should: a "Vermisst" mark is settled.
             if placement.missing { setMissing(placement.copy, false) }
             withAnimation(AppStyle.standardAnimation) { self.placement = nil }
             return

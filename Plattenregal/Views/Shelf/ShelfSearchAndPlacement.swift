@@ -17,7 +17,7 @@ struct ShelfSearchField: View {
     /// Matches beyond the listed ones.
     let hidden: Int
     let labels: ShelfLabels
-    /// Copies marked "Nicht auffindbar".
+    /// Copies marked "Vermisst".
     let missing: Set<UUID>
     let onClear: () -> Void
     let place: (RecordCopy) -> Void
@@ -45,12 +45,13 @@ struct ShelfSearchField: View {
                 .buttonStyle(.plain)
             }
         }
+        .font(.callout)
         .padding(.horizontal, 10)
-        .frame(height: 30)
-        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 8))
+        .frame(height: AppStyle.controlHeight)
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
         .overlay(alignment: .topLeading) {
             if Self.hasWords(text) && Self.hasWords(query) {
-                results.offset(y: 36)
+                results.offset(y: AppStyle.controlHeight + 6)
                     // Still the previous query's matches while typing pauses.
                     .opacity(query == text ? 1 : 0.6)
                     .animation(AppStyle.quickAnimation, value: query == text)
@@ -154,7 +155,7 @@ struct ShelfPositionStrip: View {
     let selectedSlot: Int?
     /// Where a record being sorted in would go; drawn as a marker between spines.
     var insertionPosition: Int? = nil
-    /// 1-based spines marked "Nicht auffindbar"; drawn as an outline.
+    /// 1-based spines marked "Vermisst"; drawn as an outline.
     var missingSlots: Set<Int> = []
     let select: (Int) -> Void
 
@@ -188,7 +189,7 @@ struct ShelfPositionStrip: View {
                         }
                     } else {
                         Text("\(AppStyle.records(stats.count)) · von links nach rechts"
-                             + (missingSlots.isEmpty ? "" : " · \(missingSlots.count) nicht auffindbar"))
+                             + (missingSlots.isEmpty ? "" : " · \(missingSlots.count) vermisst"))
                     }
                 }
                 .lineLimit(1)
@@ -228,7 +229,7 @@ struct Placement {
     var chosen = 0
     /// Marked "Nicht im Regal"; sorting it in lifts that.
     var excluded = false
-    /// Marked "Nicht auffindbar"; sorting it in counts as found.
+    /// Marked "Vermisst"; sorting it in counts as found.
     var missing = false
     /// Name of the deactivated cabinet the record stands in: its shelf isn't
     /// on this page, so there is no spot to show.
@@ -256,7 +257,7 @@ struct Placement {
 struct PlacementCard: View {
     let placement: Placement
     let labels: ShelfLabels
-    /// Copies marked "Nicht auffindbar": no help as a landmark at the shelf.
+    /// Copies marked "Vermisst": no help as a landmark at the shelf.
     let missing: Set<UUID>
     let choose: (Int) -> Void
     let confirm: () -> Void
@@ -278,8 +279,8 @@ struct PlacementCard: View {
                 }
                 if placement.missing && placement.putAwayIn == nil {
                     Label(placement.found
-                          ? "Als nicht auffindbar markiert – hier sollte sie stehen."
-                          : "Als nicht auffindbar markiert – beim Einsortieren gilt sie als gefunden.",
+                          ? "Als vermisst markiert – hier sollte sie stehen."
+                          : "Als vermisst markiert – beim Einsortieren gilt sie als gefunden.",
                           systemImage: "pause.circle")
                         .font(.callout)
                         .foregroundStyle(AppStyle.errorColor)
@@ -339,7 +340,7 @@ struct PlacementCard: View {
     private func neighbours(_ spot: AlphabeticalPlacement.Spot) -> String {
         func title(_ copy: RecordCopy) -> String {
             let text = "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“"
-            let note = missing.contains(copy.id) ? " – nicht auffindbar" : ""
+            let note = missing.contains(copy.id) ? " – vermisst" : ""
             guard let shelf = copy.shelf, shelf.id != spot.shelf.id else { return text + note }
             return text + " (Fach „\(name(shelf))“\(note))"
         }

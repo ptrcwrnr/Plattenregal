@@ -1,3 +1,8 @@
+# „Nicht auffindbar“ heißt jetzt „Vermisst“ · 25.09.2026
+
+- Die Markierung heißt überall „Vermisst“: Etikett, Knöpfe, Menüs, Hinweise, Fehlermeldungen, Protokoll und Dokumentation.
+- Die Übersicht neben der Suche auf der Regalseite zeigt nur noch „Vermisst“ statt der Anzahl („7 nicht auffindbar“); die Liste darin nennt weiter jede Platte.
+
 # Schema V15: nur noch, was die App nutzt · 25.09.2026
 
 - **Neues, in sich vollständiges Schema V15** (leichte Migration von V14). Entfernt, weil nirgends gelesen:
@@ -5,7 +10,7 @@
   - Wantlist-Eintrag: Bewertung, Zeitpunkt des letzten Abgleichs (die Notiz bleibt – sie steht in der Wantlist-Ansicht).
   - Discogs-Ordner und -Konto: Zeitpunkt des letzten Ordner-Abgleichs.
   - Wert-Verlauf: Anzahl verschiedener Releases.
-  - „Nicht im Regal“ und „Nicht auffindbar“: Anlegedatum.
+  - „Nicht im Regal“ und „Vermisst“: Anlegedatum.
   - Das Modell `ReleaseMarketValue` (seit der früheren Einzelpreis-Funktion nie mehr befüllt).
 - Discogs-Abgleich liest Bewertung und Notizfelder der Collection nicht mehr (`DiscogsNote` entfällt); eine geänderte Bewertung zählt nicht mehr als „aktualisiert“.
 - Die älteren Schemata verweisen jetzt ausdrücklich auf ihre eigenen Modellversionen statt auf die globalen Namen, damit sie eingefroren bleiben.
@@ -87,21 +92,21 @@ Gemessen mit einer Sammlung in der Größe der echten (841 Platten, 868 Wantlist
 - **Schnelleres Lesen für Sicherung und Export**: Exemplare werden zusammen mit Release und Fach in einem Rutsch geladen, statt jedes Release einzeln nachzuladen. Gemessen mit 10.000 Platten (Debug): Sicherung erstellen 1,55 s → 0,69 s, Export-Tabelle mit allen Spalten 4,1 s → 3,3 s.
 - Neuer Test für das Aufräumen des Cover-Caches; insgesamt 162 Tests grün.
 
-# Platten als „Nicht auffindbar“ markieren · 24.09.2026
+# Platten als „Vermisst“ markieren · 24.09.2026
 
-Für das Einsortieren: Platten, die laut App in ein Fach gehören, aber gerade nicht auffindbar sind (vermutlich noch in einem Fach, das noch nicht sortiert ist), lassen sich markieren und später wieder als gefunden kennzeichnen. Die Markierung gibt es nur auf der Regalseite; Collection, Statistik und Export bleiben unverändert.
+Für das Einsortieren: Platten, die laut App in ein Fach gehören, aber gerade vermisst werden (vermutlich noch in einem Fach, das noch nicht sortiert ist), lassen sich markieren und später wieder als gefunden kennzeichnen. Die Markierung gibt es nur auf der Regalseite; Collection, Statistik und Export bleiben unverändert.
 
-- **„Platte hinzufügen“**: Jede Zeile hat links neben „+“ einen **Pause-Knopf**. Er stellt die Platte zurück – die Zeile wird blasser und trägt das rote Etikett „Nicht auffindbar“, bleibt aber in der Liste. Ein zweiter Klick („Wieder gefunden“) hebt das auf; wird sie mit „+“ oder Doppelklick einsortiert, gilt sie ebenfalls als gefunden. Die Unterzeile zählt die zurückgestellten Platten in Rot und wird dafür nie abgeschnitten.
-- **Plattentabelle eines Fachs**: Rechtsklick → „Als nicht auffindbar markieren“ bzw. „Wieder gefunden“. Die Platte behält Fach und Position.
-- **Übersicht neben der Suche**: „N nicht auffindbar“ (rot) öffnet eine Liste aller markierten Platten mit Fach bzw. „noch ohne Fach“; je Platte „Im Fach zeigen“ bzw. „Platz im Regal finden“ und „Wieder gefunden“.
-- **Streifen mit den Plattenrücken**: Eine fehlende Platte erscheint als roter Umriss statt als Rücken – genau die Lücke, die im echten Fach zu sehen ist; darunter „· 1 nicht auffindbar“ bzw. das Etikett bei der gewählten Platte.
-- **Suche und Platzsuche**: Treffer tragen das Etikett. Die Karte „Platz im Regal finden“ weist auf die Markierung hin („hier sollte sie stehen“ bzw. „beim Einsortieren gilt sie als gefunden“), „Gefunden“ bzw. „Hier einsortieren“ hebt sie auf. Ist ein Nachbar („zwischen … und …“) selbst nicht auffindbar, steht das dabei – er taugt im Regal nicht zur Orientierung.
+- **„Platte hinzufügen“**: Jede Zeile hat links neben „+“ einen **Pause-Knopf**. Er stellt die Platte zurück – die Zeile wird blasser und trägt das rote Etikett „Vermisst“, bleibt aber in der Liste. Ein zweiter Klick („Wieder gefunden“) hebt das auf; wird sie mit „+“ oder Doppelklick einsortiert, gilt sie ebenfalls als gefunden. Die Unterzeile zählt die zurückgestellten Platten in Rot und wird dafür nie abgeschnitten.
+- **Plattentabelle eines Fachs**: Rechtsklick → „Als vermisst markieren“ bzw. „Wieder gefunden“. Die Platte behält Fach und Position.
+- **Übersicht neben der Suche**: „N vermisst“ (rot) öffnet eine Liste aller markierten Platten mit Fach bzw. „noch ohne Fach“; je Platte „Im Fach zeigen“ bzw. „Platz im Regal finden“ und „Wieder gefunden“.
+- **Streifen mit den Plattenrücken**: Eine fehlende Platte erscheint als roter Umriss statt als Rücken – genau die Lücke, die im echten Fach zu sehen ist; darunter „· 1 vermisst“ bzw. das Etikett bei der gewählten Platte.
+- **Suche und Platzsuche**: Treffer tragen das Etikett. Die Karte „Platz im Regal finden“ weist auf die Markierung hin („hier sollte sie stehen“ bzw. „beim Einsortieren gilt sie als gefunden“), „Gefunden“ bzw. „Hier einsortieren“ hebt sie auf. Ist ein Nachbar („zwischen … und …“) selbst vermisst, steht das dabei – er taugt im Regal nicht zur Orientierung.
 - **Was die Markierung aufhebt**: Einsortieren von Hand (Platte hinzufügen, Platzsuche), „Wieder gefunden“, „Nicht im Regal“, Löschen aus der Sammlung, „Standorte zurücksetzen“ und „Alles zurücksetzen“. Herausnehmen, „Rückgängig“ und Verschieben im Doppelklick-Editor behalten sie – nur wer die Platte einsortiert, hat sie in der Hand. Platten in deaktivierten Regalen oder außerhalb der aktuellen Collection erscheinen nicht in der Liste; ihre Markierung bleibt und ist wieder da, sobald sie es wieder sind.
 - **Sicherung**: Markierungen sind nicht Teil der Sicherungsdatei und bleiben beim Wiederherstellen stehen – außer bei Platten, die die Sicherung auf „Nicht im Regal“ setzt.
-- **Demo**: Eine Platte im Wohnzimmer ist als nicht auffindbar markiert.
+- **Demo**: Eine Platte im Wohnzimmer ist als vermisst markiert.
 - Datenbank-Schema **V13** mit neuem Modell `MissingCopyMark` (nur Exemplar-ID und Zeitpunkt); leichte Migration von V12, bestehende Daten bleiben unverändert.
-- **Fehlermeldungen**: Scheitert das Speichern, heißt es „„Nicht auffindbar“ (bzw. „Wieder gefunden“) konnte nicht gespeichert werden – die Platte ist unverändert …“ statt der allgemeinen Speicher-Meldung; die Datenbank-Ursache steht im Protokoll.
-- **Protokoll**: „Nicht auffindbar“ und „Wieder gefunden“ mit Plattenname; beim Einsortieren „· nicht mehr „Nicht auffindbar““; aufgehobene Markierungen durch „Nicht im Regal“ oder eine wiederhergestellte Sicherung; das Schließen von „Platte hinzufügen“, weil in den Einstellungen Regale geändert wurden.
+- **Fehlermeldungen**: Scheitert das Speichern, heißt es „„Vermisst“ (bzw. „Wieder gefunden“) konnte nicht gespeichert werden – die Platte ist unverändert …“ statt der allgemeinen Speicher-Meldung; die Datenbank-Ursache steht im Protokoll.
+- **Protokoll**: „Vermisst“ und „Wieder gefunden“ mit Plattenname; beim Einsortieren „· nicht mehr „Vermisst““; aufgehobene Markierungen durch „Nicht im Regal“ oder eine wiederhergestellte Sicherung; das Schließen von „Platte hinzufügen“, weil in den Einstellungen Regale geändert wurden.
 
 ## Regalseite, Grenzfall-Prüfung
 

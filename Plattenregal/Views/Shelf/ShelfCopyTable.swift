@@ -14,7 +14,7 @@ nonisolated private struct ShelfCopyItem: Identifiable {
     let genre: String
     /// Not in the current Discogs collection (sold, other account).
     let sold: Bool
-    /// Marked "Nicht auffindbar".
+    /// Marked "Vermisst".
     let missing: Bool
 
     init(_ copy: RecordCopy, owner: String?, missing: Bool) {
@@ -40,7 +40,7 @@ struct ShelfCopyTable: View {
     let shelves: [Shelf]
     let rangeLabels: ShelfLabels
     let owner: String?
-    /// Copies marked "Nicht auffindbar"; part of `signature`, so a mark
+    /// Copies marked "Vermisst"; part of `signature`, so a mark
     /// rebuilds the rows like any other change.
     let missing: Set<UUID>
     let focusCopy: RecordCopy?
@@ -170,7 +170,7 @@ struct ShelfCopyTable: View {
                     if missing.contains(copy.id) {
                         Button("Wieder gefunden") { setMissing(copy, false) }
                     } else {
-                        Button("Als nicht auffindbar markieren") { setMissing(copy, true) }
+                        Button("Als vermisst markieren") { setMissing(copy, true) }
                     }
                     Button("Aus Fach entfernen") { unplace(copy) }
                     // Only for records no longer in the Discogs collection: an
