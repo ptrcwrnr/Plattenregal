@@ -3,8 +3,8 @@ import Observation
 import SwiftData
 
 /// Reloads the Discogs data of single releases right away, fresh or not —
-/// for "Discogs-Daten aktualisieren" on selected records and in the detail
-/// sheet. Everything else arrives with the regular sync.
+/// for "Discogs-Daten aktualisieren" on selected records. Everything else
+/// arrives with the regular sync.
 @Observable final class MetadataRefreshService {
     var busy = false
     var error: String?

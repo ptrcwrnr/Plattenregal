@@ -3,18 +3,15 @@ import SwiftData
 
 struct RecordDetailView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var context
     @Query private var exclusions: [OptimizationExclusion]
     @Query private var shelves: [Shelf]
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
-    @Query private var folders: [DiscogsFolder]
     let copy: RecordCopy
     /// The calling page's current labels; computed here (once) without them.
     var labels: ShelfLabels? = nil
     var showShelf: (() -> Void)?
     @State private var labelCache = ShelfLabelCache()
     @State private var editing = false
-    @State private var refresh = MetadataRefreshService()
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -26,20 +23,11 @@ struct RecordDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                     if let r = copy.release {
-                        ReleaseHeaderView(release: r, collectionStatus: collectionStatus)
+                        ReleaseHeaderView(release: r, removedFromDiscogs: !copy.discogsActive)
                     }
                     locationCard
-                    if let r = copy.release {
-                        if !r.isFresh && !DemoMode.isActive {
-                            // Just this release — `refresh` would start a sync of the whole collection.
-                            GhostButton(title: "Discogs-Daten aktualisieren") { Task { await refresh.reload([r], context: context) } }
-                                .disabled(refresh.busy || DiscogsSyncService.shared.busy)
-                        }
-                        if !r.tracks.isEmpty { TracklistView(tracks: r.tracks) }
-                    }
-                    if let error = refresh.error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
+                    if let r = copy.release, !r.tracks.isEmpty { TracklistView(tracks: r.tracks) }
                 }.padding(AppStyle.pagePadding)
-                .animation(AppStyle.standardAnimation, value: refresh.error)
             }
         }.frame(width: 800, height: 760)
         .appGlassSurface(cornerRadius: 0)
@@ -72,19 +60,10 @@ struct RecordDetailView: View {
         .padding(AppStyle.cardPadding + 4)
         .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
     }
-
-    private var collectionStatus: String {
-        copy.discogsActive ? "Discogs-Ordner „\(folderName)“" : "Nicht mehr in der Discogs-Collection"
-    }
-    private var folderName: String {
-        guard let id = copy.discogsFolderID else { return "Unbekannt" }
-        return folders.first { $0.folderID == id && $0.owner == copy.discogsOwner }?.name
-            ?? (id == 1 ? "Uncategorized" : "Ordner \(id)")
-    }
 }
 struct ReleaseHeaderView: View {
     let release: Release
-    let collectionStatus: String
+    let removedFromDiscogs: Bool
     var body: some View {
         HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
             CoverView(url: release.coverURL, size: 220)
@@ -96,7 +75,7 @@ struct ReleaseHeaderView: View {
                 Text(release.catalogNumber).foregroundStyle(.secondary)
                 Text(release.genres.joined(separator: " · "))
                 Text(release.styles.joined(separator: " · ")).foregroundStyle(.secondary)
-                Text(collectionStatus).foregroundStyle(.secondary)
+                if removedFromDiscogs { Text("Nicht mehr in der Discogs-Collection").foregroundStyle(.secondary) }
                 if let url = release.sourceURL { Link("Pressung auf Discogs öffnen ↗", destination: url) }
             }
         }
