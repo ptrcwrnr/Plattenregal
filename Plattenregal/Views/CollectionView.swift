@@ -3,7 +3,8 @@ import SwiftData
 import AppKit
 
 struct CollectionView: View {
-    @Environment(\.isActivePage) private var isActivePage
+    /// Shown or not, without re-rendering the grid on every page switch.
+    @State private var activity = PageActivity()
     @Environment(\.modelContext) private var context
     @Query private var copies: [RecordCopy]
     @Query(sort: \Shelf.number) private var shelves: [Shelf]
@@ -13,28 +14,31 @@ struct CollectionView: View {
     @State private var excludedIDs: Set<UUID> = []
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
-    // nil in the statistics drill-down sheet, which has no section picker.
-    private let section: Binding<OverviewSection>?
+    // The overview's section switch; nil in the statistics drill-down sheet,
+    // which has no section picker.
+    private let sections: PageSelection<OverviewSection>?
     // Search lives in this page's own header bar. In the overview it is shared
     // by all sections (see OverviewView); the statistics sheet keeps its own.
-    private let sharedQuery: Binding<String>?
+    // Objects, read directly: this page is built once (see `PageStack`), and a
+    // binding handed in would keep the value it had then.
+    private let search: OverviewSearch?
     @State private var localQuery = ""
-    /// Whether ⌘F has revealed the search bar; shared by the overview sections.
-    /// nil in the statistics sheet, where the field always sits in the header.
-    private let searchPresented: Binding<Bool>?
     @FocusState private var searchFocused: Bool
+    /// The search bar ⌘F reveals; the statistics sheet shows its field always.
     private var showsSearchBar: Bool {
-        guard let searchPresented else { return false }
-        return searchPresented.wrappedValue || !query.isEmpty
+        guard let search else { return false }
+        return search.isPresented || !search.query.isEmpty
     }
-    private var queryBinding: Binding<String> { sharedQuery ?? $localQuery }
-    private var query: String { queryBinding.wrappedValue }
+    private var queryBinding: Binding<String> { search.map { Bindable($0).query } ?? $localQuery }
+    private var query: String { search?.query ?? localQuery }
+
     @Query private var wantlistEntries: [WantlistEntry]
     /// Search hits in the wantlist, for the hint next to the count.
     @State private var wantlistMatches = 0
     let showShelf: (RecordCopy) -> Void
     var analyticsFilter: StatisticGroup? = nil
-    @Binding private var savedScrollPosition: UUID?
+    /// Kept for as long as the page lives (see `PageStack`), so a section
+    /// switch or another page doesn't lose the place.
     @State private var scrollPosition: UUID?
     @AppStorage(DisplaySettings.collectionLayoutKey) private var layout = OverviewLayout.grid
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
@@ -69,20 +73,15 @@ struct CollectionView: View {
     @State private var error: String?
 
     init(
-        section: Binding<OverviewSection>? = nil,
-        query: Binding<String>? = nil,
-        searchPresented: Binding<Bool>? = nil,
+        sections: PageSelection<OverviewSection>? = nil,
+        search: OverviewSearch? = nil,
         showShelf: @escaping (RecordCopy) -> Void,
-        analyticsFilter: StatisticGroup? = nil,
-        scrollPosition: Binding<UUID?> = .constant(nil)
+        analyticsFilter: StatisticGroup? = nil
     ) {
-        self.section = section
-        self.sharedQuery = query
-        self.searchPresented = searchPresented
+        self.sections = sections
+        self.search = search
         self.showShelf = showShelf
         self.analyticsFilter = analyticsFilter
-        _savedScrollPosition = scrollPosition
-        _scrollPosition = State(initialValue: scrollPosition.wrappedValue)
     }
 
     // Cached so that unrelated re-renders (e.g. the card-frame tracking below,
@@ -142,7 +141,7 @@ struct CollectionView: View {
     }
 
     private func refreshLabels() {
-        guard isActivePage else { labelsPending = true; return }
+        guard activity.isActive else { labelsPending = true; return }
         labelsPending = false
         shelfLabels = ShelfRangeLabels.compute(for: shelves, style: labelStyle)
     }
@@ -159,7 +158,7 @@ struct CollectionView: View {
         }
         normalizeGridScrollPosition(in: grouped)
         alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
-        wantlistMatches = section == nil || words.isEmpty ? 0
+        wantlistMatches = sections == nil || words.isEmpty ? 0
             : currentWantlist.reduce(0) { $0 + (wantlistIndex.matches($1.persistentModelID, words) ? 1 : 0) }
     }
 
@@ -171,7 +170,7 @@ struct CollectionView: View {
     }
 
     private func rebuildWantlistIndex() {
-        guard section != nil else { return }
+        guard sections != nil else { return }
         let entries = currentWantlist
         wantlistIndex = SearchIndex(entries, id: \.persistentModelID, text: WantlistPresentation.searchText)
         wantedReleaseIDs = Set(entries.map(\.releaseID))
@@ -202,14 +201,14 @@ struct CollectionView: View {
                     .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
-            if showsSearchBar, let section {
+            if showsSearchBar, let sections {
                 OverviewSearchControl(
                     placeholder: "Collection durchsuchen",
                     query: queryBinding,
                     focus: $searchFocused,
                     otherCount: wantlistMatches,
                     otherSection: .wantlist
-                ) { section.wrappedValue = .wantlist }
+                ) { sections.current = .wantlist }
                 .padding(.horizontal, AppStyle.pagePadding + 4)
                 .padding(.trailing, alphabetGutter)
                 .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
@@ -278,7 +277,7 @@ struct CollectionView: View {
                                                     copy: copy,
                                                     copyCount: group.copies.count,
                                                     selected: group.copies.contains { selection.contains($0.id) } || quickLook == copy.id,
-                                                    placement: !searching || section == nil ? nil : PlacementBadge(
+                                                    placement: !searching || sections == nil ? nil : PlacementBadge(
                                                         inCollection: true,
                                                         inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false
                                                     )
@@ -396,7 +395,7 @@ struct CollectionView: View {
         // The sync status line slides in/out and the content below follows smoothly.
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .animation(AppStyle.standardAnimation, value: showsSearchBar)
-        .searchReveal(isPresented: searchPresented ?? .constant(false), focus: $searchFocused, query: query)
+        .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
@@ -427,23 +426,14 @@ struct CollectionView: View {
         // Debounced, and only for the visible section — the hidden ones
         // share the query but catch up when they're shown again.
         .task(id: query) {
-            guard isActivePage else { queryPending = true; return }
+            guard activity.isActive else { queryPending = true; return }
             try? await Task.sleep(for: .milliseconds(120))
             guard !Task.isCancelled else { return }
             applyQuery(animated: true)
         }
-        .onChange(of: isActivePage) { _, active in
+        .trackPageActivity(activity) { active in
             if active && labelsPending { refreshLabels() }
             if active && queryPending { applyQuery() }
-        }
-        .onAppear {
-            if scrollPosition == nil { scrollPosition = savedScrollPosition }
-        }
-        .onDisappear {
-            // Keep fast, per-frame scroll state inside this page. Writing every
-            // visible item back into RootView would rebuild the complete
-            // NavigationSplitView continuously while the user scrolls.
-            savedScrollPosition = scrollPosition
         }
     }
 
@@ -594,8 +584,8 @@ struct CollectionView: View {
     // statistics sheet (no sections) the search stays here, always shown.
     private func collectionControls(items: [RecordCopy]) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            if let section {
-                OverviewSectionPicker(selection: section)
+            if let sections {
+                OverviewSectionPicker(selection: sections)
             } else {
                 AppSearchField(placeholder: "Collection durchsuchen", text: queryBinding)
                     .frame(maxWidth: 380)
@@ -795,26 +785,27 @@ struct OverviewSearchControl: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
-            AppSearchField(placeholder: placeholder, text: $query, focus: focus)
-                .frame(maxWidth: .infinity)
-            if showsOtherSection {
-                Button(action: openOtherSection) {
-                    Text("\(otherCount) in der \(otherSection.rawValue)")
-                        .monospacedDigit()
-                        .lineLimit(1)
-                        .padding(.horizontal, 12)
-                        .frame(height: AppStyle.controlHeight)
-                        .foregroundStyle(.secondary)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 6)
-                                .strokeBorder(Color.primary.opacity(0.22), lineWidth: 1)
-                        }
+        // One glass container: the result button flows out of the search bar.
+        GlassEffectContainer(spacing: AppStyle.itemSpacing) {
+            HStack(spacing: AppStyle.itemSpacing) {
+                AppSearchField(placeholder: placeholder, text: $query, focus: focus)
+                    .frame(maxWidth: .infinity)
+                if showsOtherSection {
+                    Button(action: openOtherSection) {
+                        Text("\(otherCount) in der \(otherSection.rawValue)")
+                            .monospacedDigit()
+                            .lineLimit(1)
+                            .padding(.horizontal, 14)
+                            .frame(height: AppStyle.searchBarHeight)
+                            .foregroundStyle(.secondary)
+                            .contentShape(Capsule())
+                            .glassEffect(.regular.interactive(), in: .capsule)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Treffer in der \(otherSection.rawValue) anzeigen")
+                    .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.rawValue) anzeigen")
+                    .transition(.opacity)
                 }
-                .buttonStyle(.plain)
-                .help("Treffer in der \(otherSection.rawValue) anzeigen")
-                .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.rawValue) anzeigen")
-                .transition(.opacity)
             }
         }
         .font(.callout)

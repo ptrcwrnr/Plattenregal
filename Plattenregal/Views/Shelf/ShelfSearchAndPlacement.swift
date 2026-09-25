@@ -48,12 +48,10 @@ struct ShelfSearchField: View {
             }
         }
         .font(.callout)
-        .padding(.horizontal, 10)
-        .frame(height: AppStyle.controlHeight)
-        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
+        .searchBarChrome()
         .overlay(alignment: .topLeading) {
             if Self.hasWords(text) && Self.hasWords(query) {
-                results.offset(y: AppStyle.controlHeight + 6)
+                results.offset(y: AppStyle.searchBarHeight + 6)
                     // Still the previous query's matches while typing pauses.
                     .opacity(query == text ? 1 : 0.6)
                     .animation(AppStyle.quickAnimation, value: query == text)

@@ -4,6 +4,15 @@ import SwiftData
 /// The shelf page as one calm column: a slim header bar (search after ⌘F, status), the
 /// KALLAX drawn as a single piece of furniture, and the selected compartment
 /// underneath at full width (spine strip, then a compact table of its records).
+/// What other pages ask of the shelf page. An object, not a binding: pages
+/// live in separate hosting views (see `PageStack`), and only Observation
+/// reaches across.
+@Observable final class ShelfRequests {
+    /// A record to show: where it stands and between which records, or –
+    /// without a shelf – where it belongs.
+    var placing: UUID?
+}
+
 struct KallaxView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Shelf.number) private var allShelves: [Shelf]
@@ -12,10 +21,11 @@ struct KallaxView: View {
     @Query private var exclusions: [OptimizationExclusion]
     @Query private var missingMarks: [MissingCopyMark]
     @Query private var accounts: [DiscogsAccount]
-    @Binding var highlight: UUID?
-    /// Set from elsewhere ("Platz im Regal finden") to show where a record
-    /// without a shelf belongs; taken over into `placement` right away.
-    @Binding var placing: UUID?
+    /// The compartment selected in the rack.
+    @State private var highlight: UUID?
+    /// "Im Regal anzeigen" / "Platz im Regal finden" from other pages; taken
+    /// over into `placement` right away.
+    let requests: ShelfRequests
     /// The record being sorted in and the spots it fits alphabetically.
     @State private var placement: Placement?
     @State private var showsShelfOptions = false
@@ -30,6 +40,9 @@ struct KallaxView: View {
     @State private var recentUnplace: UnplacedCopy?
     @State private var pendingDelete: RecordCopy?
     @State private var confirmRemoveSold = false
+    /// Count for the question, taken when it is asked – `soldInShelves` walks
+    /// the whole collection and must not run on every rebuild of the page.
+    @State private var soldToRemove = 0
     @State private var sortingShelf: Shelf?
     @State private var error: String?
 
@@ -248,7 +261,7 @@ struct KallaxView: View {
         .onChange(of: changes.libraryVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onChange(of: changes.tracksVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onAppear { takePlacingRequest() }
-        .onChange(of: placing) { takePlacingRequest() }
+        .onChange(of: requests.placing) { takePlacingRequest() }
         // Marks change without touching `statsSignature` (menu, table, sheet).
         .onChange(of: missingIDs) { refreshPlacement() }
         // Settings (other window) rebuilt cabinets, restored a backup or reset
@@ -269,7 +282,7 @@ struct KallaxView: View {
             ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id])
         }
         .confirmationDialog(
-            soldInShelves.count == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldInShelves.count) Platten ohne Collection aus dem Regal nehmen?",
+            soldToRemove == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldToRemove) Platten ohne Collection aus dem Regal nehmen?",
             isPresented: $confirmRemoveSold
         ) {
             Button("Aus Regal nehmen") { removeSoldFromShelves() }
@@ -363,10 +376,12 @@ struct KallaxView: View {
     /// The search bar (only after ⌘F) and the status controls beside it;
     /// nothing at all when neither is there, so the rack moves up.
     @ViewBuilder private var header: some View {
+        // Both walk the whole collection: once per body, not per use.
         let missing = missingCopies
-        let hasStatus = !missing.isEmpty || !soldInShelves.isEmpty
+        let sold = soldInShelves.count
+        let hasStatus = !missing.isEmpty || sold > 0
         if showsSearchBar || hasStatus {
-            HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
+            HStack(alignment: .center, spacing: AppStyle.rowSpacing) {
                 if showsSearchBar {
                     ShelfSearchField(
                         query: $searchQuery,
@@ -388,8 +403,8 @@ struct KallaxView: View {
                     MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
                                          found: { setMissing($0, false) })
                 }
-                if !soldInShelves.isEmpty {
-                    ShelfStatusControl(soldInShelves: soldInShelves.count, removeSold: { confirmRemoveSold = true })
+                if sold > 0 {
+                    ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
                         .frame(height: AppStyle.controlHeight)
                 }
             }
@@ -608,8 +623,8 @@ struct KallaxView: View {
     // MARK: Placement
 
     private func takePlacingRequest() {
-        guard let id = placing else { return }
-        placing = nil
+        guard let id = requests.placing else { return }
+        requests.placing = nil
         if let copy = allCopies.first(where: { $0.id == id }) { startPlacement(copy) }
     }
 

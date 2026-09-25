@@ -76,7 +76,8 @@ extension EnvironmentValues {
 /// their title.
 struct StatisticsView: View {
     @Environment(\.modelContext) private var context
-    @Environment(\.isActivePage) private var isActivePage
+    /// Shown or not, without re-rendering every card on each page switch.
+    @State private var activity = PageActivity()
     /// Something was saved while the page was hidden; reload when it's shown.
     @State private var stale = false
     let model: StatisticsViewModel
@@ -138,7 +139,7 @@ struct StatisticsView: View {
             // Hidden (e.g. while sorting records on the shelf page): don't
             // recompute the whole collection after every single move — once
             // when the page is shown again is enough.
-            guard isActivePage else { stale = true; return }
+            guard activity.isActive else { stale = true; return }
             reloadTask?.cancel()
             reloadTask = Task {
                 do { try await Task.sleep(for: .milliseconds(250)) } catch { return }
@@ -148,7 +149,7 @@ struct StatisticsView: View {
         // Token stored or removed in the settings window: this page stays
         // shown meanwhile, so it wouldn't notice on its own.
         .onChange(of: DiscogsSyncService.shared.tokenRevision) { _, _ in model.updateTokenState() }
-        .onChange(of: isActivePage) { _, active in
+        .trackPageActivity(activity) { active in
             if active { model.updateTokenState() }
             guard active, stale else { return }
             stale = false

@@ -148,15 +148,17 @@ struct WantlistView: View {
     @Query private var entries: [WantlistEntry]
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
-    /// Shared with the other overview sections (see OverviewView).
-    @Binding var query: String
-    /// Whether ⌘F has revealed the search bar; shared like `query`.
-    @Binding var searchPresented: Bool
+    /// Shared with the other overview sections (see OverviewView). An object,
+    /// read directly: this page is built once (see `PageStack`), and a binding
+    /// handed in would keep the value it had then.
+    let search: OverviewSearch
+    private var query: String { search.query }
     @FocusState private var searchFocused: Bool
-    private var showsSearchBar: Bool { searchPresented || !query.isEmpty }
+    private var showsSearchBar: Bool { search.isPresented || !search.query.isEmpty }
     @Query private var copies: [RecordCopy]
     @Query private var accounts: [DiscogsAccount]
-    @Environment(\.isActivePage) private var isActivePage
+    /// Shown or not, without re-rendering the list on every page switch.
+    @State private var activity = PageActivity()
     /// Search hits in the collection, for the hint next to the count.
     @State private var collectionMatches = 0
     // Same two stages as the collection: sort and index on data changes,
@@ -181,7 +183,7 @@ struct WantlistView: View {
     @State private var visibleEntries: [WantlistEntry] = []
     @State private var alphabetIndex: [String: PersistentIdentifier] = [:]
     @State private var scrollPosition: PersistentIdentifier?
-    @Binding var section: OverviewSection
+    let sections: PageSelection<OverviewSection>
 
     /// Same margins as the collection (see CollectionView).
     private var pageMargin: CGFloat { AppStyle.pagePadding + 4 }
@@ -200,11 +202,11 @@ struct WantlistView: View {
             if showsSearchBar {
                 OverviewSearchControl(
                     placeholder: "Wantlist durchsuchen",
-                    query: $query,
+                    query: Bindable(search).query,
                     focus: $searchFocused,
                     otherCount: collectionMatches,
                     otherSection: .collection
-                ) { section = .collection }
+                ) { sections.current = .collection }
                 .padding(.horizontal, pageMargin)
                 .padding(.trailing, alphabetGutter)
                 .transition(AppStyle.funnelTransition())
@@ -255,7 +257,7 @@ struct WantlistView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .animation(AppStyle.standardAnimation, value: showsSearchBar)
-        .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: query)
+        .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: query)
         .task { rebuildCollectionIndex(); rebuild() }
         .onChange(of: entries) { _, _ in rebuild() }
         .onChange(of: copies) { _, _ in rebuildCollectionIndex(); applyQuery() }
@@ -268,12 +270,12 @@ struct WantlistView: View {
             if !query.isEmpty { applyQuery() }
         }
         .task(id: query) {
-            guard isActivePage else { queryPending = true; return }
+            guard activity.isActive else { queryPending = true; return }
             try? await Task.sleep(for: .milliseconds(120))
             guard !Task.isCancelled else { return }
             applyQuery(animated: true)
         }
-        .onChange(of: isActivePage) { _, active in if active && queryPending { applyQuery() } }
+        .trackPageActivity(activity) { active in if active && queryPending { applyQuery() } }
     }
 
     /// Only the current account, as in the collection (see CollectionView).
@@ -381,7 +383,7 @@ struct WantlistView: View {
 
     private var header: some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            OverviewSectionPicker(selection: $section)
+            OverviewSectionPicker(selection: sections)
             Spacer(minLength: AppStyle.rowSpacing)
             OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation), iconOnly: true)
         }

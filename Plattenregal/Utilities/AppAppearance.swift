@@ -10,6 +10,8 @@ enum AppStyle {
     static let pagePadding: CGFloat = 24
     /// Height of every header-bar control, matching the segmented pickers.
     static let controlHeight: CGFloat = 26
+    /// Search bars (Liquid Glass capsule, see `searchBarChrome`).
+    static let searchBarHeight: CGFloat = 34
     static let cardPadding: CGFloat = 16
     static let sectionSpacing: CGFloat = 20
     static let rowSpacing: CGFloat = 12
@@ -158,8 +160,8 @@ struct IconButton: View {
     }
 }
 
-/// One search-field chrome for the whole app: icon, text field, clear button
-/// on a slim, quiet fill (same look as the search on the shelf page).
+/// One search field for the whole app: icon, text field, clear button in a
+/// Liquid Glass capsule (same look as the search on the shelf page).
 struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
@@ -187,13 +189,29 @@ struct AppSearchField: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 10)
-        .frame(height: AppStyle.controlHeight)
-        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
+        .searchBarChrome()
     }
 
     @ViewBuilder private func focusable(_ field: some View) -> some View {
         if let focus { field.focused(focus) } else { field }
+    }
+}
+
+/// ⌘F presses (and the search button in the toolbar), counted. One object
+/// for the window, handed to every page (see `PageStack`); the page shown
+/// answers each request by revealing its search (see `SearchReveal`).
+@Observable final class SearchRequests {
+    private(set) var count = 0
+    func request() { count += 1 }
+}
+
+private struct SearchRequestsKey: EnvironmentKey {
+    static let defaultValue: SearchRequests? = nil
+}
+extension EnvironmentValues {
+    var searchRequests: SearchRequests? {
+        get { self[SearchRequestsKey.self] }
+        set { self[SearchRequestsKey.self] = newValue }
     }
 }
 
@@ -202,17 +220,18 @@ struct AppSearchField: View {
 /// it holds a query and goes away again once it is empty and loses the focus
 /// (Esc, clicking elsewhere, another page).
 struct SearchReveal: ViewModifier {
-    @Environment(\.isActivePage) private var isActivePage
-    @Environment(\.searchRequest) private var searchRequest
+    @Environment(\.pageVisibility) private var visibility
+    @Environment(\.searchRequests) private var searchRequests
     @Binding var isPresented: Bool
     var focus: FocusState<Bool>.Binding
     let query: String
 
     func body(content: Content) -> some View {
-        content
-            .onChange(of: searchRequest) {
+        let pageShown = visibility?.isShown ?? true
+        return content
+            .onChange(of: searchRequests?.count ?? 0) {
                 // Every page hears the request; only the visible one answers.
-                guard isActivePage else { return }
+                guard pageShown else { return }
                 withAnimation(AppStyle.standardAnimation) { isPresented = true }
                 // The field is inserted by this update; focus it once it exists.
                 DispatchQueue.main.async { focus.wrappedValue = true }
@@ -220,7 +239,7 @@ struct SearchReveal: ViewModifier {
             .onChange(of: focus.wrappedValue) { _, focused in if !focused { hideIfEmpty() } }
             // Cleared from outside (e.g. picking a result) while not typing.
             .onChange(of: query) { _, new in if new.isEmpty && !focus.wrappedValue { hideIfEmpty() } }
-            .onChange(of: isActivePage) { _, active in if !active { hideIfEmpty() } }
+            .onChange(of: pageShown) { _, shown in if !shown { hideIfEmpty() } }
     }
 
     private func hideIfEmpty() {
@@ -230,6 +249,13 @@ struct SearchReveal: ViewModifier {
 }
 
 extension View {
+    /// The Liquid Glass capsule every search bar sits in.
+    func searchBarChrome() -> some View {
+        padding(.horizontal, 12)
+            .frame(height: AppStyle.searchBarHeight)
+            .glassEffect(.regular.interactive(), in: .capsule)
+    }
+
     /// See `SearchReveal`. Show the search while `isPresented || !query.isEmpty`.
     func searchReveal(isPresented: Binding<Bool>, focus: FocusState<Bool>.Binding, query: String) -> some View {
         modifier(SearchReveal(isPresented: isPresented, focus: focus, query: query))
