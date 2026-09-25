@@ -43,6 +43,12 @@ Innerhalb eines Exemplars werden identische Genre-, Style-, Künstler- und Label
 
 Die Berechnung läuft im Hintergrund: SwiftData-Objekte werden auf dem Main Actor in einfache Werte überführt, die Auswertung selbst läuft außerhalb davon, damit große Sammlungen die Oberfläche nicht blockieren.
 
+## Aktualisierung und Zurücksetzen
+
+Die Seite liest ihre Platten in einem eigenen Datenbank-Kontext und rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern – solange die Seite verborgen ist, erst beim nächsten Anzeigen. Eine Platte, die von hier aus geöffnet wird, holt die Detailansicht in den Kontext des Hauptfensters, damit Bearbeitungen dort gespeichert werden.
+
+Ein eigener Kontext erfährt nicht, dass Platten anderswo gelöscht wurden. Nach **Alles zurücksetzen** lässt die Statistik deshalb sofort alle Platten los (`StatisticsViewModel.forget`), schließt offene Detail- und Filterfenster und lädt neu, samt Konto. Vorher konnte das Nachladen von Fach oder Release einer gelöschten Platte die App zum Absturz bringen. Test: `StatisticsTests.statisticsForgetTheirRecordsOnReset`.
+
 ## Dateien
 
 | Datei | Aufgabe |
@@ -55,7 +61,7 @@ Die Berechnung läuft im Hintergrund: SwiftData-Objekte werden auf dem Main Acto
 | `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
-| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V13 |
+| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V13, Verhalten beim Zurücksetzen (28 Tests) |
 
 Das Modell `ReleaseMarketValue` stammt aus der früheren Einzelpreis-Funktion. Es bleibt im Datenbankschema, damit bestehende Datenbanken ohne Migration weiter öffnen, wird aber nicht mehr befüllt; „Alles zurücksetzen“ leert es.
 

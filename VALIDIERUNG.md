@@ -1,4 +1,41 @@
-# Aktueller Stand · 25.09.2026 (Laufzeit-Messungen)
+# Aktueller Stand · 25.09.2026 (Robustheitsprüfung und Aufräumen)
+
+Stand nach drei Prüfrunden auf Robustheit, dem Entfernen von totem Code und dem Aufteilen der großen Views (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Gesamte Testsuite: **167 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`).
+- Debug- und Release-Build (`-configuration Release`): erfolgreich, **keine Compiler-Warnungen**.
+- Build-Einstellungen: Swift 6, `SWIFT_STRICT_CONCURRENCY = complete`, `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, App-Sandbox mit ausgehendem Netz und vom Nutzer gewählten Dateien.
+
+| Testdatei | Tests | Schwerpunkt |
+|---|---|---|
+| `LibraryTests.swift` | 49 | Positionen, Sortierung, Suche, Speicherung, Fehlermeldungen, Absturz-Auswertung, Discogs-Mapping, Demo-Sammlung |
+| `DiscogsSyncTests.swift` | 33 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration |
+| `StatisticsTests.swift` | 28 | Auswertungen, Wertverlauf, Migrationen, Zurücksetzen |
+| `CabinetTests.swift` | 15 | Mehrere Regale, Größenänderung, Zurücksetzen, Einzelinstanz-Sperre |
+| `SettingsTests.swift` | 15 | Discogs-Token speichern, testen, abbrechen und entfernen; Reihenfolge der Statistik |
+| `BackupTests.swift` | 13 | Sichern, Wiederherstellen, Aufbewahrung, Dateinamen |
+| `ExportTests.swift` | 8 | CSV (Maskierung, BOM, Formel-Schutz), Reihenfolge, Spalten, PDF |
+| `ScenarioTests.swift` | 6 | Abläufe gegen die echten Services: ohne Netz, Bremse, gelöschte Fächer, 10.000 Platten |
+
+- Neu:
+  - `CabinetTests.deleteLibraryLeavesAFreshStoreInOneGo` – „Alles zurücksetzen“ leert die Datenbank in einem Speichervorgang und legt das erste Regal neu an; keine offenen Änderungen bleiben zurück. (Getestet wird der Datenbankteil `deleteLibrary`; `resetEverything` löscht zusätzlich den echten Token und die echten Einstellungen und bleibt deshalb ungetestet.)
+  - `CabinetTests.secondInstanceDoesNotOpenALockedStore` – hält eine andere Instanz die Sperrdatei, wird die Sammlung nicht geöffnet (`StorageError.alreadyOpen`).
+  - `StatisticsTests.statisticsForgetTheirRecordsOnReset` – nach dem Zurücksetzen hält das Statistik-Modell keine Platte mehr.
+  - `LibraryTests.artistLineFollowsDiscogsJoins` – „Moby, Kid“, „A & B“, „A Feat. B“; leere und fehlende Trennzeichen.
+- Umgestellt: Die Suchtests prüfen jetzt `SearchIndex`, den Weg der App, statt eigener nur für Tests vorhandener Suchfunktionen; die Token-Tests laufen über `startTest()` und `cancelTest()` wie die Einstellungen.
+- **Absturz nachgewiesen und behoben** (vorübergehender Probe-Test, danach entfernt): Ein Exemplar, das ein zweiter Datenbank-Kontext geladen hat, bringt SwiftData nach dem Löschen im Hauptkontext beim Zugriff auf sein Release zum Absturz („This model instance was invalidated because its backing data could no longer be found the store“). Im selben Kontext und bei bereits geladenen Daten (Wantlist nach einem Sync) passiert nichts. Betroffen war die Statistik nach „Alles zurücksetzen“.
+- Toter Code: eigene Suche nach Deklarationen ohne Verwendung (ohne Kommentare, auch qualifiziert als `Typ.member`); übrig sind nur Protokoll-Pflichtmethoden und der App-Einstiegspunkt.
+- Beim Aufteilen der Views maschinell geprüft, dass der Inhalt Zeile für Zeile erhalten blieb (nur `private` bei dateiübergreifend genutzten Typen entfernt).
+
+## Nicht geprüft (dieser Durchgang)
+
+- In der laufenden App nicht angeklickt – weder die Regalseite nach dem Umbau der Neuberechnung noch Statistik und Regal nach „Alles zurücksetzen“ noch die Hinweisseite einer zweiten Instanz. Die Logik dahinter ist über Tests und Code-Durchsicht abgedeckt.
+- Kein echter Abgleich mit Discogs; die korrigierten Interpretennamen („A, B“ statt „A , B“) erscheinen in der eigenen Sammlung erst mit dem nächsten Sync.
+- Der Absturz-Handler nach einem Protokollwechsel während der Sitzung wurde nicht mit einem echten Absturz ausgelöst.
+
+# Vorheriger Stand · 25.09.2026 (Laufzeit-Messungen)
 
 ## Ergebnis
 
@@ -7,7 +44,7 @@
 - 10.000 Platten (Debug): Sortieren 1,58 → 1,29 s, Platz finden 531 → 115 ms, Export-Tabelle 3,2 → 1,5 s; der Rest entfällt in diesem Test auf das erstmalige Laden der Releases.
 - Ursachen per Time Profiler (Instruments) belegt: SwiftData-Lesezugriffe in Sortier-Vergleichen und einzeln nachgeladene Releases nach jedem Neuladen der Exemplare.
 
-# Vorheriger Stand · 24.09.2026 („Nicht auffindbar“ und Regalseite)
+# Älterer Stand · 24.09.2026 („Nicht auffindbar“ und Regalseite)
 
 Stand nach der neuen Markierung „Nicht auffindbar“ und vier Prüfungen der Regalseite auf Grenzfälle (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 

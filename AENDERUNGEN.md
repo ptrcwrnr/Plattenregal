@@ -1,3 +1,37 @@
+# Interpretennamen, einheitliches Discogs-Mapping, Laufmarkierung · 25.09.2026
+
+- **Interpretennamen**: Aus Discogs' Trennzeichen „,“ wurde „Moby , Kid“; ein leeres oder fehlendes Trennzeichen ergab doppelte Leerzeichen. Jetzt „Moby, Kid“ – ein Komma steht direkt am Namen, jedes andere Trennzeichen („&“, „Feat.“, „Vs.“) zwischen Leerzeichen, ein fehlendes gilt als Komma (`DiscogsBasicInformation.artistLine`). Die eigene Sammlung übernimmt das beim nächsten Sync.
+- **Ein Weg für Sync und Einzel-Nachladen**: „Discogs-Daten aktualisieren“ setzte Interpret, Label, Format und Cover mit einer eigenen Kopie der Sync-Logik und wählte das Cover anders. Jetzt nutzt es `DiscogsBasicInformation.apply` und ergänzt nur Tracklist und Land; das Cover ist in beiden Fällen das Hauptbild.
+- **Laufmarkierung**: Eine zweite Instanz, die die Sammlung nicht öffnen darf, überschrieb die Markierung „App läuft“ der ersten und löschte sie beim Beenden – ein späterer Stromausfall der ersten wäre beim nächsten Start nicht gemeldet worden. Die Markierung geht jetzt an die laufende Instanz zurück.
+- `StorageError` („Plattenregal ist bereits geöffnet“) ist als nutzerlesbarer Fehler eingeordnet und im Fehlermeldungs-Test enthalten.
+
+# Absturz der Statistik nach „Alles zurücksetzen“, toter Code entfernt · 25.09.2026
+
+- **Absturz behoben**: Die Statistik hält ihre Platten in einem eigenen Datenbank-Kontext, der vom Löschen anderswo nichts erfährt. Nach „Alles zurücksetzen“ brachte das Nachladen von Fach oder Release einer dieser Platten SwiftData zum Absturz – mit einem Probe-Test nachgewiesen. Das Statistik-Modell lässt jetzt beim Zurücksetzen sofort alle Platten los, die Seite schließt offene Detail- und Filterfenster und lädt neu.
+- **Toter Code entfernt** (281 Zeilen weniger, 185 neu):
+  - Fehlerbanner im Hauptfenster, das nur durch seinen eigenen „Erneut versuchen“-Knopf ausgelöst werden konnte – samt einer Abfrage über alle Releases bei jedem Neuzeichnen.
+  - Die Sync-Variante für ein einzelnes Release (wurde nie gestartet) mit ihren Zweigen beim Laden, Speichern und in der Statusmeldung.
+  - Die Sortierung nach Jahr: Sortiert wird nur alphabetisch (`SortingService.sorted(_:)`, `PositionService.sortAlphabetically(_:)`).
+  - Nur von Tests genutzte Funktionen – zwei eigene Suchfunktionen, eine Filterhülle für „Platte hinzufügen“, ein zweiter Einstieg für den Token-Test. Die Tests prüfen jetzt die Wege der App (`SearchIndex`, `candidates`, `startTest`).
+  - Zwei ungenutzte Stil-Modifier, ein nie gesetzter Umgebungswert, ein ungenutzter Vorschau-Container, überflüssige Variablen.
+- `DiscogsSearchModel.swift` enthielt kein Suchmodell mehr und heißt jetzt `MetadataRefreshService.swift` und `DiscogsSettingsModel.swift`. Die Titel der Discogs-Notizfelder gehören zum Datentyp (`DiscogsNote.fieldTitle`) statt zur Detailansicht, aus der der Export sie bisher holte.
+
+# Große Views aufgeteilt · 25.09.2026
+
+- `AppSettingsView.swift` (1.725 Zeilen) → `Views/Settings/`, eine Datei pro Tab.
+- `KallaxView.swift` (2.611 Zeilen) → `Views/Shelf/`: Seite, Suche und Einsortieren, Regalbild, Fach-Tabelle, Fachoptionen, „Platte hinzufügen“.
+- `StatisticsView.swift` (1.356 Zeilen) → Seite, Karten, Diagramme.
+- Inhalt unverändert (Zeile für Zeile geprüft); nur Typen, die jetzt aus anderen Dateien gebraucht werden, sind nicht mehr `private`.
+
+# Einzelinstanz-Sperre, Zurücksetzen in einem Schritt, Änderungszähler · 25.09.2026
+
+- **Nur eine Instanz öffnet die Sammlung**: Eine Sperrdatei neben der Datenbank (`.Plattenregal.lock`) verhindert, dass zwei Instanzen – etwa aus Xcode und aus dem Finder – gleichzeitig in die Sammlung schreiben. Die zweite zeigt „Plattenregal ist bereits geöffnet“. Eine Instanz, die gerade beendet wird, bekommt fünf Sekunden; die Demo braucht die Sperre nicht, der Wechsel in die Demo und zurück bleibt unberührt.
+- **„Alles zurücksetzen“ in einem Speichervorgang**: Bisher waren nach dem ersten von zwei Speichervorgängen die Platten gelöscht; scheiterte der zweite, blieben Releases und Konto stehen. Jetzt geht alles oder nichts; das erste Regal wird danach neu angelegt (oder beim nächsten Start).
+- **Änderungszähler in `LibraryChanges`** statt im Discogs-Sync-Service: Jeder Schreibweg meldet dort, ob Platten, Tracklisten, Regale oder Positionen betroffen sind; Seiten bauen ihre Zwischenspeicher darauf neu auf.
+- **Regalseite**: Die Signatur, an der die Seite ihre Fach-Statistik neu berechnet, liest nicht mehr bei jedem Neuzeichnen jede Platte samt Fach, sondern nur die Zähler und ein paar Anzahlen.
+- **Protokoll** rotiert ab 2 MB auch während einer Sitzung; der Absturz-Handler folgt der neuen Datei.
+- Eine Compiler-Warnung behoben; Kommentar zu den Schema-Aliasen (V13 übernimmt die Modelle von V12).
+
 # Schneller einsortieren, sortieren und exportieren · 25.09.2026
 
 Gemessen mit einer Sammlung in der Größe der echten (841 Platten, 868 Wantlist-Einträge, 12 Fächer; `-O`) und dem Test mit 10.000 Platten. Ursache war fast immer SwiftData: Jeder Lesezugriff auf eine Eigenschaft kostet Mikrosekunden, und nach jedem Speichern liefert die Abfrage der Seite Exemplare, deren Releases einzeln neu geladen werden (rund 0,1 ms je Platte).
