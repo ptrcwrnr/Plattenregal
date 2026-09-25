@@ -212,6 +212,36 @@ extension AllTests {
             #expect(try cabinets.cabinets().count == 2)
         }
 
+        @Test func deleteLibraryLeavesAFreshStoreInOneGo() throws {
+            let (container, cabinets, positions) = try fixture()
+            let context = container.mainContext
+            let first = try #require(try cabinets.cabinets().first)
+            try cabinets.add(name: "Flur", columns: 2, rows: 2)
+            let a = try add(positions, first.orderedShelves[0], "A")
+            let b = try positions.insert(release: Release(artist: "B", title: "2"), shelf: nil)
+            try positions.setExcluded([b], true)
+            try positions.setMissing([a], true)
+            let wanted = Release(artist: "C", title: "3")
+            context.insert(wanted)
+            context.insert(WantlistEntry(owner: "Demo", release: wanted, releaseID: wanted.discogsID))
+            context.insert(DiscogsAccount(username: "Demo"))
+            try context.save()
+
+            try ResetService(context: context).deleteLibrary()
+
+            #expect(try context.fetchCount(FetchDescriptor<RecordCopy>()) == 0)
+            #expect(try context.fetchCount(FetchDescriptor<Release>()) == 0)
+            #expect(try context.fetchCount(FetchDescriptor<WantlistEntry>()) == 0)
+            #expect(try context.fetchCount(FetchDescriptor<OptimizationExclusion>()) == 0)
+            #expect(try context.fetchCount(FetchDescriptor<MissingCopyMark>()) == 0)
+            #expect(try context.fetchCount(FetchDescriptor<DiscogsAccount>()) == 0)
+            let fresh = try cabinets.cabinets()
+            #expect(fresh.count == 1)
+            #expect(fresh.first?.columns == 4 && fresh.first?.rows == 3 && fresh.first?.isActive == true)
+            #expect(fresh.first?.orderedShelves.count == 12)
+            #expect(!context.hasChanges)
+        }
+
         @Test func kallaxPresetsCarryTheBoxMeasures() {
             #expect(KallaxPreset.all.count == 11)
             #expect(KallaxPreset.matching(columns: 2, rows: 4)?.title == "2 × 4 · 77 × 147 cm")

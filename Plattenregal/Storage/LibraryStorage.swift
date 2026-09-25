@@ -2,6 +2,13 @@ import Foundation
 import SwiftData
 import OSLog
 
+nonisolated enum StorageError: LocalizedError {
+    case alreadyOpen
+    var errorDescription: String? {
+        "Plattenregal ist bereits geöffnet – zum Beispiel aus Xcode oder ein zweites Mal aus dem Finder. Damit nie zwei Instanzen gleichzeitig in deine Sammlung schreiben, öffnet diese hier sie nicht. Beende die andere Instanz und starte Plattenregal dann neu."
+    }
+}
+
 enum LibraryStorage {
     static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
         let schema = Schema(versionedSchema: LibrarySchemaV13.self)
@@ -11,6 +18,7 @@ enum LibraryStorage {
         } else {
             let url = try storeURL()
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try acquireInstanceLock(next: url)
             config = ModelConfiguration("Plattenregal", schema: schema, url: url, cloudKitDatabase: .none)
         }
         let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
@@ -24,6 +32,32 @@ enum LibraryStorage {
     nonisolated static func storeURL() throws -> URL {
         try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
             .appendingPathComponent("Plattenregal/Collection.store")
+    }
+
+    /// Kept open for the whole session; the system lifts the lock when the
+    /// process ends, also after a crash.
+    nonisolated(unsafe) private static var lockDescriptor: Int32 = -1
+
+    /// Only one instance may open the real store (Xcode and Finder at the same
+    /// time, `open -n`). The demo never opens it, so switching into or out of
+    /// the demo – with the old instance still quitting – isn't affected. A
+    /// previous instance that is just quitting gets a few seconds to let go.
+    static func acquireInstanceLock(next storeURL: URL, wait: Duration = .seconds(5)) throws {
+        guard lockDescriptor < 0 else { return }
+        let path = storeURL.deletingLastPathComponent().appendingPathComponent(".Plattenregal.lock").path
+        let fd = open(path, O_RDWR | O_CREAT, 0o644)
+        // No lock file possible: the store itself will report what is wrong.
+        guard fd >= 0 else { return }
+        let deadline = ContinuousClock.now + wait
+        while flock(fd, LOCK_EX | LOCK_NB) != 0 {
+            guard errno == EWOULDBLOCK, ContinuousClock.now < deadline else {
+                close(fd)
+                AppLog.error("Datenbank", "Sammlung nicht geöffnet: eine andere Instanz hält sie offen")
+                throw StorageError.alreadyOpen
+            }
+            usleep(100_000)
+        }
+        lockDescriptor = fd
     }
 
     /// SwiftData records every save in a change history that is never read

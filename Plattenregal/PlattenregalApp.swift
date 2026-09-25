@@ -5,6 +5,8 @@ import OSLog
 @main struct PlattenregalApp: App {
     private let container: ModelContainer?
     private let startupError: String?
+    /// Another instance has the collection open; not a problem with the data.
+    private let openElsewhere: Bool
     init() {
         let info = Bundle.main.infoDictionary
         // Before anything reads settings: the demo gets fresh ones of its own.
@@ -26,7 +28,7 @@ import OSLog
                 container = try LibraryStorage.makeContainer()
                 #endif
             }
-            startupError = nil
+            startupError = nil; openElsewhere = false
             if let context = container?.mainContext {
                 let copies = (try? context.fetchCount(FetchDescriptor<RecordCopy>())) ?? -1
                 let wants = (try? context.fetchCount(FetchDescriptor<WantlistEntry>())) ?? -1
@@ -35,8 +37,11 @@ import OSLog
             // A first backup for layouts that haven't changed since the feature arrived.
             if let container { ShelfAutoBackup.shared.scheduleBackup(of: container) }
         }
+        catch StorageError.alreadyOpen {
+            container = nil; startupError = nil; openElsewhere = true
+        }
         catch {
-            container = nil; startupError = error.localizedDescription
+            container = nil; startupError = error.localizedDescription; openElsewhere = false
             AppLog.error("Datenbank", "Öffnen fehlgeschlagen, App zeigt die Fehlerseite: \(error)")
         }
     }
@@ -64,6 +69,14 @@ import OSLog
                         if let startupError { Text("Technische Details: \(startupError)").font(.caption).foregroundStyle(.secondary) }
                     } actions: {
                         Button("Demo beenden") { DemoMode.end() }
+                    }.padding().frame(width: 650, height: 320)
+                } else if openElsewhere {
+                    ContentUnavailableView {
+                        Label("Plattenregal ist bereits geöffnet", systemImage: "macwindow.on.rectangle")
+                    } description: {
+                        Text(StorageError.alreadyOpen.errorDescription ?? "")
+                    } actions: {
+                        Button("Beenden") { NSApp.terminate(nil) }
                     }.padding().frame(width: 650, height: 320)
                 } else {
                 ContentUnavailableView {
@@ -101,6 +114,8 @@ import OSLog
                 ContentUnavailableView("Einstellungen nicht verfügbar", systemImage: "externaldrive.badge.exclamationmark",
                     description: Text(DemoMode.isActive
                         ? "Die Demo konnte nicht gestartet werden. Über „Plattenregal → Demo beenden“ geht es zurück zu deiner Sammlung."
+                        : openElsewhere
+                        ? "Plattenregal ist bereits in einer anderen Instanz geöffnet. Beende diese hier und nutze die andere."
                         : "Plattenregal konnte deine Sammlung beim Start nicht laden. Beende die App und starte sie noch einmal."))
                     .padding().frame(width: 420, height: 240)
             }

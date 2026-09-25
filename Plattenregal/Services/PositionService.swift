@@ -43,7 +43,7 @@ struct PositionService {
         do { try action(); try context.save() }
         catch { context.rollback(); throw error }
         ShelfAutoBackup.shared.scheduleBackup(of: context.container)
-        DiscogsSyncService.shared.placementsDidChange()
+        LibraryChanges.shared.placementsDidChange()
     }
     func validate(shelf: Shelf, position: Int, excluding id: UUID? = nil) throws {
         let count = ordered(shelf, excluding: id).count

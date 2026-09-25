@@ -44,6 +44,7 @@ struct KallaxView: View {
     /// Set when records change; the index is rebuilt on the next search only.
     @State private var searchIndexStale = true
     @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
     @State private var focusCopy: RecordCopy?
     /// While the search field has focus, ⌘Z belongs to its text, not to the
     /// "Aus Fach entfernt" toast.
@@ -74,22 +75,19 @@ struct KallaxView: View {
     private var detailShelf: Shelf? { committedShelf }
 
     /// Evaluated on every render of this page (a click on a spine, too), so
-    /// it only reads the copies' own fields. Metadata (artist, title, style)
-    /// lives on the releases and is followed via `libraryVersion`, which syncs,
-    /// Discogs reloads and the record editor bump.
+    /// it must not walk the records. Every write reports itself in
+    /// `LibraryChanges`: positions, locks and names via `PositionService.save`,
+    /// cabinets via `CabinetService`, metadata via the sync and Discogs
+    /// reloads. The counts are a safety net for anything arriving otherwise
+    /// (the first load, the demo's sample data).
     private var statsSignature: Int {
         var hasher = Hasher()
-        hasher.combine(sync.libraryVersion)
-        for copy in allCopies {
-            hasher.combine(copy.id)
-            hasher.combine(copy.shelf?.id)
-            hasher.combine(copy.positionInShelf)
-        }
-        for shelf in allShelves { hasher.combine(shelf.isReserved); hasher.combine(shelf.name); hasher.combine(shelf.sortOrder) }
-        for cabinet in cabinets {
-            hasher.combine(cabinet.id); hasher.combine(cabinet.isActive); hasher.combine(cabinet.name)
-            hasher.combine(cabinet.rows); hasher.combine(cabinet.columns); hasher.combine(cabinet.sortOrder)
-        }
+        hasher.combine(changes.libraryVersion)
+        hasher.combine(changes.placementsVersion)
+        hasher.combine(changes.shelvesVersion)
+        hasher.combine(allCopies.count)
+        hasher.combine(allShelves.count)
+        hasher.combine(cabinets.count)
         hasher.combine(labelStyle)
         return hasher.finalize()
     }
@@ -231,7 +229,7 @@ struct KallaxView: View {
             .overlay(alignment: .bottom) { undoToast }
         }
         .task(id: statsSignature) {
-            shelfContent.refresh(allShelves, version: sync.libraryVersion)
+            shelfContent.refresh(allShelves, version: changes.libraryVersion)
             shelfStats = Dictionary(uniqueKeysWithValues: shelves.map { ($0.id, shelfContent.stats(for: $0)) })
             rangeLabels = ShelfRangeLabels.compute(for: allShelves, style: labelStyle, ends: shelfContent.ends)
             ensureShelfSelected()
@@ -243,15 +241,15 @@ struct KallaxView: View {
         // Another account synced: other records count as in the collection.
         .onChange(of: owner) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         // Metadata and tracklist updates don't show up in `statsSignature`.
-        .onChange(of: sync.libraryVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
-        .onChange(of: sync.tracksVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
+        .onChange(of: changes.libraryVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
+        .onChange(of: changes.tracksVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onAppear { takePlacingRequest() }
         .onChange(of: placing) { takePlacingRequest() }
         // Marks change without touching `statsSignature` (menu, table, sheet).
         .onChange(of: missingIDs) { refreshPlacement() }
         // Settings (other window) rebuilt cabinets, restored a backup or reset
         // the locations: the sheet's list and target shelf may be stale or gone.
-        .onChange(of: sync.shelvesVersion) {
+        .onChange(of: changes.shelvesVersion) {
             if assignment != nil { AppLog.info("Regal", "„Platte hinzufügen“ geschlossen: Regale wurden in den Einstellungen geändert") }
             assignment = nil; showsShelfOptions = false; sortingShelf = nil
         }
@@ -1611,7 +1609,7 @@ private struct ShelfCopyTable: View {
         hasher.combine(shelf.id)
         // Artist, title, year and genre are copied into the rows; a sync or a
         // Discogs reload changes them on the same copies, so follow those too.
-        hasher.combine(DiscogsSyncService.shared.libraryVersion)
+        hasher.combine(LibraryChanges.shared.libraryVersion)
         hasher.combine(owner)
         for copy in shelf.copies { hasher.combine(copy.id); hasher.combine(copy.positionInShelf); hasher.combine(copy.discogsActive); hasher.combine(missing.contains(copy.id)) }
         return hasher.finalize()

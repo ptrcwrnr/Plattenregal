@@ -58,20 +58,6 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     var summary: String?
     /// Progress of the tracklist download after a collection sync; `nil` when idle.
     var tracklistProgress: (done: Int, total: Int)?
-    /// Bumped after every committed merge. Views cache sorted lists and search
-    /// indexes; comparing `@Query` arrays doesn't catch changed metadata on
-    /// the same objects, so they rebuild on this instead.
-    private(set) var libraryVersion = 0
-    /// Bumped whenever stored tracklists changed, so search indexes pick them up.
-    private(set) var tracksVersion = 0
-    /// Bumped when cabinets or compartments change (added, resized, renamed,
-    /// switched on/off, removed). Only shelf labels depend on that – the
-    /// collection lists and search indexes don't need a rebuild.
-    private(set) var shelvesVersion = 0
-    /// Bumped after every committed position change (sorting in, moving,
-    /// taking out). Range labels follow the records in the compartments, so
-    /// pages caching them refresh – without the heavier `shelvesVersion` work.
-    private(set) var placementsVersion = 0
     private var task: Task<Bool, Never>?
     private var tracklistTask: Task<Void, Never>?
     private var tracklistRun: UUID?
@@ -87,11 +73,6 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     /// reporting "abgebrochen", so the lines slide away right after.
     private var cancelledByUser = false
 
-    /// For changes made outside a sync (e.g. reloading single releases), so
-    /// cached lists and search indexes pick them up like after a sync.
-    func libraryDidChange() { libraryVersion += 1; tracksVersion += 1 }
-    func shelvesDidChange() { shelvesVersion += 1 }
-    func placementsDidChange() { placementsVersion += 1 }
     /// Removes the status lines (they animate out where they're shown).
     func dismissStatus() { status = ""; summary = nil; error = nil }
     func tokenChanged() { tokenRevision += 1 }
@@ -153,7 +134,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             summary = result.description(for: scope)
             AppLog.info("Sync", "Gespeichert (\(scope.logName), Konto \(snapshot.username)): \(summary ?? "–")")
             rejectedFingerprint = nil
-            libraryVersion += 1
+            LibraryChanges.shared.syncDidCommit()
             if scope == .collection || scope == .all || scope == .folder(0) {
                 status = "Sammlungswert wird aktualisiert"
                 do {
@@ -280,7 +261,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         let dto = try await api.release(id: id)
         guard !release.isDeleted else { return }
         try PositionService(context: context).save { dto.applyDetails(to: release) }
-        tracksVersion += 1
+        LibraryChanges.shared.tracksDidChange()
     }
 
     /// Returns whether anything had to be loaded. Internal for the tests.
@@ -322,7 +303,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         /// and are simply loaded again next time — but say so after a sync.
         func save() {
             guard context.hasChanges else { return }
-            do { try context.save(); tracksVersion += 1 }
+            do { try context.save(); LibraryChanges.shared.tracksDidChange() }
             catch {
                 context.rollback()
                 if !quiet { self.error = "Einige Tracklisten konnten nicht gespeichert werden. Sie werden beim nächsten Mal erneut geladen." }

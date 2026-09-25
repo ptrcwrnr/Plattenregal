@@ -255,6 +255,7 @@ struct DiscogsSettingsView: View {
     @Query(sort: \DiscogsFolder.folderID) private var folders: [DiscogsFolder]
     @State private var model = DiscogsSettingsModel()
     @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
     @State private var confirmingRemoval = false
 
     /// The account the stored token belongs to. After a successful test with
@@ -413,7 +414,7 @@ struct DiscogsSettingsView: View {
     /// Counted in the store instead of loading every copy into the view;
     /// `libraryVersion` re-renders after each committed sync.
     private func counts(for owner: String) -> (collection: Int, wantlist: Int) {
-        _ = sync.libraryVersion
+        _ = changes.libraryVersion
         let collection = (try? context.fetchCount(FetchDescriptor<RecordCopy>(
             predicate: #Predicate { $0.discogsOwner == owner && $0.discogsActive == true }))) ?? 0
         let wantlist = (try? context.fetchCount(FetchDescriptor<WantlistEntry>(
@@ -452,6 +453,7 @@ struct DiscogsSettingsView: View {
 struct ExportSettingsView: View {
     @Environment(\.modelContext) private var context
     @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
     @AppStorage(ExportSettings.formatKey) private var format = ExportFormat.csv
     @AppStorage(ExportSettings.sourceKey) private var source = ExportSource.collection
     @AppStorage(ExportSettings.orderKey) private var order = ExportOrder.shelf
@@ -551,7 +553,7 @@ struct ExportSettingsView: View {
 
     /// Re-counted after every committed sync.
     private var count: Int {
-        _ = sync.libraryVersion
+        _ = changes.libraryVersion
         return CollectionExportService(context: context).count(source)
     }
 
@@ -688,6 +690,7 @@ struct BackupSettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.appearsActive) private var appearsActive
     @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
     @State private var autoBackup = ShelfAutoBackup.shared
     @AppStorage(ShelfAutoBackup.enabledKey) private var autoEnabled = true
     @AppStorage(ShelfAutoBackup.keptCountKey) private var keptCount = ShelfAutoBackup.defaultKeptCount
@@ -819,8 +822,8 @@ struct BackupSettingsView: View {
         }
         // Re-read after shelf changes (each one leads to a backup) and syncs.
         .onChange(of: autoBackup.version) { reload() }
-        .onChange(of: sync.libraryVersion) { reload() }
-        .onChange(of: sync.shelvesVersion) { reload() }
+        .onChange(of: changes.libraryVersion) { reload() }
+        .onChange(of: changes.shelvesVersion) { reload() }
         // Moves in the main window only bump a version when a backup is written.
         .onChange(of: appearsActive) { _, active in if active { reload() } }
         .onChange(of: autoEnabled) { _, on in
@@ -915,7 +918,7 @@ struct BackupSettingsView: View {
         }
         do {
             try service.restore(backup)
-            sync.libraryDidChange()
+            changes.libraryDidChange()
             status = ("Belegung vom \(backup.createdAt.formatted(date: .abbreviated, time: .shortened)) wiederhergestellt.", false)
         } catch {
             status = (error.reportedMessage(), true)
@@ -1206,6 +1209,7 @@ struct ShelfSettingsView: View {
     @State private var error: String?
     @State private var labels = ShelfLabels()
     @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
     @FocusState private var stripFocused: Bool
 
     private var cabinet: Cabinet? { cabinets.first { $0.id == cabinetID } ?? cabinets.first }
@@ -1215,8 +1219,8 @@ struct ShelfSettingsView: View {
     private var labelSignature: Int {
         var hasher = Hasher()
         hasher.combine(labelStyle)
-        hasher.combine(sync.libraryVersion)
-        hasher.combine(sync.shelvesVersion)
+        hasher.combine(changes.libraryVersion)
+        hasher.combine(changes.shelvesVersion)
         for shelf in shelves { hasher.combine(shelf.id); hasher.combine(shelf.isReserved); hasher.combine(shelf.copies.count) }
         return hasher.finalize()
     }

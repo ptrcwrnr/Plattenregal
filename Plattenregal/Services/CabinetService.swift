@@ -60,7 +60,7 @@ struct CabinetService {
     /// index, although no record changed.
     private func save(_ action: () throws -> Void) throws {
         try positions.save(action)
-        DiscogsSyncService.shared.shelvesDidChange()
+        LibraryChanges.shared.shelvesDidChange()
     }
 
     func cabinets() throws -> [Cabinet] {

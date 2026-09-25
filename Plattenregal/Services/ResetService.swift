@@ -36,8 +36,8 @@ struct ResetService {
             for row in try context.fetch(FetchDescriptor<OptimizationExclusion>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<MissingCopyMark>()) { context.delete(row) }
         }
-        DiscogsSyncService.shared.libraryDidChange()
-        DiscogsSyncService.shared.shelvesDidChange()
+        LibraryChanges.shared.libraryDidChange()
+        LibraryChanges.shared.shelvesDidChange()
         AppLog.warning("Zurücksetzen", "Standorte zurückgesetzt: alle Platten ohne Fach, Sperren aufgehoben")
     }
 
@@ -84,33 +84,11 @@ struct ResetService {
         // Whatever happened to the store, the views must see its real state.
         defer {
             sync.dismissStatus()
-            sync.libraryDidChange()
-            sync.shelvesDidChange()
+            LibraryChanges.shared.libraryDidChange()
+            LibraryChanges.shared.shelvesDidChange()
             NotificationCenter.default.post(name: .plattenregalDidReset, object: nil)
         }
-        do {
-            // Copies first: releases and shelves refuse to go while copies point at them.
-            for copy in try context.fetch(FetchDescriptor<RecordCopy>()) {
-                copy.shelf = nil; copy.release = nil
-                context.delete(copy)
-            }
-            for entry in try context.fetch(FetchDescriptor<WantlistEntry>()) { entry.release = nil; context.delete(entry) }
-            try context.save()
-            try context.delete(model: Release.self)
-            try context.delete(model: OptimizationExclusion.self)
-            try context.delete(model: MissingCopyMark.self)
-            try context.delete(model: CollectionValueSnapshot.self)
-            try context.delete(model: ReleaseMarketValue.self)
-            try context.delete(model: DiscogsFolder.self)
-            try context.delete(model: DiscogsAccount.self)
-            for cabinet in try context.fetch(FetchDescriptor<Cabinet>()) { context.delete(cabinet) }
-            for shelf in try context.fetch(FetchDescriptor<Shelf>()) where !shelf.isDeleted { context.delete(shelf) }
-            try context.save()
-            try LibraryStorage.prepareShelves(in: context)
-        } catch {
-            // Unsaved deletions must not linger in the context and be saved
-            // later by some unrelated change.
-            context.rollback()
+        do { try deleteLibrary() } catch {
             AppLog.error("Zurücksetzen", "Alles zurücksetzen abgebrochen: \(error)")
             throw error
         }
@@ -128,6 +106,45 @@ struct ResetService {
         if let tokenError {
             AppLog.error("Zurücksetzen", "Discogs-Token ließ sich nicht löschen: \(tokenError)")
             throw ResetError.tokenNotRemoved
+        }
+    }
+
+    /// The store part of `resetEverything`: every record, the wantlist, the
+    /// value history, the Discogs account, and all cabinets but a fresh first
+    /// one. One transaction – either everything is gone or nothing is.
+    /// Internal for the tests (unlike `resetEverything`, it leaves the
+    /// keychain and the settings alone).
+    func deleteLibrary() throws {
+        do {
+            // Links first: releases and shelves refuse to go while copies point at them.
+            let copies = try context.fetch(FetchDescriptor<RecordCopy>())
+            for copy in copies { copy.shelf = nil; copy.release = nil }
+            let wants = try context.fetch(FetchDescriptor<WantlistEntry>())
+            for entry in wants { entry.release = nil }
+            for copy in copies { context.delete(copy) }
+            for entry in wants { context.delete(entry) }
+            for release in try context.fetch(FetchDescriptor<Release>()) { context.delete(release) }
+            for row in try context.fetch(FetchDescriptor<OptimizationExclusion>()) { context.delete(row) }
+            for row in try context.fetch(FetchDescriptor<MissingCopyMark>()) { context.delete(row) }
+            for row in try context.fetch(FetchDescriptor<CollectionValueSnapshot>()) { context.delete(row) }
+            for row in try context.fetch(FetchDescriptor<ReleaseMarketValue>()) { context.delete(row) }
+            for row in try context.fetch(FetchDescriptor<DiscogsFolder>()) { context.delete(row) }
+            for row in try context.fetch(FetchDescriptor<DiscogsAccount>()) { context.delete(row) }
+            for cabinet in try context.fetch(FetchDescriptor<Cabinet>()) { context.delete(cabinet) }
+            for shelf in try context.fetch(FetchDescriptor<Shelf>()) where !shelf.isDeleted { context.delete(shelf) }
+            try context.save()
+        } catch {
+            // Unsaved deletions must not linger in the context and be saved
+            // later by some unrelated change.
+            context.rollback()
+            throw error
+        }
+        // The fresh first cabinet. Should this fail, the next launch creates
+        // it the same way – the store is empty either way.
+        do { try LibraryStorage.prepareShelves(in: context) }
+        catch {
+            context.rollback()
+            AppLog.warning("Zurücksetzen", "Erstes Regal wird beim nächsten Start angelegt: \(error)")
         }
     }
 

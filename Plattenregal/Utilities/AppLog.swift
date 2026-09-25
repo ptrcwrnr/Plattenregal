@@ -61,7 +61,7 @@ nonisolated enum AppLog {
         // Before rotating: the crash block sits at the end of the current file.
         let crash = previousCrash(in: fileURL)
         let old = directory.appendingPathComponent("Plattenregal.old.log")
-        if let size = (try? FileManager.default.attributesOfItem(atPath: fileURL.path))?[.size] as? Int, size > 2_000_000 {
+        if let size = (try? FileManager.default.attributesOfItem(atPath: fileURL.path))?[.size] as? Int, size > Int(rotationSize) {
             try? FileManager.default.removeItem(at: old)
             try? FileManager.default.moveItem(at: fileURL, to: old)
         }
@@ -163,6 +163,26 @@ nonisolated enum AppLog {
         defer { close(fd) }
         let bytes = Array(line.utf8)
         _ = bytes.withUnsafeBytes { Darwin.write(fd, $0.baseAddress, $0.count) }
+        // A long session rotates too, not only a launch.
+        var info = stat()
+        if fstat(fd, &info) == 0, info.st_size > rotationSize { rotate(fileURL) }
+    }
+
+    /// Past this size the file becomes `Plattenregal.old.log` (at launch and
+    /// during a session), so the protocol never grows without bounds.
+    private static let rotationSize: off_t = 2_000_000
+
+    /// Called with `lock` held. The crash handler's descriptor is pointed at
+    /// the new file in one step (`dup2`), so a crash still lands in the
+    /// current protocol.
+    private static func rotate(_ fileURL: URL) {
+        guard let oldFileURL else { return }
+        try? FileManager.default.removeItem(at: oldFileURL)
+        guard (try? FileManager.default.moveItem(at: fileURL, to: oldFileURL)) != nil else { return }
+        let fresh = open(fileURL.path, O_WRONLY | O_APPEND | O_CREAT, 0o644)
+        guard fresh >= 0 else { return }
+        if crashFD >= 0 { dup2(fresh, crashFD) }
+        close(fresh)
     }
 
     // MARK: Crashes

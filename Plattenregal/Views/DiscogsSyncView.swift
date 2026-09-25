@@ -147,6 +147,7 @@ struct WantlistView: View {
     @Environment(\.openURL) private var openURL
     @Query private var entries: [WantlistEntry]
     @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
     /// Shared with the other overview sections (see OverviewView).
     @Binding var query: String
     @Query private var copies: [RecordCopy]
@@ -243,8 +244,8 @@ struct WantlistView: View {
         .onChange(of: copies) { _, _ in rebuildCollectionIndex(); applyQuery() }
         .onChange(of: accounts) { _, _ in rebuildCollectionIndex(); rebuild() }
         // See CollectionView: metadata and tracklist changes on the same objects.
-        .onChange(of: sync.libraryVersion) { _, _ in rebuildCollectionIndex(); rebuild() }
-        .onChange(of: sync.tracksVersion) { _, _ in
+        .onChange(of: changes.libraryVersion) { _, _ in rebuildCollectionIndex(); rebuild() }
+        .onChange(of: changes.tracksVersion) { _, _ in
             searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
             rebuildCollectionIndex()
             if !query.isEmpty { applyQuery() }

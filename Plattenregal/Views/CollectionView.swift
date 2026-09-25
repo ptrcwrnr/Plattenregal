@@ -12,6 +12,7 @@ struct CollectionView: View {
     /// IDs of `exclusions`, looked up per table row and context menu.
     @State private var excludedIDs: Set<UUID> = []
     @State private var sync = DiscogsSyncService.shared
+    @State private var changes = LibraryChanges.shared
     // nil in the statistics drill-down sheet, which has no section picker.
     private let section: Binding<OverviewSection>?
     // Search lives in this page's own header bar. In the overview it is shared
@@ -376,15 +377,15 @@ struct CollectionView: View {
         .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantlistIndex(); rebuildBase() }
         .onChange(of: copies) { _, _ in rebuildBase() }
         .onChange(of: labelStyle) { _, style in shelfLabels = ShelfRangeLabels.compute(for: shelves, style: style) }
-        .onChange(of: sync.shelvesVersion) { _, _ in refreshLabels() }
-        .onChange(of: sync.placementsVersion) { _, _ in refreshLabels() }
+        .onChange(of: changes.shelvesVersion) { _, _ in refreshLabels() }
+        .onChange(of: changes.placementsVersion) { _, _ in refreshLabels() }
         .onChange(of: exclusions) { _, exclusions in excludedIDs = Set(exclusions.map(\.copyID)) }
         .onChange(of: accounts) { _, _ in rebuildWantlistIndex(); rebuildBase() }
         .onChange(of: wantlistEntries) { _, _ in rebuildWantlistIndex(); applyQuery() }
         // Changed metadata on existing records and newly loaded tracklists
         // don't change the @Query arrays; the sync service reports them.
-        .onChange(of: sync.libraryVersion) { _, _ in rebuildWantlistIndex(); rebuildBase() }
-        .onChange(of: sync.tracksVersion) { _, _ in
+        .onChange(of: changes.libraryVersion) { _, _ in rebuildWantlistIndex(); rebuildBase() }
+        .onChange(of: changes.tracksVersion) { _, _ in
             searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
             rebuildWantlistIndex()
             if !query.isEmpty { applyQuery() }

@@ -996,6 +996,9 @@ enum LibrarySchemaV12: VersionedSchema {
     }
 }
 
+// The current schema is V13 (see `LibraryStorage`). It only adds
+// `MissingCopyMark` and carries every other model over from V12 unchanged,
+// so these still name the V12 classes – they *are* the current models.
 typealias Release = LibrarySchemaV12.Release
 typealias RecordCopy = LibrarySchemaV12.RecordCopy
 typealias Shelf = LibrarySchemaV12.Shelf

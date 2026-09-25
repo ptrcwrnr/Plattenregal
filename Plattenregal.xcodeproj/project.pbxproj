@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DD5C24E09EAA225E8520EE95 /* Plattenregal/Services/LibraryChanges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C776C8DD5C24E09EAA225E /* Plattenregal/Services/LibraryChanges.swift */; };
 		005BAF1A4673DA152131D179 /* Plattenregal/Services/PositionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E0AD8DA08D7E3BED87977C /* Plattenregal/Services/PositionService.swift */; };
 		4F4BF2DB9A464CA3B85E0B04 /* Plattenregal/Services/ShelfStatisticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61F0D9CB6F4BCA8BB2E43B /* Plattenregal/Services/ShelfStatisticsService.swift */; };
 		E7A0C0DE0000000000000002 /* Plattenregal/Services/CollectionExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0C0DE0000000000000001 /* Plattenregal/Services/CollectionExportService.swift */; };
@@ -69,6 +70,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		21C776C8DD5C24E09EAA225E /* Plattenregal/Services/LibraryChanges.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/LibraryChanges.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F0A1B2 /* Plattenregal/Utilities/ErrorMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/ErrorMessages.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F0A1B3 /* Plattenregal/Utilities/AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/AppLog.swift; sourceTree = "<group>"; };
 		E2A1ACD42E0D410EADE8D640 /* Plattenregal/Utilities/DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/DemoData.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 				B8BBCFAB16F7E9BB4DD4445C /* Plattenregal/Services/ResetService.swift */,
 				F5C0F32914BC632A098D7F5E /* Plattenregal/Services/ScheduledExportService.swift */,
 				81DBC184AF98C763E6527CB8 /* Plattenregal/Services/CabinetService.swift */,
+				21C776C8DD5C24E09EAA225E /* Plattenregal/Services/LibraryChanges.swift */,
 				18A9148B25822F85973E51EC /* Plattenregal/Statistics/ValueHistoryDashboard.swift */,
 				A09E8A21C65FD248ADC630F3 /* Plattenregal/Statistics/StatisticsViewModel.swift */,
 				5C0FF87FB8B623B08B35F8F6 /* Plattenregal/Statistics/StatisticsView.swift */,
@@ -392,6 +395,7 @@
 				C4E0C6B4DBFD485AC3BC9028 /* Plattenregal/Utilities/FolderAccess.swift in Sources */,
 				8BF218778FB6E9D23BA4B988 /* Plattenregal/Utilities/AppPreferences.swift in Sources */,
 				AF98C763E6527CB8CC2F0512 /* Plattenregal/Services/CabinetService.swift in Sources */,
+				DD5C24E09EAA225E8520EE95 /* Plattenregal/Services/LibraryChanges.swift in Sources */,
 				9118E50917D51D3B4308F8A4 /* Plattenregal/Utilities/AppAppearance.swift in Sources */,
 				D1E2F3A4B5C6D7E8F9A0B1C2 /* Plattenregal/Utilities/ErrorMessages.swift in Sources */,
 				D1E2F3A4B5C6D7E8F9A0B1C3 /* Plattenregal/Utilities/AppLog.swift in Sources */,

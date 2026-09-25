@@ -28,7 +28,7 @@ extension MetadataRefreshService {
     /// not — for "Discogs-Daten aktualisieren" on selected records.
     func reload(_ releases: [Release], context: ModelContext) async {
         guard !busy else { return }; busy = true; error = nil
-        defer { busy = false; DiscogsSyncService.shared.libraryDidChange() }
+        defer { busy = false; LibraryChanges.shared.libraryDidChange() }
         var failed = 0, total = 0
         var reason: String?
         AppLog.info("Discogs", "Release-Daten neu laden: \(releases.count) Release(s)")

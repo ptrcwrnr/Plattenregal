@@ -196,7 +196,7 @@ struct ShelfBackupService {
         guard !DiscogsSyncService.shared.busy else { throw ShelfBackupError.syncRunning }
         do { try apply(backup) } catch { throw FileTransferError.restoreFailed(error) }
         // Cabinets may have been rebuilt; the compartment labels follow.
-        DiscogsSyncService.shared.shelvesDidChange()
+        LibraryChanges.shared.shelvesDidChange()
         AppLog.info("Sicherung", "Fach-Belegung wiederhergestellt (Stand \(backup.createdAt.formatted(.iso8601))): \(backup.summary)")
     }
 
@@ -548,7 +548,7 @@ extension ShelfBackupService {
     }
 
     // Only ever read after setup; DateFormatter is thread-safe for that.
-    nonisolated(unsafe) private static let fileDate: DateFormatter = {
+    nonisolated private static let fileDate: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd HH-mm-ss"
