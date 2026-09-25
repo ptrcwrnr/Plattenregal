@@ -1,3 +1,8 @@
+# Platten-Popover der Übersicht verschlankt · 25.09.2026
+
+- Ein Klick auf ein Cover zeigt nur noch Cover, Interpret, Titel, Label, Jahr, Style, Trennlinie und Tracklist. Standort und der Schalter „Nicht im Regal“ sind entfallen; „Nicht im Regal“ bleibt über Rechtsklick, Mehrfachauswahl, Bearbeiten und die Fach-Tabelle erreichbar.
+- Die Exemplar-Auswahl bei mehreren Exemplaren unter einem Cover (`GroupedRecordPopover`) ist entfernt: Sie unterschied die Exemplare nur nach Standort, alles andere gehört zum gemeinsamen Release.
+
 # Interpretennamen, einheitliches Discogs-Mapping, Laufmarkierung · 25.09.2026
 
 - **Interpretennamen**: Aus Discogs' Trennzeichen „,“ wurde „Moby , Kid“; ein leeres oder fehlendes Trennzeichen ergab doppelte Leerzeichen. Jetzt „Moby, Kid“ – ein Komma steht direkt am Namen, jedes andere Trennzeichen („&“, „Feat.“, „Vs.“) zwischen Leerzeichen, ein fehlendes gilt als Komma (`DiscogsBasicInformation.artistLine`). Die eigene Sammlung übernimmt das beim nächsten Sync.

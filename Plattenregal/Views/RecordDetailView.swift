@@ -107,77 +107,18 @@ struct ReleaseMetadataView: View {
     }
 }
 
-/// One cover can stand for several copies. Keep each copy's shelf controls
-/// reachable without expanding the cover grid back into duplicate tiles.
-struct GroupedRecordPopover: View {
-    let copies: [RecordCopy]
-    /// The calling page's current labels; computed here (once) without them.
-    var labels: ShelfLabels? = nil
-    @State private var labelCache = ShelfLabelCache()
-    @Query private var shelves: [Shelf]
-    @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
-    @Query private var exclusions: [OptimizationExclusion]
-    @State private var selectedID: UUID?
-
-    private var shownLabels: ShelfLabels {
-        labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: selectedCopy.shelf)
-    }
-
-    private var selectedCopy: RecordCopy {
-        copies.first { $0.id == selectedID } ?? copies[0]
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            if copies.count > 1 {
-                HStack {
-                    Text("\(copies.count) Exemplare")
-                        .font(.callout.weight(.semibold))
-                    Spacer()
-                    // Shelves are named as chosen in the settings (letter range or number).
-                    let labels = shownLabels
-                    Picker("Exemplar", selection: $selectedID) {
-                        ForEach(Array(copies.enumerated()), id: \.element.id) { index, copy in
-                            let excluded = exclusions.contains { $0.copyID == copy.id }
-                            Text("\(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: labels, excluded: excluded))").tag(Optional(copy.id))
-                        }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .frame(maxWidth: 220)
-                }
-                .padding(.horizontal, AppStyle.cardPadding)
-                .padding(.top, AppStyle.cardPadding)
-                Divider().padding(.top, AppStyle.tightSpacing)
-            }
-            RecordPopover(copy: selectedCopy, labels: shownLabels)
-                .id(selectedCopy.id)
-        }
-        .onAppear { selectedID = copies.first?.id }
-    }
-}
-
 /// Compact popover for a single click on a cover in the overview: cover,
-/// label, year, where the copy stands in the shelf, the "Nicht im Regal"
-/// switch and the tracklist.
+/// label, year and the tracklist. Copies behind one cover share the release,
+/// so the first one stands for all of them.
 struct RecordPopover: View {
     @Environment(\.modelContext) private var context
-    @Query private var exclusions: [OptimizationExclusion]
-    @Query private var shelves: [Shelf]
-    @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     let copy: RecordCopy
-    /// From the grouped popover around it; computed here (once) without them.
-    var labels: ShelfLabels? = nil
-    @State private var labelCache = ShelfLabelCache()
-    @State private var error: String?
     /// Tracklists are loaded after each collection sync; this only covers a
     /// record whose tracklist isn't there yet (e.g. while that is still running).
     @State private var loadingTracks = false
     /// Why the tracklist couldn't be loaded, in plain words; nil = no failure.
     @State private var trackLoadError: String?
     @State private var triedLoadingTracks = false
-
-    private var isExcluded: Bool { exclusions.contains { $0.copyID == copy.id } }
 
     var body: some View {
         let release = copy.release
@@ -198,31 +139,6 @@ struct RecordPopover: View {
                     .font(.callout)
                     .padding(.top, AppStyle.tightSpacing)
                 }
-            }
-
-            Divider()
-
-            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-                HStack(spacing: AppStyle.itemSpacing) {
-                    Label(
-                        ShelfRangeLabels.location(of: copy, labels: labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf), excluded: isExcluded),
-                        systemImage: "square.grid.3x3"
-                    )
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(copy.shelf == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
-                    .lineLimit(1)
-                    Spacer(minLength: AppStyle.rowSpacing)
-                    HStack(spacing: AppStyle.itemSpacing) {
-                        Text("Nicht im Regal").font(.callout)
-                        Toggle("Nicht im Regal", isOn: Binding(get: { isExcluded }, set: setExcluded))
-                            .labelsHidden()
-                            .toggleStyle(.switch)
-                            .controlSize(.small)
-                    }
-                    .fixedSize()
-                    .help("Wird beim Einsortieren übersprungen.")
-                }
-                if let error { Text(error).font(.caption).foregroundStyle(AppStyle.errorColor) }
             }
 
             if let tracks = release?.tracks, !tracks.isEmpty {
@@ -283,14 +199,5 @@ struct RecordPopover: View {
 
     private func label(_ text: String) -> some View {
         Text(text).foregroundStyle(.secondary)
-    }
-
-    private func setExcluded(_ excluded: Bool) {
-        do {
-            try PositionService(context: context).setExcluded([copy], excluded)
-            error = nil
-        } catch {
-            self.error = error.reportedMessage()
-        }
     }
 }
