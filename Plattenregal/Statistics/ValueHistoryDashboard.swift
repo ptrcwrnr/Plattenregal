@@ -194,7 +194,7 @@ struct ChangeLabel: View {
                 Text((change.amount > 0 ? "+" : "") + DiscogsMoney.format(change.amount, currency: currency))
                     .font(.headline).monospacedDigit()
                 if let percent = change.percent {
-                    Text((percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(1))))
+                    Text((percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(2))))
                         .font(.caption).monospacedDigit().foregroundStyle(.secondary)
                 }
             }

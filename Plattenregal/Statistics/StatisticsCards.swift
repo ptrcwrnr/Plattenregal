@@ -114,7 +114,7 @@ private struct DeltaChip: View {
             Image(systemName: change.amount > 0 ? "arrow.up.right" : change.amount < 0 ? "arrow.down.right" : "equal")
             Text((change.amount > 0 ? "+" : "") + DiscogsMoney.format(change.amount, currency: currency))
             if let percent = change.percent {
-                Text("(" + (percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(1))) + ")")
+                Text("(" + (percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(2))) + ")")
             }
         }
         .font(.caption.weight(.semibold)).monospacedDigit()
