@@ -20,18 +20,17 @@ struct RecordDetailView: View {
                 GhostButton(title: "Schließen") { dismiss() }.keyboardShortcut(.cancelAction)
             }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
             Divider()
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-                    if let r = copy.release {
-                        ReleaseHeaderView(release: r, removedFromDiscogs: !copy.discogsActive)
-                    }
-                    locationCard
-                    if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
-                    if let r = copy.release, !r.tracks.isEmpty { TracklistView(tracks: r.tracks) }
-                }.padding(AppStyle.pagePadding)
-                .animation(AppStyle.standardAnimation, value: error)
-            }
-        }.frame(width: 800, height: 760)
+            // Without the tracklist everything fits; the sheet is as tall as its content.
+            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
+                if let r = copy.release {
+                    ReleaseHeaderView(release: r, removedFromDiscogs: !copy.discogsActive)
+                }
+                locationCard
+                if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
+            }.padding(AppStyle.pagePadding)
+            .animation(AppStyle.standardAnimation, value: error)
+        }.frame(width: 800)
+        .fixedSize(horizontal: false, vertical: true)
         .appGlassSurface(cornerRadius: 0)
         .presentationBackground(.clear)
     }
@@ -109,23 +108,8 @@ struct ReleaseHeaderView: View {
         }
     }
 }
-struct TracklistView: View {
-    let tracks: [Track]
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-            Text("Tracklist").font(.headline)
-            ForEach(Array(tracks.enumerated()), id: \.offset) { _, track in
-                HStack {
-                    Text(track.position).monospaced().foregroundStyle(.secondary).frame(width: 50, alignment: .leading)
-                    Text(track.title); Spacer(); Text(track.duration).monospacedDigit().foregroundStyle(.secondary)
-                }
-            }
-        }
-    }
-}
-
 /// Compact popover for a single click on a cover in the overview: cover,
-/// label, year and the tracklist. Copies behind one cover share the release,
+/// label, year and the tracklist (the detail window has none). Copies behind one cover share the release,
 /// so the first one stands for all of them. `expand` opens the detail window.
 struct RecordPopover: View {
     @Environment(\.modelContext) private var context
