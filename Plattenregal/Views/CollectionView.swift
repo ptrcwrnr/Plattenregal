@@ -19,6 +19,14 @@ struct CollectionView: View {
     // by all sections (see OverviewView); the statistics sheet keeps its own.
     private let sharedQuery: Binding<String>?
     @State private var localQuery = ""
+    /// Whether ⌘F has revealed the search bar; shared by the overview sections.
+    /// nil in the statistics sheet, where the field always sits in the header.
+    private let searchPresented: Binding<Bool>?
+    @FocusState private var searchFocused: Bool
+    private var showsSearchBar: Bool {
+        guard let searchPresented else { return false }
+        return searchPresented.wrappedValue || !query.isEmpty
+    }
     private var queryBinding: Binding<String> { sharedQuery ?? $localQuery }
     private var query: String { queryBinding.wrappedValue }
     @Query private var wantlistEntries: [WantlistEntry]
@@ -33,14 +41,13 @@ struct CollectionView: View {
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
     /// Width left for the cover columns, derived from the grid's *current*
     /// size on every layout pass — never cached, so it can't go stale when the
-    /// sidebar or window changes size.
+    /// window changes size.
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
         width - 2 * (AppStyle.pagePadding + 4) - alphabetGutter
     }
     // Room for the alphabet index; header, grid and table all leave it free
     // so their right edges stay aligned.
     private var alphabetGutter: CGFloat { 24 }
-    @Environment(\.gridReferenceWidth) private var gridReferenceWidth
     @State private var selection: Set<UUID> = []
     @State private var selectionAnchor: UUID?
     /// Latest card frames for the rubber band. A plain reference, not state:
@@ -64,12 +71,14 @@ struct CollectionView: View {
     init(
         section: Binding<OverviewSection>? = nil,
         query: Binding<String>? = nil,
+        searchPresented: Binding<Bool>? = nil,
         showShelf: @escaping (RecordCopy) -> Void,
         analyticsFilter: StatisticGroup? = nil,
         scrollPosition: Binding<UUID?> = .constant(nil)
     ) {
         self.section = section
         self.sharedQuery = query
+        self.searchPresented = searchPresented
         self.showShelf = showShelf
         self.analyticsFilter = analyticsFilter
         _savedScrollPosition = scrollPosition
@@ -193,11 +202,24 @@ struct CollectionView: View {
                     .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
+            if showsSearchBar, let section {
+                OverviewSearchControl(
+                    placeholder: "Collection durchsuchen",
+                    query: queryBinding,
+                    focus: $searchFocused,
+                    otherCount: wantlistMatches,
+                    otherSection: .wantlist
+                ) { section.wrappedValue = .wantlist }
+                .padding(.horizontal, AppStyle.pagePadding + 4)
+                .padding(.trailing, alphabetGutter)
+                .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
+                .transition(AppStyle.funnelTransition())
+            }
             collectionControls(items: items)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, AppStyle.pagePadding + 4)
                 .padding(.trailing, alphabetGutter)
-                .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
+                .padding(.top, showsSearchBar || (DemoMode.isActive && analyticsFilter == nil) ? AppStyle.rowSpacing : AppStyle.pagePadding)
                 .padding(.bottom, AppStyle.sectionSpacing)
             if sync.hasStatus {
                 DiscogsSyncStatusView()
@@ -238,7 +260,6 @@ struct CollectionView: View {
                             let width = gridContentWidth(in: proxy.size.width)
                             let columnCount = CoverGrid.columnCount(
                                 available: width,
-                                reference: gridReferenceWidth.map(gridContentWidth(in:)),
                                 minimum: DisplaySettings.coverSize(coverSize)
                             )
                             ScrollView {
@@ -374,6 +395,8 @@ struct CollectionView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         // The sync status line slides in/out and the content below follows smoothly.
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
+        .animation(AppStyle.standardAnimation, value: showsSearchBar)
+        .searchReveal(isPresented: searchPresented ?? .constant(false), focus: $searchFocused, query: query)
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
@@ -566,19 +589,13 @@ struct CollectionView: View {
         )
     }
 
-    // Same header bar as the wantlist: sections and search on the left,
-    // the layout switch on the right. The selection part
-    // only appears as text next to the search field.
+    // Same header bar as the wantlist: sections on the left, the layout
+    // switch on the right; the search bar above it appears with ⌘F. In the
+    // statistics sheet (no sections) the search stays here, always shown.
     private func collectionControls(items: [RecordCopy]) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            if let section { OverviewSectionPicker(selection: section) }
             if let section {
-                OverviewSearchControl(
-                    placeholder: "Collection durchsuchen",
-                    query: queryBinding,
-                    otherCount: wantlistMatches,
-                    otherSection: .wantlist
-                ) { section.wrappedValue = .wantlist }
+                OverviewSectionPicker(selection: section)
             } else {
                 AppSearchField(placeholder: "Collection durchsuchen", text: queryBinding)
                     .frame(maxWidth: 380)
@@ -768,6 +785,7 @@ struct MatchedTrackLine: View {
 struct OverviewSearchControl: View {
     let placeholder: String
     @Binding var query: String
+    var focus: FocusState<Bool>.Binding
     let otherCount: Int
     let otherSection: OverviewSection
     let openOtherSection: () -> Void
@@ -778,8 +796,8 @@ struct OverviewSearchControl: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            AppSearchField(placeholder: placeholder, text: $query)
-                .frame(maxWidth: 380)
+            AppSearchField(placeholder: placeholder, text: $query, focus: focus)
+                .frame(maxWidth: .infinity)
             if showsOtherSection {
                 Button(action: openOtherSection) {
                     Text("\(otherCount) in der \(otherSection.rawValue)")

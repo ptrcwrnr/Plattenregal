@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// The shelf page as one calm column: a slim header bar (search + status), the
+/// The shelf page as one calm column: a slim header bar (search after ⌘F, status), the
 /// KALLAX drawn as a single piece of furniture, and the selected compartment
 /// underneath at full width (spine strip, then a compact table of its records).
 struct KallaxView: View {
@@ -47,6 +47,9 @@ struct KallaxView: View {
     /// While the search field has focus, ⌘Z belongs to its text, not to the
     /// "Aus Fach entfernt" toast.
     @FocusState private var searchFocused: Bool
+    /// Whether ⌘F has revealed the search bar (see `SearchReveal`).
+    @State private var searchPresented = false
+    private var showsSearchBar: Bool { searchPresented || !searchQuery.isEmpty }
 
     /// The account the collection shows (see `DiscogsAccount.current`).
     private var owner: String? { DiscogsAccount.current(in: accounts)?.username }
@@ -197,6 +200,7 @@ struct KallaxView: View {
             VStack(alignment: .leading, spacing: 28) {
                 if DemoMode.isActive { DemoBanner() }
                 header
+                    // The search results float over the rack below.
                     .zIndex(1)
                 if activeCabinets.count > 1 { cabinetSwitcher }
                 ShelfFurniture(
@@ -236,6 +240,8 @@ struct KallaxView: View {
             if !searchQuery.isEmpty { applySearch() }
         }
         .onChange(of: searchQuery) { applySearch() }
+        .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: searchQuery)
+        .animation(AppStyle.standardAnimation, value: showsSearchBar)
         // Another account synced: other records count as in the collection.
         .onChange(of: owner) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         // Metadata and tracklist updates don't show up in `statsSignature`.
@@ -354,31 +360,40 @@ struct KallaxView: View {
         selectShelf(shelf)
     }
 
-    private var header: some View {
-        HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
-            HStack(alignment: .top, spacing: 4) {
-                ShelfSearchField(
-                    query: $searchQuery,
-                    focused: $searchFocused,
-                    matches: searchResults.placed,
-                    unplaced: searchResults.unplaced,
-                    hidden: searchResults.hidden,
-                    labels: rangeLabels,
-                    missing: missingIDs,
-                    onClear: { searchQuery = "" },
-                    place: startPlacement
-                )
-                .frame(maxWidth: .infinity)
-                let missing = missingCopies
+    /// The search bar (only after ⌘F) and the status controls beside it;
+    /// nothing at all when neither is there, so the rack moves up.
+    @ViewBuilder private var header: some View {
+        let missing = missingCopies
+        let hasStatus = !missing.isEmpty || !soldInShelves.isEmpty
+        if showsSearchBar || hasStatus {
+            HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
+                if showsSearchBar {
+                    ShelfSearchField(
+                        query: $searchQuery,
+                        focused: $searchFocused,
+                        matches: searchResults.placed,
+                        unplaced: searchResults.unplaced,
+                        hidden: searchResults.hidden,
+                        labels: rangeLabels,
+                        missing: missingIDs,
+                        onClear: { searchQuery = "" },
+                        place: startPlacement
+                    )
+                    .frame(maxWidth: .infinity)
+                    .transition(AppStyle.funnelTransition())
+                } else {
+                    Spacer(minLength: 0)
+                }
                 if !missing.isEmpty {
                     MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
                                          found: { setMissing($0, false) })
                 }
+                if !soldInShelves.isEmpty {
+                    ShelfStatusControl(soldInShelves: soldInShelves.count, removeSold: { confirmRemoveSold = true })
+                        .frame(height: AppStyle.controlHeight)
+                }
             }
-            if !soldInShelves.isEmpty {
-                ShelfStatusControl(soldInShelves: soldInShelves.count, removeSold: { confirmRemoveSold = true })
-                    .frame(height: AppStyle.controlHeight)
-            }
+            .transition(AppStyle.funnelTransition())
         }
     }
 

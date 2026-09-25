@@ -150,6 +150,10 @@ struct WantlistView: View {
     @State private var changes = LibraryChanges.shared
     /// Shared with the other overview sections (see OverviewView).
     @Binding var query: String
+    /// Whether ⌘F has revealed the search bar; shared like `query`.
+    @Binding var searchPresented: Bool
+    @FocusState private var searchFocused: Bool
+    private var showsSearchBar: Bool { searchPresented || !query.isEmpty }
     @Query private var copies: [RecordCopy]
     @Query private var accounts: [DiscogsAccount]
     @Environment(\.isActivePage) private var isActivePage
@@ -171,7 +175,6 @@ struct WantlistView: View {
     @State private var appliedQuery = ""
     /// False until the first `rebuild`, so "Keine Treffer" doesn't flash.
     @State private var loaded = false
-    @Environment(\.gridReferenceWidth) private var gridReferenceWidth
     @AppStorage(DisplaySettings.wantlistLayoutKey) private var layout = OverviewLayout.grid
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
     // Filtered/sorted once per change of entries or query, not on every render.
@@ -193,6 +196,18 @@ struct WantlistView: View {
                 DemoBanner()
                     .padding(.horizontal, pageMargin)
                     .padding(.trailing, alphabetGutter)
+            }
+            if showsSearchBar {
+                OverviewSearchControl(
+                    placeholder: "Wantlist durchsuchen",
+                    query: $query,
+                    focus: $searchFocused,
+                    otherCount: collectionMatches,
+                    otherSection: .collection
+                ) { section = .collection }
+                .padding(.horizontal, pageMargin)
+                .padding(.trailing, alphabetGutter)
+                .transition(AppStyle.funnelTransition())
             }
             header
                 .padding(.horizontal, pageMargin)
@@ -239,6 +254,8 @@ struct WantlistView: View {
         .padding(.top, AppStyle.pagePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
+        .animation(AppStyle.standardAnimation, value: showsSearchBar)
+        .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: query)
         .task { rebuildCollectionIndex(); rebuild() }
         .onChange(of: entries) { _, _ in rebuild() }
         .onChange(of: copies) { _, _ in rebuildCollectionIndex(); applyQuery() }
@@ -311,12 +328,11 @@ struct WantlistView: View {
     /// Covers like the collection grid; click opens the release on Discogs.
     private func grid(_ rows: [WantlistEntry]) -> some View {
         // Width read live on every layout pass (no cached copy that could lag
-        // behind a sidebar toggle); flexible columns keep covers inside their cells.
+        // behind a window resize); flexible columns keep covers inside their cells.
         GeometryReader { proxy in
             let width = gridContentWidth(in: proxy.size.width)
             let columnCount = CoverGrid.columnCount(
                 available: width,
-                reference: gridReferenceWidth.map(gridContentWidth(in:)),
                 minimum: DisplaySettings.coverSize(coverSize)
             )
             ScrollView {
@@ -366,12 +382,6 @@ struct WantlistView: View {
     private var header: some View {
         HStack(spacing: AppStyle.rowSpacing) {
             OverviewSectionPicker(selection: $section)
-            OverviewSearchControl(
-                placeholder: "Wantlist durchsuchen",
-                query: $query,
-                otherCount: collectionMatches,
-                otherSection: .collection
-            ) { section = .collection }
             Spacer(minLength: AppStyle.rowSpacing)
             OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation), iconOnly: true)
         }

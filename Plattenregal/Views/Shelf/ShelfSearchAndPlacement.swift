@@ -37,7 +37,9 @@ struct ShelfSearchField: View {
             TextField("Platte im Regal suchen …", text: $text)
                 .textFieldStyle(.plain)
                 .focused(focused)
-                .onExitCommand(perform: clear)
+                // Esc clears the query; with an empty field it gives up the
+                // focus, which hides the search bar again (see `SearchReveal`).
+                .onExitCommand { if text.isEmpty { focused.wrappedValue = false } else { clear() } }
             if !text.isEmpty {
                 Button(action: clear) {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)

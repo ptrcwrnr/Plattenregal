@@ -6,13 +6,16 @@ enum Destination: String, CaseIterable, Identifiable {
     case statistics = "Statistik"
     case shelf = "Regal"
     var id: String { rawValue }
-    var symbol: String {
+    /// ⌘1 … ⌘3, in the order of the switch in the toolbar.
+    var shortcut: KeyEquivalent {
         switch self {
-        case .overview: "square.stack"
-        case .statistics: "chart.bar.xaxis"
-        case .shelf: "square.grid.3x3"
+        case .overview: "1"
+        case .statistics: "2"
+        case .shelf: "3"
         }
     }
+    /// Pages with a search that ⌘F reveals.
+    var hasSearch: Bool { self != .statistics }
 }
 /// The two views inside "Übersicht", switched from the picker in each page's header bar.
 enum OverviewSection: String, CaseIterable, Identifiable {
@@ -23,26 +26,25 @@ enum OverviewSection: String, CaseIterable, Identifiable {
 private struct ActivePageKey: EnvironmentKey {
     static let defaultValue = true
 }
-private struct GridReferenceWidthKey: EnvironmentKey {
-    static let defaultValue: CGFloat? = nil
+private struct SearchRequestKey: EnvironmentKey {
+    static let defaultValue = 0
 }
 extension EnvironmentValues {
     var isActivePage: Bool {
         get { self[ActivePageKey.self] }
         set { self[ActivePageKey.self] = newValue }
     }
-    /// Width a page would have *with the sidebar shown*. Cover grids derive
-    /// their column count from it, so toggling the sidebar keeps the columns
-    /// and only scales the covers; `nil` (e.g. in sheets) = use the own width.
-    var gridReferenceWidth: CGFloat? {
-        get { self[GridReferenceWidthKey.self] }
-        set { self[GridReferenceWidthKey.self] = newValue }
+    /// Counts ⌘F presses; the active page reveals its search on each change
+    /// (see `SearchReveal`).
+    var searchRequest: Int {
+        get { self[SearchRequestKey.self] }
+        set { self[SearchRequestKey.self] = newValue }
     }
 }
 
 struct RootView: View {
     @Environment(\.modelContext) private var context
-    @State private var destination: Destination? = {
+    @State private var destination: Destination = {
         #if DEBUG
         if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-page=") }),
            let page = Destination(rawValue: String(raw.dropFirst("--preview-page=".count))) { return page }
@@ -50,6 +52,8 @@ struct RootView: View {
         #endif
         return AppPreferences.shared.startPage.destination
     }()
+    /// Bumped by ⌘F / the search button; see `EnvironmentValues.searchRequest`.
+    @State private var searchRequest = 0
     @State private var highlight: UUID?
     /// A record without a shelf whose alphabetical place the shelf page should show.
     @State private var placing: UUID?
@@ -68,27 +72,31 @@ struct RootView: View {
     }
 
     /// No sidebar: the three pages sit in a segmented switch in the middle of
-    /// the toolbar (Liquid Glass), the settings as a gear on the right.
+    /// the toolbar (Liquid Glass); search and settings on the right.
     private var library: some View {
-        GeometryReader { geometry in
-            detailContent(size: geometry.size)
-        }
-        .navigationTitle(activePage.rawValue)
-        .toolbar(removing: .title)
-        .toolbar {
-            ToolbarItem(placement: .principal) { pagePicker }
-            ToolbarItem(placement: .primaryAction) {
-                SettingsLink { Label("Einstellungen", systemImage: "gearshape") }
-                    .help("Einstellungen")
+        pages
+            .environment(\.searchRequest, searchRequest)
+            // The window title (Fenster menu, Mission Control) names the page;
+            // the switch already shows it, so the toolbar doesn't repeat it.
+            .navigationTitle(destination.rawValue)
+            .toolbar(removing: .title)
+            .toolbar {
+                ToolbarItem(placement: .principal) { pagePicker }
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button { searchRequest += 1 } label: { Label("Suchen", systemImage: "magnifyingglass") }
+                        .keyboardShortcut("f", modifiers: .command)
+                        .disabled(!destination.hasSearch)
+                        .help("Suchen (⌘F)")
+                    SettingsLink { Label("Einstellungen", systemImage: "gearshape") }
+                        .help("Einstellungen (⌘,)")
+                }
             }
-        }
+            .background(pageShortcuts)
     }
 
     private var pagePicker: some View {
-        Picker("Rubrik", selection: Binding(get: { activePage }, set: { destination = $0 })) {
-            ForEach(Destination.allCases) { page in
-                Label(page.rawValue, systemImage: page.symbol).labelStyle(.titleAndIcon).tag(page)
-            }
+        Picker("Rubrik", selection: $destination) {
+            ForEach(Destination.allCases) { Text($0.rawValue).tag($0) }
         }
         .labelsHidden()
         .pickerStyle(.segmented)
@@ -96,14 +104,24 @@ struct RootView: View {
         .fixedSize()
     }
 
+    /// ⌘1 … ⌘3 switch pages, like the tabs of a browser window.
+    private var pageShortcuts: some View {
+        ForEach(Destination.allCases) { page in
+            Button(page.rawValue) { destination = page }
+                .keyboardShortcut(page.shortcut, modifiers: .command)
+        }
+        .opacity(0).frame(width: 0, height: 0)
+        .accessibilityHidden(true)
+    }
+
     /// Every page is built once and kept alive; switching only changes which
     /// one is visible. Pages therefore keep their loaded data, sorting and
     /// scroll position, and switching pages is instant instead
     /// of rebuilding (and re-sorting the whole collection) on every visit.
-    private func detailContent(size: CGSize) -> some View {
-        ZStack {
+    private var pages: some View {
+        ZStack(alignment: .topLeading) {
             ForEach(Destination.allCases) { page in
-                let active = page == activePage
+                let active = page == destination
                 pageContent(page)
                     .environment(\.isActivePage, active)
                     .animation(AppStyle.fadeAnimation) { $0.opacity(active ? 1 : 0) }
@@ -112,10 +130,9 @@ struct RootView: View {
                     .accessibilityHidden(!active)
             }
         }
-        .frame(width: size.width, height: size.height, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    private var activePage: Destination { destination ?? .overview }
     @ViewBuilder private func pageContent(_ page: Destination) -> some View {
         switch page {
         case .overview: OverviewView(showShelf: showShelf)
@@ -132,7 +149,7 @@ struct RootView: View {
 }
 
 /// "Übersicht": collection and wantlist behind one
-/// picker. Like the sidebar pages, every section is built once and kept alive,
+/// picker. Like the pages, every section is built once and kept alive,
 /// so switching keeps each section's data and scroll position.
 struct OverviewView: View {
     @Environment(\.isActivePage) private var isActivePage
@@ -142,6 +159,8 @@ struct OverviewView: View {
     /// One search for all sections, so a hit can be followed from the
     /// collection to the wantlist and back.
     @State private var query = ""
+    /// The search bar revealed by ⌘F, shared like the query.
+    @State private var searchPresented = false
     // Deliberately session-only: returning to a section restores its place,
     // while every fresh app launch still starts at the top.
     @State private var scrollPositions: [OverviewSection: UUID] = [:]
@@ -167,6 +186,7 @@ struct OverviewView: View {
             CollectionView(
                 section: $section,
                 query: $query,
+                searchPresented: $searchPresented,
                 showShelf: showShelf,
                 scrollPosition: Binding(
                     get: { scrollPositions[item] },
@@ -174,7 +194,7 @@ struct OverviewView: View {
                 )
             )
             .id(item)
-        case .wantlist: WantlistView(query: $query, section: $section)
+        case .wantlist: WantlistView(query: $query, searchPresented: $searchPresented, section: $section)
         }
     }
 }

@@ -51,7 +51,7 @@ enum AppStyle {
     // MARK: Motion
     // One curve for the whole app: `.smooth`, a critically damped spring — no
     // visible overshoot, and it retargets cleanly when interrupted (e.g. the
-    // sidebar toggled again mid-animation). Only the duration varies.
+    // a page switched again mid-animation). Only the duration varies.
     // With "Reduce motion" on, nothing travels: movement is dropped and only
     // fades remain.
 
@@ -64,7 +64,7 @@ enum AppStyle {
     /// Crossfade between pages, sections and grid ↔ list. Kept with reduce motion.
     static let fadeAnimation = Animation.smooth(duration: 0.25)
     /// Anything that moves or resizes: records travelling to a new sort
-    /// position, columns reflowing, the sidebar sliding. `nil` (= instant)
+    /// position, columns reflowing, a search bar sliding in. `nil` (= instant)
     /// with reduce motion.
     static var layoutAnimation: Animation? { reduceMotion ? nil : .smooth(duration: 0.3) }
     /// Insert/remove transition matching the above: slide + fade, or just fade.
@@ -164,17 +164,20 @@ struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
     var onSubmit: (() -> Void)?
+    /// Focus of the text field, for fields that ⌘F reveals (see `searchReveal`).
+    var focus: FocusState<Bool>.Binding?
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            TextField(placeholder, text: $text)
-                .textFieldStyle(.plain)
+            focusable(TextField(placeholder, text: $text).textFieldStyle(.plain))
                 .onSubmit { onSubmit?() }
-                // Esc clears the query; with an empty field it passes through
-                // (e.g. to close the sheet the field sits in).
+                // Esc clears the query; with an empty field it gives up the
+                // focus (which hides a revealed search bar) or, without one,
+                // passes through (e.g. to close the sheet the field sits in).
                 .onKeyPress(.escape) {
-                    guard !text.isEmpty else { return .ignored }
-                    text = ""
+                    if !text.isEmpty { text = ""; return .handled }
+                    guard let focus else { return .ignored }
+                    focus.wrappedValue = false
                     return .handled
                 }
             if !text.isEmpty {
@@ -187,6 +190,49 @@ struct AppSearchField: View {
         .padding(.horizontal, 10)
         .frame(height: AppStyle.controlHeight)
         .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
+    }
+
+    @ViewBuilder private func focusable(_ field: some View) -> some View {
+        if let focus { field.focused(focus) } else { field }
+    }
+}
+
+/// How a page's search appears: hidden until ⌘F (or the search button in the
+/// toolbar), then it slides in at the top with the cursor in it. It stays while
+/// it holds a query and goes away again once it is empty and loses the focus
+/// (Esc, clicking elsewhere, another page).
+struct SearchReveal: ViewModifier {
+    @Environment(\.isActivePage) private var isActivePage
+    @Environment(\.searchRequest) private var searchRequest
+    @Binding var isPresented: Bool
+    var focus: FocusState<Bool>.Binding
+    let query: String
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: searchRequest) {
+                // Every page hears the request; only the visible one answers.
+                guard isActivePage else { return }
+                withAnimation(AppStyle.standardAnimation) { isPresented = true }
+                // The field is inserted by this update; focus it once it exists.
+                DispatchQueue.main.async { focus.wrappedValue = true }
+            }
+            .onChange(of: focus.wrappedValue) { _, focused in if !focused { hideIfEmpty() } }
+            // Cleared from outside (e.g. picking a result) while not typing.
+            .onChange(of: query) { _, new in if new.isEmpty && !focus.wrappedValue { hideIfEmpty() } }
+            .onChange(of: isActivePage) { _, active in if !active { hideIfEmpty() } }
+    }
+
+    private func hideIfEmpty() {
+        guard isPresented, query.isEmpty else { return }
+        withAnimation(AppStyle.standardAnimation) { isPresented = false }
+    }
+}
+
+extension View {
+    /// See `SearchReveal`. Show the search while `isPresented || !query.isEmpty`.
+    func searchReveal(isPresented: Binding<Bool>, focus: FocusState<Bool>.Binding, query: String) -> some View {
+        modifier(SearchReveal(isPresented: isPresented, focus: focus, query: query))
     }
 }
 
@@ -371,14 +417,6 @@ enum CoverGrid {
         return max(1, Int((max(0, available) + spacing) / (minimum + spacing)))
     }
 
-    /// Column count from `reference` (the width with the sidebar shown, see
-    /// `gridReferenceWidth`), so the sidebar only scales the covers. Capped by
-    /// the real width so covers never get much smaller than `minimum`.
-    static func columnCount(available: CGFloat, reference: CGFloat?, minimum: CGFloat) -> Int {
-        min(columnCount(available: reference ?? available, minimum: minimum),
-            columnCount(available: available, minimum: minimum * 0.75))
-    }
-
     static func columns(count: Int) -> [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: spacing, alignment: .top), count: count)
     }
@@ -386,7 +424,7 @@ enum CoverGrid {
 
 extension View {
     /// Motion for a cover grid of `width` with `columnCount` columns.
-    /// - The grid growing in one step (sidebar hidden, full screen, zoom)
+    /// - The grid growing in one step (full screen, zoom)
     ///   animates; the column count stays the same, so every cover just scales
     ///   up within its own cell and none crosses another.
     /// - Shrinking applies at once, so a cover is never wider than the space

@@ -166,7 +166,6 @@ struct StatisticsView: View {
                 AppSheetHeader(title: group.name, onClose: { filter = nil })
                 CollectionView(showShelf: { copy in filter = nil; showShelf(copy) }, analyticsFilter: group)
             }.frame(minWidth: 850, minHeight: 650)
-            .environment(\.gridReferenceWidth, nil)
         }
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy) { opened = nil; showShelf(copy) } }
     }
