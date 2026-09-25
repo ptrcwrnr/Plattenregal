@@ -1,3 +1,9 @@
+# Export ohne Zustand, Notizen und Bewertung · 25.09.2026
+
+- Die Spaltengruppe „Exemplar“ enthält nur noch Discogs-Ordner und Hinzufügedatum (Wantlist: Hinzufügedatum). „Zustand Platte“, „Zustand Hülle“, „Notizen“ und „Bewertung“ sind entfallen, ebenso `DiscogsNote.fieldTitle`.
+- Der Szenario-Test prüft den Schutz vor Excel-Formeln jetzt an einem Label, das mit „=“ beginnt.
+- Löschhinweis auf der Regalseite erwähnt keine Notizen mehr.
+
 # Eigene Angaben pro Exemplar entfernt · 25.09.2026
 
 - **Zustand, Kaufpreis, Kaufdatum, Notizen und das lokale Hinzufügedatum** sind aus der App verschwunden: aus dem Bearbeiten-Fenster, den Demo-Daten und dem Datenmodell. Neues Schema **V14** (leichte Migration von V13); vorhandene Werte werden dabei verworfen. Export und Sicherung enthielten sie nicht – die Export-Spalten „Zustand“, „Notizen“ und „Bewertung“ kommen aus Discogs und bleiben.

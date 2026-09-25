@@ -142,7 +142,7 @@ extension AllTests {
                 let release = index <= 8000 ? index : index - 8000
                 let basic = DiscogsBasicInformation(id: release, title: "Album \(release)",
                     artists: [.init(id: release % names.count + 1, name: "\(names[release % names.count]) \(release / 97)", join: nil)],
-                    year: 1960 + release % 65, labels: [.init(id: release % 300, name: "Label \(release % 300)", catno: "CAT-\(release)")],
+                    year: 1960 + release % 65, labels: [.init(id: release % 300, name: "=Label \(release % 300)", catno: "CAT-\(release)")],
                     formats: [.init(name: "Vinyl", qty: "1", descriptions: ["LP", "Album"])], genres: release % 2 == 0 ? ["Electronic"] : ["Electronic", "Rock"],
                     styles: [["Ambient", "Techno"], ["Krautrock"], []][release % 3], cover_image: nil, thumb: nil, resource_url: nil, master_id: nil)
                 return DiscogsCollectionDTO(id: release, instance_id: index, folder_id: 1, date_added: "2020-01-01T10:00:00+01:00",
@@ -197,8 +197,8 @@ extension AllTests {
             }
             #expect(table.rows.count == 10_000)
             let csv = measure("CSV schreiben") { CSVWriter.data(for: table, delimiter: .semicolon) }
-            // Notes starting with "=" stay text in Excel.
-            #expect(String(decoding: csv, as: UTF8.self).contains("'=Notiz 1"))
+            // Cells starting with "=" stay text in Excel.
+            #expect(String(decoding: csv, as: UTF8.self).contains("'=Label 1"))
             let pdf = try measure("PDF schreiben") { try PDFListWriter.data(for: table, title: "Test", subtitle: "10.000") }
             #expect(pdf.count > 100_000)
 

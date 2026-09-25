@@ -283,7 +283,7 @@ struct KallaxView: View {
             }
             Button("Abbrechen", role: .cancel) { pendingDelete = nil }
         } message: {
-            Text("Die Platte ist nicht (mehr) in deiner Discogs-Collection. Löschen entfernt sie samt Fach, Position und deinen Notizen; die übrigen Platten im Fach rücken auf. Das lässt sich nicht rückgängig machen.")
+            Text("Die Platte ist nicht (mehr) in deiner Discogs-Collection. Löschen entfernt sie samt Fach und Position; die übrigen Platten im Fach rücken auf. Das lässt sich nicht rückgängig machen.")
         }
         .confirmationDialog(
             "Physische Reihenfolge ändern?",

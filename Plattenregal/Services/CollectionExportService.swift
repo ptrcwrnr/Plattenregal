@@ -67,7 +67,7 @@ enum ExportColumnGroup: String, CaseIterable, Identifiable {
     var hint: String {
         switch self {
         case .location: "Regal, Fach, Reihe, Spalte, Beschriftung und Position"
-        case .copy: "Zustand, Bewertung, Notizen, Ordner und Datum"
+        case .copy: "Discogs-Ordner und Hinzufügedatum"
         case .discogs: "Release-ID, Master-ID und Link"
         case .tracklist: "Alle Titel in einer Spalte"
         }
@@ -99,8 +99,7 @@ nonisolated enum ExportColumn {
     static let catalogNumber = "Katalognummer", format = "Format", country = "Land"
     static let genres = "Genres", styles = "Stile"
     static let cabinet = "Regal", shelf = "Fach", row = "Reihe", column = "Spalte", shelfLabel = "Beschriftung", position = "Position"
-    static let mediaCondition = "Zustand Platte", sleeveCondition = "Zustand Hülle", notes = "Notizen"
-    static let rating = "Bewertung", folder = "Ordner", added = "Hinzugefügt"
+    static let folder = "Ordner", added = "Hinzugefügt"
     static let releaseID = "Release-ID", masterID = "Master-ID", link = "Discogs-Link"
     static let tracklist = "Tracklist"
 }
@@ -152,8 +151,7 @@ struct CollectionExportService {
             columns += [ExportColumn.cabinet, ExportColumn.shelf, ExportColumn.row, ExportColumn.column, ExportColumn.shelfLabel, ExportColumn.position]
         }
         if groups.contains(.copy) {
-            columns += [ExportColumn.mediaCondition, ExportColumn.sleeveCondition, ExportColumn.notes,
-                        ExportColumn.rating, ExportColumn.folder, ExportColumn.added]
+            columns += [ExportColumn.folder, ExportColumn.added]
         }
         if groups.contains(.discogs) { columns += [ExportColumn.releaseID, ExportColumn.masterID, ExportColumn.link] }
         if groups.contains(.tracklist) { columns.append(ExportColumn.tracklist) }
@@ -170,14 +168,7 @@ struct CollectionExportService {
                 }
             }
             if groups.contains(.copy) {
-                let notes = Self.notes(copy.discogsNotes)
-                let other = notes.filter { $0.field_id != 1 && $0.field_id != 2 }
-                    .map { $0.field_id == 3 ? $0.value : "\($0.fieldTitle): \($0.value)" }
-                values += [notes.first { $0.field_id == 1 }?.value ?? "",
-                           notes.first { $0.field_id == 2 }?.value ?? "",
-                           other.joined(separator: " · "),
-                           Self.rating(copy.discogsRating),
-                           copy.discogsFolderID.flatMap { folders["\(copy.discogsOwner)-\($0)"] } ?? "",
+                values += [copy.discogsFolderID.flatMap { folders["\(copy.discogsOwner)-\($0)"] } ?? "",
                            Self.date(copy.discogsDateAdded)]
             }
             if groups.contains(.discogs) { values += Self.discogsValues(copy.release) }
@@ -192,7 +183,7 @@ struct CollectionExportService {
         let entries = try context.fetch(FetchDescriptor<WantlistEntry>()).filter { owner == nil || $0.owner == owner }
         let groups = options.groups
         var columns = Self.releaseColumns
-        if groups.contains(.copy) { columns += [ExportColumn.notes, ExportColumn.rating, ExportColumn.added] }
+        if groups.contains(.copy) { columns.append(ExportColumn.added) }
         if groups.contains(.discogs) { columns += [ExportColumn.releaseID, ExportColumn.masterID, ExportColumn.link] }
         if groups.contains(.tracklist) { columns.append(ExportColumn.tracklist) }
 
@@ -201,7 +192,7 @@ struct CollectionExportService {
         let rows = sorted.map { entry in
             var values = Self.releaseValues(entry.release)
             if groups.contains(.copy) {
-                values += [entry.notes ?? "", Self.rating(entry.rating), Self.date(entry.dateAdded)]
+                values.append(Self.date(entry.dateAdded))
             }
             if groups.contains(.discogs) { values += Self.discogsValues(entry.release) }
             if groups.contains(.tracklist) { values.append(Self.tracklist(entry.release)) }
@@ -259,16 +250,6 @@ struct CollectionExportService {
             return track.duration.isEmpty ? head : "\(head) (\(track.duration))"
         }
         .joined(separator: " / ")
-    }
-
-    private static func notes(_ data: Data?) -> [DiscogsNote] {
-        guard let data, let notes = try? JSONDecoder().decode([DiscogsNote].self, from: data) else { return [] }
-        return notes.filter { !$0.value.isEmpty }
-    }
-
-    private static func rating(_ value: Int?) -> String {
-        guard let value, value > 0 else { return "" }
-        return "\(value)"
     }
 
     /// ISO dates sort and import cleanly in every spreadsheet app. The local
