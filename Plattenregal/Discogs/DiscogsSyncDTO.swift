@@ -47,12 +47,23 @@ nonisolated struct DiscogsBasicInformation: Codable, Sendable {
     let resource_url: String?
     let master_id: Int?
 
+    /// "A & B", "A, B", "A Feat. B": Discogs puts the joining word on the
+    /// artist before it – a comma sticks to the name, anything else stands
+    /// between spaces, and a missing one reads as a comma.
+    static func artistLine(_ artists: [Artist]) -> String {
+        var line = ""
+        for (index, artist) in artists.enumerated() {
+            line += artist.displayName
+            guard index < artists.count - 1 else { break }
+            let join = (artist.join ?? "").trimmingCharacters(in: .whitespaces)
+            line += join.isEmpty || join == "," ? ", " : " \(join) "
+        }
+        return line
+    }
+
     func apply(to release: Release, at date: Date) throws {
         release.discogsID = id; release.title = title
-        let artists = artists ?? []
-        release.artist = artists.enumerated().map { index, artist in
-            artist.displayName + (index < artists.count - 1 ? " \(artist.join ?? ",") " : "")
-        }.joined()
+        release.artist = Self.artistLine(artists ?? [])
         release.year = year.flatMap { $0 > 0 ? $0 : nil }
         release.label = (labels ?? []).map(\.name).joined(separator: ", ")
         release.catalogNumber = (labels ?? []).compactMap(\.catno).joined(separator: ", ")

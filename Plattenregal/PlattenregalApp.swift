@@ -39,6 +39,11 @@ import OSLog
         }
         catch StorageError.alreadyOpen {
             container = nil; startupError = nil; openElsewhere = true
+            let own = ProcessInfo.processInfo.processIdentifier
+            if let other = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
+                .first(where: { $0.processIdentifier != own && !$0.isTerminated }) {
+                AppLog.handMarkerBack(to: other.processIdentifier)
+            }
         }
         catch {
             container = nil; startupError = error.localizedDescription; openElsewhere = false

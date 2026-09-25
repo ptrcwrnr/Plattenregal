@@ -232,6 +232,7 @@ extension AllTests {
             // Cabinet and reset errors used to fall back to the generic text.
             #expect(CabinetError.lastActive.userMessage == CabinetError.lastActive.errorDescription)
             #expect(ResetError.tokenNotRemoved.userMessage == ResetError.tokenNotRemoved.errorDescription)
+            #expect(StorageError.alreadyOpen.userMessage == StorageError.alreadyOpen.errorDescription)
             #expect(FileTransferError.folderUnavailable.userMessage.contains("nicht erreichbar"))
             #expect(URLError(.timedOut).userMessage.contains("rechtzeitig"))
         }
@@ -409,6 +410,16 @@ extension AllTests {
             #expect(release.displayArtist == "Kraftwerk")
             #expect(release.displayTitle == "Computerwelt")
             #expect(release.coverURL == "https://example.com/cover.jpg")
+        }
+        @Test func artistLineFollowsDiscogsJoins() {
+            typealias A = DiscogsBasicInformation.Artist
+            func line(_ artists: [A]) -> String { DiscogsBasicInformation.artistLine(artists) }
+            #expect(line([A(id: 1, name: "Moby", join: ","), A(id: 2, name: "Kid", join: "")]) == "Moby, Kid")
+            #expect(line([A(id: 1, name: "A", join: "&"), A(id: 2, name: "B", join: nil)]) == "A & B")
+            #expect(line([A(id: 1, name: "A", join: "Feat."), A(id: 2, name: "B", join: "")]) == "A Feat. B")
+            #expect(line([A(id: 1, name: "A", join: ""), A(id: 2, name: "B", join: nil)]) == "A, B")
+            #expect(line([A(id: 1, name: "Solo", join: "")]) == "Solo")
+            #expect(line([]) == "")
         }
         @Test func positionsSurviveReload() throws {
             let (container, shelves, service) = try fixture()

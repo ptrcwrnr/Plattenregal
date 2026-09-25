@@ -12,6 +12,7 @@ extension ShelfBackupError: UserFacingError {}
 extension FileTransferError: UserFacingError {}
 extension CabinetError: UserFacingError {}
 extension ResetError: UserFacingError {}
+extension StorageError: UserFacingError {}
 
 extension Error {
     /// What the user reads when something fails: plain German, no error

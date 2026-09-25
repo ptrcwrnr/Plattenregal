@@ -84,6 +84,14 @@ nonisolated enum AppLog {
         installCrashHandlers(logPath: fileURL.path, version: version)
     }
 
+    /// This instance may not open the collection (another one has it): the
+    /// running marker goes back to that one, so how *its* session ends is
+    /// still told at the next launch – this instance quitting won't remove it.
+    static func handMarkerBack(to pid: Int32) {
+        guard isEnabled, directory != nil else { return }
+        FileManager.default.createFile(atPath: runningMarker.path, contents: Data("\(pid)".utf8))
+    }
+
     /// Process that wrote the running marker; `0` for markers of older
     /// versions (empty file), `nil` when there is none.
     private static func markerPID() -> Int32? {
