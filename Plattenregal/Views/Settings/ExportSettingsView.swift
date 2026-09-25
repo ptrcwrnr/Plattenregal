@@ -216,12 +216,7 @@ struct ExportSettingsView: View {
 
     private func segmented<Value: Hashable>(_ selection: Binding<Value>, _ values: [Value],
                                             title: @escaping (Value) -> String) -> some View {
-        Picker("", selection: selection) {
-            ForEach(values, id: \.self) { Text(title($0)).tag($0) }
-        }
-        .labelsHidden()
-        .pickerStyle(.segmented)
-        .fixedSize()
+        GlassSegmentedPicker(selection: selection, options: values) { Text(title($0)) }
     }
 }
 

@@ -1,27 +1,24 @@
 import SwiftUI
 import SwiftData
 
+/// The pages of the main window, in the order of the switch in the toolbar.
 enum Destination: String, CaseIterable, Identifiable {
-    case overview = "Übersicht"
+    case collection = "Collection"
+    case wantlist = "Wantlist"
     case shelf = "Regal"
     case statistics = "Statistik"
     var id: String { rawValue }
-    /// ⌘1 … ⌘3, in the order of the switch in the toolbar.
+    /// ⌘1 … ⌘4, in the order of the switch in the toolbar.
     var shortcut: KeyEquivalent {
         switch self {
-        case .overview: "1"
-        case .shelf: "2"
-        case .statistics: "3"
+        case .collection: "1"
+        case .wantlist: "2"
+        case .shelf: "3"
+        case .statistics: "4"
         }
     }
     /// Pages with a search that ⌘F reveals.
     var hasSearch: Bool { self != .statistics }
-}
-/// The two views inside "Übersicht", switched from the picker in each page's header bar.
-enum OverviewSection: String, CaseIterable, Identifiable {
-    case collection = "Collection"
-    case wantlist = "Wantlist"
-    var id: String { rawValue }
 }
 
 struct RootView: View {
@@ -38,6 +35,9 @@ struct RootView: View {
     }())
     /// ⌘F / the search button; see `SearchRequests`.
     @State private var searchRequests = SearchRequests()
+    /// One search for collection and wantlist, so a hit can be followed from
+    /// one to the other.
+    @State private var search = LibrarySearch()
     /// "Im Regal anzeigen" from any page, for the shelf page.
     @State private var shelfRequests = ShelfRequests()
     // Loaded once here, alongside collection startup, so the Statistik page is
@@ -54,8 +54,9 @@ struct RootView: View {
             .task { CoverCache.shared.pruneDisk() }
     }
 
-    /// No sidebar: the three pages sit in a segmented switch in the middle of
-    /// the toolbar (Liquid Glass); search and settings on the right.
+    /// No sidebar: the pages sit in a switch in the middle of the toolbar,
+    /// grid/list and search on the right, all in the toolbar's Liquid Glass.
+    /// The settings are where a Mac app has them: Plattenregal menu and ⌘,.
     private var library: some View {
         pages
             .environment(\.searchRequests, searchRequests)
@@ -66,15 +67,14 @@ struct RootView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) { PagePicker(selection: destination) }
                 ToolbarItemGroup(placement: .primaryAction) {
+                    LayoutSwitch(selection: destination)
                     SearchButton(selection: destination) { searchRequests.request() }
-                    SettingsLink { Label("Einstellungen", systemImage: "gearshape") }
-                        .help("Einstellungen (⌘,)")
                 }
             }
             .background(pageShortcuts)
     }
 
-    /// ⌘1 … ⌘3 switch pages, like the tabs of a browser window.
+    /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window.
     private var pageShortcuts: some View {
         ForEach(Destination.allCases) { page in
             Button(page.rawValue) { destination.current = page }
@@ -96,7 +96,8 @@ struct RootView: View {
 
     @ViewBuilder private func pageContent(_ page: Destination) -> some View {
         switch page {
-        case .overview: OverviewView(showShelf: showShelf)
+        case .collection: CollectionView(pages: destination, search: search, showShelf: showShelf)
+        case .wantlist: WantlistView(search: search, pages: destination)
         case .statistics: StatisticsView(model: statisticsModel, showShelf: showShelf)
         case .shelf: KallaxView(requests: shelfRequests)
         }
@@ -113,73 +114,45 @@ struct RootView: View {
 private struct PagePicker: View {
     @Bindable var selection: PageSelection<Destination>
     var body: some View {
-        Picker("Rubrik", selection: $selection.current) {
-            ForEach(Destination.allCases) { Text($0.rawValue).tag($0) }
+        GlassSegmentedPicker(selection: $selection.current, options: Destination.allCases, glass: false) {
+            Text($0.rawValue)
         }
-        .labelsHidden()
-        .pickerStyle(.segmented)
-        .controlSize(.large)
-        .fixedSize()
+        .accessibilityLabel("Rubrik")
     }
 }
 
-/// ⌘F: reveals the search of the page shown; off where there is none.
+/// Grid or list for collection and wantlist; absent on the other pages.
+private struct LayoutSwitch: View {
+    let selection: PageSelection<Destination>
+    @AppStorage(DisplaySettings.collectionLayoutKey) private var collectionLayout = OverviewLayout.grid
+    @AppStorage(DisplaySettings.wantlistLayoutKey) private var wantlistLayout = OverviewLayout.grid
+    var body: some View {
+        switch selection.current {
+        case .collection: OverviewLayoutPicker(selection: $collectionLayout.animation(AppStyle.fadeAnimation), glass: false)
+        case .wantlist: OverviewLayoutPicker(selection: $wantlistLayout.animation(AppStyle.fadeAnimation), glass: false)
+        case .shelf, .statistics: EmptyView()
+        }
+    }
+}
+
+/// ⌘F: reveals the search of the page shown; absent where there is none.
 private struct SearchButton: View {
     let selection: PageSelection<Destination>
     let action: () -> Void
     var body: some View {
-        Button(action: action) { Label("Suchen", systemImage: "magnifyingglass") }
-            .keyboardShortcut("f", modifiers: .command)
-            .disabled(!selection.current.hasSearch)
-            .help("Suchen (⌘F)")
-    }
-}
-
-/// "Übersicht": collection and wantlist behind one
-/// picker. Like the pages, every section is built once and kept alive (`PageStack`),
-/// so switching keeps each section's data and scroll position.
-struct OverviewView: View {
-    @Environment(\.modelContext) private var context
-    let showShelf: (RecordCopy) -> Void
-    /// Starts on the section chosen in the settings (Collection or Wantlist).
-    @State private var section = PageSelection<OverviewSection>(AppPreferences.shared.startPage.section)
-    /// One search for all sections, so a hit can be followed from the
-    /// collection to the wantlist and back.
-    @State private var search = OverviewSearch()
-
-    var body: some View {
-        PageStack(pages: OverviewSection.allCases, selection: section) {
-            content($0).appPageEnvironment(context)
-        }
-    }
-
-    /// The objects themselves, not bindings: each section is built once and
-    /// is its own hosting view (see `PageStack`); only Observation reaches it.
-    @ViewBuilder private func content(_ item: OverviewSection) -> some View {
-        switch item {
-        case .collection: CollectionView(sections: section, search: search, showShelf: showShelf)
-        case .wantlist: WantlistView(search: search, sections: section)
+        if selection.current.hasSearch {
+            Button(action: action) { Label("Suchen", systemImage: "magnifyingglass") }
+                .keyboardShortcut("f", modifiers: .command)
+                .help("Suchen (⌘F)")
         }
     }
 }
 
-/// The search shared by the overview sections.
-@Observable final class OverviewSearch {
+/// The search shared by collection and wantlist. An object, read by the
+/// pages themselves: each page is built once (see `PageStack`), and a binding
+/// handed in would keep the value it had then.
+@Observable final class LibrarySearch {
     var query = ""
     /// Revealed by ⌘F (see `SearchReveal`).
     var isPresented = false
-}
-
-/// Picker in the header bar of every "Übersicht" section.
-struct OverviewSectionPicker: View {
-    @Bindable var selection: PageSelection<OverviewSection>
-    var body: some View {
-        Picker("Bereich", selection: $selection.current) {
-            ForEach(OverviewSection.allCases) { Text($0.rawValue).tag($0) }
-        }
-        .labelsHidden()
-        .pickerStyle(.segmented)
-        .fixedSize()
-        .help("Collection oder Wantlist anzeigen")
-    }
 }

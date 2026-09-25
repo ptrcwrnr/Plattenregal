@@ -79,16 +79,18 @@ struct ValueHistoryDashboard: View {
     }
     private var controls: some View {
         HStack {
-            Picker("Wert", selection: $metric) { ForEach(HistoryMetric.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).labelsHidden().controlSize(.small).fixedSize()
+            GlassSegmentedPicker(selection: $metric, options: HistoryMetric.allCases, small: true) { Text($0.rawValue) }
+                .accessibilityLabel("Wert")
             if Set(snapshots.map(\.currency)).count > 1 {
-                Picker("Währung", selection: Binding(get: { currency }, set: { selectedCurrency = $0 })) {
+                GlassMenuPicker(title: "Währung", selection: Binding(get: { currency }, set: { selectedCurrency = $0 }), current: currency) {
                     ForEach(Array(Set(snapshots.map(\.currency))).sorted(), id: \.self) { Text($0).tag($0) }
                 }
             }
         }
     }
     private var periods: some View {
-        Picker("Zeitraum", selection: $period) { ForEach(HistoryPeriod.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).labelsHidden().controlSize(.small).fixedSize()
+        GlassSegmentedPicker(selection: $period, options: HistoryPeriod.allCases, small: true) { Text($0.rawValue) }
+            .accessibilityLabel("Zeitraum")
     }
     @ViewBuilder private var changes: some View {
         if let latest = sameCurrency.last, sameCurrency.count >= 2 {

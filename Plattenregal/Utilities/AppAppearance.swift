@@ -12,6 +12,8 @@ enum AppStyle {
     static let controlHeight: CGFloat = 26
     /// Search bars (Liquid Glass capsule, see `searchBarChrome`).
     static let searchBarHeight: CGFloat = 34
+    /// Wide enough for any query; wider only looks empty.
+    static let searchBarMaxWidth: CGFloat = 480
     static let cardPadding: CGFloat = 16
     static let sectionSpacing: CGFloat = 20
     static let rowSpacing: CGFloat = 12
@@ -124,18 +126,22 @@ extension View {
 
 /// One button vocabulary for the whole app: Primary (main action), Secondary
 /// (normal action), Ghost (low-emphasis/secondary action), Icon (compact icon-only).
+/// Primary and Secondary are Liquid Glass; the main action is told apart by
+/// the accent color of its title, like the chosen option of a
+/// `GlassSegmentedPicker` – no filled blue.
 struct PrimaryButton: View {
     let title: String
     var action: () -> Void
     var body: some View {
-        Button(title, action: action).buttonStyle(.borderedProminent)
+        Button(action: action) { Text(title).foregroundStyle(AppStyle.accent) }
+            .appGlassButton()
     }
 }
 struct SecondaryButton: View {
     let title: String
     var action: () -> Void
     var body: some View {
-        Button(title, action: action).buttonStyle(.bordered)
+        Button(title, action: action).appGlassButton()
     }
 }
 struct GhostButton: View {
@@ -249,6 +255,13 @@ struct SearchReveal: ViewModifier {
 }
 
 extension View {
+    /// Clear Liquid Glass for a button, as a capsule like every other glass
+    /// control. Without `.tint(nil)` the glass takes the app-wide accent tint
+    /// and turns into a filled blue button.
+    func appGlassButton() -> some View {
+        buttonStyle(.glass).buttonBorderShape(.capsule).tint(nil)
+    }
+
     /// The Liquid Glass capsule every search bar sits in.
     func searchBarChrome() -> some View {
         padding(.horizontal, 12)
@@ -377,7 +390,7 @@ struct AppEmptyState: View {
             description.font(.body).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             if let actionTitle, let action {
-                Button(actionTitle, action: action).buttonStyle(.borderedProminent).padding(.top, 4)
+                PrimaryButton(title: actionTitle, action: action).padding(.top, 4)
             }
         }
         .multilineTextAlignment(.center)
@@ -404,33 +417,91 @@ enum FocusRings {
     }
 }
 
-/// Cover grids fill their content width exactly, so the outer covers line up
-/// with the header bar above them. `minimum` is the minimum cover width; the
-/// column count follows from the *current* width and the columns are
-/// `.flexible`, so each cell (and the cover filling it) is always exactly
-/// its share of the width — covers grow slightly to use up the space that
-/// would otherwise be left over, and can never be wider than their cell.
-/// Raster/Liste switch, in the page headers (icons only) and the settings.
-struct OverviewLayoutPicker: View {
-    @Binding var selection: OverviewLayout
-    var iconOnly = false
+/// A choice between a few options in the app's Liquid Glass look: no gray
+/// track and no gray pill behind the chosen option – it is marked by the
+/// accent color alone. In the toolbar the toolbar's own glass is the
+/// background (`glass: false`); anywhere else it brings its own capsule.
+struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
+    @Binding var selection: Value
+    let options: [Value]
+    var glass = true
+    var small = false
+    @ViewBuilder let label: (Value) -> Label
 
     var body: some View {
-        Picker("Darstellung", selection: $selection) {
-            ForEach(OverviewLayout.allCases) { layout in
-                label(for: layout).tag(layout)
+        let row = HStack(spacing: 0) {
+            ForEach(options, id: \.self) { option in
+                let selected = option == selection
+                Button { selection = option } label: {
+                    label(option)
+                        // Color only: a heavier weight would widen the label
+                        // and shift its neighbours on every switch.
+                        .foregroundStyle(selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.secondary))
+                        .padding(.horizontal, small ? 9 : 12)
+                        .frame(height: small ? 24 : 30)
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
-        .labelsHidden()
-        .pickerStyle(.segmented).fixedSize()
-        .help("Zwischen Raster und Liste wechseln")
-    }
-
-    @ViewBuilder private func label(for layout: OverviewLayout) -> some View {
-        if iconOnly {
-            Label(layout.title, systemImage: layout.systemImage).labelStyle(.iconOnly)
+        .font(small ? .callout : .body)
+        .animation(AppStyle.quickAnimation, value: selection)
+        .fixedSize()
+        if glass {
+            row.padding(.horizontal, 3).glassEffect(.regular.interactive(), in: .capsule)
         } else {
-            Label(layout.title, systemImage: layout.systemImage)
+            row
+        }
+    }
+}
+
+/// A choice from a longer list, as a menu behind a Liquid Glass button that
+/// shows the current value – the native pop-up button would be filled with
+/// the accent color.
+struct GlassMenuPicker<Value: Hashable, Options: View>: View {
+    let title: String
+    @Binding var selection: Value
+    /// What the button shows for the current value.
+    let current: String
+    @ViewBuilder let options: Options
+
+    var body: some View {
+        Menu {
+            Picker(title, selection: $selection) { options }
+                .pickerStyle(.inline)
+                .labelsHidden()
+        } label: {
+            HStack(spacing: 6) {
+                Text(current)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        // A plain menu inside our own glass capsule: the button styles leave
+        // a menu gray-filled.
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .padding(.horizontal, 14)
+        .frame(height: 30)
+        .glassEffect(.regular.interactive(), in: .capsule)
+        .fixedSize()
+        .accessibilityLabel(title)
+    }
+}
+
+/// Grid or list, as two icons.
+struct OverviewLayoutPicker: View {
+    @Binding var selection: OverviewLayout
+    var glass = true
+
+    var body: some View {
+        GlassSegmentedPicker(selection: $selection, options: OverviewLayout.allCases, glass: glass) { layout in
+            Image(systemName: layout.systemImage)
+                .accessibilityLabel(layout.title)
+                .help(layout.title)
         }
     }
 }

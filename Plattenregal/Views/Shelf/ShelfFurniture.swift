@@ -251,20 +251,17 @@ struct MissingCopiesControl: View {
 
     var body: some View {
         Button { isPresented.toggle() } label: {
-            // Outlined like the result button next to the overview search.
+            // A glass capsule like the search bar beside it.
             HStack(spacing: 5) {
                 Circle().fill(AppStyle.errorColor).frame(width: 6, height: 6)
                 Text("Vermisst").lineLimit(1)
                 Image(systemName: "chevron.down").font(.caption2.weight(.semibold))
             }
-            .padding(.horizontal, 12)
-            .frame(height: AppStyle.controlHeight)
+            .padding(.horizontal, 14)
+            .frame(height: AppStyle.searchBarHeight)
             .foregroundStyle(.secondary)
-            .overlay {
-                RoundedRectangle(cornerRadius: 6)
-                    .strokeBorder(Color.primary.opacity(0.22), lineWidth: 1)
-            }
-            .contentShape(Rectangle())
+            .contentShape(Capsule())
+            .glassEffect(.regular.interactive(), in: .capsule)
         }
         .buttonStyle(.plain)
         .fixedSize()

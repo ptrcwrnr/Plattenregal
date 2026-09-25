@@ -85,10 +85,8 @@ struct ShelfSettingsView: View {
                 SettingsRow(title: "Fächer benennen nach", hint: labelStyle == .range
                             ? "Erste und letzte Buchstaben der Interpreten im Fach, \(labelStyle.example)."
                             : "Platz im Regal von links oben, \(labelStyle.example).") {
-                    Picker("Beschriftung", selection: $labelStyle) {
-                        ForEach(ShelfLabelStyle.allCases) { Text($0.title).tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.segmented).fixedSize()
+                    GlassSegmentedPicker(selection: $labelStyle, options: ShelfLabelStyle.allCases) { Text($0.title) }
+                        .accessibilityLabel("Beschriftung")
                 }
             }
         }
@@ -218,19 +216,24 @@ private struct CabinetSizePicker: View {
         }
     }
 
+    private func presetTitle(_ preset: KallaxPreset) -> String {
+        preset.title + (preset.orientation.map { " (\($0))" } ?? "")
+    }
+    private var currentSizeTitle: String {
+        KallaxPreset.all.first { $0.id == selection.wrappedValue }.map(presetTitle) ?? "Eigene Größe"
+    }
+
     var body: some View {
         VStack(alignment: .trailing, spacing: AppStyle.itemSpacing) {
-            Picker("Größe", selection: selection) {
+            GlassMenuPicker(title: "Größe", selection: selection, current: currentSizeTitle) {
                 Section("IKEA KALLAX") {
                     ForEach(KallaxPreset.all) { preset in
-                        Text(preset.title + (preset.orientation.map { " (\($0))" } ?? "")).tag(preset.id)
+                        Text(presetTitle(preset)).tag(preset.id)
                     }
                 }
                 Divider()
                 Text("Eigene Größe …").tag("custom")
             }
-            .labelsHidden()
-            .fixedSize()
             if selection.wrappedValue == "custom" {
                 HStack(spacing: AppStyle.rowSpacing) {
                     Stepper("\(columns) Spalten", value: $columns, in: ShelfGeometry.sizeRange)

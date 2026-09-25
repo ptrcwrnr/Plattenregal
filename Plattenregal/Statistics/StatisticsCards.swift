@@ -573,8 +573,9 @@ struct RandomRecordCard: View {
                 Button { reroll() } label: {
                     Label("Neue Platte ziehen", systemImage: "dice")
                         .symbolEffect(.bounce, value: rolls)
+                        .foregroundStyle(AppStyle.accent)
                 }
-                .buttonStyle(.borderedProminent)
+                .appGlassButton()
                 .keyboardShortcut("r", modifiers: [.command, .shift])
                 .help("Neue Platte ziehen (⇧⌘R)")
                 SecondaryButton(title: pick.shelf == nil ? "Platz im Regal finden" : "Im Regal zeigen") { showShelf(pick) }

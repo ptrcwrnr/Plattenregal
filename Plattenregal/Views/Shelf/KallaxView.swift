@@ -335,16 +335,15 @@ struct KallaxView: View {
     /// One tab per active cabinet; ⌘← / ⌘→ step through them.
     private var cabinetSwitcher: some View {
         HStack(spacing: AppStyle.itemSpacing) {
-            Picker("Regal", selection: Binding(get: { shownCabinet?.id }, set: { id in
-                if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
-            })) {
-                ForEach(activeCabinets) { cabinet in
-                    Text(cabinet.name).tag(Optional(cabinet.id))
-                }
+            GlassSegmentedPicker(
+                selection: Binding(get: { shownCabinet?.id }, set: { id in
+                    if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
+                }),
+                options: activeCabinets.map { Optional($0.id) }
+            ) { id in
+                Text(activeCabinets.first { $0.id == id }?.name ?? "")
             }
-            .labelsHidden()
-            .pickerStyle(.segmented)
-            .fixedSize()
+            .accessibilityLabel("Regal")
             Text(shownCabinet.map { "\($0.sizeText) · \(AppStyle.records($0.recordCount))" } ?? "")
                 .font(.callout).foregroundStyle(.secondary).monospacedDigit()
             Spacer()
@@ -394,11 +393,10 @@ struct KallaxView: View {
                         onClear: { searchQuery = "" },
                         place: startPlacement
                     )
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: AppStyle.searchBarMaxWidth)
                     .transition(AppStyle.funnelTransition())
-                } else {
-                    Spacer(minLength: 0)
                 }
+                Spacer(minLength: 0)
                 if !missing.isEmpty {
                     MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
                                          found: { setMissing($0, false) })

@@ -164,7 +164,7 @@ struct DataSettingsView: View {
                 Divider()
                 SettingsRow(title: "Alles", hint: "Wie eine neue Installation. Sicherungen der Belegung bleiben erhalten.") {
                     Button("Alles zurücksetzen …", role: .destructive) { pendingReset = .everything }
-                        .buttonStyle(.bordered)
+                        .appGlassButton()
                 }
                 if resetting { ProgressView().controlSize(.small) }
                 if let resetStatus {

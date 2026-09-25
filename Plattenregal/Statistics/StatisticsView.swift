@@ -252,10 +252,10 @@ struct StatisticsView: View {
         }
     }
     private func segmented<Value: Hashable>(_ selection: Binding<Value>, _ options: [(String, Value)]) -> some View {
-        Picker("Ansicht", selection: selection.animation(AppStyle.standardAnimation)) {
-            ForEach(options, id: \.0) { Text($0.0).tag($0.1) }
+        GlassSegmentedPicker(selection: selection.animation(AppStyle.standardAnimation), options: options.map(\.1), small: true) { value in
+            Text(options.first { $0.1 == value }?.0 ?? "")
         }
-        .pickerStyle(.segmented).labelsHidden().controlSize(.small).fixedSize()
+        .accessibilityLabel("Ansicht")
     }
     @ViewBuilder private func sectionContent(_ section: StatisticsSection) -> some View {
         switch section {

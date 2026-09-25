@@ -148,10 +148,10 @@ struct WantlistView: View {
     @Query private var entries: [WantlistEntry]
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
-    /// Shared with the other overview sections (see OverviewView). An object,
-    /// read directly: this page is built once (see `PageStack`), and a binding
+    /// Shared with the collection (see `LibrarySearch`). An object, read
+    /// directly: this page is built once (see `PageStack`), and a binding
     /// handed in would keep the value it had then.
-    let search: OverviewSearch
+    let search: LibrarySearch
     private var query: String { search.query }
     @FocusState private var searchFocused: Bool
     private var showsSearchBar: Bool { search.isPresented || !search.query.isEmpty }
@@ -183,7 +183,8 @@ struct WantlistView: View {
     @State private var visibleEntries: [WantlistEntry] = []
     @State private var alphabetIndex: [String: PersistentIdentifier] = [:]
     @State private var scrollPosition: PersistentIdentifier?
-    let sections: PageSelection<OverviewSection>
+    /// The window's page switch, to jump to the collection's hits.
+    let pages: PageSelection<Destination>
 
     /// Same margins as the collection (see CollectionView).
     private var pageMargin: CGFloat { AppStyle.pagePadding + 4 }
@@ -206,13 +207,11 @@ struct WantlistView: View {
                     focus: $searchFocused,
                     otherCount: collectionMatches,
                     otherSection: .collection
-                ) { sections.current = .collection }
+                ) { pages.current = .collection }
                 .padding(.horizontal, pageMargin)
                 .padding(.trailing, alphabetGutter)
                 .transition(AppStyle.funnelTransition())
             }
-            header
-                .padding(.horizontal, pageMargin)
             if sync.hasStatus {
                 DiscogsSyncStatusView()
                     .font(.callout)
@@ -379,16 +378,6 @@ struct WantlistView: View {
             .scrollPosition(id: $scrollPosition, anchor: .top)
             .pullToRefresh(disabled: sync.busy, action: syncWantlist)
         }
-    }
-
-    private var header: some View {
-        HStack(spacing: AppStyle.rowSpacing) {
-            OverviewSectionPicker(selection: sections)
-            Spacer(minLength: AppStyle.rowSpacing)
-            OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation), iconOnly: true)
-        }
-        .frame(height: 30)
-        .padding(.trailing, alphabetGutter)
     }
 
     private func table(_ rows: [WantlistEntry]) -> some View {

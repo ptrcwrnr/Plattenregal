@@ -15,12 +15,12 @@ enum StartPage: String, CaseIterable, Identifiable {
     }
     var destination: Destination {
         switch self {
-        case .collection, .wantlist: .overview
+        case .collection: .collection
+        case .wantlist: .wantlist
         case .statistics: .statistics
         case .shelf: .shelf
         }
     }
-    var section: OverviewSection { self == .wantlist ? .wantlist : .collection }
 }
 
 /// Grid or list for the collection and the wantlist. Stored via

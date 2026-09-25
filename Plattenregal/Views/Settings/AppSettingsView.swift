@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 /// Settings in the same card language as the app's pages: rounded titles,
 /// quiet card surfaces and the shared button vocabulary.
 struct AppSettingsView: View {
-    enum Tab: String { case general = "Allgemein", appearance = "Darstellung", shelf = "Regal", discogs = "Discogs"
+    enum Tab: String, CaseIterable { case general = "Allgemein", appearance = "Darstellung", shelf = "Regal", discogs = "Discogs"
         case export = "Export", backup = "Sicherung", data = "Daten" }
     @State private var tab: Tab = {
         #if DEBUG
@@ -17,16 +17,27 @@ struct AppSettingsView: View {
     }()
 
     var body: some View {
-        TabView(selection: $tab) {
-            GeneralSettingsView().tabItem { Label("Allgemein", systemImage: "gearshape") }.tag(Tab.general)
-            AppearanceSettingsView().tabItem { Label("Darstellung", systemImage: "paintbrush") }.tag(Tab.appearance)
-            ShelfSettingsView().tabItem { Label("Regal", systemImage: "square.grid.3x3") }.tag(Tab.shelf)
-            DiscogsSettingsView().tabItem { Label("Discogs", systemImage: "opticaldisc") }.tag(Tab.discogs)
-            ExportSettingsView().tabItem { Label("Export", systemImage: "square.and.arrow.up") }.tag(Tab.export)
-            BackupSettingsView().tabItem { Label("Sicherung", systemImage: "clock.arrow.circlepath") }.tag(Tab.backup)
-            DataSettingsView().tabItem { Label("Daten", systemImage: "internaldrive") }.tag(Tab.data)
+        // The same Liquid Glass switch as the main window, instead of tabs.
+        Group {
+            switch tab {
+            case .general: GeneralSettingsView()
+            case .appearance: AppearanceSettingsView()
+            case .shelf: ShelfSettingsView()
+            case .discogs: DiscogsSettingsView()
+            case .export: ExportSettingsView()
+            case .backup: BackupSettingsView()
+            case .data: DataSettingsView()
+            }
         }
-        .frame(width: 680, height: 620)
+        .frame(width: 760, height: 620)
+        .navigationTitle(tab.rawValue)
+        .toolbar(removing: .title)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.rawValue) }
+                    .accessibilityLabel("Bereich")
+            }
+        }
     }
 }
 
@@ -108,10 +119,8 @@ struct GeneralSettingsView: View {
         SettingsPage {
             SettingsCard(title: "Start") {
                 SettingsRow(title: "Beim Öffnen zeigen", hint: "Die Seite, mit der das Hauptfenster startet.") {
-                    Picker("Startseite", selection: $preferences.startPage) {
-                        ForEach(StartPage.allCases) { Text($0.title).tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.segmented).fixedSize()
+                    GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
+                        .accessibilityLabel("Startseite")
                 }
             }
             SettingsCard(title: "Demo", subtitle: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.") {
@@ -154,10 +163,8 @@ struct AppearanceSettingsView: View {
         SettingsPage {
             SettingsCard(title: "Erscheinungsbild") {
                 SettingsRow(title: "Modus", hint: preferences.appearance.hint) {
-                    Picker("Modus", selection: $preferences.appearance) {
-                        ForEach(AppearanceMode.allCases) { Text($0.title).tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.segmented).fixedSize()
+                    GlassSegmentedPicker(selection: $preferences.appearance, options: AppearanceMode.allCases) { Text($0.title) }
+                        .accessibilityLabel("Modus")
                 }
                 Divider()
                 SettingsRow(title: "Akzentfarbe", hint: preferences.accent.title) {

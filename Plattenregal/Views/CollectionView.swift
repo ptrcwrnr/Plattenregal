@@ -14,14 +14,14 @@ struct CollectionView: View {
     @State private var excludedIDs: Set<UUID> = []
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
-    // The overview's section switch; nil in the statistics drill-down sheet,
-    // which has no section picker.
-    private let sections: PageSelection<OverviewSection>?
-    // Search lives in this page's own header bar. In the overview it is shared
-    // by all sections (see OverviewView); the statistics sheet keeps its own.
-    // Objects, read directly: this page is built once (see `PageStack`), and a
-    // binding handed in would keep the value it had then.
-    private let search: OverviewSearch?
+    // The window's page switch, to jump to the wantlist's hits; nil in the
+    // statistics drill-down sheet.
+    private let pages: PageSelection<Destination>?
+    // The search shared with the wantlist (see `LibrarySearch`); the
+    // statistics sheet keeps its own. Objects, read directly: this page is
+    // built once (see `PageStack`), and a binding handed in would keep the
+    // value it had then.
+    private let search: LibrarySearch?
     @State private var localQuery = ""
     @FocusState private var searchFocused: Bool
     /// The search bar ⌘F reveals; the statistics sheet shows its field always.
@@ -73,12 +73,12 @@ struct CollectionView: View {
     @State private var error: String?
 
     init(
-        sections: PageSelection<OverviewSection>? = nil,
-        search: OverviewSearch? = nil,
+        pages: PageSelection<Destination>? = nil,
+        search: LibrarySearch? = nil,
         showShelf: @escaping (RecordCopy) -> Void,
         analyticsFilter: StatisticGroup? = nil
     ) {
-        self.sections = sections
+        self.pages = pages
         self.search = search
         self.showShelf = showShelf
         self.analyticsFilter = analyticsFilter
@@ -158,7 +158,7 @@ struct CollectionView: View {
         }
         normalizeGridScrollPosition(in: grouped)
         alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
-        wantlistMatches = sections == nil || words.isEmpty ? 0
+        wantlistMatches = pages == nil || words.isEmpty ? 0
             : currentWantlist.reduce(0) { $0 + (wantlistIndex.matches($1.persistentModelID, words) ? 1 : 0) }
     }
 
@@ -170,7 +170,7 @@ struct CollectionView: View {
     }
 
     private func rebuildWantlistIndex() {
-        guard sections != nil else { return }
+        guard pages != nil else { return }
         let entries = currentWantlist
         wantlistIndex = SearchIndex(entries, id: \.persistentModelID, text: WantlistPresentation.searchText)
         wantedReleaseIDs = Set(entries.map(\.releaseID))
@@ -201,25 +201,28 @@ struct CollectionView: View {
                     .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
-            if showsSearchBar, let sections {
+            if showsSearchBar, let pages {
                 OverviewSearchControl(
                     placeholder: "Collection durchsuchen",
                     query: queryBinding,
                     focus: $searchFocused,
                     otherCount: wantlistMatches,
                     otherSection: .wantlist
-                ) { sections.current = .wantlist }
+                ) { pages.current = .wantlist }
                 .padding(.horizontal, AppStyle.pagePadding + 4)
                 .padding(.trailing, alphabetGutter)
                 .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
                 .transition(AppStyle.funnelTransition())
             }
-            collectionControls(items: items)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, AppStyle.pagePadding + 4)
-                .padding(.trailing, alphabetGutter)
-                .padding(.top, showsSearchBar || (DemoMode.isActive && analyticsFilter == nil) ? AppStyle.rowSpacing : AppStyle.pagePadding)
-                .padding(.bottom, AppStyle.sectionSpacing)
+            if showsControls {
+                collectionControls(items: items)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, AppStyle.pagePadding + 4)
+                    .padding(.trailing, alphabetGutter)
+                    .padding(.top, showsSearchBar || (DemoMode.isActive && analyticsFilter == nil) ? AppStyle.rowSpacing : AppStyle.pagePadding)
+                    .transition(AppStyle.funnelTransition())
+            }
+            Color.clear.frame(height: showsSearchBar || showsControls || DemoMode.isActive ? AppStyle.sectionSpacing : AppStyle.pagePadding)
             if sync.hasStatus {
                 DiscogsSyncStatusView()
                     .font(.callout)
@@ -277,7 +280,7 @@ struct CollectionView: View {
                                                     copy: copy,
                                                     copyCount: group.copies.count,
                                                     selected: group.copies.contains { selection.contains($0.id) } || quickLook == copy.id,
-                                                    placement: !searching || sections == nil ? nil : PlacementBadge(
+                                                    placement: !searching || pages == nil ? nil : PlacementBadge(
                                                         inCollection: true,
                                                         inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false
                                                     )
@@ -395,6 +398,7 @@ struct CollectionView: View {
         // The sync status line slides in/out and the content below follows smoothly.
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .animation(AppStyle.standardAnimation, value: showsSearchBar)
+        .animation(AppStyle.standardAnimation, value: showsControls)
         .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
@@ -579,37 +583,39 @@ struct CollectionView: View {
         )
     }
 
-    // Same header bar as the wantlist: sections on the left, the layout
-    // switch on the right; the search bar above it appears with ⌘F. In the
-    // statistics sheet (no sections) the search stays here, always shown.
+    /// In the window the page has no header bar: page switch, grid/list and
+    /// search are in the toolbar. A row appears only for a selection. The
+    /// statistics sheet has no toolbar, so there it keeps search and layout.
+    private var showsControls: Bool { pages == nil || !selection.isEmpty }
+
     private func collectionControls(items: [RecordCopy]) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            if let sections {
-                OverviewSectionPicker(selection: sections)
-            } else {
+            if pages == nil {
                 AppSearchField(placeholder: "Collection durchsuchen", text: queryBinding)
                     .frame(maxWidth: 380)
             }
-            selectionControls(items: items)
+            selectionControls
             Spacer(minLength: AppStyle.rowSpacing)
-            displayOptions
+            if pages == nil {
+                OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))
+            }
         }
-        .frame(height: 30)
+        .frame(height: AppStyle.searchBarHeight)
     }
-    @ViewBuilder private func selectionControls(items: [RecordCopy]) -> some View {
+    @ViewBuilder private var selectionControls: some View {
         if !selection.isEmpty {
-            HStack(spacing: 6) {
-                Text("·").foregroundStyle(.tertiary)
+            HStack(spacing: 4) {
                 Text("\(selection.count) ausgewählt").monospacedDigit().foregroundStyle(AppStyle.accent)
                 IconButton(systemImage: "xmark.circle.fill", help: "Auswahl aufheben") { selection.removeAll() }
                     .foregroundStyle(.secondary)
             }
             .font(.callout)
+            .padding(.leading, 14)
+            .padding(.trailing, 4)
+            .frame(height: AppStyle.searchBarHeight)
+            .glassEffect(.regular, in: .capsule)
             .fixedSize()
         }
-    }
-    private var displayOptions: some View {
-        OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation), iconOnly: true)
     }
     @ViewBuilder private func actions(_ copy: RecordCopy) -> some View {
         Button("Öffnen") { opened = copy }
@@ -777,7 +783,7 @@ struct OverviewSearchControl: View {
     @Binding var query: String
     var focus: FocusState<Bool>.Binding
     let otherCount: Int
-    let otherSection: OverviewSection
+    let otherSection: Destination
     let openOtherSection: () -> Void
 
     private var showsOtherSection: Bool {
@@ -789,7 +795,7 @@ struct OverviewSearchControl: View {
         GlassEffectContainer(spacing: AppStyle.itemSpacing) {
             HStack(spacing: AppStyle.itemSpacing) {
                 AppSearchField(placeholder: placeholder, text: $query, focus: focus)
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: AppStyle.searchBarMaxWidth)
                 if showsOtherSection {
                     Button(action: openOtherSection) {
                         Text("\(otherCount) in der \(otherSection.rawValue)")
@@ -806,6 +812,7 @@ struct OverviewSearchControl: View {
                     .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.rawValue) anzeigen")
                     .transition(.opacity)
                 }
+                Spacer(minLength: 0)
             }
         }
         .font(.callout)

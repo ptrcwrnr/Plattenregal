@@ -59,17 +59,15 @@ struct BackupSettingsView: View {
                 }
                 Divider()
                 SettingsRow(title: "Letzte Stände behalten") {
-                    Picker("Letzte Stände", selection: $keptCount) {
-                        ForEach(ShelfAutoBackup.keptCountOptions, id: \.self) { Text("\($0)").tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.segmented).fixedSize()
+                    GlassSegmentedPicker(selection: $keptCount, options: ShelfAutoBackup.keptCountOptions) { Text("\($0)") }
+                        .accessibilityLabel("Letzte Stände")
                     .disabled(DemoMode.isActive)
                 }
                 SettingsRow(title: "Tagesstände behalten", hint: "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.") {
-                    Picker("Tagesstände", selection: $keptDays) {
+                    GlassMenuPicker(title: "Tagesstände", selection: $keptDays,
+                                    current: keptDays == 0 ? "Keine" : "\(keptDays) Tage") {
                         ForEach(ShelfAutoBackup.keptDaysOptions, id: \.self) { Text($0 == 0 ? "Keine" : "\($0) Tage").tag($0) }
                     }
-                    .labelsHidden().fixedSize()
                     .disabled(DemoMode.isActive)
                 }
                 Divider()

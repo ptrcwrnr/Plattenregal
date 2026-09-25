@@ -56,9 +56,11 @@ struct RecordDetailView: View {
             }
             Spacer(minLength: AppStyle.rowSpacing)
             if let showShelf {
-                Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen", action: showShelf)
-                    .buttonStyle(.glassProminent)
-                    .controlSize(.large)
+                Button(action: showShelf) {
+                    Text(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen").foregroundStyle(AppStyle.accent)
+                }
+                .appGlassButton()
+                .controlSize(.large)
             }
           }
           Divider()
@@ -146,7 +148,7 @@ struct RecordPopover: View {
                     Button(action: expand) {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
                     }
-                    .buttonStyle(.glass)
+                    .appGlassButton()
                     .buttonBorderShape(.circle)
                     .help("Details öffnen")
                 }
