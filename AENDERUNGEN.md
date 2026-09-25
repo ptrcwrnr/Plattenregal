@@ -2,6 +2,7 @@
 
 - Die Markierung heißt überall „Vermisst“: Etikett, Knöpfe, Menüs, Hinweise, Fehlermeldungen, Protokoll und Dokumentation.
 - Die Übersicht neben der Suche auf der Regalseite zeigt nur noch „Vermisst“ statt der Anzahl („7 nicht auffindbar“); die Liste darin nennt weiter jede Platte.
+- Die Liste hinter „Vermisst“ ist jetzt ein Popover statt eines Menüs: Kopfzeile mit Anzahl, Platten nach Fach gruppiert („Noch ohne Fach“ zuletzt), je Zeile Cover, Titel und Künstler. Ein Klick auf die Zeile zeigt die Platte im Fach bzw. sucht ihren Platz, das Häkchen markiert sie als wieder gefunden. Ab etwa acht Platten scrollt die Liste. Im Knopf steht ein roter Punkt vor „Vermisst“.
 
 # Schema V15: nur noch, was die App nutzt · 25.09.2026
 

@@ -240,26 +240,20 @@ struct MissingBadge: View {
 }
 
 /// Status next to the search field: records marked "Vermisst" while
-/// sorting. The menu lists them by shelf; picking one shows it in its shelf.
+/// sorting. The popover lists them by shelf; a row shows the record in its
+/// shelf, the check mark marks it found again.
 struct MissingCopiesControl: View {
     let copies: [RecordCopy]
     let labels: ShelfLabels
     let show: (RecordCopy) -> Void
     let found: (RecordCopy) -> Void
+    @State private var isPresented = false
 
     var body: some View {
-        Menu {
-            ForEach(copies) { copy in
-                Menu(Self.name(copy) + " – " + (copy.shelf.map { labels[$0.id] ?? $0.numberText } ?? "noch ohne Fach")) {
-                    Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Fach zeigen") { show(copy) }
-                    Button("Wieder gefunden") { found(copy) }
-                }
-            }
-        } label: {
-            // A plain button style keeps the label's own color (a borderless
-            // menu draws it in the default text color).
+        Button { isPresented.toggle() } label: {
             // Outlined like the result button next to the overview search.
-            HStack(spacing: 3) {
+            HStack(spacing: 5) {
+                Circle().fill(AppStyle.errorColor).frame(width: 6, height: 6)
                 Text("Vermisst").lineLimit(1)
                 Image(systemName: "chevron.down").font(.caption2.weight(.semibold))
             }
@@ -272,17 +266,140 @@ struct MissingCopiesControl: View {
             }
             .contentShape(Rectangle())
         }
-        .menuStyle(.button)
         .buttonStyle(.plain)
-        .menuIndicator(.hidden)
         .fixedSize()
         .font(.callout)
         .help("Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach")
         .accessibilityLabel("\(copies.count) vermisst")
+        .popover(isPresented: $isPresented, arrowEdge: .bottom) {
+            MissingCopiesPopover(copies: copies, labels: labels,
+                                 show: { isPresented = false; show($0) },
+                                 found: found)
+        }
+    }
+}
+
+/// The list behind "Vermisst": grouped by shelf (in shelf order), records
+/// without a shelf last, each with its cover to look for at the shelf.
+private struct MissingCopiesPopover: View {
+    let copies: [RecordCopy]
+    let labels: ShelfLabels
+    let show: (RecordCopy) -> Void
+    let found: (RecordCopy) -> Void
+
+    private struct Group: Identifiable {
+        let id: String
+        let title: String
+        let copies: [RecordCopy]
     }
 
-    private static func name(_ copy: RecordCopy) -> String {
-        "\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")"
+    /// `copies` already comes in shelf order, so neighbours share a group.
+    private var groups: [Group] {
+        var result: [Group] = []
+        for copy in copies {
+            let id = copy.shelf?.id.uuidString ?? "none"
+            if let last = result.last, last.id == id {
+                result[result.count - 1] = Group(id: id, title: last.title, copies: last.copies + [copy])
+            } else {
+                let title = copy.shelf.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) } ?? "Noch ohne Fach"
+                result.append(Group(id: id, title: title, copies: [copy]))
+            }
+        }
+        return result
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Vermisst").font(.headline)
+                    Spacer()
+                    Text(copies.count == 1 ? "1 Platte" : "\(copies.count) Platten")
+                        .font(.callout).foregroundStyle(.secondary).monospacedDigit()
+                        .contentTransition(.numericText())
+                }
+                Text("Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach.")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, AppStyle.cardPadding)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
+            Divider()
+            ViewThatFits(in: .vertical) {
+                list
+                ScrollView { list }.scrollIndicators(.automatic)
+            }
+            .frame(maxHeight: 420)
+        }
+        .frame(width: 330)
+    }
+
+    private var list: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(groups) { group in
+                Text(group.title.uppercased())
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .padding(.horizontal, 8)
+                    .padding(.top, group.id == groups.first?.id ? 4 : 10)
+                    .padding(.bottom, 2)
+                ForEach(group.copies) { copy in
+                    MissingCopyRow(copy: copy, show: { show(copy) }, found: {
+                        withAnimation(AppStyle.standardAnimation) { found(copy) }
+                    })
+                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+                }
+            }
+        }
+        .padding(8)
+    }
+}
+
+private struct MissingCopyRow: View {
+    let copy: RecordCopy
+    let show: () -> Void
+    let found: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Button(action: show) {
+                HStack(spacing: 10) {
+                    CoverView(url: copy.release?.coverURL, size: 36)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(copy.release?.displayTitle ?? "—").fontWeight(.medium)
+                        Text(copy.release?.displayArtist ?? "—").foregroundStyle(.secondary)
+                    }
+                    .lineLimit(1)
+                    Spacer(minLength: 4)
+                    Text(copy.shelf == nil ? "Platz finden" : "Zeigen")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .opacity(hovering ? 1 : 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(copy.shelf == nil ? "Platz im Regal finden" : "Im Fach zeigen")
+            Button(action: found) {
+                Image(systemName: "checkmark.circle")
+                    .font(.system(size: 15))
+                    .foregroundStyle(hovering ? AppStyle.successColor : Color.secondary)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Wieder gefunden")
+            .accessibilityLabel("Wieder gefunden")
+        }
+        .font(.callout)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(hovering ? AppStyle.hoverBackground : .clear, in: RoundedRectangle(cornerRadius: 6))
+        .onHover { hovering = $0 }
+        .animation(AppStyle.quickAnimation, value: hovering)
     }
 }
 
