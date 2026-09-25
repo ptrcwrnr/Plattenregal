@@ -2,12 +2,18 @@ import Foundation
 import SwiftData
 import CryptoKit
 
-@MainActor final class CollectionValueHistoryService {
+final class CollectionValueHistoryService {
     static let shared = CollectionValueHistoryService()
     private var pending: Set<String> = []
     static func signature(_ copies: [RecordCopy]) -> String {
-        let ids = copies.map { "\($0.discogsInstanceID ?? 0):\($0.release?.discogsID ?? 0)" }.sorted().joined(separator: "|")
+        let ids = copies.map { "\($0.discogsInstanceID):\($0.release?.discogsID ?? 0)" }.sorted().joined(separator: "|")
         return SHA256.hash(data: Data(ids.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+    static func latest(owner: String, in context: ModelContext) throws -> CollectionValueSnapshot? {
+        var descriptor = FetchDescriptor<CollectionValueSnapshot>(predicate: #Predicate { $0.owner == owner },
+                                                                  sortBy: [SortDescriptor(\.date, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
     }
     static func shouldStore(last: CollectionValueSnapshot?, value: DiscogsCollectionValue, signature: String, date: Date, calendar: Calendar = .current) -> Bool {
         guard let last else { return true }
@@ -16,7 +22,7 @@ import CryptoKit
         return significant(last.minimumValue, value.minimum.amount) || significant(last.medianValue, value.median.amount) || significant(last.maximumValue, value.maximum.amount)
     }
     @discardableResult static func store(value: DiscogsCollectionValue, owner: String, copies: [RecordCopy], context: ModelContext, date: Date = .now) throws -> Bool {
-        let last = try context.fetch(FetchDescriptor<CollectionValueSnapshot>(sortBy: [SortDescriptor(\.date, order: .reverse)])).first { $0.owner == owner }
+        let last = try latest(owner: owner, in: context)
         let signature = signature(copies)
         guard shouldStore(last: last, value: value, signature: signature, date: date) else {
             // Keep today's displayed valuation current without adding near-identical history points.
@@ -39,10 +45,10 @@ import CryptoKit
         let accounts = try context.fetch(FetchDescriptor<DiscogsAccount>())
         guard let account = accounts.first(where: { $0.username == owner && $0.credentialFingerprint == fingerprint }), account.lastCollectionSync != nil else { throw DiscogsError.accountChanged }
         func activeCopies() throws -> [RecordCopy] {
-            try context.fetch(FetchDescriptor<RecordCopy>()).filter { $0.discogsOwner == owner && $0.discogsActive == true && $0.discogsInstanceID != nil }
+            try context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.discogsOwner == owner && $0.discogsActive == true }))
         }
         let copies = try activeCopies(), signature = Self.signature(copies)
-        let last = try context.fetch(FetchDescriptor<CollectionValueSnapshot>(sortBy: [SortDescriptor(\.date, order: .reverse)])).first { $0.owner == owner }
+        let last = try Self.latest(owner: owner, in: context)
         if !force, let last, Calendar.current.isDateInToday(last.date), last.collectionSignature == signature { return }
         let value = try await api.fetchCollectionValue(username: owner)
         try Task.checkCancellation()

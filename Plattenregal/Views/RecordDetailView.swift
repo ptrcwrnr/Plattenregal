@@ -4,8 +4,15 @@ import SwiftData
 struct RecordDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @Query private var exclusions: [OptimizationExclusion]
+    @Query private var shelves: [Shelf]
+    @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    @Query private var folders: [DiscogsFolder]
     let copy: RecordCopy
+    /// The calling page's current labels; computed here (once) without them.
+    var labels: ShelfLabels? = nil
     var showShelf: (() -> Void)?
+    @State private var labelCache = ShelfLabelCache()
     @State private var editing = false
     @State private var refresh = MetadataRefreshService()
     var body: some View {
@@ -20,40 +27,59 @@ struct RecordDetailView: View {
                 VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                     if let r = copy.release {
                         ReleaseMetadataView(release: r)
-                        if !r.isFresh {
-                            GhostButton(title: "Discogs-Daten aktualisieren") { Task { await refresh.refresh([r], context: context) } }.disabled(refresh.busy)
+                        if !r.isFresh && !DemoMode.isActive {
+                            // Just this release — `refresh` would start a sync of the whole collection.
+                            GhostButton(title: "Discogs-Daten aktualisieren") { Task { await refresh.reload([r], context: context) } }
+                                .disabled(refresh.busy || DiscogsSyncService.shared.busy)
                         }
                     }
-                    if let instance = copy.discogsInstanceID {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Discogs · Instanz \(instance)").font(.headline)
-                            Text(copy.discogsActive == true ? "In der Collection · Ordner-ID: \(copy.discogsFolderID.map(String.init) ?? "unbekannt")" : "Nicht mehr in der Discogs-Collection")
-                            Text("Bewertung: \(copy.discogsRating ?? 0)/5 · Hinzugefügt: \(copy.discogsDateAdded ?? "—")")
-                            if let data = copy.discogsNotes, let notes = try? JSONDecoder().decode([DiscogsNote].self, from: data) {
-                                ForEach(notes, id: \.field_id) { Text("Discogs-Feld \($0.field_id): \($0.value)") }
-                            }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Discogs").font(.headline)
+                        Text(copy.discogsActive ? "In der Collection · Ordner „\(folderName)“" : "Nicht mehr in der Discogs-Collection")
+                        Text("Bewertung: \(rating) · Hinzugefügt: \(DiscogsDate.parse(copy.discogsDateAdded)?.formatted(date: .abbreviated, time: .omitted) ?? "—")")
+                        if let data = copy.discogsNotes, let notes = try? JSONDecoder().decode([DiscogsNote].self, from: data) {
+                            ForEach(notes.filter { !$0.value.isEmpty }, id: \.field_id) { Text("\(Self.noteTitle($0.field_id)): \($0.value)") }
                         }
                     }
                     Divider()
                     HStack {
-                        Label(copy.location, systemImage: "square.grid.3x3").font(AppStyle.dialogTitle).foregroundStyle(.tint)
+                        Label(ShelfRangeLabels.location(of: copy, labels: labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf), excluded: exclusions.contains { $0.copyID == copy.id }), systemImage: "square.grid.3x3").font(AppStyle.dialogTitle).foregroundStyle(.tint)
                         Spacer()
-                        if let showShelf { GhostButton(title: "Im Regal anzeigen", action: showShelf) }
-                        GhostButton(title: "Platz ändern") { editing = true }
+                        if let showShelf { GhostButton(title: copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen", action: showShelf) }
                     }
                     Grid(alignment: .leading, horizontalSpacing: 30, verticalSpacing: 12) {
-                        GridRow { Text("Zustand").foregroundStyle(.secondary); Text(copy.condition) }
+                        GridRow { Text("Zustand").foregroundStyle(.secondary); Text(copy.condition.isEmpty ? "—" : copy.condition) }
                         GridRow { Text("Kaufpreis").foregroundStyle(.secondary); Text(copy.purchasePrice.map { $0.formatted(.currency(code: "EUR")) } ?? "—") }
                         GridRow { Text("Kaufdatum").foregroundStyle(.secondary); Text(copy.purchaseDate?.formatted(date: .abbreviated, time: .omitted) ?? "—") }
                         GridRow { Text("Hinzugefügt").foregroundStyle(.secondary); Text(copy.dateAdded.formatted(date: .abbreviated, time: .omitted)) }
                     }
                     Text("Notizen").font(.headline)
                     Text(copy.notes.isEmpty ? "Noch keine Notizen." : copy.notes).textSelection(.enabled)
-                    if let error = refresh.error { AppBanner(message: error, kind: .error) }
+                    if let error = refresh.error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
                 }.padding(AppStyle.pagePadding)
+                .animation(AppStyle.standardAnimation, value: refresh.error)
             }
         }.frame(width: 800, height: 760)
         .sheet(isPresented: $editing) { RecordEditor(copy: copy) }
+    }
+
+    private var folderName: String {
+        guard let id = copy.discogsFolderID else { return "Unbekannt" }
+        return folders.first { $0.folderID == id && $0.owner == copy.discogsOwner }?.name
+            ?? (id == 1 ? "Uncategorized" : "Ordner \(id)")
+    }
+    private var rating: String {
+        guard let stars = copy.discogsRating, stars > 0 else { return "keine" }
+        return String(repeating: "★", count: stars) + String(repeating: "☆", count: max(0, 5 - stars))
+    }
+    /// Discogs' three default collection fields; custom fields keep their number.
+    static func noteTitle(_ field: Int) -> String {
+        switch field {
+        case 1: "Zustand Platte"
+        case 2: "Zustand Hülle"
+        case 3: "Notizen"
+        default: "Feld \(field)"
+        }
     }
 }
 struct ReleaseMetadataView: View {
@@ -68,7 +94,7 @@ struct ReleaseMetadataView: View {
                     Text(release.displayArtist).font(.title2).foregroundStyle(.secondary)
                     Text(release.displayTitle).font(AppStyle.pageTitle).textSelection(.enabled)
                     Text([release.year.map(String.init), release.country.isEmpty ? nil : release.country, release.format].compactMap { $0 }.joined(separator: " · "))
-                    Text(release.label).font(.headline)
+                    Text(release.displayLabel).font(.headline)
                     Text(release.catalogNumber).foregroundStyle(.secondary)
                     Text(release.genres.joined(separator: " · "))
                     Text(release.styles.joined(separator: " · ")).foregroundStyle(.secondary)
@@ -88,6 +114,194 @@ struct ReleaseMetadataView: View {
                 Text("Gespeicherter Stand · wird beim nächsten Discogs-Abgleich aktualisiert.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+        }
+    }
+}
+
+/// One cover can stand for several copies. Keep each copy's shelf controls
+/// reachable without expanding the cover grid back into duplicate tiles.
+struct GroupedRecordPopover: View {
+    let copies: [RecordCopy]
+    /// The calling page's current labels; computed here (once) without them.
+    var labels: ShelfLabels? = nil
+    @State private var labelCache = ShelfLabelCache()
+    @Query private var shelves: [Shelf]
+    @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    @Query private var exclusions: [OptimizationExclusion]
+    @State private var selectedID: UUID?
+
+    private var shownLabels: ShelfLabels {
+        labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: selectedCopy.shelf)
+    }
+
+    private var selectedCopy: RecordCopy {
+        copies.first { $0.id == selectedID } ?? copies[0]
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if copies.count > 1 {
+                HStack {
+                    Text("\(copies.count) Exemplare")
+                        .font(.callout.weight(.semibold))
+                    Spacer()
+                    // Shelves are named as chosen in the settings (letter range or number).
+                    let labels = shownLabels
+                    Picker("Exemplar", selection: $selectedID) {
+                        ForEach(Array(copies.enumerated()), id: \.element.id) { index, copy in
+                            let excluded = exclusions.contains { $0.copyID == copy.id }
+                            Text("\(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: labels, excluded: excluded))").tag(Optional(copy.id))
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: 220)
+                }
+                .padding(.horizontal, AppStyle.cardPadding)
+                .padding(.top, AppStyle.cardPadding)
+                Divider().padding(.top, AppStyle.tightSpacing)
+            }
+            RecordPopover(copy: selectedCopy, labels: shownLabels)
+                .id(selectedCopy.id)
+        }
+        .onAppear { selectedID = copies.first?.id }
+    }
+}
+
+/// Compact popover for a single click on a cover in the overview: cover,
+/// label, year, where the copy stands in the shelf, the "Nicht im Regal"
+/// switch and the tracklist.
+struct RecordPopover: View {
+    @Environment(\.modelContext) private var context
+    @Query private var exclusions: [OptimizationExclusion]
+    @Query private var shelves: [Shelf]
+    @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    let copy: RecordCopy
+    /// From the grouped popover around it; computed here (once) without them.
+    var labels: ShelfLabels? = nil
+    @State private var labelCache = ShelfLabelCache()
+    @State private var error: String?
+    /// Tracklists are loaded after each collection sync; this only covers a
+    /// record whose tracklist isn't there yet (e.g. while that is still running).
+    @State private var loadingTracks = false
+    /// Why the tracklist couldn't be loaded, in plain words; nil = no failure.
+    @State private var trackLoadError: String?
+    @State private var triedLoadingTracks = false
+
+    private var isExcluded: Bool { exclusions.contains { $0.copyID == copy.id } }
+
+    var body: some View {
+        let release = copy.release
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
+                CoverView(url: release?.coverURL, size: 128)
+                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                    Text(release?.displayArtist ?? "Unbekannt")
+                        .font(.callout).foregroundStyle(.secondary).lineLimit(2)
+                    Text(release?.displayTitle ?? "—")
+                        .font(AppStyle.sectionTitle).lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Grid(alignment: .leading, horizontalSpacing: AppStyle.itemSpacing, verticalSpacing: 3) {
+                        GridRow { label("Label:"); Text(release.map { $0.label.isEmpty ? "–" : $0.displayLabel } ?? "–").lineLimit(2) }
+                        GridRow { label("Jahr:"); Text(release?.year.map(String.init) ?? "–").monospacedDigit() }
+                        GridRow { label("Style:"); Text(release.map { $0.primaryStyle.isEmpty ? "–" : $0.primaryStyle } ?? "–").lineLimit(1) }
+                    }
+                    .font(.callout)
+                    .padding(.top, AppStyle.tightSpacing)
+                }
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+                HStack(spacing: AppStyle.itemSpacing) {
+                    Label(
+                        ShelfRangeLabels.location(of: copy, labels: labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf), excluded: isExcluded),
+                        systemImage: "square.grid.3x3"
+                    )
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(copy.shelf == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                    .lineLimit(1)
+                    Spacer(minLength: AppStyle.rowSpacing)
+                    HStack(spacing: AppStyle.itemSpacing) {
+                        Text("Nicht im Regal").font(.callout)
+                        Toggle("Nicht im Regal", isOn: Binding(get: { isExcluded }, set: setExcluded))
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
+                    }
+                    .fixedSize()
+                    .help("Wird beim Einsortieren übersprungen.")
+                }
+                if let error { Text(error).font(.caption).foregroundStyle(AppStyle.errorColor) }
+            }
+
+            if let tracks = release?.tracks, !tracks.isEmpty {
+                Divider()
+                Text("Tracklist").font(.headline)
+                trackList(tracks)
+            } else if loadingTracks || triedLoadingTracks {
+                Divider()
+                Text("Tracklist").font(.headline)
+                if loadingTracks {
+                    HStack(spacing: AppStyle.itemSpacing) {
+                        ProgressView().controlSize(.small)
+                        Text("Wird von Discogs geladen …")
+                    }
+                    .font(.callout).foregroundStyle(.secondary)
+                } else {
+                    Text(trackLoadError.map { "Die Tracklist konnte nicht geladen werden. \($0)" } ?? "Bei Discogs ist für diese Platte keine Tracklist hinterlegt.")
+                        .font(.callout).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(AppStyle.cardPadding)
+        .frame(width: 400)
+        .task(id: copy.id) {
+            // The demo is offline and has no tracklists; no attempt, no error.
+            guard !DemoMode.isActive, let release = copy.release, release.tracks.isEmpty else { return }
+            // Already asked: Discogs has no tracklist for it. Not again on every
+            // opening – that cost a request and a spinner each time.
+            if release.detailsFetchedAt != nil { triedLoadingTracks = true; return }
+            // A running sync rewrites the same releases; the download after it
+            // brings the tracklist.
+            guard !DiscogsSyncService.shared.busy else { return }
+            loadingTracks = true
+            do { try await DiscogsSyncService.shared.loadTracklist(for: release, context: context) }
+            catch is CancellationError { loadingTracks = false; return }
+            catch { trackLoadError = error.reportedMessage() }
+            loadingTracks = false; triedLoadingTracks = true
+        }
+    }
+
+    private func trackList(_ tracks: [Track]) -> some View {
+        ScrollView {
+            Grid(alignment: .leading, horizontalSpacing: AppStyle.rowSpacing, verticalSpacing: 5) {
+                ForEach(Array(tracks.enumerated()), id: \.offset) { _, track in
+                    GridRow {
+                        Text(track.position).monospaced().foregroundStyle(.secondary)
+                        Text(track.title).lineLimit(2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(track.duration).monospacedDigit().foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .font(.callout)
+        }
+        .frame(maxHeight: 220)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func label(_ text: String) -> some View {
+        Text(text).foregroundStyle(.secondary)
+    }
+
+    private func setExcluded(_ excluded: Bool) {
+        do {
+            try PositionService(context: context).setExcluded([copy], excluded)
+            error = nil
+        } catch {
+            self.error = error.reportedMessage()
         }
     }
 }

@@ -1,10 +1,10 @@
 import Foundation
 
-struct DiscogsIdentity: Decodable, Sendable { let id: Int; let username: String }
-struct DiscogsFoldersResponse: Decodable, Sendable { let folders: [DiscogsFolderDTO] }
-struct DiscogsFolderDTO: Codable, Sendable { let id: Int; let name: String; let count: Int }
-struct DiscogsNote: Codable, Sendable, Equatable { let field_id: Int; let value: String }
-struct DiscogsBasicInformation: Codable, Sendable {
+nonisolated struct DiscogsIdentity: Decodable, Sendable { let id: Int; let username: String }
+nonisolated struct DiscogsFoldersResponse: Decodable, Sendable { let folders: [DiscogsFolderDTO] }
+nonisolated struct DiscogsFolderDTO: Codable, Sendable { let id: Int; let name: String; let count: Int }
+nonisolated struct DiscogsNote: Codable, Sendable, Equatable { let field_id: Int; let value: String }
+nonisolated struct DiscogsBasicInformation: Codable, Sendable {
     struct Artist: Codable, Sendable {
         let id: Int?
         let name: String
@@ -46,14 +46,14 @@ struct DiscogsBasicInformation: Codable, Sendable {
         release.catalogNumber = (labels ?? []).compactMap(\.catno).joined(separator: ", ")
         release.format = (formats ?? []).map { ([$0.qty, $0.name] + ($0.descriptions ?? []).map { Optional($0) }).compactMap { $0 }.joined(separator: " · ") }.joined(separator: ", ")
         release.genres = genres ?? []; release.styles = styles ?? []
-        release.coverURL = cover_image; release.thumbURL = thumb
-        release.resourceURL = resource_url; release.masterID = master_id
+        release.coverURL = cover_image
+        release.masterID = master_id
         release.basicInformation = try DiscogsEncoding.data(self)
-        release.discogsURL = "https://www.discogs.com/release/\(id)"; release.fetchedAt = date
+        release.fetchedAt = date
         // Basic information does not contain tracks/country: preserve previously fetched details.
     }
 }
-struct DiscogsCollectionDTO: Decodable, Sendable {
+nonisolated struct DiscogsCollectionDTO: Decodable, Sendable {
     let id: Int
     let instance_id: Int
     let folder_id: Int
@@ -62,32 +62,43 @@ struct DiscogsCollectionDTO: Decodable, Sendable {
     let notes: [DiscogsNote]?
     let basic_information: DiscogsBasicInformation
 }
-struct DiscogsWantDTO: Decodable, Sendable {
+nonisolated struct DiscogsWantDTO: Decodable, Sendable {
     let id: Int
     let date_added: String
     let rating: Int
     let notes: String?
     let basic_information: DiscogsBasicInformation
 }
-struct DiscogsPagination: Decodable, Sendable {
+nonisolated struct DiscogsPagination: Decodable, Sendable {
     let page: Int
     let pages: Int
     let per_page: Int
     let items: Int
 }
-struct DiscogsCollectionPage: Decodable, Sendable {
+nonisolated struct DiscogsCollectionPage: Decodable, Sendable {
     let pagination: DiscogsPagination
     let releases: [DiscogsCollectionDTO]
 }
-struct DiscogsWantPage: Decodable, Sendable {
+nonisolated struct DiscogsWantPage: Decodable, Sendable {
     let pagination: DiscogsPagination
     let wants: [DiscogsWantDTO]
 }
 
 // Stable representation prevents JSON object key order from reporting false updates.
-enum DiscogsEncoding {
+nonisolated enum DiscogsEncoding {
     static func data<T: Encodable>(_ value: T) throws -> Data {
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
         return try encoder.encode(value)
+    }
+}
+
+/// Discogs timestamps ("2026-09-20T08:00:00-07:00", sometimes with fractional
+/// seconds) and plain days ("2026-09-20", read as local midnight).
+nonisolated enum DiscogsDate {
+    static func parse(_ raw: String?) -> Date? {
+        guard let raw else { return nil }
+        return (try? Date.ISO8601FormatStyle().parse(raw))
+            ?? (try? Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse(raw))
+            ?? (try? Date.ISO8601FormatStyle(timeZone: .current).year().month().day().parse(raw))
     }
 }

@@ -1,3 +1,95 @@
+# Aktueller Stand · 25.09.2026 (Laufzeit-Messungen)
+
+## Ergebnis
+
+- Gesamte Testsuite: **163 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen.
+- Gemessen mit einem vorübergehenden Szenario in der Größe der echten Sammlung (841 Platten, 868 Wantlist-Einträge, 12 Fächer, `-O`), vorher → nachher: Einsortieren (Verschieben + Speichern) 13,9 → 2,7 ms; Regalseite danach neu berechnen 104 → 9 ms; Collection aufbauen (warm) 60 → 38 ms; Platz finden 19 → 4,6 ms; Export-Tabelle 183 → 112 ms. Unverändert: Abgleich ohne Änderungen 0,72 s (Hintergrund), Neuladen der Exemplare nach jedem Speichern 19 ms je Ansicht.
+- 10.000 Platten (Debug): Sortieren 1,58 → 1,29 s, Platz finden 531 → 115 ms, Export-Tabelle 3,2 → 1,5 s; der Rest entfällt in diesem Test auf das erstmalige Laden der Releases.
+- Ursachen per Time Profiler (Instruments) belegt: SwiftData-Lesezugriffe in Sortier-Vergleichen und einzeln nachgeladene Releases nach jedem Neuladen der Exemplare.
+
+# Vorheriger Stand · 24.09.2026 („Nicht auffindbar“ und Regalseite)
+
+Stand nach der neuen Markierung „Nicht auffindbar“ und vier Prüfungen der Regalseite auf Grenzfälle (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Gesamte Testsuite: **161 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`).
+- Neu bzw. erweitert:
+  - `LibraryTests.missingMarkKeepsPlaceAndCanBeCleared` – Markieren (auch doppelt) legt genau einen Eintrag an, Fach und Position bleiben, „Wieder gefunden“ entfernt ihn.
+  - `LibraryTests.missingMarkFollowsShelfActions` – Herausnehmen und Verschieben behalten die Markierung, Einsortieren von Hand, „Nicht im Regal“ und Löschen heben sie auf.
+  - `LibraryTests.errorsReachTheUserInPlainGerman` – verständliche Meldung für eine nicht gespeicherte Markierung, ohne Fehlercode.
+  - `BackupTests.restoreKeepsMissingMarksExceptOnRecordsKeptOut` – Wiederherstellen behält Markierungen, außer bei Platten, die laut Sicherung „Nicht im Regal“ sind.
+  - `CabinetTests.inactiveCabinetsAreSkippedWhenSortingIn` – „Im Regal anzeigen“ für eine Platte in einem deaktivierten Regal nennt das Regal statt eines Platzes.
+- Migration V12 → V13 (neues Modell `MissingCopyMark`) über die bestehenden Migrations-Tests, die ältere Datenbanken bis zum aktuellen Schema öffnen.
+- **Laufende App** (`--demo`, frischer Build, Klicks per Bedienungshilfen und Maus-Ereignissen):
+  - Regalseite: rote Übersicht „1 nicht auffindbar“; „Im Fach zeigen“ springt ins Fach „A – Be“ und wählt die Platte.
+  - Die markierte Platte trägt in der Tabelle und unter dem Streifen das Etikett und ist im Streifen als roter Umriss gezeichnet.
+  - „Platte hinzufügen“: Pause markiert (Zeile blass, Etikett, roter Knopf, Unterzeile „· 1 nicht auffindbar“ bleibt sichtbar), ein zweiter Klick hebt auf.
+  - Nach dem Schließen steigt die Übersicht auf „2 nicht auffindbar“; „+“ bei einer markierten Platte sortiert ein und senkt sie wieder auf 1.
+  - Gefunden und behoben dabei: die Übersicht war schwarz statt rot, die Unterzeile schnitt „nicht auffindbar“ ab.
+
+## Nicht geprüft (dieser Durchgang)
+
+- In der laufenden App nicht angeklickt: Platzsuche-Karte einer markierten Platte (Hinweis, Nachbar „– nicht auffindbar“, „Gefunden“), Rechtsklick-Menü der Fach-Tabelle, Schließen von „Platte hinzufügen“ bei Änderungen im Einstellungsfenster, Regalseite nach „Alles zurücksetzen“. Die Logik dahinter ist über Tests bzw. Code-Durchsicht abgedeckt.
+- Das Umstellen der echten Datenbank auf V13 – die eigene Sammlung wurde nicht geöffnet; das passiert beim ersten Start der neuen Version.
+- Eine fehlschlagende Datenbank-Speicherung lässt sich nicht gezielt herbeiführen; geprüft ist der Meldungstext.
+
+# Älterer Stand · 24.09.2026 (Grenzfall-Prüfung)
+
+Stand nach drei Grenzfall-Prüfungen: Code-Durchsicht, Szenario-Tests gegen die echten Services und Start der laufenden App (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Gesamte Testsuite: **158 Tests in 13 Suites, 0 Fehler** (Debug; die Szenario-Tests zusätzlich mit `-O` gemessen).
+- Neu: `ScenarioTests.swift` (6 Tests), jeweils auf einer eigenen Datenbank im Arbeitsspeicher – nie echte Sammlung, Schlüsselbund oder Einstellungen:
+  - Abgleich ohne Netz: drei Versuche, dann Meldung „nicht erreichbar“, nichts gespeichert; der nächste Abgleich mit Netz lädt Collection, Sammlungswert und Tracklisten.
+  - Netz weg während der Tracklisten: Meldung „2 fehlen …“, nichts falsch als geladen markiert, der nächste Lauf holt sie nach.
+  - Discogs bremst (429, `Retry-After: 1`): wird abgewartet, keine Fehlermeldung.
+  - Fächer und Exemplare, die woanders gelöscht werden (Regal verkleinert, verkaufte Platte gelöscht, Sicherung ohne das Regal wiederhergestellt), melden das – darauf verlassen sich „Rückgängig“ und „Exemplar bearbeiten“.
+  - „Standorte zurücksetzen“ bei offenem „Platte hinzufügen“: Hinzufügen funktioniert danach weiter.
+  - 10.000 Platten, 84 Fächer (Zeiten mit `-O`): Abgleich 3,9 s (Hintergrund), Wiederholung 4,0 s, Sortieren 1,5 s, Beschriftungen 1,2 s, Platz finden 0,5 s, Statistik 0,4 s (Hintergrund), Suche pro Tastendruck 35 ms, Export-Tabelle 4,0 s, CSV 0,3 s, PDF 2,5 s, Sicherung 1,5 s.
+- Laufende App (`--demo`, frischer Build): Start, Collection mit 56 Beispielplatten, reguläres Beenden; Protokoll ohne Fehler, echte Sicherungen unberührt.
+
+## Nicht geprüft (dieser Durchgang)
+
+- Klicken in der laufenden App (dafür fehlen die Bedienungshilfen-Rechte); die Abläufe dahinter sind über die Szenario-Tests abgedeckt.
+- „Alles zurücksetzen“ in Tests: es löscht den echten Discogs-Token aus dem Schlüsselbund und die echten Einstellungen, deshalb bewusst nicht automatisiert.
+- Echter Abgleich mit Discogs und echtes Abschalten des Netzes (dafür müssten Systemeinstellungen geändert werden).
+
+# Älterer Stand · 24.09.2026
+
+Stand nach „Mehrere Regale“, Export, Sicherung, Daten-Tab und der Überarbeitung von Fehlermeldungen und Absturz-Protokoll (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Debug-Build: erfolgreich, keine Compilerfehler.
+- Gesamte Testsuite (`xcodebuild … test`): **148 Tests in 12 Suites, 0 Fehler**; Release-Build kompiliert..
+
+| Testdatei | Tests | Schwerpunkt |
+|---|---|---|
+| `LibraryTests.swift` | 43 | Positionen, Sortierung, Speicherung, Fehlermeldungen, Absturz-Auswertung, Demo-Sammlung |
+| `DiscogsSyncTests.swift` | 32 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration |
+| `StatisticsTests.swift` | 27 | Auswertungen, Wertverlauf, Migrationen |
+| `CabinetTests.swift` | 13 | Mehrere Regale, Größenänderung, Standorte zurücksetzen |
+| `SettingsTests.swift` | 13 | Discogs-Token speichern, testen und entfernen; Reihenfolge der Statistik |
+| `BackupTests.swift` | 12 | Sichern, Wiederherstellen, Aufbewahrung, Dateinamen |
+| `ExportTests.swift` | 8 | CSV (Maskierung, BOM, Formel-Schutz), Reihenfolge, Spalten, PDF |
+
+Beim Start des Test-Hosts erscheinen systemseitige Meldungen zu `com.apple.linkd.autoShortcut` und ein CoreData-Hinweis „Persistent History … has to be truncated“ aus den Migrationstests; beides sind keine Testfehler.
+
+- Demo in der laufenden App (Debug-Build, `--demo`) geprüft: Collection mit gezeichneten Covern, Statistik mit Wertverlauf, Regal mit zwei Regalen; das Banner schließt auf allen drei Seiten bündig mit dem Inhalt ab.
+
+## Nicht geprüft
+
+- „Demo neu starten“ in der laufenden App ausgelöst: neue Instanz startet als Demo, alte beendet sich, keine falsche Meldung „nicht normal beendet“, echte Einstellungen ohne Demo-Einträge. Mit einer zweiten laufenden Instanz wird der Neustart abgelehnt (Hinweis und Protokolleintrag geprüft). Vollständiger Weg in der laufenden App: echte App geöffnet (841 Exemplare) → „Demo starten …“ bestätigt → Demo mit 56 Beispielplatten, echte Instanz regulär beendet → „Demo beenden“ → wieder 841 Exemplare / 868 Wantlist-Einträge → mit ⌘Q beendet. Keine falsche Meldung „nicht normal beendet“, Laufmarkierung am Ende entfernt, keine Demo-Einträge in den echten Einstellungen, Demo-Zeilen im Protokoll mit „Demo ·“ markiert.
+- Keine Codesign-Prüfung und kein Live-Sync mit Discogs für diesen Stand.
+- Nicht in der laufenden App durchgespielt: Zurücksetzen während des Tracklisten-Downloads, automatischer Export und Sicherung in iCloud Drive, nicht erreichbare Ordner.
+- Der Absturz-Handler (eigener Signal-Stack, Versionsangabe im Absturzblock) wurde nicht mit einem echten Absturz ausgelöst; getestet ist, dass der nächste Start einen Absturzblock im Protokoll richtig erkennt.
+
+# Frühere Prüfstände
+
+Die folgenden Abschnitte dokumentieren ältere Versionen und bleiben als Verlauf stehen. Einzelne Angaben gelten nicht mehr: Favoriten, manuell angelegte Exemplare und Fach-Kapazitäten wurden entfernt, das Deployment Target ist heute macOS 27.0, und die Einzelpreis-Abfragen der Statistik gibt es nicht mehr.
+
 # Wantlist-Überarbeitung · 21.09.2026
 
 - Vollständiger Debug-Build und XCTest erfolgreich: **74 Tests, 0 Fehler**.

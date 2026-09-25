@@ -1,10 +1,13 @@
 import Foundation
 import Security
 
-enum KeychainStore {
+nonisolated enum KeychainStore {
     private static var query: [String: Any] { [kSecClass as String: kSecClassGenericPassword,
         kSecAttrService as String: "de.private.Plattenregal.discogs", kSecAttrAccount as String: "personal-token"] }
+    /// Demo launches use sample data and must never read – or overwrite – the real token.
+    private static var isDemo: Bool { DemoMode.isActive }
     static func load() throws -> String? {
+        if isDemo { return nil }
         var q = query; q[kSecReturnData as String] = true; q[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: CFTypeRef?
         let status = SecItemCopyMatching(q as CFDictionary, &result)
@@ -13,6 +16,7 @@ enum KeychainStore {
         return String(data: data, encoding: .utf8)
     }
     static func store(_ token: String) throws {
+        if isDemo { return }
         let token = token.trimmingCharacters(in: .whitespacesAndNewlines)
         if token.isEmpty {
             let status = SecItemDelete(query as CFDictionary)
@@ -36,7 +40,8 @@ enum KeychainStore {
         throw KeychainError(status: added)
     }
 }
-struct KeychainError: LocalizedError {
+nonisolated struct KeychainError: LocalizedError {
     let status: OSStatus
-    var errorDescription: String? { "Der Schlüsselbund ist nicht verfügbar (\(status)). Bitte prüfe den Zugriff in macOS." }
+    // The code stays at the end: meaningless to most, but it lets a problem be looked up.
+    var errorDescription: String? { "Plattenregal kommt gerade nicht an den Schlüsselbund von macOS, in dem der Discogs-Token liegt. Erlaube den Zugriff, falls macOS danach fragt, und versuche es noch einmal. (Code \(status))" }
 }

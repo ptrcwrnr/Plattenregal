@@ -1,4 +1,6 @@
 import SwiftUI
+import AppKit
+import ObjectiveC
 
 /// Shared typography, spacing, color and motion tokens for every window, sheet,
 /// dashboard and card in the app. Views should pull from here instead of writing
@@ -6,6 +8,8 @@ import SwiftUI
 enum AppStyle {
     // MARK: Spacing
     static let pagePadding: CGFloat = 24
+    /// Height of every header-bar control, matching the segmented pickers.
+    static let controlHeight: CGFloat = 26
     static let cardPadding: CGFloat = 16
     static let sectionSpacing: CGFloat = 20
     static let rowSpacing: CGFloat = 12
@@ -30,73 +34,85 @@ enum AppStyle {
     // MARK: Colors
     // All dynamic/system-based so Light and Dark mode stay correct automatically.
     static let hoverBackground = Color.primary.opacity(0.05)
-    static let selectedBackground = Color.accentColor.opacity(0.12)
-    static let selectedBorder = Color.accentColor
+    /// The accent chosen in the settings (or the system's). Read in `body`,
+    /// so views redraw when it changes.
+    static var accent: Color { AppPreferences.shared.accent.color }
+    static var selectedBackground: Color { accent.opacity(0.12) }
+    static var selectedBorder: Color { accent }
     static let borderColor = Color.primary.opacity(0.08)
     static let successColor = Color.green
     static let warningColor = Color.orange
     static let errorColor = Color.red
-    /// Ordered palette for charts/statistics so each chart picks a slot instead of an ad hoc hue.
-    static let chartColors: [Color] = [.teal, .indigo, .orange, .purple]
+
+    // MARK: Wording
+    /// "1 Platte", "12 Platten", "1.234 Platten".
+    static func records(_ count: Int) -> String { count == 1 ? "1 Platte" : "\(count.formatted()) Platten" }
 
     // MARK: Motion
+    // One curve for the whole app: `.smooth`, a critically damped spring — no
+    // visible overshoot, and it retargets cleanly when interrupted (e.g. the
+    // sidebar toggled again mid-animation). Only the duration varies.
+    // With "Reduce motion" on, nothing travels: movement is dropped and only
+    // fades remain.
+
+    /// System setting "Bewegung reduzieren"; read when an animation starts.
+    static var reduceMotion: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
     /// Hover/selection feedback — short and unobtrusive.
-    static let quickAnimation = Animation.easeInOut(duration: 0.2)
-    /// State and layout changes — dimming, showing/hiding, focus changes.
-    static let standardAnimation = Animation.easeInOut(duration: 0.25)
-    /// Magnetic/springy interactions (alphabet index, rack highlight).
-    static let springAnimation = Animation.spring(response: 0.4, dampingFraction: 0.8)
-}
-extension View {
-    func appAppearance() -> some View {
-        self.font(.body).fontDesign(.rounded).controlSize(.regular)
+    static let quickAnimation = Animation.smooth(duration: 0.2)
+    /// State changes — dimming, showing/hiding, focus changes.
+    static let standardAnimation = Animation.smooth(duration: 0.25)
+    /// Crossfade between pages, sections and grid ↔ list. Kept with reduce motion.
+    static let fadeAnimation = Animation.smooth(duration: 0.25)
+    /// Anything that moves or resizes: records travelling to a new sort
+    /// position, columns reflowing, the sidebar sliding. `nil` (= instant)
+    /// with reduce motion.
+    static var layoutAnimation: Animation? { reduceMotion ? nil : .smooth(duration: 0.3) }
+    /// Insert/remove transition matching the above: slide + fade, or just fade.
+    /// The app's one transition for anything that appears or disappears as a
+    /// block (cards, banners, status lines, expanding lists, toasts): it pours
+    /// out of the edge it hangs from like from a funnel – narrower and squashed
+    /// at first, then opening up – and back in on removal. It stays in place
+    /// instead of sliding across whatever sits next to it. Text swapped inside
+    /// a fixed slot and small badges just fade.
+    static func funnelTransition(from edge: VerticalEdge = .top) -> AnyTransition {
+        reduceMotion ? .opacity : .modifier(active: FunnelEffect(progress: 1, anchor: edge == .top ? .top : .bottom),
+                                            identity: FunnelEffect(progress: 0, anchor: edge == .top ? .top : .bottom))
     }
 }
 
-/// Headers keep their intrinsic height; results and empty states own the remaining space.
-struct AppPageLayout<Header: View, Content: View>: View {
-    @ViewBuilder let header: Header
-    @ViewBuilder let content: Content
-    var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                header.frame(maxWidth: .infinity, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(AppStyle.pagePadding)
-                content.frame(maxWidth: .infinity, maxHeight: .infinity).clipped()
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
-        }
-    }
-}
-struct AppPageHeading: View {
-    let title: String
-    let subtitle: String
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(AppStyle.pageTitle)
-            Text(subtitle).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-        }.frame(maxWidth: .infinity, alignment: .leading)
+private struct FunnelEffect: ViewModifier {
+    /// 0 = fully shown, 1 = poured back into the funnel.
+    let progress: CGFloat
+    let anchor: UnitPoint
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(x: 1 - 0.12 * progress, y: 1 - 0.45 * progress, anchor: anchor)
+            .opacity(1 - progress)
     }
 }
 extension View {
-    @ViewBuilder func appGlassSurface(cornerRadius: CGFloat) -> some View {
-        if #available(macOS 26.0, *) {
-            self.glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
-        } else {
-            self.background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
-                .overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(.primary.opacity(0.08)))
-        }
+    func appAppearance() -> some View { modifier(AppAppearanceModifier()) }
+}
+
+private struct AppAppearanceModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content.font(.body).fontDesign(.rounded).controlSize(.regular)
+            // SwiftUI's own focus effect; AppKit-backed controls are handled by
+            // `FocusRings.disableGlobally()` at launch.
+            .focusEffectDisabled()
+            // Controls, links and `.tint` styles follow the chosen accent.
+            .tint(AppStyle.accent)
+            .onAppear { AppPreferences.shared.applyAppearance() }
+    }
+}
+
+extension View {
+    func appGlassSurface(cornerRadius: CGFloat) -> some View {
+        glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
     }
 
-    func appControlSurface() -> some View { appGlassSurface(cornerRadius: AppStyle.controlRadius) }
-
-    @ViewBuilder func appGlassButton() -> some View {
-        if #available(macOS 26.0, *) {
-            self.buttonStyle(.glass)
-        } else {
-            self.buttonStyle(.bordered)
-        }
+    func appGlassButton() -> some View {
+        buttonStyle(.glass)
     }
 
     /// Standard hover feedback (subtle background tint) shared by every interactive
@@ -105,33 +121,8 @@ extension View {
         self.background(hovering ? AppStyle.hoverBackground : Color.clear, in: RoundedRectangle(cornerRadius: cornerRadius))
             .animation(AppStyle.quickAnimation, value: hovering)
     }
-
-    /// Standard selected-state treatment (tinted background + accent border) shared
-    /// by cards, rows and grid items across the app.
-    func appSelectable(_ selected: Bool, cornerRadius: CGFloat = AppStyle.cardRadius, lineWidth: CGFloat = 2) -> some View {
-        self.background(selected ? AppStyle.selectedBackground : Color.clear, in: RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(RoundedRectangle(cornerRadius: cornerRadius).stroke(selected ? AppStyle.selectedBorder : Color.clear, lineWidth: lineWidth))
-            .animation(AppStyle.quickAnimation, value: selected)
-    }
 }
 
-/// A standard card container: glass surface, standard padding and corner radius,
-/// with optional hover/selected feedback. Use for any card-like content —
-/// record covers, shelf cards, dashboard/metric cards.
-struct AppCard<Content: View>: View {
-    var hovering: Bool = false
-    var selected: Bool = false
-    var padding: CGFloat = AppStyle.cardPadding
-    var cornerRadius: CGFloat = AppStyle.cardRadius
-    @ViewBuilder let content: Content
-    var body: some View {
-        content
-            .padding(padding)
-            .appGlassSurface(cornerRadius: cornerRadius)
-            .appHoverable(hovering, cornerRadius: cornerRadius)
-            .appSelectable(selected, cornerRadius: cornerRadius)
-    }
-}
 
 /// One button vocabulary for the whole app: Primary (main action), Secondary
 /// (normal action), Ghost (low-emphasis/secondary action), Icon (compact icon-only).
@@ -171,18 +162,25 @@ struct IconButton: View {
     }
 }
 
-/// One search-field chrome for the whole app: icon, text field, clear button,
-/// on the shared glass surface.
+/// One search-field chrome for the whole app: icon, text field, clear button
+/// on a slim, quiet fill (same look as the search on the shelf page).
 struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
     var onSubmit: (() -> Void)?
     var body: some View {
-        HStack(spacing: AppStyle.itemSpacing) {
+        HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
                 .onSubmit { onSubmit?() }
+                // Esc clears the query; with an empty field it passes through
+                // (e.g. to close the sheet the field sits in).
+                .onKeyPress(.escape) {
+                    guard !text.isEmpty else { return .ignored }
+                    text = ""
+                    return .handled
+                }
             if !text.isEmpty {
                 Button { text = "" } label: {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
@@ -190,32 +188,12 @@ struct AppSearchField: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, AppStyle.rowSpacing)
-        .padding(.vertical, AppStyle.itemSpacing + 1)
-        .appGlassSurface(cornerRadius: AppStyle.surfaceRadius)
+        .padding(.horizontal, 10)
+        .frame(height: AppStyle.controlHeight)
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
     }
 }
 
-/// Icon + label + value chip used for statistics/metrics throughout the app.
-struct StatCard: View {
-    let systemImage: String
-    let label: String
-    let value: String
-    var tint: Color = .accentColor
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-            Label(label, systemImage: systemImage)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.title3.monospacedDigit().weight(.semibold))
-                .foregroundStyle(tint)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AppStyle.rowSpacing)
-        .appGlassSurface(cornerRadius: AppStyle.surfaceRadius)
-    }
-}
 
 /// Capsule badge/pill used for genres, styles and filters. `prominent` marks the
 /// active/selected state; both use the same tokens as card selection elsewhere.
@@ -232,13 +210,12 @@ struct AppBadge: View {
             }
         }
         .font(.caption2.weight(prominent ? .semibold : .regular))
-        .foregroundStyle(prominent ? Color.accentColor : .secondary)
+        .foregroundStyle(prominent ? AppStyle.accent : .secondary)
         .padding(.horizontal, AppStyle.itemSpacing + 2)
         .padding(.vertical, AppStyle.tightSpacing)
         .background(prominent ? AppStyle.selectedBackground : AppStyle.hoverBackground.opacity(1.2), in: Capsule())
     }
 }
-typealias FilterPill = AppBadge
 
 /// Standard sheet header: title, optional subtitle, close/cancel button, divider.
 /// Used by every modal sheet so they all read as one dialog language.
@@ -266,34 +243,6 @@ struct AppSheetHeader: View {
 /// every Discogs/wantlist result row, so they read as one component instead of
 /// independently duplicated hover/glass/layout code. `trailing` receives the
 /// current hover state (e.g. to fade an affordance icon in/out).
-struct LinkResultCard<Details: View, Trailing: View>: View {
-    let coverURL: String?
-    var coverSize: Double = 104
-    let onOpen: () -> Void
-    @ViewBuilder let details: Details
-    @ViewBuilder var trailing: (Bool) -> Trailing
-    @State private var hovering = false
-
-    var body: some View {
-        HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
-            Button(action: onOpen) {
-                HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
-                    CoverView(url: coverURL, size: coverSize)
-                    details
-                    Spacer(minLength: 0)
-                }
-            }
-            .buttonStyle(.plain)
-            trailing(hovering)
-        }
-        .padding(AppStyle.cardPadding)
-        .frame(maxWidth: .infinity, minHeight: 136, alignment: .topLeading)
-        .appGlassSurface(cornerRadius: AppStyle.controlRadius)
-        .appHoverable(hovering, cornerRadius: AppStyle.controlRadius)
-        .onHover { hovering = $0 }
-        .help("Auf Discogs öffnen")
-    }
-}
 
 /// Inline status/error/warning banner. One visual language for anything that
 /// needs the user's attention inline, instead of ad hoc colored text per view.
@@ -301,7 +250,7 @@ struct AppBanner: View {
     enum Kind { case info, success, warning, error
         var color: Color {
             switch self {
-            case .info: .accentColor
+            case .info: AppStyle.accent
             case .success: AppStyle.successColor
             case .warning: AppStyle.warningColor
             case .error: AppStyle.errorColor
@@ -367,5 +316,217 @@ struct AppEmptyState: View {
         .frame(maxWidth: 420)
         .padding(AppStyle.pagePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+}
+
+/// Turns off the blue focus ring app-wide while keeping keyboard focus itself.
+/// Buttons, text fields and tables are AppKit controls under the hood and draw
+/// their ring based on `focusRingType`, which SwiftUI's `focusEffectDisabled()`
+/// doesn't reach — so the getter is overridden once for NSView, NSControl and
+/// NSCell (where controls forward it) to always answer `.none`.
+enum FocusRings {
+    static func disableGlobally() {
+        let selector = #selector(getter: NSView.focusRingType)
+        let block: @convention(block) (AnyObject) -> UInt = { _ in NSFocusRingType.none.rawValue }
+        let implementation = imp_implementationWithBlock(block)
+        for cls in [NSView.self, NSControl.self, NSCell.self] as [AnyClass] {
+            guard let method = class_getInstanceMethod(cls, selector) else { continue }
+            class_replaceMethod(cls, selector, implementation, method_getTypeEncoding(method))
+        }
+    }
+}
+
+/// Cover grids fill their content width exactly, so the outer covers line up
+/// with the header bar above them. `minimum` is the minimum cover width; the
+/// column count follows from the *current* width and the columns are
+/// `.flexible`, so each cell (and the cover filling it) is always exactly
+/// its share of the width — covers grow slightly to use up the space that
+/// would otherwise be left over, and can never be wider than their cell.
+/// Raster/Liste switch, in the page headers (icons only) and the settings.
+struct OverviewLayoutPicker: View {
+    @Binding var selection: OverviewLayout
+    var iconOnly = false
+
+    var body: some View {
+        Picker("Darstellung", selection: $selection) {
+            ForEach(OverviewLayout.allCases) { layout in
+                label(for: layout).tag(layout)
+            }
+        }
+        .labelsHidden()
+        .pickerStyle(.segmented).fixedSize()
+        .help("Zwischen Raster und Liste wechseln")
+    }
+
+    @ViewBuilder private func label(for layout: OverviewLayout) -> some View {
+        if iconOnly {
+            Label(layout.title, systemImage: layout.systemImage).labelStyle(.iconOnly)
+        } else {
+            Label(layout.title, systemImage: layout.systemImage)
+        }
+    }
+}
+
+enum CoverGrid {
+    static let spacing: CGFloat = 8
+
+    static func columnCount(available: CGFloat, minimum: CGFloat) -> Int {
+        guard available.isFinite, minimum.isFinite, minimum > 0 else { return 1 }
+        return max(1, Int((max(0, available) + spacing) / (minimum + spacing)))
+    }
+
+    /// Column count from `reference` (the width with the sidebar shown, see
+    /// `gridReferenceWidth`), so the sidebar only scales the covers. Capped by
+    /// the real width so covers never get much smaller than `minimum`.
+    static func columnCount(available: CGFloat, reference: CGFloat?, minimum: CGFloat) -> Int {
+        min(columnCount(available: reference ?? available, minimum: minimum),
+            columnCount(available: available, minimum: minimum * 0.75))
+    }
+
+    static func columns(count: Int) -> [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: spacing, alignment: .top), count: count)
+    }
+}
+
+extension View {
+    /// Motion for a cover grid of `width` with `columnCount` columns.
+    /// - The grid growing in one step (sidebar hidden, full screen, zoom)
+    ///   animates; the column count stays the same, so every cover just scales
+    ///   up within its own cell and none crosses another.
+    /// - Shrinking applies at once, so a cover is never wider than the space
+    ///   it is in — not even for a frame. Live window resizing follows the
+    ///   pointer directly.
+    /// - A new column count (reflow) is never animated: covers changing rows
+    ///   would slide across each other.
+    /// - Clipped to the grid's bounds as a last line of defence.
+    func coverGridMotion(width: CGFloat, columnCount: Int) -> some View {
+        modifier(CoverGridMotion(width: width, columnCount: columnCount))
+    }
+}
+
+private struct CoverGridMotion: ViewModifier {
+    let width: CGFloat
+    let columnCount: Int
+    /// Only tells growing from shrinking — never used for layout.
+    @State private var previousWidth: CGFloat?
+
+    func body(content: Content) -> some View {
+        let grows = previousWidth.map { width > $0 } ?? false
+        content
+            .transaction(value: columnCount) { $0.animation = nil }
+            .transaction(value: width) { transaction in
+                let liveResize = NSApp.windows.contains(where: \.inLiveResize)
+                transaction.animation = grows && !liveResize ? AppStyle.layoutAnimation : nil
+            }
+            .clipped()
+            .onAppear { previousWidth = width }
+            .onChange(of: width) { _, new in previousWidth = new }
+    }
+}
+
+extension View {
+    /// Same quiet chrome as the segmented section picker, for header controls
+    /// that sit next to it (record count, sort menu).
+    /// `prominent` fills it with the accent colour, like the selected segment.
+    func headerPill(prominent: Bool = false) -> some View {
+        padding(.horizontal, 8)
+            .frame(height: AppStyle.controlHeight)
+            .foregroundStyle(prominent ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
+            .background(prominent ? AnyShapeStyle(Color(nsColor: .controlAccentColor)) : AnyShapeStyle(Color.primary.opacity(0.05)),
+                        in: RoundedRectangle(cornerRadius: 6))
+    }
+}
+
+/// Pull-to-refresh for a ScrollView: pulling the page down past its top edge
+/// fills a small ring; a full ring runs `action`. Works with the trackpad's
+/// rubber band (fires as soon as the ring is full) and, when `allowsMouseDrag`
+/// is on, with a click-drag of the page while it's at the top (fires on
+/// release). ⌘R triggers the same action. Leave the mouse drag off where
+/// dragging already means something (e.g. rubber-band selection).
+private struct PullToRefresh: ViewModifier {
+    let disabled: Bool
+    let allowsMouseDrag: Bool
+    let action: () -> Void
+    /// The trackpad's rubber band is damped, so a few points more threshold
+    /// already take a noticeably longer swipe.
+    private let trackpadThreshold: CGFloat = 38
+    private let mouseThreshold: CGFloat = 70
+    @State private var overscroll: CGFloat = 0
+    @State private var armed = true
+    @State private var mousePull: CGFloat = 0
+    @State private var atTop = true
+
+    func body(content: Content) -> some View {
+        content
+            .offset(y: mousePull)
+            .onScrollGeometryChange(for: CGFloat.self) { -($0.contentOffset.y + $0.contentInsets.top) } action: { _, distance in
+                atTop = distance > -1
+                overscroll = max(0, distance)
+                if overscroll < 6 { armed = true }
+                if overscroll >= trackpadThreshold, armed, !disabled {
+                    armed = false
+                    NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
+                    action()
+                }
+            }
+            .simultaneousGesture(mouseDrag, including: allowsMouseDrag ? .all : .subviews)
+            .overlay(alignment: .top) { indicator }
+            .refreshShortcut(disabled: disabled, action: action)
+    }
+
+    private var mouseDrag: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onChanged { value in
+                guard atTop, value.translation.height > abs(value.translation.width) else { return }
+                let damped = pow(max(0, value.translation.height), 0.8)
+                if mousePull < mouseThreshold, damped >= mouseThreshold {
+                    NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
+                }
+                mousePull = damped
+            }
+            .onEnded { _ in
+                if mousePull >= mouseThreshold, !disabled { action() }
+                withAnimation(AppStyle.standardAnimation) { mousePull = 0 }
+            }
+    }
+
+    @ViewBuilder private var indicator: some View {
+        let progress = min(1, max(overscroll / trackpadThreshold, mousePull / mouseThreshold))
+        let travel = max(overscroll, mousePull)
+        if travel > 4 {
+            ZStack {
+                Circle().stroke(Color.primary.opacity(0.1), lineWidth: 2.5)
+                Circle().trim(from: 0, to: progress)
+                    .stroke(AppStyle.accent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Image(systemName: progress >= 1 ? "checkmark" : "arrow.down")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(progress >= 1 ? AppStyle.accent : .secondary)
+            }
+            .frame(width: 26, height: 26)
+            .opacity(progress)
+            .padding(.top, max(0, travel / 2 - 13))
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+    }
+}
+
+extension View {
+    /// ⌘R runs `action` — part of `pullToRefresh`, and on its own for views
+    /// that can't be pulled (e.g. tables), so the shortcut works in every layout.
+    func refreshShortcut(disabled: Bool = false, action: @escaping () -> Void) -> some View {
+        background {
+            Button("Aktualisieren", action: { if !disabled { action() } })
+                .keyboardShortcut("r", modifiers: .command)
+                .disabled(disabled)
+                .opacity(0).frame(width: 0, height: 0)
+                .accessibilityHidden(true)
+        }
+    }
+
+    /// See `PullToRefresh`. Apply to the ScrollView itself.
+    func pullToRefresh(disabled: Bool = false, allowsMouseDrag: Bool = true, action: @escaping () -> Void) -> some View {
+        modifier(PullToRefresh(disabled: disabled, allowsMouseDrag: allowsMouseDrag, action: action))
     }
 }

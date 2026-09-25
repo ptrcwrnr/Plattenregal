@@ -6,39 +6,68 @@ struct CollectionView: View {
     @Environment(\.isActivePage) private var isActivePage
     @Environment(\.modelContext) private var context
     @Query private var copies: [RecordCopy]
-    @Query(sort: \DiscogsFolder.folderID) private var folders: [DiscogsFolder]
     @Query(sort: \Shelf.number) private var shelves: [Shelf]
-    @State private var folderKey = "discogs"
+    @Query private var exclusions: [OptimizationExclusion]
+    @Query private var accounts: [DiscogsAccount]
+    /// IDs of `exclusions`, looked up per table row and context menu.
+    @State private var excludedIDs: Set<UUID> = []
     @State private var sync = DiscogsSyncService.shared
-    let mode: Destination
-    let query: String
+    // nil in the statistics drill-down sheet, which has no section picker.
+    private let section: Binding<OverviewSection>?
+    // Search lives in this page's own header bar. In the overview it is shared
+    // by all sections (see OverviewView); the statistics sheet keeps its own.
+    private let sharedQuery: Binding<String>?
+    @State private var localQuery = ""
+    private var queryBinding: Binding<String> { sharedQuery ?? $localQuery }
+    private var query: String { queryBinding.wrappedValue }
+    @Query private var wantlistEntries: [WantlistEntry]
+    /// Search hits in the wantlist, for the hint next to the count.
+    @State private var wantlistMatches = 0
     let showShelf: (RecordCopy) -> Void
     var analyticsFilter: StatisticGroup? = nil
     @Binding private var savedScrollPosition: UUID?
     @State private var scrollPosition: UUID?
-    @AppStorage("collectionLayout") private var layout = "grid"
-    @AppStorage("coverSize") private var coverSize = 155.0
-    @State private var sort: RecordSort = .artistAZ
+    @AppStorage(DisplaySettings.collectionLayoutKey) private var layout = OverviewLayout.grid
+    @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
+    /// Width left for the cover columns, derived from the grid's *current*
+    /// size on every layout pass — never cached, so it can't go stale when the
+    /// sidebar or window changes size.
+    private func gridContentWidth(in width: CGFloat) -> CGFloat {
+        width - 2 * (AppStyle.pagePadding + 4) - alphabetGutter
+    }
+    // Room for the alphabet index; header, grid and table all leave it free
+    // so their right edges stay aligned.
+    private var alphabetGutter: CGFloat { 24 }
+    @Environment(\.gridReferenceWidth) private var gridReferenceWidth
     @State private var selection: Set<UUID> = []
     @State private var selectionAnchor: UUID?
-    @State private var cardFrames: [UUID: CGRect] = [:]
+    /// Latest card frames for the rubber band. A plain reference, not state:
+    /// the lazy grid republishes frames on every scroll step, and writing them
+    /// must not re-render the view — but hit-testing needs the current layout.
+    @State private var cardFrames = CardFrameStore()
     @State private var dragRectangle: CGRect?
     @State private var dragBaseSelection: Set<UUID> = []
     @State private var opened: RecordCopy?
+    /// Copy whose popover is open (single click on a cover).
+    @State private var quickLook: UUID?
+    /// The popover closes on the mouse-down of a click outside it; if that
+    /// click lands on the same cover, it should stay closed, not reopen.
+    @State private var quickLookDismissed: (id: UUID, at: Date)?
     @State private var editing: RecordCopy?
-    @State private var deleting: RecordCopy?
-    @State private var adding = false
+    @State private var refresh = MetadataRefreshService()
+    @Environment(\.openURL) private var openURL
     @State private var error: String?
 
     init(
-        mode: Destination,
-        query: String,
+        section: Binding<OverviewSection>? = nil,
+        query: Binding<String>? = nil,
         showShelf: @escaping (RecordCopy) -> Void,
         analyticsFilter: StatisticGroup? = nil,
         scrollPosition: Binding<UUID?> = .constant(nil)
     ) {
-        self.mode = mode
-        self.query = query
+        self.section = section
+        self.sharedQuery = query
         self.showShelf = showShelf
         self.analyticsFilter = analyticsFilter
         _savedScrollPosition = scrollPosition
@@ -50,129 +79,270 @@ struct CollectionView: View {
     // to redo its work on every frame — that repeated O(n log n) work over the
     // full collection was the source of the scroll and navigation stutter.
     @State private var items: [RecordCopy] = []
+    @State private var coverGroups: [CollectionCoverGroup] = []
     // Cached alongside `items`: building this (Unicode folding per artist name)
     // for the whole collection on every body evaluation was the extra cost that
-    // made "Sammlung" (which shows the alphabet index) noticeably
-    // choppier than views that don't, like "Zuletzt hinzugefügt".
+    // made the alphabet index noticeably choppier during navigation.
     @State private var alphabetIndex: [String: UUID] = [:]
 
-    private func recomputeItems() {
+    // Search works in two stages so typing stays smooth: `rebuildBase` does
+    // the expensive part (filter, sort, search texts, letter anchors) only when
+    // the data or section changes; `applyQuery` then just filters that
+    // sorted list with the prebuilt index on each (debounced) keystroke.
+    @State private var base: [RecordCopy] = []
+    @State private var searchIndex = SearchIndex<UUID>()
+    @State private var letters: [UUID: String] = [:]
+    @State private var wantlistIndex = SearchIndex<PersistentIdentifier>()
+    /// Discogs release IDs on the wantlist, for the search badge on the covers.
+    @State private var wantedReleaseIDs: Set<Int> = []
+    /// The query changed while this section was hidden; apply it on return.
+    @State private var queryPending = false
+    /// Records were placed or moved while the page was hidden: its shelf
+    /// labels are rebuilt once it shows again (over a second for a very
+    /// large collection – not for every record sorted in on the shelf page).
+    @State private var labelsPending = false
+    /// False until the first `rebuildBase`, so the empty state doesn't flash.
+    @State private var loaded = false
+    /// Whether the visible items are a search result — the placement badges
+    /// follow this, not the raw field (whitespace, debounce).
+    @State private var searching = false
+
+    /// `animated`: records glide to their new place (search or section).
+    /// Data refreshes (e.g. a Discogs sync) and the list layout update
+    /// instantly — animating an NSTable diff of the whole collection would stutter.
+    private func rebuildBase(animated: Bool = false) {
         let analyticsIDs = analyticsFilter?.copyIDs
-        let selectedFolder = folders.first { $0.key == folderKey }
-        let recentCutoff = Date().addingTimeInterval(-30 * 86400)
+        // Only the current account: copies of an earlier one stay active in
+        // the store (a sync only touches its own), matching the statistics.
+        let owner = DiscogsAccount.current(in: accounts)?.username
         let matched = copies.filter { copy in
             (analyticsIDs == nil || analyticsIDs!.contains(copy.id)) &&
-            (folderKey == "discogs" ? copy.discogsActive == true : selectedFolder.map { $0.owner == copy.discogsOwner && copy.discogsActive == true && ($0.folderID == 0 || $0.folderID == copy.discogsFolderID) } == true) &&
-            (mode != .recent || copy.dateAdded > recentCutoff) &&
-            SortingService.matches(copy, query: query)
+            copy.isInCurrentCollection(owner: owner)
         }
-        items = mode == .recent ? matched.sorted { $0.dateAdded > $1.dateAdded } : SortingService.sorted(matched, by: sort)
-        alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
+        base = showsAlphabetIndex ? SortingService.sortedByAlphabetSection(matched) : SortingService.sorted(matched, by: .artistAZ)
+        searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
+        letters = showsAlphabetIndex
+            ? Dictionary(base.map { ($0.id, SortingService.alphabetSection(for: $0.release?.displayArtist ?? "")) }, uniquingKeysWith: { a, _ in a })
+            : [:]
+        shelfLabels = ShelfRangeLabels.compute(for: shelves, style: labelStyle)
+        labelsPending = false
+        loaded = true
+        applyQuery(animated: animated)
     }
+
+    private func refreshLabels() {
+        guard isActivePage else { labelsPending = true; return }
+        labelsPending = false
+        shelfLabels = ShelfRangeLabels.compute(for: shelves, style: labelStyle)
+    }
+
+    private func applyQuery(animated: Bool = false) {
+        queryPending = false
+        let words = SearchIndex<UUID>.words(query)
+        let filtered = words.isEmpty ? base : base.filter { searchIndex.matches($0.id, words) }
+        let grouped = CollectionCoverGroup.make(from: filtered)
+        withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
+            items = filtered
+            coverGroups = grouped
+            searching = !words.isEmpty
+        }
+        normalizeGridScrollPosition(in: grouped)
+        alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
+        wantlistMatches = section == nil || words.isEmpty ? 0
+            : currentWantlist.reduce(0) { $0 + (wantlistIndex.matches($1.persistentModelID, words) ? 1 : 0) }
+    }
+
+    private func normalizeGridScrollPosition(in groups: [CollectionCoverGroup]) {
+        guard layout == .grid, let scrollPosition,
+              let group = groups.first(where: { group in group.copies.contains { $0.id == scrollPosition } })
+        else { return }
+        if scrollPosition != group.primary.id { self.scrollPosition = group.primary.id }
+    }
+
+    private func rebuildWantlistIndex() {
+        guard section != nil else { return }
+        let entries = currentWantlist
+        wantlistIndex = SearchIndex(entries, id: \.persistentModelID, text: WantlistPresentation.searchText)
+        wantedReleaseIDs = Set(entries.map(\.releaseID))
+    }
+
+    private var currentWantlist: [WantlistEntry] {
+        guard let owner = DiscogsAccount.current(in: accounts)?.username else { return wantlistEntries }
+        return wantlistEntries.filter { $0.owner == owner }
+    }
+
+    // Shelves are named as chosen in the settings, never by their internal number.
+    @State private var shelfLabels = ShelfLabels()
+    private func placeLabel(for copy: RecordCopy) -> String {
+        guard let shelf = copy.shelf else {
+            return excludedIDs.contains(copy.id) ? "Nicht im Regal" : "–"
+        }
+        if shelf.isReserved { return shelfLabels.prefix(for: shelf) + (shelf.name.isEmpty ? "Gesperrtes Fach" : shelf.name) }
+        return shelfLabels.prefix(for: shelf) + (shelfLabels[shelf.id] ?? "–")
+    }
+
     var body: some View {
         let visibleIDs = items.map(\.id)
         VStack(spacing: 0) {
-            collectionControls(count: items.count, items: items)
+            // Not in the drill-down sheets of the statistics: only on the page itself.
+            if DemoMode.isActive && analyticsFilter == nil {
+                DemoBanner()
+                    .padding(.horizontal, AppStyle.pagePadding + 4)
+                    .padding(.trailing, alphabetGutter)
+                    .padding(.top, AppStyle.pagePadding)
+            }
+            collectionControls(items: items)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, AppStyle.pagePadding)
-                .padding(.vertical, 12)
-            if sync.busy || !sync.status.isEmpty || sync.error != nil || sync.summary != nil {
+                .padding(.horizontal, AppStyle.pagePadding + 4)
+                .padding(.trailing, alphabetGutter)
+                .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
+                .padding(.bottom, AppStyle.sectionSpacing)
+            if sync.hasStatus {
                 DiscogsSyncStatusView()
+                    .font(.callout)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 24).padding(.bottom, 12)
+                    .padding(.horizontal, AppStyle.pagePadding + 4).padding(.bottom, AppStyle.rowSpacing)
+                    .transition(AppStyle.funnelTransition())
             }
             Group {
-            if items.isEmpty {
-                AppEmptyState(query.isEmpty ? "Noch keine Schallplatten" : "Keine Treffer",
-                    systemImage: query.isEmpty ? "opticaldisc" : "magnifyingglass",
-                    description: Text(query.isEmpty ? "Füge deine erste Platte manuell oder über Discogs hinzu." : "Versuche einen anderen Titel, Interpreten oder ein Label."))
+            if !loaded {
+                Color.clear
+            } else if items.isEmpty {
+                // Hits filtered away; an empty collection still gets the sync prompt below.
+                if !base.isEmpty {
+                    AppEmptyState("Keine Treffer", systemImage: "magnifyingglass",
+                        description: Text("Versuche einen anderen Titel, Interpreten oder ein Label."))
+                } else if analyticsFilter != nil {
+                    AppEmptyState("Keine Schallplatten", systemImage: "opticaldisc",
+                        description: Text("In dieser Auswahl ist nichts mehr in der Collection."))
+                } else {
+                    // The collection mirrors Discogs, so the way in is a sync.
+                    if DemoMode.isActive {
+                        AppEmptyState("Noch keine Schallplatten", systemImage: "opticaldisc",
+                            description: Text(DemoMode.emptyHint), actionTitle: "Demo neu starten") { DemoMode.restart() }
+                    } else {
+                        AppEmptyState("Noch keine Schallplatten", systemImage: "opticaldisc",
+                            description: Text("Die Collection kommt von Discogs. Den Token dafür trägst du in den Einstellungen ein."),
+                            actionTitle: sync.busy ? nil : "Jetzt synchronisieren") {
+                            sync.start(.collection, container: context.container)
+                        }
+                    }
+                }
             } else {
                 ZStack(alignment: .trailing) {
-                    if layout == "grid" {
-                        ScrollView {
-                            ZStack(alignment: .topLeading) {
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: coverSize + 20), alignment: .top)], spacing: 26) {
-                                    ForEach(items) { copy in
-                                        // A plain Button reacts on mouseUp immediately; layering the
-                                        // double-click as a second, independent gesture (rather than a
-                                        // second onTapGesture) avoids SwiftUI's single/double-tap
-                                        // disambiguation delay that made selecting feel sluggish.
-                                        Button {
-                                            select(copy, in: items)
-                                        } label: {
-                                            RecordCard(
-                                                copy: copy,
-                                                coverSize: coverSize,
-                                                selected: selection.contains(copy.id)
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                        .id(copy.id)
-                                        .background {
-                                            GeometryReader { proxy in
-                                                Color.clear.preference(
-                                                    key: RecordCardFrameKey.self,
-                                                    value: [copy.id: proxy.frame(in: .named("collectionGrid"))]
+                    if layout == .grid {
+                        GeometryReader { proxy in
+                            let width = gridContentWidth(in: proxy.size.width)
+                            let columnCount = CoverGrid.columnCount(
+                                available: width,
+                                reference: gridReferenceWidth.map(gridContentWidth(in:)),
+                                minimum: DisplaySettings.coverSize(coverSize)
+                            )
+                            ScrollView {
+                                ZStack(alignment: .topLeading) {
+                                    // Each tile has the release's stable identity, so
+                                    // filtering keeps the existing cover view alive.
+                                    LazyVGrid(columns: CoverGrid.columns(count: columnCount), alignment: .leading, spacing: CoverGrid.spacing) {
+                                        ForEach(coverGroups) { group in
+                                            let copy = group.primary
+                                            // A single click opens the popover; ⌘/⇧-click and the
+                                            // rubber band still select several records for bulk actions.
+                                            Button {
+                                                select(group, in: coverGroups)
+                                            } label: {
+                                                RecordCard(
+                                                    copy: copy,
+                                                    copyCount: group.copies.count,
+                                                    selected: group.copies.contains { selection.contains($0.id) } || quickLook == copy.id,
+                                                    placement: !searching || section == nil ? nil : PlacementBadge(
+                                                        inCollection: true,
+                                                        inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false
+                                                    )
                                                 )
                                             }
+                                            .buttonStyle(.plain)
+                                            .id(copy.id)
+                                            .background {
+                                                GeometryReader { proxy in
+                                                    Color.clear.preference(
+                                                        key: RecordCardFrameKey.self,
+                                                        value: [copy.id: proxy.frame(in: .named("collectionGrid"))]
+                                                    )
+                                                }
+                                            }
+                                            .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
+                                                GroupedRecordPopover(copies: group.copies, labels: shelfLabels)
+                                            }
+                                            .contextMenu { gridContextMenu(group, items: items) }
+                                            .help("\(copy.release?.displayArtist ?? "Unbekannt") · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? " · \(group.copies.count) Exemplare" : "")")
+                                            .accessibilityLabel("\(copy.release?.displayArtist ?? "Unbekannt"), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? ", \(group.copies.count) Exemplare" : "")")
                                         }
-                                        .simultaneousGesture(TapGesture(count: 2).onEnded { opened = copy })
-                                        .contextMenu { gridContextMenu(copy, items: items) }
-                                        .help("Klicken zum Markieren · Doppelklicken zum Öffnen · ⌘-Klick für Einzelauswahl")
+                                    }
+                                    .coverGridMotion(width: width, columnCount: columnCount)
+                                    .scrollTargetLayout()
+                                    if let dragRectangle {
+                                        Rectangle()
+                                            .fill(AppStyle.selectedBackground)
+                                            .overlay(Rectangle().stroke(AppStyle.selectedBorder, lineWidth: 1))
+                                            .frame(width: dragRectangle.width, height: dragRectangle.height)
+                                            .offset(x: dragRectangle.minX, y: dragRectangle.minY)
+                                            .allowsHitTesting(false)
                                     }
                                 }
-                                .scrollTargetLayout()
-                                if let dragRectangle {
-                                    Rectangle()
-                                        .fill(AppStyle.selectedBackground)
-                                        .overlay(Rectangle().stroke(AppStyle.selectedBorder, lineWidth: 1))
-                                        .frame(width: dragRectangle.width, height: dragRectangle.height)
-                                        .offset(x: dragRectangle.minX, y: dragRectangle.minY)
-                                        .allowsHitTesting(false)
+                                .padding(.horizontal, AppStyle.pagePadding + 4)
+                                .padding(.vertical, CoverGrid.spacing)
+                                .padding(.trailing, alphabetGutter)
+                                .coordinateSpace(name: "collectionGrid")
+                                .onPreferenceChange(RecordCardFrameKey.self) { frames in
+                                    // Only needed for the rubber-band drag selection below. Stored
+                                    // outside SwiftUI state (see `CardFrameStore`), so plain
+                                    // scrolling doesn't re-render the whole view.
+                                    cardFrames.frames = frames
                                 }
+                                .simultaneousGesture(gridSelectionGesture)
                             }
-                            .padding(AppStyle.pagePadding)
-                            .padding(.trailing, showsAlphabetIndex ? 24 : 0)
-                            .coordinateSpace(name: "collectionGrid")
-                            .onPreferenceChange(RecordCardFrameKey.self) { frames in
-                                // Only needed for the rubber-band drag selection below. The lazy
-                                // grid republishes this for every card that mounts while scrolling,
-                                // so writing it unconditionally turned plain scrolling into a
-                                // constant stream of full-view re-renders. Outside an active drag,
-                                // stale frames are harmless — the next drag's first tick refreshes
-                                // them from the then-current layout before any hit-testing happens.
-                                guard dragRectangle != nil || cardFrames.isEmpty else { return }
-                                if cardFrames != frames { cardFrames = frames }
+                            .scrollPosition(id: $scrollPosition, anchor: .top)
+                            // Mouse drags already draw the selection rectangle here,
+                            // so pulling works with the trackpad (and ⌘R) only.
+                            .pullToRefresh(disabled: sync.busy, allowsMouseDrag: false) {
+                                sync.start(.collection, container: context.container)
                             }
-                            .simultaneousGesture(gridSelectionGesture)
                         }
-                        .scrollPosition(id: $scrollPosition, anchor: .top)
                     } else {
                         Table(items, selection: $selection) {
+                            TableColumn("") { copy in CoverView(url: copy.release?.coverURL, size: 20) }.width(24)
                             TableColumn("Interpret") { copy in
-                                VStack(alignment: .leading) {
-                                    Text(copy.release?.displayArtist ?? "—")
-                                }
-                            }.width(min: 130, ideal: 170)
-                            TableColumn("Titel") { Text($0.release?.displayTitle ?? "—") }.width(min: 150, ideal: 210)
-                            TableColumn("Jahr") { copy in Text(copy.release?.year.map(String.init) ?? "—") }.width(55)
-                            TableColumn("Label") { Text($0.release?.label ?? "") }
-                            TableColumn("Genre") { Text($0.release?.genres.joined(separator: ", ") ?? "") }
-                            TableColumn("Fach") { Text($0.shelf?.title ?? "—") }.width(min: 80, ideal: 130)
-                            TableColumn("Position") { Text(String($0.positionInShelf)) }.width(60)
+                                let artist = copy.release?.displayArtist ?? "—"
+                                Text(artist).lineLimit(1).help(artist)
+                            }.width(min: 130, ideal: 190)
+                            TableColumn("Titel") { copy in
+                                let title = copy.release?.displayTitle ?? "—"
+                                Text(title).lineLimit(1).help(title)
+                            }.width(min: 150, ideal: 230)
+                            TableColumn("Jahr") { copy in
+                                Text(copy.release?.year.map(String.init) ?? "–").monospacedDigit().foregroundStyle(.secondary)
+                            }.width(min: 40, ideal: 48, max: 60)
+                            TableColumn("Label") { Text($0.release?.displayLabel ?? "").lineLimit(1).foregroundStyle(.secondary) }
+                            TableColumn("Genre") { Text($0.release?.primaryStyle ?? "").lineLimit(1).foregroundStyle(.secondary) }
+                            TableColumn("Fach") { Text(placeLabel(for: $0)).lineLimit(1).foregroundStyle(.secondary) }.width(min: 80, ideal: 110)
+                            TableColumn("Pos.") { copy in
+                                Text(copy.shelf == nil ? "–" : String(copy.positionInShelf)).monospacedDigit().foregroundStyle(.secondary)
+                            }.width(min: 34, ideal: 40, max: 52)
                         }
+                        .tableStyle(.inset)
+                        .alternatingRowBackgrounds(.disabled)
+                        .scrollContentBackground(.hidden)
+                        .padding(.horizontal, AppStyle.pagePadding + 4)
+                        .padding(.trailing, alphabetGutter)
                         .contextMenu(forSelectionType: UUID.self) { ids in
                             tableContextMenu(ids, items: items)
                         } primaryAction: { ids in
                             if ids.count == 1 { opened = copies.first(where: { ids.contains($0.id) }) }
                         }
-                        .overlay {
-                            CollectionTableScrollBridge(
-                                position: $scrollPosition,
-                                itemIDs: items.map(\.id)
-                            )
-                            .allowsHitTesting(false)
+                        .scrollPosition(id: $scrollPosition, anchor: .top)
+                        .refreshShortcut(disabled: sync.busy) {
+                            sync.start(.collection, container: context.container)
                         }
                     }
 
@@ -189,16 +359,10 @@ struct CollectionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        
-        .toolbar { ToolbarItem { if isActivePage { Button { adding = true } label: { Label("Hinzufügen", systemImage: "plus") }.keyboardShortcut("n") } } }
-        .sheet(isPresented: $adding) { RecordEditor() }
-        .sheet(item: $opened) { copy in RecordDetailView(copy: copy) { showShelf(copy); opened = nil } }
+        // The sync status line slides in/out and the content below follows smoothly.
+        .animation(AppStyle.standardAnimation, value: sync.hasStatus)
+        .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
         .sheet(item: $editing) { RecordEditor(copy: $0) }
-        .confirmationDialog("Dieses Exemplar löschen?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })) {
-            Button("Exemplar löschen", role: .destructive) {
-                if let copy = deleting { perform { try PositionService(context: context).delete(copy) } }; deleting = nil
-            }
-        } message: { Text("Die verbleibenden Platten im Fach rücken in der Positionsliste auf.") }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
@@ -208,13 +372,35 @@ struct CollectionView: View {
                 self.scrollPosition = nil
             }
         }
-        .task { recomputeItems() }
-        .onChange(of: copies) { _, _ in recomputeItems() }
-        .onChange(of: folders) { _, _ in recomputeItems() }
-        .onChange(of: folderKey) { _, _ in recomputeItems() }
-        .onChange(of: mode) { _, _ in recomputeItems() }
-        .onChange(of: query) { _, _ in recomputeItems() }
-        .onChange(of: sort) { _, _ in recomputeItems() }
+        .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
+        .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantlistIndex(); rebuildBase() }
+        .onChange(of: copies) { _, _ in rebuildBase() }
+        .onChange(of: labelStyle) { _, style in shelfLabels = ShelfRangeLabels.compute(for: shelves, style: style) }
+        .onChange(of: sync.shelvesVersion) { _, _ in refreshLabels() }
+        .onChange(of: sync.placementsVersion) { _, _ in refreshLabels() }
+        .onChange(of: exclusions) { _, exclusions in excludedIDs = Set(exclusions.map(\.copyID)) }
+        .onChange(of: accounts) { _, _ in rebuildWantlistIndex(); rebuildBase() }
+        .onChange(of: wantlistEntries) { _, _ in rebuildWantlistIndex(); applyQuery() }
+        // Changed metadata on existing records and newly loaded tracklists
+        // don't change the @Query arrays; the sync service reports them.
+        .onChange(of: sync.libraryVersion) { _, _ in rebuildWantlistIndex(); rebuildBase() }
+        .onChange(of: sync.tracksVersion) { _, _ in
+            searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
+            rebuildWantlistIndex()
+            if !query.isEmpty { applyQuery() }
+        }
+        // Debounced, and only for the visible section — the hidden ones
+        // share the query but catch up when they're shown again.
+        .task(id: query) {
+            guard isActivePage else { queryPending = true; return }
+            try? await Task.sleep(for: .milliseconds(120))
+            guard !Task.isCancelled else { return }
+            applyQuery(animated: true)
+        }
+        .onChange(of: isActivePage) { _, active in
+            if active && labelsPending { refreshLabels() }
+            if active && queryPending { applyQuery() }
+        }
         .onAppear {
             if scrollPosition == nil { scrollPosition = savedScrollPosition }
         }
@@ -226,39 +412,53 @@ struct CollectionView: View {
         }
     }
 
-    private var showsAlphabetIndex: Bool {
-        mode != .recent && (sort == .artistAZ || sort == .artistZA)
-    }
+    private var showsAlphabetIndex: Bool { true }
 
     private func alphabetAnchors(for items: [RecordCopy]) -> [String: UUID] {
         items.reduce(into: [:]) { result, copy in
-            let symbol = SortingService.alphabetSection(for: copy.release?.displayArtist ?? "")
+            guard let symbol = letters[copy.id] else { return }
             if result[symbol] == nil { result[symbol] = copy.id }
         }
     }
 
     private func navigateToLetter(_ symbol: String, anchors: [String: UUID]) {
         guard let id = anchors[symbol] else { return }
-        withAnimation(AppStyle.quickAnimation) { scrollPosition = id }
+        withAnimation(AppStyle.layoutAnimation) { scrollPosition = id }
     }
 
+    // No "Löschen" here: every record shown comes from the Discogs collection,
+    // and the next sync would bring a locally deleted copy back as a new one
+    // (without its shelf place). Records leave via Discogs; "Nicht einsortieren"
+    // keeps one off the shelf.
     @ViewBuilder private func bulkMenus(for ids: Set<UUID>, items: [RecordCopy]) -> some View {
-        let selectedCopies = items.filter { ids.contains($0.id) }
-        Menu {
-            ForEach(shelves) { shelf in
-                Button(shelf.title) { assign(selectedCopies, to: shelf) }
-                    .disabled(!canAssign(selectedCopies, to: shelf))
-            }
-        } label: {
-            Label("Fach zuweisen", systemImage: "square.grid.3x3")
+        // Shelf placement itself happens only on the shelf page.
+        let selected = items.filter { ids.contains($0.id) }
+        exclusionButton(for: selected)
+        refreshButton(for: selected)
+    }
+
+    /// "Nicht einsortieren" / "Wieder einsortieren", depending on whether all
+    /// of the given copies are already kept out of the shelves.
+    @ViewBuilder private func exclusionButton(for selectedCopies: [RecordCopy]) -> some View {
+        let allExcluded = !selectedCopies.isEmpty && selectedCopies.allSatisfy { excludedIDs.contains($0.id) }
+        Button(allExcluded ? "Wieder einsortieren" : "Nicht einsortieren") {
+            perform { try PositionService(context: context).setExcluded(selectedCopies, !allExcluded) }
         }
     }
 
-    @ViewBuilder private func gridContextMenu(_ copy: RecordCopy, items: [RecordCopy]) -> some View {
-        if selection.contains(copy.id), selection.count > 1 {
+    @ViewBuilder private func gridContextMenu(_ group: CollectionCoverGroup, items: [RecordCopy]) -> some View {
+        let groupIDs = Set(group.copies.map(\.id))
+        // Bulk actions only when the selection reaches beyond this release;
+        // its own copies alone keep the per-copy menus.
+        if !groupIDs.isDisjoint(with: selection), !selection.isSubset(of: groupIDs) {
             bulkMenus(for: selection, items: items)
+        } else if group.copies.count > 1 {
+            ForEach(Array(group.copies.enumerated()), id: \.element.id) { index, copy in
+                let excluded = excludedIDs.contains(copy.id)
+                Menu("Exemplar \(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excluded))") { actions(copy) }
+            }
         } else {
-            actions(copy)
+            actions(group.primary)
         }
     }
 
@@ -270,39 +470,46 @@ struct CollectionView: View {
         }
     }
 
-    private func canAssign(_ selectedCopies: [RecordCopy], to shelf: Shelf) -> Bool {
-        let alreadyThere = selectedCopies.filter { $0.shelf?.id == shelf.id }.count
-        let free = shelf.capacity - shelf.copies.count
-        return selectedCopies.count - alreadyThere <= free
-    }
-
-    private func assign(_ selectedCopies: [RecordCopy], to shelf: Shelf) {
-        perform {
-            try PositionService(context: context).assign(selectedCopies, to: shelf)
-            selection.removeAll()
-        }
-    }
-
-    private func select(_ copy: RecordCopy, in items: [RecordCopy]) {
+    private func select(_ group: CollectionCoverGroup, in groups: [CollectionCoverGroup]) {
+        let copy = group.primary
+        let groupIDs = Set(group.copies.map(\.id))
         let modifiers = NSApp.currentEvent?.modifierFlags ?? NSEvent.modifierFlags
-        if modifiers.contains(.shift), let anchor = selectionAnchor,
-           let start = items.firstIndex(where: { $0.id == anchor }),
-           let end = items.firstIndex(where: { $0.id == copy.id }) {
+        if modifiers.contains(.shift) {
+            // Without a usable anchor (none yet, or hidden by a search) the
+            // range starts at the clicked record instead of dropping the selection.
+            let end = groups.firstIndex(where: { $0.id == group.id })
+            let start = selectionAnchor.flatMap { anchor in
+                groups.firstIndex { $0.copies.contains { $0.id == anchor } }
+            } ?? end
+            guard let start, let end else { return }
             let range = min(start, end)...max(start, end)
-            let ids = Set(range.map { items[$0].id })
+            let ids = Set(range.flatMap { groups[$0].copies.map(\.id) })
             if modifiers.contains(.command) { selection.formUnion(ids) }
             else { selection = ids }
+            if selectionAnchor == nil || groups[start].id == group.id { selectionAnchor = copy.id }
         } else if modifiers.contains(.command) {
-            if selection.contains(copy.id) { selection.remove(copy.id) }
-            else { selection.insert(copy.id) }
+            if groupIDs.isSubset(of: selection) { selection.subtract(groupIDs) }
+            else { selection.formUnion(groupIDs) }
             selectionAnchor = copy.id
-        } else if selection == [copy.id] {
-            selection = []
-            selectionAnchor = nil
         } else {
-            selection = [copy.id]
+            // Plain click: the popover for this record. It isn't a bulk
+            // selection, so any marked records are released.
+            selection = []
             selectionAnchor = copy.id
+            let justClosed = quickLookDismissed.map { $0.id == copy.id && Date().timeIntervalSince($0.at) < 0.4 } ?? false
+            if !justClosed { quickLook = copy.id }
         }
+    }
+
+    private func quickLookBinding(for id: UUID) -> Binding<Bool> {
+        Binding(
+            get: { quickLook == id },
+            set: { presented in
+                guard !presented, quickLook == id else { return }
+                quickLook = nil
+                quickLookDismissed = (id, Date())
+            }
+        )
     }
 
     private var gridSelectionGesture: some Gesture {
@@ -314,13 +521,18 @@ struct CollectionView: View {
                 }
                 let rectangle = selectionRectangle(from: value.startLocation, to: value.location)
                 dragRectangle = rectangle
-                let hitIDs = Set(cardFrames.compactMap { id, frame in frame.intersects(rectangle) ? id : nil })
+                let hitIDs = Set(coverGroups.filter { group in
+                    guard let frame = cardFrames.frames[group.primary.id] else { return false }
+                    return frame.intersects(rectangle)
+                }.flatMap { $0.copies.map(\.id) })
                 selection = dragBaseSelection.union(hitIDs)
             }
             .onEnded { _ in
                 dragRectangle = nil
                 dragBaseSelection = []
-                selectionAnchor = selection.first
+                // The first selected record in grid order, not an arbitrary
+                // element of the set, so a following ⇧-click finds it.
+                selectionAnchor = coverGroups.first { group in group.copies.contains { selection.contains($0.id) } }?.primary.id
             }
     }
 
@@ -333,162 +545,149 @@ struct CollectionView: View {
         )
     }
 
-    // A single, intrinsically sized control surface. Only the collection below expands.
-    // The selection/shelf-assignment controls are always rendered here (just disabled
-    // when nothing is selected) so this bar never grows or shrinks as the user clicks
-    // records — it stays a fixed one- or two-line header.
-    private func collectionControls(count: Int, items: [RecordCopy]) -> some View {
-        controlLayout(count: count, items: items).appControlSurface()
-    }
-    private func controlLayout(count: Int, items: [RecordCopy]) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 16) {
-                folderPicker
-                itemCount(count)
-                selectionControls(items: items)
-                Spacer(minLength: 12)
-                displayOptions
-                syncButtons
+    // Same header bar as the wantlist: sections and search on the left,
+    // the layout switch on the right. The selection part
+    // only appears as text next to the search field.
+    private func collectionControls(items: [RecordCopy]) -> some View {
+        HStack(spacing: AppStyle.rowSpacing) {
+            if let section { OverviewSectionPicker(selection: section) }
+            if let section {
+                OverviewSearchControl(
+                    placeholder: "Collection durchsuchen",
+                    query: queryBinding,
+                    otherCount: wantlistMatches,
+                    otherSection: .wantlist
+                ) { section.wrappedValue = .wantlist }
+            } else {
+                AppSearchField(placeholder: "Collection durchsuchen", text: queryBinding)
+                    .frame(maxWidth: 380)
             }
-            VStack(spacing: 14) {
-                HStack(spacing: 16) {
-                    folderPicker
-                    Spacer(minLength: 12)
-                    syncButtons
-                }
-                HStack(spacing: 16) {
-                    itemCount(count)
-                    selectionControls(items: items)
-                    Spacer(minLength: 12)
-                    displayOptions
-                }
-            }
+            selectionControls(items: items)
+            Spacer(minLength: AppStyle.rowSpacing)
+            displayOptions
         }
-        .controlSize(.regular)
-        .padding(16)
+        .frame(height: 30)
     }
-    private func selectionControls(items: [RecordCopy]) -> some View {
-        let selectedCopies = items.filter { selection.contains($0.id) }
-        return HStack(spacing: 10) {
-            Divider().frame(height: 16)
-            Label("\(selection.count)", systemImage: "checkmark.circle.fill")
-                .font(.callout.weight(.semibold))
-                .monospacedDigit()
-                .foregroundStyle(selection.isEmpty ? .secondary : Color.accentColor)
-                .help("⌘-Klick oder mit gedrückter Maustaste über weitere Cover ziehen, um mehrere auszuwählen")
-            Menu {
-                ForEach(shelves) { shelf in
-                    Button(shelf.title) { assign(selectedCopies, to: shelf) }
-                        .disabled(!canAssign(selectedCopies, to: shelf))
-                }
-            } label: {
-                Label("Fach zuweisen", systemImage: "square.grid.3x3")
+    @ViewBuilder private func selectionControls(items: [RecordCopy]) -> some View {
+        if !selection.isEmpty {
+            HStack(spacing: 6) {
+                Text("·").foregroundStyle(.tertiary)
+                Text("\(selection.count) ausgewählt").monospacedDigit().foregroundStyle(AppStyle.accent)
+                IconButton(systemImage: "xmark.circle.fill", help: "Auswahl aufheben") { selection.removeAll() }
+                    .foregroundStyle(.secondary)
             }
-            .disabled(selection.isEmpty)
-            .help(selection.isEmpty ? "Wähle Schallplatten aus, um sie einem Fach zuzuweisen" : "Ausgewählte Schallplatten einem Fach zuweisen")
-            IconButton(systemImage: "xmark.circle.fill", help: "Auswahl aufheben") { selection.removeAll() }
-                .foregroundStyle(.secondary)
-                .disabled(selection.isEmpty)
-                .opacity(selection.isEmpty ? 0.35 : 1)
+            .font(.callout)
+            .fixedSize()
         }
-        .fixedSize()
-        .animation(AppStyle.quickAnimation, value: selection.count)
-    }
-    private var folderPicker: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "folder").foregroundStyle(.secondary)
-            Picker("Discogs-Ordner", selection: $folderKey) {
-                Text("Gesamter Bestand").tag("discogs")
-                ForEach(folders.filter { $0.name != "Uncategorized" && $0.name != "All" }) { Text($0.name).tag($0.key) }
-            }
-            .labelsHidden()
-            .frame(minWidth: 190, idealWidth: 240, maxWidth: 300, alignment: .leading)
-            .help("Sammlung oder Discogs-Ordner auswählen")
-        }
-    }
-    private func itemCount(_ count: Int) -> some View {
-        Text(count == 1 ? "1 Schallplatte" : "\(count) Schallplatten")
-            .font(.callout).foregroundStyle(.secondary)
-            .monospacedDigit().fixedSize()
     }
     private var displayOptions: some View {
-        HStack(spacing: 12) {
-            if mode != .recent {
-                Picker("Sortierung", selection: $sort) {
-                    ForEach(RecordSort.allCases) { Text($0.rawValue).tag($0) }
-                }
-                .labelsHidden().frame(width: 185)
-                .help("Sortierung der Schallplatten")
-            }
-            Picker("Darstellung", selection: $layout) {
-                Label("Raster", systemImage: "square.grid.2x2").tag("grid")
-                Label("Liste", systemImage: "list.bullet").tag("list")
-            }
-            .labelStyle(.iconOnly).labelsHidden()
-            .pickerStyle(.segmented).frame(width: 80)
-            .help("Zwischen Raster und Liste wechseln")
-        }.fixedSize()
-    }
-    private var syncButtons: some View {
-        HStack(spacing: 12) {
-            if let folder = folders.first(where: { $0.key == folderKey }) {
-                Button {
-                    sync.start(.folder(folder.folderID), container: context.container, expectedOwner: folder.owner)
-                } label: { Label("Ordner", systemImage: "arrow.triangle.2.circlepath") }
-                    .help("Ausgewählten Discogs-Ordner synchronisieren")
-            }
-            Button { sync.start(.collection, container: context.container) } label: {
-                Label("Collection synchronisieren", systemImage: "arrow.clockwise")
-            }
-        }
-        .buttonStyle(.borderless).disabled(sync.busy).fixedSize()
+        OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation), iconOnly: true)
     }
     @ViewBuilder private func actions(_ copy: RecordCopy) -> some View {
         Button("Öffnen") { opened = copy }
-        if let id = copy.release?.discogsID {
-            Button("Veröffentlichung aktualisieren") { sync.start(.release(id), container: context.container) }.disabled(sync.busy)
-        }
-        Button("Im Regal anzeigen") { showShelf(copy) }
         Button("Bearbeiten") { editing = copy }
-        Button("In anderes Fach verschieben") { editing = copy }
-        Divider(); Button("Löschen", role: .destructive) { deleting = copy }
+        Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen") { showShelf(copy) }
+        if let url = copy.release?.sourceURL {
+            Button("Bei Discogs öffnen") { openURL(url) }
+        }
+        refreshButton(for: [copy])
+        Divider()
+        exclusionButton(for: [copy])
     }
-    private func perform(_ action: () throws -> Void) { do { try action() } catch { self.error = error.localizedDescription } }
+    /// Reloads the Discogs data of the given records (only those from Discogs).
+    @ViewBuilder private func refreshButton(for selected: [RecordCopy]) -> some View {
+        let releases = Array(Set(selected.compactMap(\.release).map(\.id)))
+            .compactMap { id in selected.first { $0.release?.id == id }?.release }
+        // Not in the demo: Discogs is off there.
+        if !releases.isEmpty && !DemoMode.isActive {
+            Button("Discogs-Daten aktualisieren") {
+                Task {
+                    await refresh.reload(releases, context: context)
+                    if let message = refresh.error { error = message }
+                }
+            }
+            .disabled(refresh.busy || sync.busy)
+        }
+    }
+    private func perform(_ action: () throws -> Void) { do { try action() } catch { self.error = error.reportedMessage() } }
 }
+/// A grid tile represents one release, even when the collection contains
+/// several physical copies. Only the cover and a quiet copy count are shown.
+struct CollectionCoverGroup: Identifiable {
+    enum Identity: Hashable {
+        case discogs(Int)
+        case orphan(UUID)
+    }
+
+    let id: Identity
+    var copies: [RecordCopy]
+    var primary: RecordCopy { copies[0] }
+
+    static func make(from copies: [RecordCopy]) -> [Self] {
+        var groups: [Self] = []
+        var positions: [Identity: Int] = [:]
+        for copy in copies {
+            let identity = identity(of: copy)
+            if let position = positions[identity] {
+                groups[position].copies.append(copy)
+            } else {
+                positions[identity] = groups.count
+                groups.append(Self(id: identity, copies: [copy]))
+            }
+        }
+        return groups
+    }
+
+    /// The tile a copy belongs to: its Discogs release.
+    static func identity(of copy: RecordCopy) -> Identity {
+        if let release = copy.release { return .discogs(release.discogsID) }
+        return .orphan(copy.id)
+    }
+}
+
 struct RecordCard: View {
     let copy: RecordCopy
-    var coverSize: Double = 155
+    var copyCount = 1
     var selected = false
-    @State private var hovering = false
+    /// Set while searching: where this record is (see `PlacementBadge`).
+    var placement: PlacementBadge? = nil
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            CoverView(url: copy.release?.coverURL, size: coverSize)
-            HStack {
-                Text(copy.release?.displayArtist ?? "Unbekannt").font(.headline).lineLimit(1).frame(minHeight: 20, alignment: .leading)
+        CoverView(url: copy.release?.coverURL, size: nil)
+            .overlay(alignment: .topLeading) {
+                if let placement { placement.transition(.opacity) }
             }
-            Text(copy.release?.displayTitle ?? "—").lineLimit(2, reservesSpace: true).foregroundStyle(.secondary)
-            Text("Hinzugefügt am \(copy.dateAdded.formatted(date: .abbreviated, time: .omitted))")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.tint)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(6)
-        .frame(width: coverSize + 12, alignment: .leading)
-        .appHoverable(hovering, cornerRadius: AppStyle.cardRadius)
-        .appSelectable(selected, cornerRadius: AppStyle.cardRadius)
-        .overlay(alignment: .topTrailing) {
-            if selected {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.title2)
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.white, Color.accentColor)
-                    .padding(10)
+            .animation(AppStyle.quickAnimation, value: placement == nil)
+            .overlay {
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(selected ? AppStyle.selectedBorder : Color.clear, lineWidth: 2)
             }
-        }
-        .contentShape(Rectangle())
-        .onHover { hovering = $0 }
+            .overlay(alignment: .topTrailing) {
+                if selected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title3)
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, AppStyle.accent)
+                        .padding(6)
+                }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if copyCount > 1 {
+                    Text("\(copyCount)×")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(.regularMaterial, in: Capsule())
+                        .padding(6)
+                }
+            }
+            .animation(AppStyle.quickAnimation, value: selected)
+            .contentShape(Rectangle())
     }
+}
+
+private final class CardFrameStore {
+    var frames: [UUID: CGRect] = [:]
 }
 
 private struct RecordCardFrameKey: PreferenceKey {
@@ -498,18 +697,16 @@ private struct RecordCardFrameKey: PreferenceKey {
     }
 }
 
-private struct AlphabetIndex: View {
+struct AlphabetIndex: View {
     let availableSymbols: Set<String>
     let action: (String) -> Void
-    @State private var hoveredSymbol: String?
 
     private var symbols: [String] { SortingService.alphabetNavigationSymbols }
 
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(Array(symbols.enumerated()), id: \.element) { index, symbol in
+            ForEach(symbols, id: \.self) { symbol in
                 let available = availableSymbols.contains(symbol)
-                let scale = magnification(at: index)
                 Button { action(symbol) } label: {
                     Text(symbol)
                         .font(.system(size: 9, weight: .semibold, design: .rounded))
@@ -517,145 +714,90 @@ private struct AlphabetIndex: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(available ? Color.accentColor : Color.secondary.opacity(0.35))
+                .foregroundStyle(available ? AppStyle.accent : Color.secondary.opacity(0.35))
                 .disabled(!available)
-                .scaleEffect(scale)
-                .zIndex(scale)
-                .animation(AppStyle.springAnimation, value: hoveredSymbol)
-                .onHover { isHovering in
-                    guard available else { return }
-                    if isHovering { hoveredSymbol = symbol }
-                    else if hoveredSymbol == symbol { hoveredSymbol = nil }
-                }
                 .help(available ? "Zu \(symbol) springen" : "Keine Einträge unter \(symbol)")
                 .accessibilityLabel(available ? "Zu Buchstabe \(symbol) springen" : "Keine Einträge unter Buchstabe \(symbol)")
             }
         }
         .padding(.vertical, 5)
         .padding(.horizontal, 2)
-        .appGlassSurface(cornerRadius: 9)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Alphabetische Navigation")
     }
+}
 
-    // Dock-style magnification: the hovered letter grows most, with a quick falloff
-    // over its immediate neighbors so the effect reads as a smooth ripple.
-    private func magnification(at index: Int) -> CGFloat {
-        guard let hoveredSymbol, let hoveredIndex = symbols.firstIndex(of: hoveredSymbol) else { return 1 }
-        switch abs(index - hoveredIndex) {
-        case 0: return 1.7
-        case 1: return 1.32
-        case 2: return 1.12
-        default: return 1
+/// "♪ A2 · Title" under a cover, replacing the release title while a search
+/// found the record by one of its tracks.
+struct MatchedTrackLine: View {
+    let track: Track
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "music.note")
+            Text(track.position.isEmpty ? track.title : "\(track.position) · \(track.title)")
         }
+        .font(.caption)
+        .foregroundStyle(.tint)
+        .lineLimit(1)
+        .help("Gefunden über den Track „\(track.title)“")
     }
 }
 
-/// SwiftUI's `Table` does not expose its visible row as a binding on macOS 14.
-/// This zero-opacity overlay observes the underlying table scroll view so the
-/// same session-only restoration and alphabet jumps work in list layout too.
-private struct CollectionTableScrollBridge: NSViewRepresentable {
-    @Binding var position: UUID?
-    let itemIDs: [UUID]
+/// Search and the other section's matching results sit directly beside each other.
+/// The outlined result button appears only for a nonempty search with matches.
+struct OverviewSearchControl: View {
+    let placeholder: String
+    @Binding var query: String
+    let otherCount: Int
+    let otherSection: OverviewSection
+    let openOtherSection: () -> Void
 
-    func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
-
-    func makeNSView(context: Context) -> ProbeView {
-        let view = ProbeView()
-        view.onMoveToWindow = { [weak coordinator = context.coordinator, weak view] in
-            guard let view else { return }
-            DispatchQueue.main.async { coordinator?.connect(from: view) }
-        }
-        return view
+    private var showsOtherSection: Bool {
+        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && otherCount > 0
     }
 
-    func updateNSView(_ nsView: ProbeView, context: Context) {
-        context.coordinator.parent = self
-        DispatchQueue.main.async { [weak coordinator = context.coordinator, weak nsView] in
-            guard let nsView else { return }
-            coordinator?.connect(from: nsView)
-            coordinator?.restoreIfNeeded()
-        }
-    }
-
-    final class ProbeView: NSView {
-        var onMoveToWindow: (() -> Void)?
-        override func viewDidMoveToWindow() {
-            super.viewDidMoveToWindow()
-            onMoveToWindow?()
-        }
-    }
-
-    @MainActor final class Coordinator {
-        var parent: CollectionTableScrollBridge
-        private weak var tableView: NSTableView?
-        private weak var clipView: NSClipView?
-        private var observer: NSObjectProtocol?
-        private var lastVisibleID: UUID?
-
-        init(parent: CollectionTableScrollBridge) { self.parent = parent }
-
-        isolated deinit {
-            if let observer { NotificationCenter.default.removeObserver(observer) }
-        }
-
-        func connect(from probe: NSView) {
-            guard let window = probe.window, let contentView = window.contentView else { return }
-            let probeCenter = probe.convert(NSPoint(x: probe.bounds.midX, y: probe.bounds.midY), to: nil)
-            let candidate = allSubviews(of: contentView, matching: NSTableView.self)
-                .filter { table in
-                    guard let scrollView = table.enclosingScrollView else { return false }
-                    return scrollView.convert(scrollView.bounds, to: nil).contains(probeCenter)
+    var body: some View {
+        HStack(spacing: 4) {
+            AppSearchField(placeholder: placeholder, text: $query)
+                .frame(maxWidth: 380)
+            if showsOtherSection {
+                Button(action: openOtherSection) {
+                    Text("\(otherCount) in der \(otherSection.rawValue)")
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .padding(.horizontal, 12)
+                        .frame(height: AppStyle.controlHeight)
+                        .foregroundStyle(.secondary)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 6)
+                                .strokeBorder(Color.primary.opacity(0.22), lineWidth: 1)
+                        }
                 }
-                .min { lhs, rhs in
-                    lhs.convert(lhs.visibleRect, to: nil).width < rhs.convert(rhs.visibleRect, to: nil).width
-                }
-            guard let candidate, candidate !== tableView,
-                  let clipView = candidate.enclosingScrollView?.contentView else { return }
-
-            if let observer { NotificationCenter.default.removeObserver(observer) }
-            tableView = candidate
-            self.clipView = clipView
-            clipView.postsBoundsChangedNotifications = true
-            observer = NotificationCenter.default.addObserver(
-                forName: NSView.boundsDidChangeNotification,
-                object: clipView,
-                queue: .main
-            ) { [weak self] _ in
-                MainActor.assumeIsolated { self?.recordVisibleRow() }
-            }
-            restoreIfNeeded()
-        }
-
-        func restoreIfNeeded() {
-            guard let target = parent.position,
-                  target != lastVisibleID,
-                  let row = parent.itemIDs.firstIndex(of: target),
-                  let tableView,
-                  let clipView else { return }
-            let rowRect = tableView.rect(ofRow: row)
-            clipView.scroll(to: NSPoint(x: clipView.bounds.origin.x, y: rowRect.minY))
-            tableView.enclosingScrollView?.reflectScrolledClipView(clipView)
-            lastVisibleID = target
-        }
-
-        private func recordVisibleRow() {
-            guard let tableView else { return }
-            let rows = tableView.rows(in: tableView.visibleRect)
-            guard rows.location != NSNotFound, rows.location < parent.itemIDs.count else { return }
-            let id = parent.itemIDs[rows.location]
-            guard id != lastVisibleID else { return }
-            lastVisibleID = id
-            DispatchQueue.main.async { [weak self] in
-                guard let self, self.parent.position != id else { return }
-                self.parent.position = id
+                .buttonStyle(.plain)
+                .help("Treffer in der \(otherSection.rawValue) anzeigen")
+                .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.rawValue) anzeigen")
+                .transition(.opacity)
             }
         }
+        .font(.callout)
+        .animation(AppStyle.fadeAnimation, value: showsOtherSection)
+    }
+}
 
-        private func allSubviews<T: NSView>(of root: NSView, matching type: T.Type) -> [T] {
-            root.subviews.reduce(into: root as? T == nil ? [] : [root as! T]) { result, view in
-                result.append(contentsOf: allSubviews(of: view, matching: type))
-            }
-        }
+/// Small glass tag on a cover while searching: where the record is —
+/// "Collection", "Wantlist" or both. Deliberately quiet (caption size,
+/// secondary text) so it reads as a hint, not a label.
+struct PlacementBadge: View, Equatable {
+    let inCollection: Bool
+    let inWantlist: Bool
+    var body: some View {
+        Text([inCollection ? "Collection" : nil, inWantlist ? "Wantlist" : nil].compactMap { $0 }.joined(separator: " · "))
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(.ultraThinMaterial, in: Capsule())
+            .padding(6)
+            .accessibilityLabel("In: " + [inCollection ? "Collection" : nil, inWantlist ? "Wantlist" : nil].compactMap { $0 }.joined(separator: " und "))
     }
 }

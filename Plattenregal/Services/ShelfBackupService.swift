@@ -1,0 +1,557 @@
+import AppKit
+import Foundation
+import SwiftData
+
+/// Everything about the shelf that exists only in this app and not at
+/// Discogs: which copy stands where, locked compartments and records marked
+/// "Nicht im Regal". Copies are identified by their Discogs instance ID,
+/// which survives a lost database and a fresh sync.
+nonisolated struct ShelfBackup: Codable, Equatable, Sendable {
+    struct ShelfSetting: Codable, Equatable, Sendable {
+        var number: Int
+        var isReserved: Bool
+        var name: String
+    }
+    /// A cabinet and its compartments (shelf numbers in reading order).
+    /// Missing in backups from before cabinets: those restore into the
+    /// cabinets as they are.
+    struct CabinetSetting: Codable, Equatable, Sendable {
+        var name: String
+        var columns: Int
+        var rows: Int
+        var isActive: Bool
+        var shelves: [Int]
+    }
+    struct Placement: Codable, Equatable, Sendable {
+        var instanceID: Int
+        var shelf: Int
+        var position: Int
+        /// Only for reading the file; restoring goes by `instanceID`.
+        var record: String?
+    }
+
+    static let currentVersion = 1
+
+    var version = ShelfBackup.currentVersion
+    var owner: String?
+    var createdAt: Date
+    var shelves: [ShelfSetting]
+    var cabinets: [CabinetSetting]?
+    var placements: [Placement]
+    var notInShelf: [Int]
+
+    /// Same layout, whenever it was taken.
+    func hasSameLayout(as other: ShelfBackup) -> Bool {
+        shelves == other.shelves && cabinets == other.cabinets && notInShelf == other.notInShelf
+            && placements.map { [$0.instanceID, $0.shelf, $0.position] } == other.placements.map { [$0.instanceID, $0.shelf, $0.position] }
+    }
+
+    /// Nothing worth keeping: no record placed, no shelf locked, nothing set aside.
+    var isEmpty: Bool { placements.isEmpty && !shelves.contains(where: \.isReserved) && notInShelf.isEmpty }
+
+    /// The placements a restore can apply: shelves that exist and aren't
+    /// locked, each copy once (the first entry wins in hand-edited files).
+    @MainActor var applicablePlacements: [Placement] {
+        let reserved = Set(shelves.filter(\.isReserved).map(\.number))
+        // With cabinets in the file, only their compartments exist after a
+        // restore; older files address the compartments 1…12.
+        let known = cabinets.map { Set($0.flatMap(\.shelves)) } ?? Set(1...ShelfGeometry.count)
+        var seen = Set<Int>()
+        return placements.filter {
+            known.contains($0.shelf) && !reserved.contains($0.shelf) && seen.insert($0.instanceID).inserted
+        }
+    }
+
+    @MainActor var summary: String {
+        if isEmpty { return "Noch keine Platte eingeräumt" }
+        let occupied = Set(placements.map(\.shelf)).count
+        var parts = ["\(AppStyle.records(placements.count)) in \(occupied == 1 ? "1 Fach" : "\(occupied) Fächern")"]
+        let locked = shelves.filter(\.isReserved).count
+        if locked > 0 { parts.append(locked == 1 ? "1 gesperrtes Fach" : "\(locked) gesperrte Fächer") }
+        if !notInShelf.isEmpty { parts.append("\(notInShelf.count) nicht im Regal") }
+        if let cabinets, cabinets.count > 1 { parts.append("\(cabinets.count) Regale") }
+        return parts.joined(separator: " · ")
+    }
+}
+
+nonisolated enum ShelfBackupError: LocalizedError {
+    case unreadable, newerVersion, syncRunning, tooLarge, noMatchingRecords
+    var errorDescription: String? {
+        switch self {
+        case .tooLarge: "Diese Datei ist viel zu groß für eine Sicherung der Fach-Belegung. Wähle eine Datei, die Plattenregal erstellt hat."
+        case .noMatchingRecords: "Keine Platte aus dieser Sicherung ist gerade in deiner Sammlung. Synchronisiere zuerst die Collection mit Discogs – oder die Sicherung gehört zu einem anderen Discogs-Konto. Es wurde nichts verändert."
+        case .syncRunning: "Gerade läuft eine Synchronisierung mit Discogs. Warte, bis sie fertig ist, und stelle die Belegung dann wieder her."
+        case .unreadable: "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter …“ oder automatisch erstellt hat."
+        case .newerVersion: "Diese Sicherung stammt aus einer neueren Version von Plattenregal. Aktualisiere die App zuerst und versuche es dann noch einmal."
+        }
+    }
+}
+
+/// What a restore would do, shown before anything changes.
+struct ShelfRestorePreview {
+    let backup: ShelfBackup
+    /// Copies that get their place back.
+    let placed: Int
+    /// In the backup, but no longer in the library (sold, other account).
+    let missing: Int
+    /// In the collection now, but without a place in the backup: they end up "ohne Fach".
+    let unplaced: Int
+    let otherAccount: Bool
+
+    var message: String {
+        var lines = ["\(AppStyle.records(placed)) werden wieder einsortiert."]
+        if unplaced > 0 { lines.append("\(AppStyle.records(unplaced)) kommen in der Sicherung nicht vor und stehen danach ohne Fach.") }
+        if missing > 0 { lines.append("\(AppStyle.records(missing)) aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.") }
+        if missing > placed {
+            lines.append("Mehr als die Hälfte der Platten aus der Sicherung fehlt. Ist die Collection noch nicht vollständig synchronisiert, brich ab und synchronisiere zuerst.")
+        }
+        if otherAccount, let owner = backup.owner { lines.append("Achtung: Die Sicherung gehört zum Discogs-Konto „\(owner)“.") }
+        lines.append("Die aktuelle Belegung wird ersetzt. Sie wird vorher automatisch gesichert.")
+        return lines.joined(separator: "\n")
+    }
+}
+
+struct ShelfBackupService {
+    let context: ModelContext
+
+    // MARK: Backup
+
+    func makeBackup(at date: Date = .now) throws -> ShelfBackup {
+        let owner = DiscogsAccount.current(in: try context.fetch(FetchDescriptor<DiscogsAccount>()))?.username
+        let shelves = try context.fetch(FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\Shelf.number)]))
+        let cabinets = try context.fetch(FetchDescriptor<Cabinet>(sortBy: [SortDescriptor(\Cabinet.sortOrder)]))
+        let copies = try context.fetch(RecordCopy.fetchingReleases())
+        let excluded = Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID))
+        let placements = copies.compactMap { copy -> ShelfBackup.Placement? in
+            guard let shelf = copy.shelf else { return nil }
+            let record = copy.release.map { "\($0.displayArtist) – \($0.displayTitle)" }
+            return .init(instanceID: copy.discogsInstanceID, shelf: shelf.number, position: copy.positionInShelf, record: record)
+        }
+        .sorted { ($0.shelf, $0.position, $0.instanceID) < ($1.shelf, $1.position, $1.instanceID) }
+        return ShelfBackup(
+            owner: owner, createdAt: date,
+            shelves: shelves.map { .init(number: $0.number, isReserved: $0.isReserved, name: $0.name) },
+            cabinets: cabinets.map { .init(name: $0.name, columns: $0.columns, rows: $0.rows, isActive: $0.isActive,
+                                           shelves: $0.orderedShelves.map(\.number)) },
+            placements: placements,
+            notInShelf: copies.filter { excluded.contains($0.id) && $0.shelf == nil }.map(\.discogsInstanceID).sorted())
+    }
+
+    nonisolated static func encode(_ backup: ShelfBackup) throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        encoder.dateEncodingStrategy = .iso8601
+        return try encoder.encode(backup)
+    }
+
+    /// Far above any real layout (a few hundred bytes per record); keeps a
+    /// wrongly picked file from being loaded whole.
+    nonisolated static let maximumFileSize = 20_000_000
+
+    nonisolated static func read(_ url: URL) throws -> ShelfBackup {
+        let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+        guard size <= maximumFileSize else { throw ShelfBackupError.tooLarge }
+        return try decode(try Data(contentsOf: url))
+    }
+
+    nonisolated static func decode(_ data: Data) throws -> ShelfBackup {
+        struct Header: Decodable { let version: Int }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        guard let header = try? decoder.decode(Header.self, from: data) else { throw ShelfBackupError.unreadable }
+        guard header.version <= ShelfBackup.currentVersion else { throw ShelfBackupError.newerVersion }
+        guard let backup = try? decoder.decode(ShelfBackup.self, from: data) else { throw ShelfBackupError.unreadable }
+        return backup
+    }
+
+    // MARK: Restore
+
+    func preview(_ backup: ShelfBackup) throws -> ShelfRestorePreview {
+        let owner = DiscogsAccount.current(in: try context.fetch(FetchDescriptor<DiscogsAccount>()))?.username
+        let copies = try context.fetch(FetchDescriptor<RecordCopy>())
+        let known = Set(copies.map(\.discogsInstanceID))
+        let placeable = backup.applicablePlacements
+        let covered = Set(placeable.map(\.instanceID)).union(backup.notInShelf)
+        // Nothing would get its place back, but every current place would be
+        // cleared – typically restoring before the first sync after data loss.
+        guard placeable.contains(where: { known.contains($0.instanceID) }) || backup.notInShelf.contains(where: known.contains) else {
+            throw ShelfBackupError.noMatchingRecords
+        }
+        return ShelfRestorePreview(
+            backup: backup,
+            placed: placeable.filter { known.contains($0.instanceID) }.count,
+            missing: placeable.filter { !known.contains($0.instanceID) }.count,
+            unplaced: copies.filter { $0.isInCurrentCollection(owner: owner) && !covered.contains($0.discogsInstanceID) }.count,
+            otherAccount: backup.owner != nil && owner != nil && backup.owner != owner)
+    }
+
+    /// Replaces the whole layout in one transaction: shelf locks and names,
+    /// every copy's place and the "Nicht im Regal" marks. Positions are
+    /// renumbered 1…n per shelf in the backup's order, closing the gaps left
+    /// by copies that are gone.
+    func restore(_ backup: ShelfBackup) throws {
+        // The sync writes copies in the background; a restore in between
+        // could be overwritten or place copies the sync is about to change.
+        // (`busy`: the tracklist download afterwards only touches releases.)
+        guard !DiscogsSyncService.shared.busy else { throw ShelfBackupError.syncRunning }
+        do { try apply(backup) } catch { throw FileTransferError.restoreFailed(error) }
+        // Cabinets may have been rebuilt; the compartment labels follow.
+        DiscogsSyncService.shared.shelvesDidChange()
+        AppLog.info("Sicherung", "Fach-Belegung wiederhergestellt (Stand \(backup.createdAt.formatted(.iso8601))): \(backup.summary)")
+    }
+
+    private func apply(_ backup: ShelfBackup) throws {
+        var shelves = try context.fetch(FetchDescriptor<Shelf>())
+        let copies = try context.fetch(FetchDescriptor<RecordCopy>())
+        let byInstance = Dictionary(copies.map { ($0.discogsInstanceID, $0) }, uniquingKeysWith: { first, _ in first })
+        let settings = Dictionary(backup.shelves.map { ($0.number, $0) }, uniquingKeysWith: { first, _ in first })
+        let placements = backup.applicablePlacements
+        let placed = Set(placements.map(\.instanceID))
+
+        try PositionService(context: context).save {
+            for copy in copies { copy.shelf = nil; copy.positionInShelf = 0 }
+            if let cabinets = backup.cabinets, !cabinets.isEmpty { shelves = try rebuild(cabinets, from: shelves) }
+            for shelf in shelves {
+                let setting = settings[shelf.number]
+                shelf.isReserved = setting?.isReserved ?? false
+                shelf.name = setting?.name ?? ""
+            }
+            let byNumber = Dictionary(shelves.map { ($0.number, $0) }, uniquingKeysWith: { first, _ in first })
+            for (number, placements) in Dictionary(grouping: placements, by: \.shelf) {
+                guard let shelf = byNumber[number] else { continue }
+                let present = placements.sorted { ($0.position, $0.instanceID) < ($1.position, $1.instanceID) }
+                    .compactMap { byInstance[$0.instanceID] }
+                for (index, copy) in present.enumerated() { copy.shelf = shelf; copy.positionInShelf = index + 1 }
+            }
+            for row in try context.fetch(FetchDescriptor<OptimizationExclusion>()) { context.delete(row) }
+            var excluded = Set<UUID>()
+            for id in Set(backup.notInShelf).subtracting(placed) {
+                if let copy = byInstance[id] { context.insert(OptimizationExclusion(copyID: copy.id)); excluded.insert(copy.id) }
+            }
+            // "Nicht auffindbar" isn't part of a backup and stays, except on
+            // records the backup keeps out of the shelves ("Nicht im Regal").
+            let cleared = try context.fetch(FetchDescriptor<MissingCopyMark>()).filter { excluded.contains($0.copyID) }
+            for row in cleared { context.delete(row) }
+            if !cleared.isEmpty { AppLog.info("Sicherung", "„Nicht auffindbar“ bei \(cleared.count) Platte(n) aufgehoben – laut Sicherung „Nicht im Regal“") }
+        }
+    }
+}
+
+extension ShelfBackupService {
+    /// Recreates the backup's cabinets: compartments keep their numbers
+    /// (reused where they exist, created where not); compartments and
+    /// cabinets the backup doesn't know are removed. Runs after every copy
+    /// left its shelf, so nothing stands in a removed compartment.
+    fileprivate func rebuild(_ settings: [ShelfBackup.CabinetSetting], from shelves: [Shelf]) throws -> [Shelf] {
+        let byNumber = Dictionary(shelves.map { ($0.number, $0) }, uniquingKeysWith: { first, _ in first })
+        var used = Set<Int>()
+        var result: [Shelf] = []
+        var created: [Cabinet] = []
+        for cabinet in try context.fetch(FetchDescriptor<Cabinet>()) { cabinet.shelves = []; context.delete(cabinet) }
+        for (order, setting) in settings.enumerated() {
+            let columns = min(max(setting.columns, ShelfGeometry.sizeRange.lowerBound), ShelfGeometry.sizeRange.upperBound)
+            let rows = min(max(setting.rows, ShelfGeometry.sizeRange.lowerBound), ShelfGeometry.sizeRange.upperBound)
+            let name = setting.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let cabinet = Cabinet(name: name.isEmpty ? "Regal \(order + 1)" : name, rows: rows, columns: columns, sortOrder: order)
+            cabinet.isActive = setting.isActive
+            context.insert(cabinet)
+            created.append(cabinet)
+            for (index, number) in setting.shelves.prefix(rows * columns).enumerated() where used.insert(number).inserted {
+                let slot = index + 1
+                let shelf = byNumber[number] ?? {
+                    Shelf.insert(number: number, cabinet: cabinet, slot: slot, in: context)
+                }()
+                shelf.cabinet = cabinet
+                shelf.sortOrder = slot
+                shelf.row = (slot - 1) / columns + 1
+                shelf.column = (slot - 1) % columns + 1
+                result.append(shelf)
+            }
+        }
+        for shelf in shelves where !used.contains(shelf.number) { context.delete(shelf) }
+        if !settings.contains(where: \.isActive), let first = created.first { first.isActive = true }
+        // Gaps (a file with fewer numbers than the grid) are filled like at launch.
+        return result + LibraryStorage.fillCabinets(created, shelves: result, numbersAbove: shelves.map(\.number).max() ?? 0, in: context)
+    }
+}
+
+// MARK: - Automatic backups
+
+/// Keeps the last few layouts as files in the app's own folder, written a
+/// few seconds after the shelf last changed. Unchanged layouts aren't written again.
+@Observable final class ShelfAutoBackup {
+    static let shared = ShelfAutoBackup()
+    static let enabledKey = "shelfAutoBackupEnabled"
+    /// The most recent states, plus the last state of each of the past
+    /// `keptDays` days – so a burst of changes (e.g. re-sorting after data
+    /// loss) never pushes out every backup from before. Both can be set in
+    /// the settings.
+    static let keptCountKey = "shelfBackupKeptCount"
+    static let keptDaysKey = "shelfBackupKeptDays"
+    static let defaultKeptCount = 10
+    static let defaultKeptDays = 14
+    static let keptCountOptions = [5, 10, 20, 50]
+    static let keptDaysOptions = [0, 7, 14, 30, 90]
+    static var keptCount: Int { (AppDefaults.store.object(forKey: keptCountKey) as? Int).map { max(1, $0) } ?? defaultKeptCount }
+    static var keptDays: Int { (AppDefaults.store.object(forKey: keptDaysKey) as? Int).map { max(0, $0) } ?? defaultKeptDays }
+    /// Another folder than the app's own (e.g. iCloud Drive), if chosen.
+    nonisolated static let folder = FolderAccess(key: "shelfBackupFolder")
+
+    struct Entry: Identifiable {
+        let url: URL
+        let backup: ShelfBackup
+        var id: URL { url }
+    }
+
+    /// Bumped after every write, so the settings list reloads.
+    private(set) var version = 0
+    /// Set when the last automatic backup failed, cleared by the next success.
+    private(set) var lastFailure: Date?
+    private var pending: Task<Void, Never>?
+    private var pendingContainer: ModelContainer?
+    private var observesTermination = false
+
+    var isEnabled: Bool {
+        AppDefaults.store.object(forKey: Self.enabledKey) as? Bool ?? true
+    }
+
+    /// The app's own folder inside its container.
+    nonisolated static var defaultDirectory: URL? {
+        // The demo never lists, prunes or writes the real backups.
+        if DemoMode.isActive { return DemoMode.temporaryDirectory.appendingPathComponent("Sicherungen", isDirectory: true) }
+        return try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("Plattenregal/Sicherungen", isDirectory: true)
+    }
+
+    /// Where backups are written and listed: the chosen folder, or the
+    /// app's own one when none is chosen or it can't be found any more.
+    var directory: URL? { Self.folder.url ?? Self.defaultDirectory }
+    var usesCustomFolder: Bool { Self.folder.url != nil }
+
+    /// Runs `body` with the backup folder open for reading and writing.
+    nonisolated private static func inDirectory<T>(_ body: (URL) throws -> T) throws -> T {
+        if Self.folder.url != nil { return try Self.folder.withAccess(body) }
+        guard let directory = Self.defaultDirectory else { throw CocoaError(.fileNoSuchFile) }
+        return try body(directory)
+    }
+
+    /// Switches to another folder (`nil` = the app's own). Existing backups
+    /// are copied over, so the list and the retention carry on; the old
+    /// folder keeps its copies.
+    func moveBackups(to url: URL?) throws {
+        // The demo's retention must never reach a folder holding real backups.
+        guard !DemoMode.isActive else { return }
+        let old = entries()
+        let previousBookmark = AppDefaults.store.data(forKey: Self.folder.key)
+        if let url { try Self.folder.set(url) } else { Self.folder.clear() }
+        do {
+            try Self.inDirectory { directory in
+                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                for entry in old {
+                    let target = directory.appendingPathComponent(entry.url.lastPathComponent)
+                    if !FileManager.default.fileExists(atPath: target.path) {
+                        try ShelfBackupService.encode(entry.backup).write(to: target, options: .atomic)
+                    }
+                }
+            }
+        } catch {
+            // Not writable (or full): stay with the old folder instead of
+            // switching to one that holds only part of the backups.
+            AppDefaults.store.set(previousBookmark, forKey: Self.folder.key)
+            AppLog.error("Sicherung", "Speicherort nicht gewechselt, Sicherungen ließen sich nicht kopieren: \(error)")
+            throw error
+        }
+        AppLog.info("Sicherung", "Speicherort der automatischen Sicherung: \(url.map(FolderAccess.displayName) ?? "Standard")")
+        prune()
+        version += 1
+    }
+
+    /// Applies a changed retention right away.
+    func applyRetention() {
+        prune()
+        version += 1
+    }
+
+    /// Called after every committed shelf change. Only the app's real store
+    /// is backed up – never test or demo stores.
+    func scheduleBackup(of container: ModelContainer) {
+        guard isEnabled, Self.isAppStore(container) else { return }
+        observeTermination()
+        pending?.cancel()
+        pendingContainer = container
+        pending = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled else { return }
+            await self?.runPendingInBackground()
+        }
+    }
+
+    static func isAppStore(_ container: ModelContainer) -> Bool {
+        guard let store = try? LibraryStorage.storeURL() else { return false }
+        return container.configurations.contains { !$0.isStoredInMemoryOnly && $0.url.standardizedFileURL == store.standardizedFileURL }
+    }
+
+    /// On quit: synchronously, or the app would be gone before the file is written.
+    private func runPending() {
+        guard let container = pendingContainer else { return }
+        pending?.cancel(); pending = nil; pendingContainer = nil
+        // Switched off while waiting.
+        guard isEnabled else { return }
+        recordOutcome { try backUpNow(ShelfBackupService(context: container.mainContext), skipEmpty: true) }
+    }
+
+    /// A few seconds after the last change: the file is compared and written
+    /// off the main actor, so a slow folder (iCloud, network) never holds up the shelf.
+    private func runPendingInBackground() async {
+        guard let container = pendingContainer else { return }
+        guard isEnabled else { pendingContainer = nil; return }
+        do {
+            try await backUpInBackground(ShelfBackupService(context: container.mainContext))
+            lastFailure = nil
+        } catch {
+            lastFailure = .now
+            AppLog.error("Sicherung", "Automatische Sicherung fehlgeschlagen: \(error)")
+        }
+        // Only now: quitting while the file is still being written writes it
+        // once more on the way out. A newer change has scheduled its own run.
+        if !Task.isCancelled { pending = nil; pendingContainer = nil }
+    }
+
+    private func recordOutcome(_ body: () throws -> Void) {
+        do {
+            try body()
+            lastFailure = nil
+        } catch {
+            lastFailure = .now
+            AppLog.error("Sicherung", "Automatische Sicherung fehlgeschlagen: \(error)")
+        }
+    }
+
+    /// Quitting within the delay would lose the last change.
+    private func observeTermination() {
+        guard !observesTermination else { return }
+        observesTermination = true
+        NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { ShelfAutoBackup.shared.runPending() }
+        }
+    }
+
+    /// Writes the current layout unless the newest file already holds it.
+    /// Returns `false` when nothing had to be written.
+    /// `skipEmpty`: an empty shelf (fresh install, lost database) is never
+    /// worth an automatic backup of its own.
+    @discardableResult func backUpNow(_ service: ShelfBackupService, skipEmpty: Bool = false) throws -> Bool {
+        guard let backup = try Self.take(service, skipEmpty: skipEmpty) else { return false }
+        return written(try Self.write(backup, keptCount: Self.keptCount, keptDays: Self.keptDays), backup)
+    }
+
+    /// `backUpNow` with the reading and writing of files off the main actor.
+    /// The layout itself is taken here, in one piece.
+    private func backUpInBackground(_ service: ShelfBackupService) async throws {
+        guard let backup = try Self.take(service, skipEmpty: true) else { return }
+        let keptCount = Self.keptCount, keptDays = Self.keptDays
+        let name = try await Task.detached(priority: .utility) {
+            try Self.write(backup, keptCount: keptCount, keptDays: keptDays)
+        }.value
+        written(name, backup)
+    }
+
+    private static func take(_ service: ShelfBackupService, skipEmpty: Bool) throws -> ShelfBackup? {
+        // Demo and test stores never mix into the real backups.
+        guard isAppStore(service.context.container) else { return nil }
+        let backup = try service.makeBackup()
+        return skipEmpty && backup.isEmpty ? nil : backup
+    }
+
+    /// Writes `backup` unless the newest file already holds its layout, then
+    /// clears out old files. Returns the new file's name, `nil` when nothing
+    /// had to be written.
+    nonisolated private static func write(_ backup: ShelfBackup, keptCount: Int, keptDays: Int) throws -> String? {
+        // Only the newest file is read – not every backup after each shelf change.
+        if let newest = ownFiles().first,
+           let latest = try? Self.inDirectory({ _ in try ShelfBackupService.read(newest.url) }),
+           latest.hasSameLayout(as: backup) { return nil }
+        let name = filePrefix + fileDate.string(from: backup.createdAt) + ".json"
+        try Self.inDirectory { directory in
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try ShelfBackupService.encode(backup).write(to: directory.appendingPathComponent(name), options: .atomic)
+        }
+        prune(keptCount: keptCount, keptDays: keptDays)
+        return name
+    }
+
+    @discardableResult private func written(_ name: String?, _ backup: ShelfBackup) -> Bool {
+        guard let name else { return false }
+        AppLog.info("Sicherung", "Automatisch gesichert: \(name) · \(backup.summary)")
+        version += 1
+        return true
+    }
+
+    /// Newest first.
+    func entries() -> [Entry] {
+        let urls = (try? Self.inDirectory { try FileManager.default.contentsOfDirectory(at: $0, includingPropertiesForKeys: nil) }) ?? []
+        // Only the app's own files: anything else in the folder is neither
+        // listed nor ever deleted when old backups are cleared.
+        return (try? Self.inDirectory { _ in urls.filter { Self.isOwnFile($0.lastPathComponent) }
+            .compactMap { url in
+                do { return Entry(url: url, backup: try ShelfBackupService.read(url)) }
+                catch {
+                    AppLog.warning("Sicherung", "Automatische Sicherung \(url.lastPathComponent) nicht lesbar, wird übergangen: \(error)")
+                    return nil
+                }
+            }
+            .sorted { $0.backup.createdAt > $1.backup.createdAt }
+        }) ?? []
+    }
+
+    /// The app's own files, newest first, dated by their name – without
+    /// reading them. Runs after every backup, so it must stay cheap.
+    nonisolated private static func ownFiles() -> [(url: URL, date: Date)] {
+        let urls = (try? Self.inDirectory { try FileManager.default.contentsOfDirectory(at: $0, includingPropertiesForKeys: nil) }) ?? []
+        return urls.compactMap { url in Self.fileDate(of: url.lastPathComponent).map { (url, $0) } }
+            .sorted { $0.date > $1.date }
+    }
+
+    private func prune() { Self.prune(keptCount: Self.keptCount, keptDays: Self.keptDays) }
+
+    nonisolated private static func prune(keptCount: Int, keptDays: Int) {
+        guard !DemoMode.isActive else { return }
+        let all = ownFiles()
+        let kept = Set(retained(all.map(\.date), keptCount: keptCount, keptDays: keptDays))
+        for (index, file) in all.enumerated() where !kept.contains(index) {
+            do { try Self.inDirectory { _ in try FileManager.default.removeItem(at: file.url) } }
+            catch { AppLog.warning("Sicherung", "Alte Sicherung \(file.url.lastPathComponent) ließ sich nicht löschen: \(error)") }
+        }
+    }
+
+    /// Indices (in `dates`, newest first) of the backups to keep.
+    nonisolated static func retained(_ dates: [Date], keptCount: Int, keptDays: Int, calendar: Calendar = .current) -> [Int] {
+        var kept = Array(dates.indices.prefix(keptCount))
+        var days = Set<DateComponents>()
+        for (index, date) in dates.enumerated() {
+            let day = calendar.dateComponents([.year, .month, .day], from: date)
+            guard days.count < keptDays || days.contains(day) else { break }
+            if days.insert(day).inserted, index >= keptCount { kept.append(index) }
+        }
+        return kept
+    }
+
+    nonisolated private static let filePrefix = "Belegung "
+
+    /// "Belegung 2026-09-24 10-41-05.json"
+    nonisolated static func isOwnFile(_ name: String) -> Bool { fileDate(of: name) != nil }
+
+    /// The time in an own file's name; `nil` for any other file.
+    nonisolated static func fileDate(of name: String) -> Date? {
+        guard name.hasPrefix(filePrefix), name.hasSuffix(".json") else { return nil }
+        return fileDate.date(from: String(name.dropFirst(filePrefix.count).dropLast(".json".count)))
+    }
+
+    // Only ever read after setup; DateFormatter is thread-safe for that.
+    nonisolated(unsafe) private static let fileDate: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd HH-mm-ss"
+        return formatter
+    }()
+}

@@ -2,17 +2,22 @@ import Foundation
 import SwiftData
 import Observation
 
-@MainActor @Observable final class StatisticsViewModel {
+@Observable final class StatisticsViewModel {
     var statistics = CollectionStatistics()
     var copies: [RecordCopy] = []
+    var copiesByID: [UUID: RecordCopy] = [:]
     var history: [CollectionValueSnapshot] = []
-    var prices: [ReleaseMarketValue] = []
-    var owners: [String] = []
     var owner = ""
+    /// A Discogs token is stored; without one the value can't be fetched.
+    var hasToken = false
     var busy = false
     var calculating = false
     var error: String?
+    /// Bumped whenever freshly loaded data is committed; views that cache
+    /// something derived from `copies` refresh on it.
+    private(set) var version = 0
     private var generation = 0
+    /// Keeps the context of `copies` alive while they are shown.
     @ObservationIgnored private var readContext: ModelContext?
     func reload(container: ModelContainer) async {
         generation += 1; let current = generation
@@ -20,50 +25,64 @@ import Observation
         defer { if generation == current { calculating = false } }
         do {
             let context = ModelContext(container)
-            let accounts = try context.fetch(FetchDescriptor<DiscogsAccount>())
-            owners = accounts.map(\.username).sorted()
             let all = try context.fetch(FetchDescriptor<RecordCopy>())
-            let selected = all.filter { owner.isEmpty ? $0.discogsActive != false : $0.discogsOwner == owner && $0.discogsActive == true }
-            let inputs = selected.map(AnalyticsItem.init)
-            let stats = await Task.detached(priority: .userInitiated) { CollectionAnalyticsService.calculate(inputs) }.value
+            // Same records as the collection (see `DiscogsAccount.current`), so a
+            // number here matches what the drill-down sheet then shows.
+            let selected = all.filter { $0.isInCurrentCollection(owner: owner.isEmpty ? nil : owner) }
+            let inputs = selected.map(AnalyticsItem.Raw.init)
+            let stats = await Self.calculate(inputs)
             guard current == generation, !Task.isCancelled else { return }
             // Fetch everything before committing any of it, so a failure here can't leave
-            // `copies`/`statistics` reflecting a different owner than `history`/`prices`.
-            let newHistory = try context.fetch(FetchDescriptor<CollectionValueSnapshot>(sortBy: [SortDescriptor(\.date)])).filter { $0.owner == owner }
-            let newPrices = try context.fetch(FetchDescriptor<ReleaseMarketValue>()).filter { $0.owner == owner }
+            // `copies`/`statistics` reflecting a different owner than `history`.
+            let newHistory = try context.fetch(FetchDescriptor<CollectionValueSnapshot>(predicate: #Predicate { $0.owner == owner }, sortBy: [SortDescriptor(\.date)]))
             readContext = context
             copies = selected; statistics = stats
-            history = newHistory; prices = newPrices
-        } catch { self.error = error.localizedDescription }
+            copiesByID = Dictionary(selected.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            history = newHistory
+            version += 1
+        } catch { self.error = error.reportedMessage() }
     }
     func initialLoad(container: ModelContainer) async {
-        #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--statistics-demo") {
-            owner = "Demo · Beispieldaten"
-            await reload(container: container)
-            return
-        }
-        #endif
-        do {
-            let fingerprint = try await DiscogsAPIClient.shared.credentialFingerprint()
-            let accounts = try ModelContext(container).fetch(FetchDescriptor<DiscogsAccount>())
-            owner = accounts.first { $0.credentialFingerprint == fingerprint }?.username ?? ""
-        } catch { /* Local analytics also work without a token. */ }
+        await resolveOwner(container: container)
         await reload(container: container)
+    }
+    /// The account the collection shows: the one synced most recently, as
+    /// everywhere else in the app (`DiscogsAccount.current`). Not only at
+    /// launch: the first sync (or one for another account) switches it later,
+    /// and value history must follow without restarting the app. Changing
+    /// `owner` reloads the page (see StatisticsView). Whether the stored token
+    /// still belongs to it is checked when the value is fetched.
+    func resolveOwner(container: ModelContainer) async {
+        updateTokenState()
+        let accounts = (try? ModelContext(container).fetch(FetchDescriptor<DiscogsAccount>())) ?? []
+        let resolved = DiscogsAccount.current(in: accounts)?.username ?? ""
+        if owner != resolved { owner = resolved }
+    }
+    /// Re-read when the page is shown: the token is changed in the settings.
+    func updateTokenState() {
+        // The demo shows its sample value history as if connected.
+        if DemoMode.isActive { hasToken = true; return }
+        let stored = ((try? KeychainStore.load()) ?? nil).map { !$0.isEmpty } ?? false
+        if hasToken != stored { hasToken = stored }
     }
     func refresh(container: ModelContainer, force: Bool = true) async {
         guard !busy else { return }
         busy = true; error = nil
         defer { busy = false }
         await reload(container: container)
-        #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--statistics-demo") { return }
-        #endif
+        // No Discogs in the demo: recalculating is all a refresh does.
+        if DemoMode.isActive { return }
         if !owner.isEmpty {
             do { try await CollectionValueHistoryService.shared.refresh(owner: owner, container: container, force: force) }
             catch is CancellationError { return }
-            catch { self.error = error.localizedDescription }
+            catch { self.error = error.reportedMessage() }
         }
         await reload(container: container)
+    }
+
+    /// Off the main actor, so large collections don't stall the UI.
+    /// Decoding each release's Discogs JSON happens here too.
+    @concurrent nonisolated private static func calculate(_ inputs: [AnalyticsItem.Raw]) async -> CollectionStatistics {
+        CollectionAnalyticsService.calculate(inputs.map(AnalyticsItem.init))
     }
 }

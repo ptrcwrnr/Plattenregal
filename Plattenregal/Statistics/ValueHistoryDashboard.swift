@@ -2,7 +2,7 @@ import SwiftUI
 import Charts
 
 enum HistoryMetric: String, CaseIterable, Identifiable {
-    case median = "Mittelwert", minimum = "Niedrig", maximum = "Hoch"
+    case median = "Median", minimum = "Niedrig", maximum = "Hoch"
     var id: String { rawValue }
     func value(_ snapshot: CollectionValueSnapshot) -> Decimal {
         switch self { case .median: snapshot.medianValue; case .minimum: snapshot.minimumValue; case .maximum: snapshot.maximumValue }
@@ -19,64 +19,67 @@ enum HistoryPeriod: String, CaseIterable, Identifiable {
 }
 struct ValueHistoryDashboard: View {
     let snapshots: [CollectionValueSnapshot]
+    @Environment(\.statisticsColumns) private var columns
     @State private var metric: HistoryMetric = .median
     @State private var period: HistoryPeriod = .all
     @State private var selectedCurrency = ""
-    private var currency: String { selectedCurrency.isEmpty ? snapshots.last?.currency ?? "EUR" : selectedCurrency }
+    /// The picked currency while the history still has it; after an account
+    /// switch it may not, and the page must not get stuck on an empty curve.
+    private var currency: String {
+        if !selectedCurrency.isEmpty, snapshots.contains(where: { $0.currency == selectedCurrency }) { return selectedCurrency }
+        return snapshots.last?.currency ?? "EUR"
+    }
     private var sameCurrency: [CollectionValueSnapshot] { snapshots.filter { $0.currency == currency } }
     private var visible: [CollectionValueSnapshot] { sameCurrency.filter { $0.date >= period.start() } }
     var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-            Text("Geschätzter Wert der Sammlung").font(AppStyle.dialogTitle)
-            if let latest = sameCurrency.last {
-                HStack(spacing: AppStyle.rowSpacing) {
-                    MetricCard(title: "Niedrig", value: money(latest.minimumValue), symbol: "arrow.down.right")
-                    MetricCard(title: "Mittelwert · Median", value: money(latest.medianValue), symbol: "chart.line.uptrend.xyaxis", prominent: true)
-                    MetricCard(title: "Hoch", value: money(latest.maximumValue), symbol: "arrow.up.right")
-                }
-                Text("Stand \(latest.date.formatted(date: .abbreviated, time: .shortened)) · \(latest.collectionItemCount) Discogs-Exemplare · Währung wie von Discogs geliefert").font(.caption).foregroundStyle(.secondary)
-            } else {
-                DashboardCard(title: "Sammlungswert noch nicht verfügbar") {
-                    Text("Mit „Statistik aktualisieren“ den offiziellen Discogs-Wert laden. Eine Historie entsteht ab dem ersten erfolgreichen Abruf.").foregroundStyle(.secondary)
-                }
+        VStack(alignment: .leading, spacing: 28) {
+            // The current value itself is shown in the statistics hero.
+            if sameCurrency.isEmpty {
+                Text("Noch kein Sammlungswert. Zum Laden die Seite nach unten ziehen oder ⌘R drücken – eine Historie entsteht ab dem ersten erfolgreichen Abruf.")
+                    .font(.callout).foregroundStyle(.secondary)
             }
             if !snapshots.isEmpty {
-                DashboardCard(title: "Wertentwicklung") {
+                VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                     ViewThatFits(in: .horizontal) {
-                        HStack { controls; Spacer(); periods }
-                        VStack(alignment: .leading) { controls; periods }
+                        HStack { subheading("Wertentwicklung"); Spacer(); controls; periods }
+                        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) { subheading("Wertentwicklung"); HStack { controls; periods } }
                     }
-                    if visible.isEmpty { Text("Für diesen Zeitraum gibt es noch keine Momentaufnahmen.").foregroundStyle(.secondary) }
+                    if visible.isEmpty { Text("Für diesen Zeitraum gibt es noch keine Momentaufnahmen.").font(.callout).foregroundStyle(.secondary) }
                     else {
                         HistoryLineChart(points: visible.map { .init(id: $0.id, date: $0.date, value: metric.value($0)) }, currency: currency)
                         if visible.count == 1 { Text("Erste Momentaufnahme gespeichert. Weitere Abrufe an späteren Tagen ergänzen die Kurve.").font(.caption).foregroundStyle(.secondary) }
                     }
                     changes
                 }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), alignment: .top)], spacing: 20) {
-                    DashboardCard(title: "Durchschnittlicher Wert pro Platte") {
-                        if let average = sameCurrency.last?.averagePerItem { Text(money(average)).font(AppStyle.pageTitle) }
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: StatisticsLayout.gutter, alignment: .top), count: 2), alignment: .leading, spacing: 28) {
+                    VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                        subheading("Durchschnittlicher Wert pro Platte")
+                        if let average = sameCurrency.last?.averagePerItem { StatFigure(title: "pro Platte", value: money(average)) }
                         HistoryLineChart(points: visible.compactMap { row in row.averagePerItem.map { .init(id: row.id, date: row.date, value: $0) } }, currency: currency)
                         if let current = sameCurrency.last, let currentAverage = current.averagePerItem,
                            let target = Calendar.current.date(byAdding: .month, value: -6, to: current.date),
                            let previous = sameCurrency.last(where: { $0.date <= target }), let oldAverage = previous.averagePerItem {
                             ChangeLabel(title: "Seit mindestens 6 Monaten", current: currentAverage, previous: oldAverage, currency: currency)
                         }
-                        Text("Median-Gesamtwert ÷ Collection-Instanzen. Kein durchschnittlicher Verkaufspreis einzelner Releases.").font(.caption).foregroundStyle(.secondary)
+                        Text("Median-Gesamtwert ÷ Anzahl der Platten in der Collection. Kein durchschnittlicher Verkaufspreis einzelner Releases.").font(.caption).foregroundStyle(.tertiary)
                             .help("Die Zusammensetzung der Sammlung beeinflusst diese Kennzahl. Sie beschreibt keine Preisentwicklung eines unveränderten Bestands.")
                     }
-                    DashboardCard(title: "Größe der Sammlung") {
-                        if let latest = sameCurrency.last { Text("\(latest.collectionItemCount) Exemplare").font(AppStyle.pageTitle) }
+                    VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                        subheading("Größe der Sammlung")
+                        if let latest = sameCurrency.last { StatFigure(title: "Exemplare", value: latest.collectionItemCount.formatted()) }
                         HistoryLineChart(points: visible.map { .init(id: $0.id, date: $0.date, value: Decimal($0.collectionItemCount)) }, currency: nil)
-                        Text("Historisch gespeicherte Anzahl der Discogs Collection-Instanzen.").font(.caption).foregroundStyle(.secondary)
+                        Text("Anzahl der Platten in der Discogs-Collection zum jeweiligen Zeitpunkt.").font(.caption).foregroundStyle(.tertiary)
                     }
                 }
             }
         }
     }
+    private func subheading(_ text: String) -> some View {
+        Text(text).font(.headline).lineLimit(1)
+    }
     private var controls: some View {
         HStack {
-            Picker("Wert", selection: $metric) { ForEach(HistoryMetric.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).labelsHidden().frame(maxWidth: 320)
+            Picker("Wert", selection: $metric) { ForEach(HistoryMetric.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).labelsHidden().controlSize(.small).fixedSize()
             if Set(snapshots.map(\.currency)).count > 1 {
                 Picker("Währung", selection: Binding(get: { currency }, set: { selectedCurrency = $0 })) {
                     ForEach(Array(Set(snapshots.map(\.currency))).sorted(), id: \.self) { Text($0).tag($0) }
@@ -85,12 +88,12 @@ struct ValueHistoryDashboard: View {
         }
     }
     private var periods: some View {
-        Picker("Zeitraum", selection: $period) { ForEach(HistoryPeriod.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).labelsHidden().frame(maxWidth: 280)
+        Picker("Zeitraum", selection: $period) { ForEach(HistoryPeriod.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).labelsHidden().controlSize(.small).fixedSize()
     }
     @ViewBuilder private var changes: some View {
         if let latest = sameCurrency.last, sameCurrency.count >= 2 {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 185))], alignment: .leading) {
-                ChangeLabel(title: "Seit letztem Snapshot", current: metric.value(latest), previous: metric.value(sameCurrency[sameCurrency.count - 2]), currency: currency)
+            LazyVGrid(columns: StatisticsLayout.columns(columns), alignment: .leading, spacing: StatisticsLayout.gutter) {
+                ChangeLabel(title: "Seit letzter Momentaufnahme", current: metric.value(latest), previous: metric.value(sameCurrency[sameCurrency.count - 2]), currency: currency)
                 if let target = Calendar.current.date(byAdding: .day, value: -30, to: latest.date), let old = sameCurrency.last(where: { $0.date <= target }) {
                     ChangeLabel(title: "Seit mindestens 30 Tagen", current: metric.value(latest), previous: metric.value(old), currency: currency)
                 }
@@ -118,13 +121,35 @@ struct HistoryLineChart: View {
                 Chart {
                     ForEach(points) { point in
                         // Swift Charts receives a rendering conversion only. Storage and arithmetic stay Decimal.
-                        LineMark(x: .value("Datum", point.date), y: .value("Wert", NSDecimalNumber(decimal: point.value).doubleValue)).foregroundStyle(AppStyle.chartColors[0])
-                        PointMark(x: .value("Datum", point.date), y: .value("Wert", NSDecimalNumber(decimal: point.value).doubleValue)).foregroundStyle(AppStyle.chartColors[0]).symbolSize(points.count == 1 ? 60 : 16)
+                        let value = NSDecimalNumber(decimal: point.value).doubleValue
+                        AreaMark(x: .value("Datum", point.date), yStart: .value("Basis", baseline), yEnd: .value("Wert", value))
+                            .interpolationMethod(.monotone)
+                            .foregroundStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.25), AppStyle.accent.opacity(0)], startPoint: .top, endPoint: .bottom))
+                        LineMark(x: .value("Datum", point.date), y: .value("Wert", value))
+                            .interpolationMethod(.monotone)
+                            .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
+                            .foregroundStyle(AppStyle.accent)
+                        if points.count == 1 || selected?.id == point.id {
+                            PointMark(x: .value("Datum", point.date), y: .value("Wert", value))
+                                .foregroundStyle(AppStyle.accent).symbolSize(points.count == 1 ? 60 : 70)
+                        }
                     }
-                    if let selected { RuleMark(x: .value("Datum", selected.date)).foregroundStyle(.secondary.opacity(0.4)) }
+                    if let selected {
+                        RuleMark(x: .value("Datum", selected.date)).foregroundStyle(.secondary.opacity(0.4))
+                            .annotation(position: .top, spacing: 2, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                                VStack(spacing: 0) {
+                                    Text(formatted(selected.value)).font(.caption.weight(.semibold)).monospacedDigit()
+                                    Text(selected.date.formatted(date: .abbreviated, time: .omitted)).font(.caption2).foregroundStyle(.secondary)
+                                }
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+                                .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppStyle.borderColor))
+                            }
+                    }
                 }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? "Exemplare")
+                    .chartYScale(domain: .automatic(includesZero: false))
                     .chartXAxis { AxisMarks(values: .automatic(desiredCount: 5)) }
-                    .frame(height: 190)
+                    .frame(height: 180)
                     .chartOverlay { proxy in GeometryReader { geometry in
                         Rectangle().fill(.clear).contentShape(Rectangle()).onContinuousHover { phase in
                             switch phase {
@@ -134,14 +159,23 @@ struct HistoryLineChart: View {
                             }
                         }
                     }}
-                Text(selected.map { "\($0.date.formatted(date: .abbreviated, time: .shortened)) · \(formatted($0.value))" } ?? "Maus über die Kurve bewegen, um Werte zu sehen.").font(.caption).foregroundStyle(.secondary)
+                Text("Maus über die Kurve bewegen, um Werte zu sehen.").font(.caption).foregroundStyle(.tertiary)
+                    .opacity(selected == nil ? 1 : 0)
             }
         }
+    }
+    /// Bottom of the gradient fill: just under the lowest value, matching the non-zero y scale.
+    private var baseline: Double {
+        let values = points.map { NSDecimalNumber(decimal: $0.value).doubleValue }
+        guard let low = values.min(), let high = values.max() else { return 0 }
+        return low - max((high - low) * 0.1, abs(low) * 0.02)
     }
     private func formatted(_ value: Decimal) -> String {
         currency.map { DiscogsMoney.format(value, currency: $0) } ?? NSDecimalNumber(decimal: value).stringValue
     }
 }
+/// Change since an earlier snapshot: neutral amount, with only a small
+/// up/down arrow carrying the direction color.
 struct ChangeLabel: View {
     let title: String
     let current: Decimal
@@ -149,12 +183,21 @@ struct ChangeLabel: View {
     let currency: String
     var body: some View {
         let change = CollectionValueHistoryService.change(current: current, previous: previous)
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 3) {
             Text(title).font(.caption).foregroundStyle(.secondary)
-            Text((change.amount > 0 ? "+" : "") + DiscogsMoney.format(change.amount, currency: currency)).font(.headline)
-            if let percent = change.percent {
-                Text((percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(1)))).font(.caption)
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                if change.amount != 0 {
+                    Image(systemName: change.amount > 0 ? "arrow.up.right" : "arrow.down.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(change.amount > 0 ? AppStyle.successColor : AppStyle.errorColor)
+                }
+                Text((change.amount > 0 ? "+" : "") + DiscogsMoney.format(change.amount, currency: currency))
+                    .font(.headline).monospacedDigit()
+                if let percent = change.percent {
+                    Text((percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(1))))
+                        .font(.caption).monospacedDigit().foregroundStyle(.secondary)
+                }
             }
-        }.foregroundStyle(change.amount < 0 ? AppStyle.warningColor : change.amount > 0 ? AppStyle.successColor : Color.secondary)
+        }
     }
 }

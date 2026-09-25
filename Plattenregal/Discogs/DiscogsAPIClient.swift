@@ -2,21 +2,23 @@ import Foundation
 import OSLog
 import CryptoKit
 
-enum DiscogsError: LocalizedError {
+nonisolated enum DiscogsError: LocalizedError {
     case incompletePagination, accountChanged, notFound, forbidden
-    case missingToken, unauthorized, rateLimited(Int), http(Int), invalidResponse, offline
+    case missingToken, demoMode, unauthorized, rateLimited(Int), http(Int), invalidResponse, offline
     var errorDescription: String? {
         switch self {
-        case .incompletePagination: "Discogs hat keine vollständige, konsistente Liste geliefert. Es wurden keine Änderungen gespeichert. Bitte erneut synchronisieren."
-        case .accountChanged: "Der Discogs-Account oder Token hat sich geändert. Bitte starte die Synchronisierung erneut."
-        case .notFound: "Die Veröffentlichung oder der Discogs-Ordner wurde nicht gefunden."
-        case .forbidden: "Discogs verweigert den Zugriff. Bitte prüfe Token und Zugriffsrechte."
-        case .missingToken: "Bitte hinterlege deinen persönlichen Discogs-Token in den Einstellungen."
-        case .unauthorized: "Discogs hat den Token abgelehnt. Bitte prüfe ihn in den Einstellungen."
-        case .rateLimited(let seconds): "Discogs erlaubt gerade keine weiteren Anfragen. Bitte warte \(seconds) Sekunden."
-        case .http(let code): "Discogs meldet einen Serverfehler (HTTP \(code)). Bitte versuche es später erneut."
-        case .invalidResponse: "Die Antwort von Discogs konnte nicht gelesen werden."
-        case .offline: "Discogs ist nicht erreichbar. Bitte prüfe deine Internetverbindung."
+        case .incompletePagination: "Deine Liste bei Discogs hat sich während des Ladens verändert. Es wurde nichts gespeichert. Bitte synchronisiere noch einmal."
+        case .accountChanged: "Der Discogs-Token passt nicht mehr zum geladenen Konto – vermutlich wurde er gerade geändert. Es wurde nichts gespeichert. Bitte synchronisiere noch einmal."
+        case .notFound: "Discogs findet diese Platte oder diesen Ordner nicht (mehr). Vielleicht wurde sie dort gelöscht."
+        case .forbidden: "Discogs lässt den Zugriff nicht zu. Prüfe in den Einstellungen, ob der Token stimmt und zu deinem Konto gehört."
+        case .demoMode: "Im Demo-Modus ist Discogs ausgeschaltet – die Beispieldaten bleiben, wie sie sind. Beende die Demo, um deine eigene Sammlung zu synchronisieren."
+        case .missingToken: "Es ist noch kein Discogs-Token eingetragen. Das Feld dafür findest du in den Einstellungen unter „Discogs“."
+        case .unauthorized: "Discogs hat den Token nicht angenommen. Vielleicht ist er abgelaufen oder unvollständig kopiert. Prüfe ihn in den Einstellungen."
+        case .rateLimited(let seconds): "Discogs bremst gerade, weil in kurzer Zeit viele Anfragen kamen. Versuche es in \(seconds == 1 ? "einer Sekunde" : "\(seconds) Sekunden") noch einmal."
+        case .http(let code) where code >= 500: "Bei Discogs gibt es gerade ein Problem (Fehler \(code)). Versuche es später noch einmal."
+        case .http(let code): "Discogs hat die Anfrage abgelehnt (Fehler \(code)). Versuche es später noch einmal."
+        case .invalidResponse: "Discogs hat Daten geschickt, mit denen Plattenregal nichts anfangen kann. Versuche es später noch einmal."
+        case .offline: "Discogs ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es noch einmal."
         }
     }
 }
@@ -33,26 +35,34 @@ actor DiscogsAPIClient {
         config.urlCache = nil; config.timeoutIntervalForRequest = 25
         self.session = session ?? URLSession(configuration: config)
     }
-    func search(_ query: String, page: Int = 1) async throws -> DiscogsSearchResponse {
-        try await request(path: "/database/search", items: [URLQueryItem(name: "q", value: query),
-            URLQueryItem(name: "type", value: "release"), URLQueryItem(name: "format", value: "Vinyl"),
-            URLQueryItem(name: "per_page", value: "30"), URLQueryItem(name: "page", value: String(page))])
-    }
     func release(id: Int) async throws -> DiscogsReleaseDTO { try await request(path: "/releases/\(id)") }
     func fetchCollectionValue(username: String) async throws -> DiscogsCollectionValue {
         try await request(path: userPath(username) + "/collection/value")
     }
-    func priceSuggestions(releaseID: Int) async throws -> [String: DiscogsPrice] {
-        try await request(path: "/marketplace/price_suggestions/\(releaseID)")
-    }
-    func marketplaceStats(releaseID: Int) async throws -> DiscogsMarketplaceStats {
-        try await request(path: "/marketplace/stats/\(releaseID)", items: [URLQueryItem(name: "curr_abbr", value: "EUR")])
-    }
     func identity() async throws -> DiscogsIdentity { try await request(path: "/oauth/identity") }
     func testToken() async throws -> String { try await identity().username }
+    /// One quick attempt for the settings' connection test: no retries and
+    /// no waiting out a rate limit, so the answer comes within seconds.
+    static func quickTest(_ token: String) async throws -> String {
+        let config = URLSessionConfiguration.ephemeral
+        config.urlCache = nil; config.timeoutIntervalForRequest = 10; config.timeoutIntervalForResource = 15
+        let client = DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { token })
+        let identity: DiscogsIdentity = try await client.requestOnce(path: "/oauth/identity", items: [])
+        return identity.username
+    }
     func credentialFingerprint() throws -> String {
-        guard let token = try tokenProvider(), !token.isEmpty else { throw DiscogsError.missingToken }
-        return SHA256.hash(data: Data(token.utf8)).map { String(format: "%02x", $0) }.joined()
+        guard let token = try tokenProvider(), !token.isEmpty else { throw DemoMode.isActive ? DiscogsError.demoMode : .missingToken }
+        return Self.fingerprint(of: token)
+    }
+    /// Discogs tokens are plain letters and digits. Anything with spaces,
+    /// line breaks or control characters inside was pasted wrongly – and must
+    /// never reach the Authorization header.
+    nonisolated static func isWellFormedToken(_ token: String) -> Bool {
+        !token.isEmpty && token.count <= 256 && token.unicodeScalars.allSatisfy { (0x21...0x7E).contains($0.value) }
+    }
+    /// Identifies a token without keeping it (stored per account after a sync).
+    nonisolated static func fingerprint(of token: String) -> String {
+        SHA256.hash(data: Data(token.utf8)).map { String(format: "%02x", $0) }.joined()
     }
     private func userPath(_ username: String) throws -> String {
         guard !username.isEmpty, !username.contains("/"), !username.contains("?"), !username.contains("#"),
@@ -103,11 +113,13 @@ actor DiscogsAPIClient {
               count == min(p.per_page, max(0, p.items - (page - 1) * p.per_page)) else { throw DiscogsError.incompletePagination }
         if let expected, (p.pages != expected.pages || p.items != expected.items || p.per_page != expected.per_page) { throw DiscogsError.incompletePagination }
     }
+    /// HTTP date as used by Retry-After, e.g. "Thu, 01 Jan 1970 00:01:00 GMT".
+    private static let httpDate = Date.VerbatimFormatStyle(
+        format: "\(weekday: .abbreviated), \(day: .twoDigits) \(month: .abbreviated) \(year: .defaultDigits) \(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits):\(second: .twoDigits) GMT",
+        locale: Locale(identifier: "en_US_POSIX"), timeZone: .gmt, calendar: Calendar(identifier: .gregorian))
     nonisolated static func retryDelay(_ value: String?, now: Date = .now) -> Int {
         if let value, let seconds = Int(value) { return max(1, seconds) }
-        let formatter = DateFormatter(); formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0); formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
-        if let value, let date = formatter.date(from: value) { return max(1, Int(ceil(date.timeIntervalSince(now)))) }
+        if let value, let date = try? httpDate.parseStrategy.parse(value) { return max(1, Int(ceil(date.timeIntervalSince(now)))) }
         return 60
     }
     private func request<T: Decodable>(path: String, items: [URLQueryItem] = []) async throws -> T {
@@ -129,7 +141,8 @@ actor DiscogsAPIClient {
         throw DiscogsError.invalidResponse
     }
     private func requestOnce<T: Decodable>(path: String, items: [URLQueryItem]) async throws -> T {
-        guard let token = try tokenProvider(), !token.isEmpty else { throw DiscogsError.missingToken }
+        guard let token = try tokenProvider(), !token.isEmpty else { throw DemoMode.isActive ? DiscogsError.demoMode : .missingToken }
+        guard Self.isWellFormedToken(token) else { throw DiscogsError.unauthorized }
         // Reserve a slot before suspension, so concurrent clients cannot burst the rate limit.
         let slot = max(Date(), nextRequest); nextRequest = slot.addingTimeInterval(1.1)
         let delay = slot.timeIntervalSinceNow
@@ -152,6 +165,10 @@ actor DiscogsAPIClient {
         do {
             let (data, response) = try await session.data(for: req)
             guard let http = response as? HTTPURLResponse else { throw DiscogsError.invalidResponse }
+            let limit = Int(http.value(forHTTPHeaderField: "X-Discogs-Ratelimit") ?? "")
+            let remaining = Int(http.value(forHTTPHeaderField: "X-Discogs-Ratelimit-Remaining") ?? "")
+            let status = http.statusCode
+            Task { @MainActor in DiscogsRateLimit.shared.record(limit: limit, remaining: remaining, status: status) }
             if http.value(forHTTPHeaderField: "X-Discogs-Ratelimit-Remaining") == "0" {
                 blockedUntil = Date().addingTimeInterval(60)
                 nextRequest = max(nextRequest, blockedUntil)
@@ -177,5 +194,26 @@ actor DiscogsAPIClient {
             logger.error("Network failure, code \(error.code.rawValue)")
             throw DiscogsError.offline
         } catch { throw error }
+    }
+}
+
+/// What Discogs said about its request budget in the last answer this
+/// session, for the diagnosis in the settings. Discogs allows a number of
+/// requests per minute (60 with a token) and counts them in a moving window.
+@Observable final class DiscogsRateLimit {
+    static let shared = DiscogsRateLimit()
+    private(set) var limit: Int?
+    private(set) var remaining: Int?
+    private(set) var lastRequest: Date?
+    private(set) var requests = 0
+    /// Set when Discogs answered 429 ("too many requests").
+    private(set) var lastThrottled: Date?
+
+    func record(limit: Int?, remaining: Int?, status: Int) {
+        if let limit { self.limit = limit }
+        if let remaining { self.remaining = remaining }
+        lastRequest = .now
+        requests += 1
+        if status == 429 { lastThrottled = .now }
     }
 }

@@ -1,81 +1,54 @@
 import SwiftUI
 import SwiftData
 
+/// Edits the user's own data of a copy (condition, price, notes, "Nicht im
+/// Regal"). Records come only from the Discogs sync, and their metadata is
+/// Discogs' – there is no adding or metadata editing here.
 struct RecordEditor: View {
-    @Environment(\.metadataClock) private var metadataClock
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \Shelf.number) private var shelves: [Shelf]
-    @Query private var releases: [Release]
-    var copy: RecordCopy?
-    var importedRelease: Release?
-    @State private var artist = ""
-    @State private var title = ""
-    @State private var year = ""
-    @State private var label = ""
-    @State private var catalog = ""
-    @State private var country = ""
-    @State private var format = "Vinyl"
-    @State private var genres = ""
-    @State private var styles = ""
-    @State private var cover = ""
-    @State private var shelfID: UUID?
-    @State private var position = 1
+    @Query private var exclusions: [OptimizationExclusion]
+    let copy: RecordCopy
+    /// "Nicht im Regal": the copy is kept out of the shelf allocation entirely.
+    @State private var notInShelf = false
     @State private var condition = "Nicht bewertet"
     @State private var price = ""
     @State private var hasDate = false
     @State private var date = Date()
     @State private var notes = ""
     @State private var error: String?
-    private var source: Release? { copy?.release ?? importedRelease }
-    private var isDiscogs: Bool { source?.discogsID != nil }
-    private var selectedShelf: Shelf? { shelves.first { $0.id == shelfID } }
-    private var maximumPosition: Int { max(1, (selectedShelf?.copies.filter { $0.id != copy?.id }.count ?? 0) + 1) }
     var body: some View {
-        let _ = metadataClock
         VStack(spacing: 0) {
             HStack {
-                Text(copy == nil ? "Schallplatte hinzufügen" : "Exemplar bearbeiten").font(AppStyle.dialogTitle)
+                Text("Exemplar bearbeiten").font(AppStyle.dialogTitle)
                 Spacer()
             }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
             Divider()
             Form {
                 Section("Veröffentlichung") {
-                    if isDiscogs, let source {
-                        Text(source.displayArtist).font(.headline)
-                        Text(source.displayTitle)
-                        Text("Die Metadaten dieser Pressung werden von Discogs aktualisiert.").font(.caption).foregroundStyle(.secondary)
-                    } else {
-                        TextField("Interpret *", text: $artist)
-                        TextField("Titel *", text: $title)
-                        TextField("Jahr", text: $year)
-                        TextField("Label", text: $label)
-                        TextField("Katalognummer", text: $catalog)
-                        TextField("Land", text: $country)
-                        TextField("Format", text: $format)
-                        TextField("Genres (mit Komma trennen)", text: $genres)
-                        TextField("Styles (mit Komma trennen)", text: $styles)
-                        TextField("Cover-URL (HTTPS, optional)", text: $cover)
-                        if let source, source.copies.count > 1 {
-                            Text("Metadatenänderungen gelten für alle \(source.copies.count) Exemplare dieser Veröffentlichung.").font(.caption)
-                        }
+                    if let release = copy.release {
+                        Text(release.displayArtist).font(.headline)
+                        Text(release.displayTitle)
+                        Text("Die Metadaten dieser Pressung werden von Discogs aktualisiert.")
+                            .font(.caption).foregroundStyle(.secondary)
                     }
                 }
-                Section("Physischer Platz") {
-                    Picker("Fach", selection: $shelfID) {
-                        if copy != nil { Text("Noch keinem Fach zugeordnet").tag(nil as UUID?) }
-                        ForEach(shelves) { shelf in Text("\(shelf.title) (\(shelf.copies.count)/\(shelf.capacity))").tag(Optional(shelf.id)) }
-                    }
-                    if selectedShelf != nil { Stepper("Position: \(position)", value: $position, in: 1...maximumPosition) }
-                    Text("Position 1 ist links im Fach. Beim Einfügen rücken nachfolgende Platten nach rechts.").font(.caption).foregroundStyle(.secondary)
+                // Shelf and position are managed only on the shelf page; here a
+                // copy can just be kept out of the shelf allocation altogether.
+                Section("Regal") {
+                    Toggle("Nicht im Regal", isOn: $notInShelf)
+                    Text(notInShelf
+                         ? "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen."
+                         : "Fach und Position vergibst du in der Rubrik Regal.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
                 Section("Mein Exemplar") {
                     Picker("Zustand", selection: $condition) {
-                        ForEach(["Nicht bewertet", "Mint (M)", "Near Mint (NM)", "Very Good Plus (VG+)", "Very Good (VG)", "Good (G)", "Fair (F)", "Poor (P)"], id: \.self) { Text($0) }
+                        ForEach(conditions, id: \.self) { Text($0) }
                     }
                     TextField("Kaufpreis (€)", text: $price)
                     Toggle("Kaufdatum erfassen", isOn: $hasDate)
-                    if hasDate { DatePicker("Kaufdatum", selection: $date, displayedComponents: .date) }
+                    if hasDate { DatePicker("Kaufdatum", selection: $date, in: ...Date.now, displayedComponents: .date) }
                     TextField("Notizen", text: $notes, axis: .vertical).lineLimit(3...6)
                 }
             }.formStyle(.grouped)
@@ -83,80 +56,99 @@ struct RecordEditor: View {
             HStack {
                 SecondaryButton(title: "Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
                 Spacer()
-                PrimaryButton(title: copy == nil ? "Zur Sammlung hinzufügen" : "Speichern", action: save)
+                PrimaryButton(title: "Speichern", action: save)
                     .keyboardShortcut(.defaultAction)
             }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
-        }.frame(width: 640, height: 780)
+        }.frame(width: 640, height: 600)
         .alert("Speichern nicht möglich", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
         .onAppear(perform: load)
-        .onChange(of: shelfID) { _, _ in position = min(position, maximumPosition) }
     }
     private func load() {
-        if let r = source {
-            artist = r.artist; title = r.title; year = r.year.map(String.init) ?? ""
-            label = r.label; catalog = r.catalogNumber; country = r.country; format = r.format
-            genres = r.genres.joined(separator: ", "); styles = r.styles.joined(separator: ", "); cover = r.coverURL ?? ""
-        }
-        if let copy {
-            shelfID = copy.shelf?.id; position = max(1, copy.positionInShelf); condition = copy.condition
-            price = copy.purchasePrice.map { NSDecimalNumber(decimal: $0).stringValue } ?? ""
-            hasDate = copy.purchaseDate != nil; date = copy.purchaseDate ?? .now
-            notes = copy.notes
-        } else {
-            let target = shelves.first { $0.copies.count < $0.capacity } ?? shelves.first
-            shelfID = target?.id; position = (target?.copies.count ?? 0) + 1
-        }
+        notInShelf = copy.shelf == nil && exclusions.contains { $0.copyID == copy.id }
+        condition = copy.condition.isEmpty ? "Nicht bewertet" : copy.condition
+        price = copy.purchasePrice.map(PriceInput.format) ?? ""
+        hasDate = copy.purchaseDate != nil; date = copy.purchaseDate ?? .now
+        notes = copy.notes
     }
     private func save() {
+        // Removed while the sheet was open ("Alles zurücksetzen" in the
+        // settings window): writing to the deleted model would crash.
+        guard !copy.isDeleted, copy.modelContext != nil else {
+            error = LibraryError.missingRelease.errorDescription; return
+        }
         do {
-            let shelf = selectedShelf
-            let artist = artist.trimmingCharacters(in: .whitespacesAndNewlines)
-            let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-            let year = year.trimmingCharacters(in: .whitespaces)
-            let priceText = price.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: ".")
-            let parsedPrice = Decimal(string: priceText, locale: Locale(identifier: "en_US_POSIX"))
-            guard !artist.isEmpty, !title.isEmpty,
-                  year.isEmpty || (Int(year).map { (1...9999).contains($0) } ?? false),
-                  priceText.isEmpty || (priceText.range(of: #"^\d+(\.\d{1,2})?$"#, options: .regularExpression) != nil && parsedPrice != nil)
-            else { throw LibraryError.invalidMetadata }
-            if !isDiscogs && !cover.isEmpty {
-                guard let url = URL(string: cover), url.scheme == "https", url.host != nil else {
-                    error = "Bitte gib eine gültige HTTPS-Adresse für das Cover ein."; return
-                }
+            guard let parsedPrice = PriceInput.parse(price) else {
+                error = "Den Kaufpreis kann Plattenregal nicht lesen. Gib ihn als Betrag ein, z. B. 24,99."; return
             }
-            if isDiscogs && copy == nil && source?.isFresh != true { throw LibraryError.staleData }
             let service = PositionService(context: context)
-            let editCopy: (RecordCopy) -> Void = { item in
-                item.condition = condition; item.purchasePrice = priceText.isEmpty ? nil : parsedPrice
-                item.purchaseDate = hasDate ? date : nil; item.notes = notes
+            let edit = {
+                copy.condition = condition; copy.purchasePrice = parsedPrice.amount
+                copy.purchaseDate = hasDate ? date : nil; copy.notes = notes
             }
-            let editRelease: (Release) -> Void = { r in
-                guard !isDiscogs else { return }
-                r.artist = artist; r.title = title; r.year = Int(year); r.label = label; r.catalogNumber = catalog
-                r.country = country; r.format = format; r.genres = split(genres); r.styles = split(styles)
-                r.coverURL = cover.isEmpty ? nil : cover
-            }
-            if let copy, let release = copy.release {
-                if let shelf {
-                    try service.move(copy, to: shelf, position: position) { editCopy(copy); editRelease(release) }
-                } else {
-                    try service.unplace(copy) { editCopy(copy); editRelease(release) }
-                }
+            if notInShelf != exclusions.contains(where: { $0.copyID == copy.id }) {
+                // Excluding takes the copy out of its shelf; including puts it back
+                // among the records waiting to be sorted in.
+                try service.setExcluded([copy], notInShelf, edit: edit)
             } else {
-                guard let shelf else { throw LibraryError.missingRelease }
-                let existing = importedRelease.flatMap { incoming in releases.first { $0.discogsID == incoming.discogsID && incoming.discogsID != nil } }
-                let release = existing ?? importedRelease ?? Release(artist: artist, title: title)
-                try service.validate(shelf: shelf, position: position)
-                // Insert and metadata edits are committed together by PositionService.
-                try service.insert(release: release, shelf: shelf, position: position) { item in
-                    if let existing, let importedRelease { existing.updateMetadata(from: importedRelease) }
-                    editRelease(release); editCopy(item)
-                }
+                try service.save(edit)
             }
             dismiss()
-        } catch { self.error = error.localizedDescription }
+        } catch { self.error = error.reportedMessage() }
     }
-    private func split(_ text: String) -> [String] { text.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty } }
+    private static let gradings = ["Nicht bewertet", "Mint (M)", "Near Mint (NM)", "Very Good Plus (VG+)", "Very Good (VG)", "Good (G)", "Fair (F)", "Poor (P)"]
+    /// A stored value outside the list (older data) stays selectable instead
+    /// of leaving the picker blank.
+    private var conditions: [String] {
+        Self.gradings.contains(condition) || condition.isEmpty ? Self.gradings : Self.gradings + [condition]
+    }
+}
+
+/// Purchase price as typed: "24,99", "24.99", "1.234,50", "1,234.50",
+/// "24,99 €", "€ 5" — at most two decimals, never negative.
+enum PriceInput {
+    /// `nil` = not a valid amount; `.init(amount: nil)` = field left empty.
+    struct Parsed: Equatable { let amount: Decimal? }
+
+    static func parse(_ raw: String) -> Parsed? {
+        let text = raw.filter { !$0.isWhitespace && $0 != "€" }
+        guard !text.isEmpty else { return Parsed(amount: nil) }
+        guard text.allSatisfy({ $0.isASCII && ($0.isNumber || $0 == "," || $0 == ".") }) else { return nil }
+        // The last separator followed by one or two digits is the decimal mark;
+        // every other separator groups thousands (in blocks of three).
+        var integer = text, fraction = ""
+        if let last = text.lastIndex(where: { $0 == "," || $0 == "." }) {
+            let tail = text[text.index(after: last)...]
+            if (1...2).contains(tail.count) {
+                integer = String(text[..<last]); fraction = String(tail)
+                // One character can't be both: "12,345,6" is ambiguous.
+                if integer.contains(text[last]) { return nil }
+            }
+        }
+        // Grouping uses one kind of separator only ("1.234.567", not "1.234,567").
+        if integer.contains(",") && integer.contains(".") { return nil }
+        let groups = integer.split(separator: ",", omittingEmptySubsequences: false)
+            .flatMap { $0.split(separator: ".", omittingEmptySubsequences: false) }
+        guard let first = groups.first, !first.isEmpty,
+              groups.count == 1 || (first.count <= 3 && groups.dropFirst().allSatisfy { $0.count == 3 })
+        else { return nil }
+        let number = groups.joined() + (fraction.isEmpty ? "" : "." + fraction)
+        guard let amount = Decimal(string: number, locale: Locale(identifier: "en_US_POSIX")) else { return nil }
+        return Parsed(amount: amount)
+    }
+
+    /// For the text field: "24,99", "12,50", "30" in the user's locale.
+    static func format(_ amount: Decimal) -> String {
+        let whole = amount == amount.rounded(0)
+        return amount.formatted(.number.grouping(.never).precision(.fractionLength(whole ? 0 : 2)))
+    }
+}
+
+private extension Decimal {
+    func rounded(_ scale: Int) -> Decimal {
+        var value = self, result = Decimal()
+        NSDecimalRound(&result, &value, scale, .plain)
+        return result
+    }
 }

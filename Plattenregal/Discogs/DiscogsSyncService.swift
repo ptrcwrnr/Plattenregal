@@ -3,10 +3,20 @@ import SwiftData
 import Observation
 import OSLog
 
-enum DiscogsSyncScope: Equatable, Sendable {
+nonisolated enum DiscogsSyncScope: Equatable, Sendable {
     case collection, wantlist, all, folder(Int), release(Int)
+    /// For the protocol (`AppLog`).
+    var logName: String {
+        switch self {
+        case .collection: "Collection"
+        case .wantlist: "Wantlist"
+        case .all: "Alles"
+        case .folder(let id): "Ordner \(id)"
+        case .release(let id): "Release \(id)"
+        }
+    }
 }
-struct DiscogsSyncSnapshot: Sendable {
+nonisolated struct DiscogsSyncSnapshot: Sendable {
     let username: String
     let userID: Int?
     let fingerprint: String
@@ -16,95 +26,164 @@ struct DiscogsSyncSnapshot: Sendable {
     var wants: [DiscogsWantDTO]?
     var detail: DiscogsReleaseDTO?
 }
-struct DiscogsSyncSummary: Sendable {
+nonisolated struct DiscogsSyncSummary: Sendable {
     var collectionAdded = 0, collectionUpdated = 0, collectionRemoved = 0
     var wantsAdded = 0, wantsRemoved = 0
     var foldersChanged = 0
-    var description: String {
-        "Collection: +\(collectionAdded), \(collectionUpdated) aktualisiert, −\(collectionRemoved) · Wantlist: +\(wantsAdded), −\(wantsRemoved) · Ordner: \(foldersChanged) geändert"
-    }
+    // Only additions are reported; updates, removals and folder changes stay silent.
+    private static func added(_ count: Int) -> String { count == 0 ? "Nichts hinzugefügt" : "\(count) hinzugefügt" }
+    /// Both areas at once need their names to be told apart.
+    var description: String { "Collection: \(Self.added(collectionAdded))\nWantlist: \(Self.added(wantsAdded))" }
     func description(for scope: DiscogsSyncScope) -> String {
         switch scope {
-        case .collection:
-            "Collection: +\(collectionAdded), \(collectionUpdated) aktualisiert, −\(collectionRemoved) · Ordner: \(foldersChanged) geändert"
-        case .wantlist:
-            "Wantlist: +\(wantsAdded), −\(wantsRemoved)"
-        case .folder:
-            "Collection: +\(collectionAdded), \(collectionUpdated) aktualisiert, −\(collectionRemoved) · Ordner: \(foldersChanged) geändert"
-        case .release:
-            "Veröffentlichung aktualisiert"
-        case .all:
-            description
+        case .collection, .folder: Self.added(collectionAdded)
+        case .wantlist: Self.added(wantsAdded)
+        case .release: "Veröffentlichung aktualisiert"
+        case .all: description
         }
     }
 }
 
-@MainActor @Observable final class DiscogsSyncService {
+@Observable final class DiscogsSyncService {
     static let shared = DiscogsSyncService()
     var busy = false
+    /// Fingerprint of a token Discogs turned down (401) during the last sync,
+    /// so the settings don't keep saying "connected"; cleared by a good sync.
+    private(set) var rejectedFingerprint: String?
+    /// Bumped whenever the settings store or remove the token, so pages in
+    /// other windows re-check it without reading the keychain on every activation.
+    private(set) var tokenRevision = 0
     var status = ""
     var error: String?
     var summary: String?
+    /// Progress of the tracklist download after a collection sync; `nil` when idle.
+    var tracklistProgress: (done: Int, total: Int)?
+    /// Bumped after every committed merge. Views cache sorted lists and search
+    /// indexes; comparing `@Query` arrays doesn't catch changed metadata on
+    /// the same objects, so they rebuild on this instead.
+    private(set) var libraryVersion = 0
+    /// Bumped whenever stored tracklists changed, so search indexes pick them up.
+    private(set) var tracksVersion = 0
+    /// Bumped when cabinets or compartments change (added, resized, renamed,
+    /// switched on/off, removed). Only shelf labels depend on that – the
+    /// collection lists and search indexes don't need a rebuild.
+    private(set) var shelvesVersion = 0
+    /// Bumped after every committed position change (sorting in, moving,
+    /// taking out). Range labels follow the records in the compartments, so
+    /// pages caching them refresh – without the heavier `shelvesVersion` work.
+    private(set) var placementsVersion = 0
     private var task: Task<Bool, Never>?
+    private var tracklistTask: Task<Void, Never>?
+    private var tracklistRun: UUID?
+    /// Whether there is anything for `DiscogsSyncStatusView` to show.
+    var hasStatus: Bool { isRunning || !status.isEmpty || error != nil || summary != nil }
+    /// The sync itself or the tracklist download after it is still running;
+    /// only when both are done is the sync reported as finished.
+    var isRunning: Bool { busy || (showsTracklists && !cancelledByUser) }
+    /// The tracklist download is shown as part of the sync. After a sync it is
+    /// shown right away; when resumed at launch only once there is work.
+    private var showsTracklists = false
+    /// Set by the "x": whatever ends next clears the status instead of
+    /// reporting "abgebrochen", so the lines slide away right after.
+    private var cancelledByUser = false
+
+    /// For changes made outside a sync (e.g. reloading single releases), so
+    /// cached lists and search indexes pick them up like after a sync.
+    func libraryDidChange() { libraryVersion += 1; tracksVersion += 1 }
+    func shelvesDidChange() { shelvesVersion += 1 }
+    func placementsDidChange() { placementsVersion += 1 }
+    /// Removes the status lines (they animate out where they're shown).
+    func dismissStatus() { status = ""; summary = nil; error = nil }
+    func tokenChanged() { tokenRevision += 1 }
+    /// A connection test succeeded with this token; forget that a sync saw it rejected.
+    func tokenAccepted(fingerprint: String) {
+        if rejectedFingerprint == fingerprint { rejectedFingerprint = nil }
+    }
+
+    /// Success: show "abgeschlossen" briefly, then let the lines go — unless
+    /// something else (an error, a new sync) has taken over meanwhile.
+    private func finish() {
+        status = "Synchronisierung abgeschlossen"
+        Task {
+            try? await Task.sleep(for: .seconds(5))
+            if !isRunning, error == nil, status == "Synchronisierung abgeschlossen" { dismissStatus() }
+        }
+    }
     private let api: DiscogsAPIClient
     init(api: DiscogsAPIClient = .shared) { self.api = api }
     func start(_ scope: DiscogsSyncScope, container: ModelContainer, expectedOwner: String? = nil) {
         guard !busy else { return }
+        // The demo's sample collection must never be merged with a real one.
+        guard !DemoMode.isActive else { status = ""; summary = nil; error = DiscogsError.demoMode.errorDescription; return }
         // Set synchronously so two windows cannot start competing merges.
         busy = true
+        cancelledByUser = false
+        // Never write tracklists while a merge rewrites the same releases;
+        // the backfill restarts after the sync and resumes where it stopped.
+        cancelTracklists()
+        AppLog.info("Sync", "Gestartet: \(scope.logName)")
         task = Task { await run(scope, container: container, expectedOwner: expectedOwner) }
     }
-    /// Runs the same guarded synchronization while allowing launch preparation to
-    /// remain visible until the operation has either completed or failed.
-    @discardableResult
-    func synchronize(_ scope: DiscogsSyncScope, container: ModelContainer, expectedOwner: String? = nil) async -> Bool {
-        guard !busy else { return false }
-        busy = true
-        let operation = Task { await run(scope, container: container, expectedOwner: expectedOwner) }
-        task = operation
-        return await withTaskCancellationHandler {
-            await operation.value
-        } onCancel: {
-            operation.cancel()
-        }
+    func cancel() {
+        AppLog.info("Sync", "Vom Nutzer abgebrochen")
+        cancelledByUser = true
+        task?.cancel(); cancelTracklists()
+        // Tracklists stop at their next request; hide the lines right away.
+        if !busy { dismissStatus() }
     }
-    func cancel() { task?.cancel() }
     private func run(_ scope: DiscogsSyncScope, container: ModelContainer, expectedOwner: String?) async -> Bool {
         error = nil; summary = nil
         defer { busy = false; task = nil }
         do {
-            let snapshot = try await fetch(scope, container: container, expectedOwner: expectedOwner)
+            let snapshot: DiscogsSyncSnapshot
+            do {
+                snapshot = try await fetch(scope, container: container, expectedOwner: expectedOwner)
+            } catch DiscogsError.incompletePagination {
+                // Usually the collection changed on Discogs while it was being
+                // read (a record added, moved, removed). Nothing was saved; one
+                // fresh attempt normally succeeds.
+                status = "Discogs-Daten haben sich geändert – neuer Versuch"
+                try await Task.sleep(for: .seconds(2))
+                snapshot = try await fetch(scope, container: container, expectedOwner: expectedOwner)
+            }
             try Task.checkCancellation()
             guard try await api.credentialFingerprint() == snapshot.fingerprint else { throw DiscogsError.accountChanged }
-            status = "Änderungen werden gespeichert …"
-            let mergeTask = Task.detached(priority: .userInitiated) {
-                try Self.merge(snapshot, container: container)
-            }
-            let result = try await withTaskCancellationHandler {
-                try await mergeTask.value
-            } onCancel: { mergeTask.cancel() }
-            status = "Synchronisierung abgeschlossen"; summary = result.description(for: scope)
+            status = "Änderungen werden gespeichert"
+            let result = try await Self.mergeInBackground(snapshot, container: container)
+            summary = result.description(for: scope)
+            AppLog.info("Sync", "Gespeichert (\(scope.logName), Konto \(snapshot.username)): \(summary ?? "–")")
+            rejectedFingerprint = nil
+            libraryVersion += 1
             if scope == .collection || scope == .all || scope == .folder(0) {
+                status = "Sammlungswert wird aktualisiert"
                 do {
                     try await CollectionValueHistoryService.shared.refresh(owner: snapshot.username, container: container, api: api, force: true)
                 } catch {
                     // Collection merge is committed. A valuation failure must not roll it back or claim it failed.
-                    self.error = "Sammlung gespeichert; Sammlungswert nicht aktualisiert: " + error.localizedDescription
+                    self.error = "Die Sammlung ist aktualisiert, nur der Sammlungswert konnte nicht geladen werden. " + error.reportedMessage()
                 }
             }
+            // "abgeschlossen" only once the tracklists are through as well.
+            if case .release = scope { finish() }
+            else { startTracklists(container: container) }
             return true
         } catch is CancellationError {
-            status = "Synchronisierung abgebrochen. Keine Änderungen gespeichert."
+            AppLog.info("Sync", "Abgebrochen, nichts gespeichert (\(scope.logName))")
+            if cancelledByUser { dismissStatus() }
+            else { status = "Synchronisierung abgebrochen. Keine Änderungen gespeichert." }
             return false
         }
         catch {
-            self.error = error.localizedDescription; status = "Synchronisierung fehlgeschlagen"
-            Logger(subsystem: "de.private.Plattenregal", category: "Sync").error("Sync failed: \(String(describing: error), privacy: .private)")
+            // A cancelled request can surface as a network error; the "x" wins.
+            if cancelledByUser { dismissStatus(); return false }
+            // `reportedMessage` puts the technical detail into the protocol.
+            self.error = error.reportedMessage(); status = "Synchronisierung fehlgeschlagen"
+            if case DiscogsError.unauthorized = error { rejectedFingerprint = try? await api.credentialFingerprint() }
             return false
         }
     }
     func fetch(_ scope: DiscogsSyncScope, container: ModelContainer, expectedOwner: String? = nil) async throws -> DiscogsSyncSnapshot {
-        status = "Discogs-Account wird geprüft …"
+        status = "Discogs-Konto wird geprüft"
         let fingerprint = try await api.credentialFingerprint()
         let context = ModelContext(container)
         let accounts = try context.fetch(FetchDescriptor<DiscogsAccount>())
@@ -116,14 +195,12 @@ struct DiscogsSyncSummary: Sendable {
         var snapshot = DiscogsSyncSnapshot(username: username, userID: userID, fingerprint: fingerprint, scope: scope)
         switch scope {
         case .collection, .all, .folder:
-            status = "Discogs-Ordner werden geladen …"
+            status = "Discogs-Ordner werden geladen"
             snapshot.folders = try await api.folders(username: username)
             let folderID: Int
             if case .folder(let id) = scope { folderID = id } else { folderID = 0 }
-            status = "Collection wird geladen …"
-            snapshot.collection = try await api.collection(username: username, folderID: folderID) { [weak self] page, pages in
-                await self?.progress("Collection", page, pages)
-            }
+            status = "Collection wird geladen"
+            snapshot.collection = try await api.collection(username: username, folderID: folderID)
         default: break
         }
         if let folders = snapshot.folders, let collection = snapshot.collection {
@@ -131,19 +208,167 @@ struct DiscogsSyncSummary: Sendable {
             guard collection.allSatisfy({ folderIDs.contains($0.folder_id) }) else { throw DiscogsError.incompletePagination }
         }
         if scope == .wantlist || scope == .all {
-            status = "Wantlist wird geladen …"
-            snapshot.wants = try await api.wants(username: username) { [weak self] page, pages in
-                await self?.progress("Wantlist", page, pages)
-            }
+            status = "Wantlist wird geladen"
+            snapshot.wants = try await api.wants(username: username)
         }
         if case .release(let id) = scope {
-            status = "Veröffentlichung wird geladen …"; snapshot.detail = try await api.release(id: id)
+            status = "Veröffentlichung wird geladen"; snapshot.detail = try await api.release(id: id)
         }
         guard try await api.credentialFingerprint() == fingerprint else { throw DiscogsError.accountChanged }
         return snapshot
     }
-    private func progress(_ area: String, _ page: Int, _ pages: Int) {
-        status = "\(area) wird geladen … Seite \(page) von \(pages)"
+
+    // MARK: Tracklists
+    // Collection and wantlist endpoints only deliver basic information; tracklists
+    // need one release request each (~1 s apart, see DiscogsAPIClient). They
+    // are fetched in the background after a sync — and resumed at app launch
+    // if a run was interrupted — and stored with `detailsFetchedAt`, so every
+    // release is asked once (even if Discogs has no tracklist) and refreshed
+    // after `tracklistRefreshAge`, at most `tracklistRefreshesPerRun` per run.
+
+    static let tracklistRefreshAge: TimeInterval = 180 * 86400
+    static let tracklistRefreshesPerRun = 100
+
+    /// `fromSync`: part of a sync — shown right away, "abgeschlossen" at the
+    /// end, problems reported. Otherwise (app launch) it stays invisible
+    /// unless there is something to load, and fails quietly.
+    func startTracklists(container: ModelContainer, fromSync: Bool = true) {
+        if fromSync { showsTracklists = true }
+        // A download cancelled by a new sync may still be winding down; queue
+        // behind it instead of racing it (it only stops at the next request).
+        let previous = tracklistTask
+        let run = UUID()
+        tracklistRun = run
+        tracklistTask = Task {
+            await previous?.value
+            guard tracklistRun == run else { return }
+            let didWork = await loadTracklists(container: container, quiet: !fromSync)
+            // A newer download has taken over; leave its state alone.
+            guard tracklistRun == run else { return }
+            if didWork { AppLog.info("Sync", Task.isCancelled ? "Tracklisten unterbrochen, werden später fortgesetzt" : "Tracklisten geladen") }
+            let wasShown = showsTracklists
+            tracklistProgress = nil
+            showsTracklists = false
+            tracklistTask = nil
+            if Task.isCancelled { if !busy && wasShown { dismissStatus() } }   // the "x"; a new sync keeps its own status
+            else if fromSync || didWork { finish() }
+        }
+    }
+
+    /// At launch: finish an interrupted first run (or due refreshes) without
+    /// waiting for the next manual sync.
+    func resumeTracklistsIfNeeded(container: ModelContainer) async {
+        guard !busy, tracklistTask == nil, (try? await api.credentialFingerprint()) != nil,
+              let accounts = try? ModelContext(container).fetch(FetchDescriptor<DiscogsAccount>()),
+              accounts.contains(where: { $0.lastCollectionSync != nil || $0.lastWantlistSync != nil })
+        else { return }
+        startTracklists(container: container, fromSync: false)
+    }
+
+    func cancelTracklists() { tracklistTask?.cancel() }
+    /// Cancels the tracklist download and waits until it has let go of its
+    /// releases – before something deletes them underneath it.
+    func stopTracklists() async {
+        guard let running = tracklistTask else { return }
+        running.cancel()
+        await running.value
+    }
+
+    /// Loads and stores the tracklist of a single release right away (popover).
+    func loadTracklist(for release: Release, context: ModelContext) async throws {
+        let id = release.discogsID
+        let dto = try await api.release(id: id)
+        guard !release.isDeleted else { return }
+        try PositionService(context: context).save { dto.applyDetails(to: release) }
+        tracksVersion += 1
+    }
+
+    /// Returns whether anything had to be loaded. Internal for the tests.
+    func loadTracklists(container: ModelContainer, quiet: Bool) async -> Bool {
+        let context = ModelContext(container)
+        let copies: [RecordCopy], wants: [WantlistEntry]
+        do {
+            copies = try context.fetch(FetchDescriptor<RecordCopy>())
+            wants = try context.fetch(FetchDescriptor<WantlistEntry>())
+        } catch {
+            if !quiet { self.error = "Die Tracklisten konnten nicht geladen werden. " + error.reportedMessage() }
+            return false
+        }
+        let now = Date()
+        var seen = Set<PersistentIdentifier>()
+        var missing: [Release] = [], stale: [Release] = []
+        // Collection first, then the wantlist (its tracks make search find wanted records too).
+        for release in copies.filter(\.discogsActive).compactMap(\.release) + wants.compactMap(\.release)
+        where seen.insert(release.persistentModelID).inserted {
+            if let fetched = release.detailsFetchedAt {
+                if now.timeIntervalSince(fetched) > Self.tracklistRefreshAge { stale.append(release) }
+            } else if release.tracks.isEmpty {
+                missing.append(release)
+            } else {
+                // Loaded before details were stamped: date it somewhere in the
+                // refresh window, so refreshes trickle in instead of all at once.
+                release.detailsFetchedAt = now.addingTimeInterval(-.random(in: 0..<Self.tracklistRefreshAge))
+            }
+        }
+        if context.hasChanges { try? context.save() }
+        stale.sort { ($0.detailsFetchedAt ?? now) < ($1.detailsFetchedAt ?? now) }
+        let pending = missing + stale.prefix(Self.tracklistRefreshesPerRun)
+        guard !pending.isEmpty else { return false }
+
+        showsTracklists = true
+        tracklistProgress = (0, pending.count)
+        var loaded = 0
+        /// A failed batch is rolled back; its releases stay without tracklist
+        /// and are simply loaded again next time — but say so after a sync.
+        func save() {
+            guard context.hasChanges else { return }
+            do { try context.save(); tracksVersion += 1 }
+            catch {
+                context.rollback()
+                if !quiet { self.error = "Einige Tracklisten konnten nicht gespeichert werden. Sie werden beim nächsten Mal erneut geladen." }
+            }
+        }
+        for (index, release) in pending.enumerated() {
+            guard !Task.isCancelled else { break }
+            let id = release.discogsID
+            do {
+                let dto = try await api.release(id: id)
+                if !release.isDeleted { dto.applyDetails(to: release); loaded += 1 }
+                // Save in small batches: few UI updates, little lost on quit.
+                if loaded % 10 == 0 { save() }
+            } catch DiscogsError.notFound {
+                // Removed on Discogs: stamped like a release without tracklist,
+                // so it isn't asked again at every launch (and the status line
+                // doesn't flash up each time), only with the regular refresh.
+                if !release.isDeleted { release.detailsFetchedAt = .now }
+            } catch DiscogsError.http(let code) where (400...499).contains(code) {
+                // Same: specific to this release.
+                if !release.isDeleted { release.detailsFetchedAt = .now }
+            } catch DiscogsError.forbidden, DiscogsError.invalidResponse {
+                // Possibly this release only – or the token or a Discogs outage,
+                // which would hit every release: skip without stamping.
+            } catch {
+                save()
+                // Cancelled by the "x" or a new sync: resume next time, no message.
+                if Task.isCancelled || error is CancellationError { return true }
+                // Offline, token rejected, Discogs limit …: stop, and after a
+                // sync say so instead of reporting it complete.
+                if !quiet {
+                    let missing = pending.count - index
+                    self.error = "Noch nicht alle Tracklisten geladen – \(missing) fehlen und werden später automatisch nachgeholt. "
+                        + error.reportedMessage()
+                }
+                return true
+            }
+            tracklistProgress = (index + 1, pending.count)
+        }
+        save()
+        return true
+    }
+
+    /// Off the main actor; cancelling the sync cancels the merge with it.
+    @concurrent nonisolated private static func mergeInBackground(_ snapshot: DiscogsSyncSnapshot, container: ModelContainer) async throws -> DiscogsSyncSummary {
+        try merge(snapshot, container: container)
     }
 
     // A dedicated context isolates rollback from unsaved edits in other windows.
@@ -159,15 +384,15 @@ struct DiscogsSyncSummary: Sendable {
             context.insert(account)
             let releases = try context.fetch(FetchDescriptor<Release>())
             var byRelease: [Int: Release] = [:]
-            for release in releases { if let id = release.discogsID, byRelease[id] == nil { byRelease[id] = release } }
+            for release in releases where byRelease[release.discogsID] == nil { byRelease[release.discogsID] = release }
             func release(_ basic: DiscogsBasicInformation) throws -> Release {
-                let record = byRelease[basic.id] ?? Release(artist: "", title: basic.title)
+                let record = byRelease[basic.id] ?? Release(discogsID: basic.id, artist: "", title: basic.title)
                 if byRelease[basic.id] == nil { context.insert(record); byRelease[basic.id] = record }
                 try basic.apply(to: record, at: now); return record
             }
             let copies = try context.fetch(FetchDescriptor<RecordCopy>())
             if let folders = snapshot.folders {
-                let existing = try context.fetch(FetchDescriptor<DiscogsFolder>()).filter { $0.owner == owner }
+                let existing = try context.fetch(FetchDescriptor<DiscogsFolder>(predicate: #Predicate { $0.owner == owner }))
                 let indexed = Dictionary(uniqueKeysWithValues: existing.map { ($0.folderID, $0) })
                 let ids = Set(folders.map(\.id))
                 for dto in folders {
@@ -184,12 +409,7 @@ struct DiscogsSyncSummary: Sendable {
             if let collection = snapshot.collection {
                 let owned = copies.filter { $0.discogsOwner == owner }
                 var byInstance: [Int: RecordCopy] = [:]
-                for copy in owned { if let id = copy.discogsInstanceID { byInstance[id] = copy } }
-                // Reuse unlinked manual copies of this release once, preserving all local data.
-                var unlinked: [Int: [RecordCopy]] = [:]
-                for copy in copies where copy.discogsInstanceID == nil && copy.discogsOwner == nil {
-                    if let id = copy.release?.discogsID { unlinked[id, default: []].append(copy) }
-                }
+                for copy in owned { byInstance[copy.discogsInstanceID] = copy }
                 let ids = Set(collection.map(\.instance_id))
                 for dto in collection {
                     try Task.checkCancellation()
@@ -198,19 +418,18 @@ struct DiscogsSyncSummary: Sendable {
                     let copy: RecordCopy
                     if let existing = byInstance[dto.instance_id] { copy = existing }
                     else {
-                        if let local = unlinked[dto.id]?.popLast() { copy = local }
-                        else { copy = RecordCopy(release: metadata); context.insert(copy) }
+                        copy = RecordCopy(release: metadata, instanceID: dto.instance_id, owner: owner); context.insert(copy)
                         result.collectionAdded += 1
                     }
                     let notes = try DiscogsEncoding.data(dto.notes ?? [])
-                    if byInstance[dto.instance_id] != nil && (metadataChanged || copy.discogsFolderID != dto.folder_id || copy.discogsRating != dto.rating || copy.discogsNotes != notes || copy.discogsActive != true || copy.discogsDateAdded != dto.date_added) { result.collectionUpdated += 1 }
+                    if byInstance[dto.instance_id] != nil && (metadataChanged || copy.discogsFolderID != dto.folder_id || copy.discogsRating != dto.rating || copy.discogsNotes != notes || !copy.discogsActive || copy.discogsDateAdded != dto.date_added) { result.collectionUpdated += 1 }
                     copy.release = metadata; copy.discogsOwner = owner; copy.discogsInstanceID = dto.instance_id
                     copy.discogsFolderID = dto.folder_id; copy.discogsDateAdded = dto.date_added
                     copy.discogsRating = dto.rating; copy.discogsNotes = notes
                     copy.discogsActive = true; copy.lastDiscogsSync = now
                     // Never write shelf, positionInShelf, notes, condition or purchase data.
                 }
-                for copy in owned where copy.discogsActive == true && !ids.contains(copy.discogsInstanceID ?? -1) {
+                for copy in owned where copy.discogsActive && !ids.contains(copy.discogsInstanceID) {
                     if case .folder(let id) = snapshot.scope, id != 0 {
                         if copy.discogsFolderID == id { copy.discogsFolderID = nil }
                     } else {
@@ -221,7 +440,7 @@ struct DiscogsSyncSummary: Sendable {
                 if snapshot.scope == .collection || snapshot.scope == .all || snapshot.scope == .folder(0) { account.lastCollectionSync = now }
             }
             if let wants = snapshot.wants {
-                let existing = try context.fetch(FetchDescriptor<WantlistEntry>()).filter { $0.owner == owner }
+                let existing = try context.fetch(FetchDescriptor<WantlistEntry>(predicate: #Predicate { $0.owner == owner }))
                 let indexed = Dictionary(uniqueKeysWithValues: existing.map { ($0.releaseID, $0) })
                 let ids = Set(wants.map(\.id))
                 for dto in wants {
@@ -232,6 +451,12 @@ struct DiscogsSyncSummary: Sendable {
                     entry.rating = dto.rating; entry.notes = dto.notes; entry.lastDiscogsSync = now
                 }
                 for entry in existing where !ids.contains(entry.releaseID) { context.delete(entry); result.wantsRemoved += 1 }
+                // A release that was only wanted (never owned) goes with its last want.
+                let wanted = Set(try context.fetch(FetchDescriptor<WantlistEntry>())
+                    .filter { !$0.isDeleted }.compactMap { $0.release?.persistentModelID })
+                for release in byRelease.values where release.copies.isEmpty && !wanted.contains(release.persistentModelID) {
+                    context.delete(release)
+                }
                 account.lastWantlistSync = now
             }
             if let detail = snapshot.detail {
