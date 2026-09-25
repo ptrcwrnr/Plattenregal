@@ -45,7 +45,6 @@ enum PreviewData {
                 release.label = item.2
                 let entry = WantlistEntry(owner: "Demo", release: release, releaseID: 10_000 + index)
                 entry.dateAdded = item.3
-                entry.rating = index.isMultiple(of: 3) ? 4 : 0
                 context.insert(entry)
             }
             try context.save()

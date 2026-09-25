@@ -11,7 +11,7 @@ nonisolated enum StorageError: LocalizedError {
 
 enum LibraryStorage {
     static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+        let schema = Schema(versionedSchema: LibrarySchemaV15.self)
         let config: ModelConfiguration
         if inMemory {
             config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)

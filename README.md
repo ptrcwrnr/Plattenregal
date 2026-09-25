@@ -50,7 +50,7 @@ Alle Daten liegen in der App-Sandbox unter
 
 | Ordner/Datei | Inhalt |
 |---|---|
-| `Collection.store` (+ `-wal`, `-shm`) | Datenbank (Schema V13): Platten, Standorte, „Nicht auffindbar“, Wantlist, Statistik-Verlauf |
+| `Collection.store` (+ `-wal`, `-shm`) | Datenbank (Schema V15): Platten, Standorte, „Nicht auffindbar“, Wantlist, Statistik-Verlauf |
 | `Covers/` | Cover-Cache; wird bei Bedarf neu von Discogs geladen |
 | `Sicherungen/` | Automatische Sicherungen der Belegung, falls kein eigener Ordner gewählt ist |
 | `Logs/Plattenregal.log` | Protokoll (dazu `Plattenregal.old.log` ab 2 MB, auch während einer Sitzung) |

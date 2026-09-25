@@ -33,8 +33,7 @@ final class CollectionValueHistoryService {
             }
             return false
         }
-        context.insert(CollectionValueSnapshot(owner: owner, date: date, value: value, count: copies.count,
-            unique: Set(copies.compactMap { $0.release?.discogsID }).count, signature: signature))
+        context.insert(CollectionValueSnapshot(owner: owner, date: date, value: value, count: copies.count, signature: signature))
         try context.save(); return true
     }
     func refresh(owner: String, container: ModelContainer, api: DiscogsAPIClient = .shared, force: Bool = false) async throws {

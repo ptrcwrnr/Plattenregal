@@ -372,13 +372,12 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 for dto in folders {
                     let folder = indexed[dto.id] ?? DiscogsFolder(owner: owner, id: dto.id, name: dto.name, count: dto.count)
                     if indexed[dto.id] == nil || folder.name != dto.name || folder.count != dto.count { result.foldersChanged += 1 }
-                    context.insert(folder); folder.name = dto.name; folder.count = dto.count; folder.lastSync = now
+                    context.insert(folder); folder.name = dto.name; folder.count = dto.count
                 }
                 for folder in existing where !ids.contains(folder.folderID) { context.delete(folder); result.foldersChanged += 1 }
                 for copy in copies where copy.discogsOwner == owner {
                     if let id = copy.discogsFolderID, !ids.contains(id) { copy.discogsFolderID = nil }
                 }
-                account.lastFolderSync = now
             }
             if let collection = snapshot.collection {
                 let owned = copies.filter { $0.discogsOwner == owner }
@@ -395,12 +394,10 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                         copy = RecordCopy(release: metadata, instanceID: dto.instance_id, owner: owner); context.insert(copy)
                         result.collectionAdded += 1
                     }
-                    let notes = try DiscogsEncoding.data(dto.notes ?? [])
-                    if byInstance[dto.instance_id] != nil && (metadataChanged || copy.discogsFolderID != dto.folder_id || copy.discogsRating != dto.rating || copy.discogsNotes != notes || !copy.discogsActive || copy.discogsDateAdded != dto.date_added) { result.collectionUpdated += 1 }
+                    if byInstance[dto.instance_id] != nil && (metadataChanged || copy.discogsFolderID != dto.folder_id || !copy.discogsActive || copy.discogsDateAdded != dto.date_added) { result.collectionUpdated += 1 }
                     copy.release = metadata; copy.discogsOwner = owner; copy.discogsInstanceID = dto.instance_id
                     copy.discogsFolderID = dto.folder_id; copy.discogsDateAdded = dto.date_added
-                    copy.discogsRating = dto.rating; copy.discogsNotes = notes
-                    copy.discogsActive = true; copy.lastDiscogsSync = now
+                    copy.discogsActive = true
                     // Never write shelf or positionInShelf.
                 }
                 for copy in owned where copy.discogsActive && !ids.contains(copy.discogsInstanceID) {
@@ -408,7 +405,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                         if copy.discogsFolderID == id { copy.discogsFolderID = nil }
                     } else {
                         copy.discogsActive = false; copy.discogsFolderID = nil
-                        copy.lastDiscogsSync = now; result.collectionRemoved += 1
+                        result.collectionRemoved += 1
                     }
                 }
                 if snapshot.scope == .collection || snapshot.scope == .all || snapshot.scope == .folder(0) { account.lastCollectionSync = now }
@@ -422,7 +419,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                     let entry = indexed[dto.id] ?? WantlistEntry(owner: owner, release: metadata, releaseID: dto.id)
                     if indexed[dto.id] == nil { result.wantsAdded += 1 }
                     context.insert(entry); entry.release = metadata; entry.dateAdded = dto.date_added
-                    entry.rating = dto.rating; entry.notes = dto.notes; entry.lastDiscogsSync = now
+                    entry.notes = dto.notes
                 }
                 for entry in existing where !ids.contains(entry.releaseID) { context.delete(entry); result.wantsRemoved += 1 }
                 // A release that was only wanted (never owned) goes with its last want.

@@ -129,8 +129,6 @@ enum DemoData {
             let added = calendar.date(byAdding: .day, value: -daysAgo, to: now) ?? now
             copy.discogsDateAdded = added.formatted(.iso8601)
             copy.discogsFolderID = album.genres.contains("Electronic") ? 2 : album.year < 1980 ? 3 : 1
-            copy.lastDiscogsSync = now
-            if index % 4 == 0 { copy.discogsRating = 3 + index % 3 }
             context.insert(copy)
             copies.append((copy, album))
         }
@@ -173,7 +171,6 @@ enum DemoData {
             release.coverURL = DemoCover.url(artist: want.artist, title: want.title, seed: 100 + index * 3)
             let entry = WantlistEntry(owner: owner, release: release, releaseID: 5_000 + index)
             entry.dateAdded = calendar.date(byAdding: .day, value: -(index * 11 + 3), to: now)?.formatted(.iso8601)
-            entry.rating = index.isMultiple(of: 3) ? 4 : 0
             context.insert(entry)
         }
 
@@ -186,8 +183,7 @@ enum DemoData {
                                                    maximum: .init(amount: median * Decimal(1.8), currency: "EUR"))
             let date = calendar.date(byAdding: .month, value: month - 17, to: now) ?? now
             let records = max(1, count - (17 - month))
-            context.insert(CollectionValueSnapshot(owner: owner, date: date, value: value, count: records,
-                                                   unique: records - 1, signature: "demo-\(month)"))
+            context.insert(CollectionValueSnapshot(owner: owner, date: date, value: value, count: records, signature: "demo-\(month)"))
         }
         try context.save()
         return container

@@ -135,7 +135,7 @@ extension AllTests {
             #expect(try CollectionValueHistoryService.store(value: value(110), owner: "fixture", copies: [a, b], context: context, date: date.addingTimeInterval(86400)))
             let stored = try ModelContext(context.container).fetch(FetchDescriptor<CollectionValueSnapshot>(sortBy: [SortDescriptor(\.date)]))
             #expect(stored.count == 4); #expect(stored.last?.collectionItemCount == 2)
-            #expect(stored.last?.uniqueReleaseCount == 1); #expect(stored.last?.averagePerItem == 55)
+            #expect(stored.last?.averagePerItem == 55)
         }
         @Test func snapshotReplacementSameCountAndCurrencyIsolation() throws {
             let context = ModelContext(try LibraryStorage.makeContainer(inMemory: true))
@@ -147,7 +147,7 @@ extension AllTests {
             #expect(try CollectionValueHistoryService.store(value: value(), owner: "other", copies: [b], context: context, date: date))
         }
         @Test func averageWithoutItemsIsMissing() throws {
-            let snapshot = CollectionValueSnapshot(owner: "x", date: .now, value: try value(), count: 0, unique: 0, signature: "")
+            let snapshot = CollectionValueSnapshot(owner: "x", date: .now, value: try value(), count: 0, signature: "")
             #expect(snapshot.averagePerItem == nil)
         }
         @Test func genresMultiGenresStylesAndDuplicates() throws {
@@ -282,11 +282,11 @@ extension AllTests {
                 c.discogsInstanceID = 1; c.discogsOwner = "fixture"; c.discogsActive = true
                 container.mainContext.insert(c)
                 container.mainContext.insert(LibrarySchemaV2.WantlistEntry(owner: "fixture", release: release, releaseID: 42))
-                container.mainContext.insert(DiscogsAccount(username: "fixture"))
-                container.mainContext.insert(DiscogsFolder(owner: "fixture", id: 1, name: "Folder", count: 1))
+                container.mainContext.insert(LibrarySchemaV2.DiscogsAccount(username: "fixture"))
+                container.mainContext.insert(LibrarySchemaV2.DiscogsFolder(owner: "fixture", id: 1, name: "Folder", count: 1))
                 try container.mainContext.save(); return c.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let context = container.mainContext
             let c = try #require(context.fetch(FetchDescriptor<RecordCopy>()).first)
@@ -312,11 +312,11 @@ extension AllTests {
                 copy.discogsInstanceID = 1; copy.discogsOwner = "fixture"; copy.discogsActive = true
                 copy.notes = "BLEIBT"
                 container.mainContext.insert(copy)
-                container.mainContext.insert(CollectionValueSnapshot(owner: "fixture", date: .now, value: try value(), count: 1, unique: 1, signature: "seed"))
+                container.mainContext.insert(LibrarySchemaV3.CollectionValueSnapshot(owner: "fixture", date: .now, value: try value(), count: 1, unique: 1, signature: "seed"))
                 try container.mainContext.save()
                 return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
             let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
             let context = container.mainContext
@@ -347,7 +347,7 @@ extension AllTests {
                 return (reserved.id, normal.id)
             }
 
-            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
             let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
             try LibraryStorage.prepareShelves(in: container.mainContext)

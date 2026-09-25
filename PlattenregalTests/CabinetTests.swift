@@ -44,7 +44,7 @@ extension AllTests {
                 try context.save()
                 return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
                                                configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             try LibraryStorage.prepareShelves(in: container.mainContext)

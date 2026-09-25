@@ -61,9 +61,9 @@ Ein eigener Kontext erfährt nicht, dass Platten anderswo gelöscht wurden. Nach
 | `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
-| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V13, Verhalten beim Zurücksetzen (28 Tests) |
+| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen (28 Tests) |
 
-Das Modell `ReleaseMarketValue` stammt aus der früheren Einzelpreis-Funktion. Es bleibt im Datenbankschema, damit bestehende Datenbanken ohne Migration weiter öffnen, wird aber nicht mehr befüllt; „Alles zurücksetzen“ leert es.
+Das Modell `ReleaseMarketValue` aus der früheren Einzelpreis-Funktion ist seit Schema V15 entfernt; die Migration verwirft seine Zeilen.
 
 ## Demo
 

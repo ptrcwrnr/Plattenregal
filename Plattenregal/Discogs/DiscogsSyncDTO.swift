@@ -3,10 +3,6 @@ import Foundation
 nonisolated struct DiscogsIdentity: Decodable, Sendable { let id: Int; let username: String }
 nonisolated struct DiscogsFoldersResponse: Decodable, Sendable { let folders: [DiscogsFolderDTO] }
 nonisolated struct DiscogsFolderDTO: Codable, Sendable { let id: Int; let name: String; let count: Int }
-nonisolated struct DiscogsNote: Codable, Sendable, Equatable {
-    let field_id: Int
-    let value: String
-}
 nonisolated struct DiscogsBasicInformation: Codable, Sendable {
     struct Artist: Codable, Sendable {
         let id: Int?
@@ -72,14 +68,11 @@ nonisolated struct DiscogsCollectionDTO: Decodable, Sendable {
     let instance_id: Int
     let folder_id: Int
     let date_added: String
-    let rating: Int
-    let notes: [DiscogsNote]?
     let basic_information: DiscogsBasicInformation
 }
 nonisolated struct DiscogsWantDTO: Decodable, Sendable {
     let id: Int
     let date_added: String
-    let rating: Int
     let notes: String?
     let basic_information: DiscogsBasicInformation
 }

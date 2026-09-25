@@ -11,10 +11,10 @@ extension AllTests {
                 genres: ["Electronic"], styles: ["Trance"], cover_image: "https://example.com/cover", thumb: "https://example.com/thumb", resource_url: "https://api.discogs.com/releases/\(id)", master_id: 123)
         }
         private func entry(_ instance: Int = 100, release: Int = 42, folder: Int = 1) -> DiscogsCollectionDTO {
-            .init(id: release, instance_id: instance, folder_id: folder, date_added: "2026-09-20T08:00:00+02:00", rating: 4, notes: [.init(field_id: 3, value: "Discogs note")], basic_information: basic(release))
+            .init(id: release, instance_id: instance, folder_id: folder, date_added: "2026-09-20T08:00:00+02:00", basic_information: basic(release))
         }
         private func want(_ id: Int = 42) -> DiscogsWantDTO {
-            .init(id: id, date_added: "2026-09-20T08:00:00+02:00", rating: 3, notes: "Want note", basic_information: basic(id))
+            .init(id: id, date_added: "2026-09-20T08:00:00+02:00", notes: "Want note", basic_information: basic(id))
         }
         @discardableResult private func merge(_ container: ModelContainer, collection: [DiscogsCollectionDTO]? = nil, wants: [DiscogsWantDTO]? = nil,
             folders: [DiscogsFolderDTO]? = nil, scope: DiscogsSyncScope = .all, owner: String = "fixture") throws -> DiscogsSyncSummary {
@@ -75,7 +75,7 @@ extension AllTests {
             let copy = try #require(copies(c).first)
             #expect(summary.collectionAdded == 1); #expect(copy.discogsInstanceID == 100)
             #expect(copy.release?.discogsID == 42); #expect(copy.release?.masterID == 123)
-            #expect(copy.discogsRating == 4); #expect(copy.shelf == nil); #expect(copy.positionInShelf == 0)
+            #expect(copy.shelf == nil); #expect(copy.positionInShelf == 0)
         }
         @Test func collectionSyncUsesArtistNameVariationShownOnRelease() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -83,8 +83,8 @@ extension AllTests {
                 artists: [.init(id: 4711, name: "Joris Biesmans", anv: "Biesmans", join: nil)], year: 2021,
                 labels: nil, formats: nil, genres: nil, styles: nil, cover_image: nil, thumb: nil,
                 resource_url: nil, master_id: nil)
-            let item = DiscogsCollectionDTO(id: 42, instance_id: 100, folder_id: 1, date_added: "2022-10-21", rating: 0,
-                notes: nil, basic_information: displayedArtist)
+            let item = DiscogsCollectionDTO(id: 42, instance_id: 100, folder_id: 1, date_added: "2022-10-21",
+                basic_information: displayedArtist)
 
             try merge(c, collection: [item])
 
@@ -99,8 +99,8 @@ extension AllTests {
                 artists: [.init(id: 4711, name: "Canonical Artist", anv: "  ", join: nil)], year: nil,
                 labels: nil, formats: nil, genres: nil, styles: nil, cover_image: nil, thumb: nil,
                 resource_url: nil, master_id: nil)
-            let item = DiscogsCollectionDTO(id: 42, instance_id: 100, folder_id: 1, date_added: "2026-09-21", rating: 0,
-                notes: nil, basic_information: displayedArtist)
+            let item = DiscogsCollectionDTO(id: 42, instance_id: 100, folder_id: 1, date_added: "2026-09-21",
+                basic_information: displayedArtist)
 
             try merge(c, collection: [item])
 
@@ -135,7 +135,7 @@ extension AllTests {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, folders: [.init(id: 9, name: "Trance", count: 1)])
             let f = try #require(ModelContext(c).fetch(FetchDescriptor<DiscogsFolder>()).first)
-            #expect(f.folderID == 9); #expect(f.name == "Trance"); #expect(f.lastSync != nil)
+            #expect(f.folderID == 9); #expect(f.name == "Trance"); #expect(f.count == 1)
         }
         @Test func renamedFolderPreservesStableIdentity() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -238,7 +238,7 @@ extension AllTests {
                 copy.notes = "Preserve"; copy.purchasePrice = 12
                 container.mainContext.insert(copy); try container.mainContext.save(); return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
             let migrated = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let copy = try #require(copies(migrated).first)
             #expect(copy.id == id); #expect(copy.positionInShelf == 37); #expect(copy.shelf?.number == 6)
@@ -266,7 +266,7 @@ extension AllTests {
                 context.insert(LibrarySchemaV10.RecordCopy(release: manual, shelf: shelf, position: 2))
                 try context.save(); return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
             let migrated = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
                                               configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let context = ModelContext(migrated)

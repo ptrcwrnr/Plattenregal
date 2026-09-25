@@ -85,9 +85,6 @@ nonisolated struct Track: Codable, Hashable, Sendable {
     var duration: String
 }
 
-typealias DiscogsFolder = LibrarySchemaV2.DiscogsFolder
-typealias DiscogsAccount = LibrarySchemaV2.DiscogsAccount
-
 extension DiscogsAccount {
     /// The account the app currently mirrors: the one synced most recently.
     /// Copies of an earlier account stay in the store but aren't shown.

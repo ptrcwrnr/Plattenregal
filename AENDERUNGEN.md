@@ -1,3 +1,16 @@
+# Schema V15: nur noch, was die App nutzt · 25.09.2026
+
+- **Neues, in sich vollständiges Schema V15** (leichte Migration von V14). Entfernt, weil nirgends gelesen:
+  - Exemplar: Discogs-Bewertung, Discogs-Notizfelder, Zeitpunkt des letzten Abgleichs.
+  - Wantlist-Eintrag: Bewertung, Zeitpunkt des letzten Abgleichs (die Notiz bleibt – sie steht in der Wantlist-Ansicht).
+  - Discogs-Ordner und -Konto: Zeitpunkt des letzten Ordner-Abgleichs.
+  - Wert-Verlauf: Anzahl verschiedener Releases.
+  - „Nicht im Regal“ und „Nicht auffindbar“: Anlegedatum.
+  - Das Modell `ReleaseMarketValue` (seit der früheren Einzelpreis-Funktion nie mehr befüllt).
+- Discogs-Abgleich liest Bewertung und Notizfelder der Collection nicht mehr (`DiscogsNote` entfällt); eine geänderte Bewertung zählt nicht mehr als „aktualisiert“.
+- Die älteren Schemata verweisen jetzt ausdrücklich auf ihre eigenen Modellversionen statt auf die globalen Namen, damit sie eingefroren bleiben.
+- Alle Typnamen (`Release`, `RecordCopy`, …, `DiscogsFolder`, `DiscogsAccount`) zeigen gesammelt auf V15.
+
 # Export ohne Zustand, Notizen und Bewertung · 25.09.2026
 
 - Die Spaltengruppe „Exemplar“ enthält nur noch Discogs-Ordner und Hinzufügedatum (Wantlist: Hinzufügedatum). „Zustand Platte“, „Zustand Hülle“, „Notizen“ und „Bewertung“ sind entfallen, ebenso `DiscogsNote.fieldTitle`.

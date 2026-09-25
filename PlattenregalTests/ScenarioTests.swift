@@ -146,7 +146,7 @@ extension AllTests {
                     formats: [.init(name: "Vinyl", qty: "1", descriptions: ["LP", "Album"])], genres: release % 2 == 0 ? ["Electronic"] : ["Electronic", "Rock"],
                     styles: [["Ambient", "Techno"], ["Krautrock"], []][release % 3], cover_image: nil, thumb: nil, resource_url: nil, master_id: nil)
                 return DiscogsCollectionDTO(id: release, instance_id: index, folder_id: 1, date_added: "2020-01-01T10:00:00+01:00",
-                                            rating: index % 6, notes: [.init(field_id: 3, value: "=Notiz \(index)")], basic_information: basic)
+                                            basic_information: basic)
             }
             let snapshot = DiscogsSyncSnapshot(username: "big", userID: 1, fingerprint: "big", scope: .collection,
                                                folders: [.init(id: 0, name: "All", count: 10_000), .init(id: 1, name: "Uncategorized", count: 10_000)],

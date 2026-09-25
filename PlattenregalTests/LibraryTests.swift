@@ -431,7 +431,7 @@ extension AllTests {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: directory) }
-            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
             let config = ModelConfiguration(schema: schema, url: directory.appendingPathComponent("Test.store"), cloudKitDatabase: .none)
             let id: UUID = try autoreleasepool {
                 let first = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)

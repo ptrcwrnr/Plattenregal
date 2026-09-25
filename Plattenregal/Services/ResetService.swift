@@ -127,7 +127,6 @@ struct ResetService {
             for row in try context.fetch(FetchDescriptor<OptimizationExclusion>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<MissingCopyMark>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<CollectionValueSnapshot>()) { context.delete(row) }
-            for row in try context.fetch(FetchDescriptor<ReleaseMarketValue>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<DiscogsFolder>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<DiscogsAccount>()) { context.delete(row) }
             for cabinet in try context.fetch(FetchDescriptor<Cabinet>()) { context.delete(cabinet) }
