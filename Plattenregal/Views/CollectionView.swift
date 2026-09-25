@@ -120,7 +120,7 @@ struct CollectionView: View {
             (analyticsIDs == nil || analyticsIDs!.contains(copy.id)) &&
             copy.isInCurrentCollection(owner: owner)
         }
-        base = showsAlphabetIndex ? SortingService.sortedByAlphabetSection(matched) : SortingService.sorted(matched, by: .artistAZ)
+        base = showsAlphabetIndex ? SortingService.sortedByAlphabetSection(matched) : SortingService.sorted(matched)
         searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
         letters = showsAlphabetIndex
             ? Dictionary(base.map { ($0.id, SortingService.alphabetSection(for: $0.release?.displayArtist ?? "")) }, uniquingKeysWith: { a, _ in a })

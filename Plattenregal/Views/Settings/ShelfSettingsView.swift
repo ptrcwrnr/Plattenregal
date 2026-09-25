@@ -14,7 +14,6 @@ struct ShelfSettingsView: View {
     @State private var adding = false
     @State private var error: String?
     @State private var labels = ShelfLabels()
-    @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
     @FocusState private var stripFocused: Bool
 

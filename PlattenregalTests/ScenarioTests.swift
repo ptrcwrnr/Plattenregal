@@ -162,7 +162,7 @@ extension AllTests {
             try cabinets.add(name: "Keller", columns: 6, rows: 6)
             let shelves = Shelf.inUse(try context.fetch(FetchDescriptor<Shelf>()))
             let copies = try context.fetch(FetchDescriptor<RecordCopy>())
-            let sorted = measure("Alphabetisch sortieren") { SortingService.sorted(copies, by: .artistAZ) }
+            let sorted = measure("Alphabetisch sortieren") { SortingService.sorted(copies) }
             // All but 100 placed alphabetically, as someone sorting in by hand would.
             let placed = Array(sorted.prefix(9_900))
             let perShelf = Int((Double(placed.count) / Double(shelves.count)).rounded(.up))

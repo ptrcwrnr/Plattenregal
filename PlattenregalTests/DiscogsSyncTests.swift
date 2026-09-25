@@ -91,7 +91,7 @@ extension AllTests {
             let synced = try #require(copies(c).first)
             #expect(synced.release?.artist == "Biesmans")
             let caribou = RecordCopy(release: Release(artist: "Caribou", title: "Album"), instanceID: 2, owner: "fixture")
-            #expect(SortingService.sorted([caribou, synced], by: .artistAZ).compactMap { $0.release?.artist } == ["Biesmans", "Caribou"])
+            #expect(SortingService.sorted([caribou, synced]).compactMap { $0.release?.artist } == ["Biesmans", "Caribou"])
         }
         @Test func collectionSyncFallsBackToCanonicalArtistForBlankVariation() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -320,7 +320,7 @@ extension AllTests {
             newer.dateAdded = "2026-09-21T10:30:00Z"
             c.mainContext.insert(older); c.mainContext.insert(newer)
 
-            #expect(WantlistPresentation.entries([older, newer], matching: "").map(\.releaseID) == [2, 1])
+            #expect(WantlistPresentation.sorted([older, newer]).map(\.releaseID) == [2, 1])
             #expect(SortingService.alphabetSection(for: newerRelease.displayArtist) == "A")
         }
         @Test func wantlistPresentationSearchesMetadataCaseAndAccentInsensitively() throws {
@@ -330,13 +330,18 @@ extension AllTests {
             let entry = WantlistEntry(owner: "fixture", release: release, releaseID: 17)
             c.mainContext.insert(entry)
 
-            #expect(WantlistPresentation.entries([entry], matching: "royksopp").map(\.releaseID) == [17])
-            #expect(WantlistPresentation.entries([entry], matching: "WALL").map(\.releaseID) == [17])
-            #expect(WantlistPresentation.entries([entry], matching: "missing").isEmpty)
-            // Same rules as the app's search: words in any order, "ss" finds "ß".
-            #expect(WantlistPresentation.entries([entry], matching: "sound royksopp").map(\.releaseID) == [17])
+            // The wantlist page searches a `SearchIndex` over `searchText`.
+            func finds(_ query: String) -> Bool {
+                SearchIndex([entry], id: \.releaseID, text: WantlistPresentation.searchText)
+                    .matches(17, SearchIndex<Int>.words(query))
+            }
+            #expect(finds("royksopp"))
+            #expect(finds("WALL"))
+            #expect(!finds("missing"))
+            // Words in any order, "ss" finds "ß".
+            #expect(finds("sound royksopp"))
             release.tracks = [Track(position: "A1", title: "So Easy", duration: ""), Track(position: "B2", title: "Straßenbahn", duration: "")]
-            #expect(WantlistPresentation.matches(entry, query: "strassenbahn"))
+            #expect(finds("strassenbahn"))
             #expect(release.track(matching: "strassenbahn")?.position == "B2")
             #expect(release.track(matching: "royksopp") == nil)
         }

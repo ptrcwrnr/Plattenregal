@@ -1,55 +1,5 @@
 import Foundation
 import Observation
-import SwiftData
-
-@Observable final class MetadataRefreshService {
-    var busy = false
-    var error: String?
-    func refresh(_ releases: [Release], context: ModelContext) async {
-        guard !busy else { return }; busy = true; error = nil; defer { busy = false }
-        let synced = releases.filter { !$0.isFresh && $0.basicInformation != nil }
-        if !synced.isEmpty {
-            DiscogsSyncService.shared.start(.collection, container: context.container)
-        }
-        for release in releases where !release.isFresh && release.basicInformation == nil {
-            let id = release.discogsID
-            do {
-                let dto = try await DiscogsAPIClient.shared.release(id: id)
-                guard !release.isDeleted else { continue }
-                try PositionService(context: context).save { dto.apply(to: release) }
-            } catch is CancellationError { return }
-            catch { self.error = error.reportedMessage() }
-        }
-    }
-}
-
-extension MetadataRefreshService {
-    /// Reloads the Discogs data of the given releases right away, fresh or
-    /// not — for "Discogs-Daten aktualisieren" on selected records.
-    func reload(_ releases: [Release], context: ModelContext) async {
-        guard !busy else { return }; busy = true; error = nil
-        defer { busy = false; LibraryChanges.shared.libraryDidChange() }
-        var failed = 0, total = 0
-        var reason: String?
-        AppLog.info("Discogs", "Release-Daten neu laden: \(releases.count) Release(s)")
-        for release in releases {
-            let id = release.discogsID
-            total += 1
-            do {
-                let dto = try await DiscogsAPIClient.shared.release(id: id)
-                guard !release.isDeleted else { continue }
-                try PositionService(context: context).save { dto.apply(to: release) }
-            } catch is CancellationError { return }
-            catch { failed += 1; reason = error.reportedMessage() }
-        }
-        // One message for the whole selection, saying how much went through.
-        if failed > 0, let reason {
-            error = total == 1 ? reason
-                : failed == total ? "Keine der \(total) Platten konnte aktualisiert werden. " + reason
-                : "\(failed) von \(total) Platten konnten nicht aktualisiert werden, die übrigen schon. " + reason
-        }
-    }
-}
 
 @Observable final class DiscogsSettingsModel {
     var token = ""
@@ -140,22 +90,19 @@ extension MetadataRefreshService {
     /// Runs the test so it can be cancelled from the settings. `busy` is set
     /// right here, not once the task runs: a quick second click must not
     /// start another task and leave "Abbrechen" pointing at the wrong one.
-    func startTest() {
-        guard let candidate = beginTest() else { return }
-        testTask = Task { await runTest(candidate) }
+    /// Returns the running test (`nil` when there was nothing to test), so
+    /// callers can wait for its outcome.
+    @discardableResult func startTest() -> Task<Void, Never>? {
+        guard let candidate = beginTest() else { return nil }
+        let task = Task { await runTest(candidate) }
+        testTask = task
+        return task
     }
     func cancelTest() {
         testTask?.cancel()
     }
     /// The field is only cleared once the keychain entry is really gone.
     func remove() { persist("") }
-    /// Tests the typed token before it replaces the stored one: a token Discogs
-    /// rejects never overwrites a working one. When Discogs just can't be
-    /// reached, the token is saved anyway so it can be entered offline.
-    func test() async {
-        guard let candidate = beginTest() else { return }
-        await runTest(candidate)
-    }
     /// The trimmed token to test, with `busy` set; `nil` if nothing to test.
     private func beginTest() -> String? {
         let candidate = token.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -171,6 +118,9 @@ extension MetadataRefreshService {
         busy = true
         return candidate
     }
+    /// Tests the typed token before it replaces the stored one: a token Discogs
+    /// rejects never overwrites a working one. When Discogs just can't be
+    /// reached, the token is saved anyway so it can be entered offline.
     private func runTest(_ candidate: String) async {
         defer { busy = false; testTask = nil }
         do {

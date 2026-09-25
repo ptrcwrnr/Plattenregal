@@ -104,21 +104,14 @@ extension AllTests {
             try service.unplace(available)
             try service.unplace(sold)
 
-            #expect(ShelfAssignmentPresentation.availableCopies(
-                    [assigned, elsewhere, available, sold],
-                    for: shelves[0],
-                    matching: ""
+            #expect(ShelfAssignmentPresentation.candidates(
+                    [assigned, elsewhere, available, sold], owner: nil, excluding: []
                 ).map(\.id) == [available.id])
 
             let secondContext = ModelContext(container)
-            let restoredShelves = try secondContext.fetch(
-                FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\Shelf.number)])
-            )
             let restoredCopies = try secondContext.fetch(FetchDescriptor<RecordCopy>())
-            #expect(!(ShelfAssignmentPresentation.availableCopies(
-                    restoredCopies,
-                    for: restoredShelves[0],
-                    matching: ""
+            #expect(!(ShelfAssignmentPresentation.candidates(
+                    restoredCopies, owner: nil, excluding: []
                 ).contains { $0.id == assigned.id }))
         }
         @Test func reservedShelfAndInvalidPositionDoNotMutate() throws {
@@ -150,7 +143,7 @@ extension AllTests {
             #expect(b.positionInShelf == 1)
             let excluded = Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID))
             #expect(excluded == [a.id, loose.id])
-            #expect(ShelfAssignmentPresentation.availableCopies([a, b, loose], for: shelves[2], matching: "", excluding: excluded).isEmpty)
+            #expect(ShelfAssignmentPresentation.candidates([a, b, loose], owner: nil, excluding: excluded).isEmpty)
 
             // Placing a copy again brings it back into the allocation.
             try service.move(a, to: shelves[2], position: 1)
@@ -209,7 +202,7 @@ extension AllTests {
             #expect(other.isInCurrentCollection(owner: nil))
 
             try service.unplace([current, other])
-            #expect(ShelfAssignmentPresentation.availableCopies([current, other], for: shelves[1], matching: "", owner: "me").map(\.id) == [current.id])
+            #expect(ShelfAssignmentPresentation.candidates([current, other], owner: "me", excluding: []).map(\.id) == [current.id])
         }
         @Test func errorsReachTheUserInPlainGerman() {
             // The app's own errors keep their text.
@@ -317,7 +310,7 @@ extension AllTests {
             // "Fach sortieren" would put it too.
             #expect(AlphabeticalPlacement.position(for: loose, in: shelves[0]) == 2)
             try service.move(loose, to: shelves[0], position: 3)
-            try service.sort(shelves[0], by: .artistAZ)
+            try service.sortAlphabetically(shelves[0])
             #expect(service.ordered(shelves[0]).map(\.id) == [abba.id, loose.id, zappa.id])
         }
         @Test func shelfNameAndReservationAreStored() throws {
@@ -362,10 +355,11 @@ extension AllTests {
             let z = try add(service, shelves[0], "ZZ Top")
             let k = try add(service, shelves[0], "kraftwerk", "Computerwelt")
             let d = try add(service, shelves[0], "Depeche Mode", "Violator")
-            #expect(SortingService.sorted([z, k, d], by: .artistAZ).map(\.id) == [d.id, k.id, z.id])
-            #expect(SortingService.matches(d, query: "depeche violator"))
-            #expect(!(SortingService.matches(k, query: "violator")))
-            try service.sort(shelves[0], by: .artistAZ)
+            #expect(SortingService.sorted([z, k, d]).map(\.id) == [d.id, k.id, z.id])
+            let index = SearchIndex([z, k, d], id: \.id, text: SortingService.searchText)
+            #expect(index.matches(d.id, SearchIndex<UUID>.words("depeche violator")))
+            #expect(!index.matches(k.id, SearchIndex<UUID>.words("violator")))
+            try service.sortAlphabetically(shelves[0])
             #expect(service.ordered(shelves[0]).map(\.id) == [d.id, k.id, z.id])
         }
         @Test func alphabetNavigationNormalizesArtistsAndGroupsNonLetters() {

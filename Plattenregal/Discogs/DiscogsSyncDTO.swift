@@ -3,7 +3,19 @@ import Foundation
 nonisolated struct DiscogsIdentity: Decodable, Sendable { let id: Int; let username: String }
 nonisolated struct DiscogsFoldersResponse: Decodable, Sendable { let folders: [DiscogsFolderDTO] }
 nonisolated struct DiscogsFolderDTO: Codable, Sendable { let id: Int; let name: String; let count: Int }
-nonisolated struct DiscogsNote: Codable, Sendable, Equatable { let field_id: Int; let value: String }
+nonisolated struct DiscogsNote: Codable, Sendable, Equatable {
+    let field_id: Int
+    let value: String
+    /// Discogs' three default collection fields; custom fields keep their number.
+    var fieldTitle: String {
+        switch field_id {
+        case 1: "Zustand Platte"
+        case 2: "Zustand Hülle"
+        case 3: "Notizen"
+        default: "Feld \(field_id)"
+        }
+    }
+}
 nonisolated struct DiscogsBasicInformation: Codable, Sendable {
     struct Artist: Codable, Sendable {
         let id: Int?

@@ -382,24 +382,11 @@ private struct ShelfAssignmentRow: View {
 }
 
 enum ShelfAssignmentPresentation {
-    static func availableCopies(
-        _ copies: [RecordCopy],
-        for shelf: Shelf,
-        matching query: String,
-        owner: String? = nil,
-        excluding excluded: Set<UUID> = []
-    ) -> [RecordCopy] {
-        // Only copies without a shelf that aren't marked "Nicht im Regal". Moving
-        // between shelves happens by taking a
-        // copy out (trash) and adding it here. Reads the copy → shelf side of the
-        // relationship, which PositionService writes directly; the inverse
-        // `shelf.copies` can lag one update cycle behind.
-        sortedByArtist(
-            candidates(copies, owner: owner, excluding: excluded)
-                .filter { query.isEmpty || SortingService.matches($0, query: query) }
-        )
-    }
-
+    /// Only copies without a shelf that aren't marked "Nicht im Regal". Moving
+    /// between shelves happens by taking a copy out (trash) and adding it
+    /// here. Reads the copy → shelf side of the relationship, which
+    /// PositionService writes directly; the inverse `shelf.copies` can lag
+    /// one update cycle behind.
     static func candidates(_ copies: [RecordCopy], owner: String?, excluding excluded: Set<UUID>) -> [RecordCopy] {
         copies.filter { isCandidate($0, owner: owner, excluding: excluded) }
     }

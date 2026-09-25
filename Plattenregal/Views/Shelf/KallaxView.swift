@@ -43,7 +43,6 @@ struct KallaxView: View {
     @State private var searchIndex = SearchIndex<UUID>()
     /// Set when records change; the index is rebuilt on the next search only.
     @State private var searchIndexStale = true
-    @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
     @State private var focusCopy: RecordCopy?
     /// While the search field has focus, ⌘Z belongs to its text, not to the
@@ -292,7 +291,7 @@ struct KallaxView: View {
         ) {
             Button("Fach alphabetisch sortieren") {
                 if let shelf = sortingShelf, !shelf.isDeleted, shelf.modelContext != nil {
-                    do { try PositionService(context: context).sort(shelf, by: .artistAZ) }
+                    do { try PositionService(context: context).sortAlphabetically(shelf) }
                     catch { self.error = error.reportedMessage() }
                 }
                 sortingShelf = nil

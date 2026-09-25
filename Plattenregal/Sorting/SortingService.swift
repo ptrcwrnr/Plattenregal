@@ -1,9 +1,5 @@
 import Foundation
 
-enum RecordSort {
-    case artistAZ, year
-}
-
 enum SortingService {
     static let alphabetNavigationSymbols = ["#"] + (65...90).compactMap(UnicodeScalar.init).map(String.init)
 
@@ -20,22 +16,20 @@ enum SortingService {
         return String(first)
     }
 
-    static func sorted(_ copies: [RecordCopy], by order: RecordSort) -> [RecordCopy] {
+    /// By artist, then title (`sortKey`); ties by ID, so the order is stable.
+    static func sorted(_ copies: [RecordCopy]) -> [RecordCopy] {
         // Everything the comparison needs is read once per item: a SwiftData
         // property read costs microseconds, and a sort does ~n·log n comparisons
-        // (10 000 records: 1.5 s before, most of it reading `id` and `year`).
-        let items = copies.map { copy in
-            (copy: copy, key: sortKey(copy), year: order == .year ? copy.release?.year ?? Int.max : 0, tie: copy.id.uuidString)
-        }
+        // (10 000 records: 1.5 s before, most of it reading `id`).
+        let items = copies.map { copy in (copy: copy, key: sortKey(copy), tie: copy.id.uuidString) }
         return items.sorted { a, b in
-            if a.year != b.year { return a.year < b.year }
             let comparison = a.key.localizedStandardCompare(b.key)
             if comparison != .orderedSame { return comparison == .orderedAscending }
             return a.tie < b.tie
         }
         .map(\.copy)
     }
-    /// Sorted by artist like `sorted(_:by: .artistAZ)`, but grouped by the
+    /// Sorted by artist like `sorted(_:)`, but grouped by the
     /// alphabet index's sections ("#" first, then A–Z), so every record sits
     /// under the letter the index jumps to — also names the collation puts
     /// elsewhere ("Þeyr" behind Z, non-Latin scripts at the end).
@@ -44,7 +38,7 @@ enum SortingService {
         let sections = copies.map { order[alphabetSection(for: $0.release?.displayArtist ?? "")] ?? 0 }
         let rank = Dictionary(zip(copies.map(\.id), sections), uniquingKeysWith: { a, _ in a })
         var buckets = Array(repeating: [RecordCopy](), count: alphabetNavigationSymbols.count)
-        for copy in sorted(copies, by: .artistAZ) { buckets[rank[copy.id] ?? 0].append(copy) }
+        for copy in sorted(copies) { buckets[rank[copy.id] ?? 0].append(copy) }
         return buckets.flatMap { $0 }
     }
     /// Artist, then title — the one key every alphabetical order in the app
@@ -53,11 +47,6 @@ enum SortingService {
     static func sortKey(_ copy: RecordCopy) -> String {
         guard let r = copy.release else { return "" }
         return r.displayArtist.trimmingCharacters(in: .whitespacesAndNewlines) + "\t" + r.displayTitle
-    }
-    static func matches(_ copy: RecordCopy, query: String) -> Bool {
-        guard copy.release != nil else { return false }
-        let text = searchText(copy)
-        return query.split(whereSeparator: \.isWhitespace).allSatisfy { text.localizedStandardContains(String($0)) }
     }
     /// Everything a collection search looks at, including the track titles.
     static func searchText(_ copy: RecordCopy) -> String {

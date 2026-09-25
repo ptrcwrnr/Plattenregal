@@ -172,7 +172,7 @@ struct CollectionExportService {
             if groups.contains(.copy) {
                 let notes = Self.notes(copy.discogsNotes)
                 let other = notes.filter { $0.field_id != 1 && $0.field_id != 2 }
-                    .map { $0.field_id == 3 ? $0.value : "\(RecordDetailView.noteTitle($0.field_id)): \($0.value)" }
+                    .map { $0.field_id == 3 ? $0.value : "\($0.fieldTitle): \($0.value)" }
                 values += [notes.first { $0.field_id == 1 }?.value ?? "",
                            notes.first { $0.field_id == 2 }?.value ?? "",
                            other.joined(separator: " · "),
@@ -213,7 +213,7 @@ struct CollectionExportService {
     /// Shelf order walks cabinet by cabinet, the compartments in reading order and each one front to
     /// back; records without a place follow alphabetically.
     private func ordered(_ copies: [RecordCopy], by order: ExportOrder) -> [RecordCopy] {
-        let alphabetical = SortingService.sorted(copies, by: .artistAZ)
+        let alphabetical = SortingService.sorted(copies)
         guard order == .shelf else { return alphabetical }
         // Sort keys read once per record, not per comparison (`Shelf.physicalOrder`
         // plus the position; shelf numbers are unique).

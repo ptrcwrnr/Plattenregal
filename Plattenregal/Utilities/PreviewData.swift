@@ -1,60 +1,8 @@
 import SwiftUI
 import SwiftData
 
-private struct MetadataClockKey: EnvironmentKey {
-    static let defaultValue = Date.now
-}
-extension EnvironmentValues {
-    var metadataClock: Date {
-        get { self[MetadataClockKey.self] }
-        set { self[MetadataClockKey.self] = newValue }
-    }
-}
-
 #if DEBUG
 enum PreviewData {
-    static var statisticsContainer: ModelContainer {
-        let container = container
-        let context = container.mainContext
-        do {
-            // A few dozen extra records so charts and the donut have something to show.
-            let shelves = try context.fetch(FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\Shelf.number)]))
-            let artists = ["Kraftwerk", "Depeche Mode", "Moderat", "Röyksopp", "Air", "Boards of Canada", "Aphex Twin", "Portishead"]
-            for index in 0..<36 {
-                let release = Release(discogsID: index + 1, artist: artists[index % artists.count], title: "Demo-Album \(index + 1)")
-                release.year = 1972 + (index * 7) % 53
-                try PositionService(context: context).insert(release: release, shelf: shelves[index % shelves.count], position: 1)
-            }
-            // A second cabinet, so the shelf page shows its cabinet switcher.
-            let flur = try CabinetService(context: context).add(name: "Flur", columns: 2, rows: 4)
-            for (index, artist) in ["Moby", "Nena", "Orbital", "Pet Shop Boys", "Yello", "Zola Jesus"].enumerated() {
-                let release = Release(discogsID: 900 + index, artist: artist, title: "Flur-Album")
-                try PositionService(context: context).insert(release: release, shelf: flur.orderedShelves[index / 2], position: index % 2 + 1)
-            }
-            // Exercise the grouped cover tile and its per-copy popover in previews.
-            let firstCopy = try context.fetch(FetchDescriptor<RecordCopy>()).first!
-            try PositionService(context: context).insert(release: firstCopy.release!, shelf: shelves[1], position: 1)
-            let copies = try context.fetch(FetchDescriptor<RecordCopy>())
-            let account = DiscogsAccount(username: "Demo · Beispieldaten")
-            context.insert(account)
-            for (index, copy) in copies.enumerated() {
-                copy.discogsInstanceID = index + 1; copy.discogsOwner = account.username; copy.discogsActive = true
-                let month = String(format: "%02d", index % 12 + 1)
-                copy.discogsDateAdded = "\(2024 + index % 3)-\(month)-15T12:00:00+02:00"
-                copy.release?.fetchedAt = .now
-                copy.release?.genres = [["Electronic"], ["Electronic", "Rock"], ["Electronic", "Pop"], ["Hip Hop"], ["Jazz"]][index % 5]
-                copy.release?.styles = [["Synth-pop"], ["House", "Downtempo"], ["Techno"], ["Ambient"], ["Trip Hop"], ["IDM"], ["Electro"], ["Krautrock"], ["Deep House"]][index % 9]
-                copy.release?.country = ["Germany", "UK", "France", "US"][index % 4]; copy.release?.label = ["Mute", "Warp", "Kling Klang", "Virgin", "Monkeytown"][index % 5]
-            }
-            for index in 0..<12 {
-                let amount = Decimal(80 + index * 8)
-                let value = try DiscogsCollectionValue(minimum: .init(amount: amount / 2, currency: "EUR"), median: .init(amount: amount, currency: "EUR"), maximum: .init(amount: amount * 2, currency: "EUR"))
-                let date = Calendar.current.date(byAdding: .month, value: index - 11, to: Date())!
-                context.insert(CollectionValueSnapshot(owner: account.username, date: date, value: value, count: 30 + index, unique: 30 + index, signature: "demo"))
-            }
-            try context.save(); return container
-        } catch { fatalError("Statistics preview failed: \(error)") }
-    }
     static var container: ModelContainer {
         do {
             let container = try LibraryStorage.makeContainer(inMemory: true)

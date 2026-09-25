@@ -219,6 +219,22 @@ extension AllTests {
             container.mainContext.insert(try makeCopy()); try container.mainContext.save()
             return container
         }
+        /// The page's records live in a context of their own, which can't
+        /// load anything deleted elsewhere. After "Alles zurücksetzen" the
+        /// model must hold none of them any more – before the page is drawn.
+        @Test @MainActor func statisticsForgetTheirRecordsOnReset() async throws {
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            container.mainContext.insert(try makeCopy()); try container.mainContext.save()
+            let model = StatisticsViewModel()
+            await model.reload(container: container)
+            #expect(model.copies.count == 1)
+            let version = model.version
+            try ResetService(context: container.mainContext).deleteLibrary()
+            NotificationCenter.default.post(name: .plattenregalDidReset, object: nil)
+            #expect(model.copies.isEmpty && model.copiesByID.isEmpty && model.history.isEmpty)
+            #expect(model.version > version)
+            #expect(!model.calculating)
+        }
         @Test func collectionValueAPIAndDailyOpenDoesNotRepeatRequest() async throws {
             let api = api(), container = try await authenticatedContainer(api)
             StatisticsURLProtocol.log.clear()

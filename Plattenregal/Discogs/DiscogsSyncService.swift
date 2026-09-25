@@ -4,7 +4,7 @@ import Observation
 import OSLog
 
 nonisolated enum DiscogsSyncScope: Equatable, Sendable {
-    case collection, wantlist, all, folder(Int), release(Int)
+    case collection, wantlist, all, folder(Int)
     /// For the protocol (`AppLog`).
     var logName: String {
         switch self {
@@ -12,7 +12,6 @@ nonisolated enum DiscogsSyncScope: Equatable, Sendable {
         case .wantlist: "Wantlist"
         case .all: "Alles"
         case .folder(let id): "Ordner \(id)"
-        case .release(let id): "Release \(id)"
         }
     }
 }
@@ -24,7 +23,6 @@ nonisolated struct DiscogsSyncSnapshot: Sendable {
     var folders: [DiscogsFolderDTO]?
     var collection: [DiscogsCollectionDTO]?
     var wants: [DiscogsWantDTO]?
-    var detail: DiscogsReleaseDTO?
 }
 nonisolated struct DiscogsSyncSummary: Sendable {
     var collectionAdded = 0, collectionUpdated = 0, collectionRemoved = 0
@@ -38,7 +36,6 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         switch scope {
         case .collection, .folder: Self.added(collectionAdded)
         case .wantlist: Self.added(wantsAdded)
-        case .release: "Veröffentlichung aktualisiert"
         case .all: description
         }
     }
@@ -145,8 +142,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 }
             }
             // "abgeschlossen" only once the tracklists are through as well.
-            if case .release = scope { finish() }
-            else { startTracklists(container: container) }
+            startTracklists(container: container)
             return true
         } catch is CancellationError {
             AppLog.info("Sync", "Abgebrochen, nichts gespeichert (\(scope.logName))")
@@ -191,9 +187,6 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         if scope == .wantlist || scope == .all {
             status = "Wantlist wird geladen"
             snapshot.wants = try await api.wants(username: username)
-        }
-        if case .release(let id) = scope {
-            status = "Veröffentlichung wird geladen"; snapshot.detail = try await api.release(id: id)
         }
         guard try await api.credentialFingerprint() == fingerprint else { throw DiscogsError.accountChanged }
         return snapshot
@@ -439,9 +432,6 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                     context.delete(release)
                 }
                 account.lastWantlistSync = now
-            }
-            if let detail = snapshot.detail {
-                for release in releases where release.discogsID == detail.id { detail.apply(to: release) }
             }
             account.userID = snapshot.userID; account.credentialFingerprint = snapshot.fingerprint
             if snapshot.scope == .all { account.lastFullSync = now }

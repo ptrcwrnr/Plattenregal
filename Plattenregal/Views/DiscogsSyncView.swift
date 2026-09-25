@@ -265,7 +265,7 @@ struct WantlistView: View {
     private func rebuild() {
         let owner = owner
         let owned = owner.map { owner in entries.filter { $0.owner == owner } } ?? entries
-        sortedEntries = WantlistPresentation.entries(owned, matching: "")
+        sortedEntries = WantlistPresentation.sorted(owned)
         searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
         loaded = true
         applyQuery()
@@ -450,10 +450,10 @@ struct WantlistView: View {
 }
 
 enum WantlistPresentation {
-    static func entries(_ entries: [WantlistEntry], matching query: String) -> [WantlistEntry] {
-        let words = SearchIndex<Int>.words(query)
-        let filtered = words.isEmpty ? entries : entries.filter { matches($0, words: words) }
-        return filtered.sorted { lhs, rhs in
+    /// By alphabet section, artist, title – the order of the alphabet index.
+    /// Searching goes through a `SearchIndex` over `searchText`.
+    static func sorted(_ entries: [WantlistEntry]) -> [WantlistEntry] {
+        entries.sorted { lhs, rhs in
             let leftArtist = (lhs.release?.displayArtist ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             let rightArtist = (rhs.release?.displayArtist ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             let leftSection = SortingService.alphabetSection(for: leftArtist)
@@ -467,18 +467,6 @@ enum WantlistPresentation {
             if titleOrder != .orderedSame { return titleOrder == .orderedAscending }
             return lhs.releaseID < rhs.releaseID
         }
-    }
-
-    /// Same rules as the app's search (`SearchIndex`): every word must occur,
-    /// case, accents and "ß"/"ss" folded.
-    static func matches(_ entry: WantlistEntry, query: String) -> Bool {
-        let words = SearchIndex<Int>.words(query)
-        return words.isEmpty || matches(entry, words: words)
-    }
-
-    private static func matches(_ entry: WantlistEntry, words: [String]) -> Bool {
-        let text = SearchIndex<Int>.fold(searchText(entry))
-        return words.allSatisfy { text.contains($0) }
     }
 
     /// Everything a wantlist search looks at, including the track titles.

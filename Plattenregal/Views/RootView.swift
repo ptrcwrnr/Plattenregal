@@ -42,7 +42,6 @@ extension EnvironmentValues {
 
 struct RootView: View {
     @Environment(\.modelContext) private var context
-    @Query private var releases: [Release]
     @State private var destination: Destination? = {
         #if DEBUG
         if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-page=") }),
@@ -56,7 +55,6 @@ struct RootView: View {
     @State private var highlight: UUID?
     /// A record without a shelf whose alphabetical place the shelf page should show.
     @State private var placing: UUID?
-    @State private var refresh = MetadataRefreshService()
     // Loaded once here, alongside collection startup, so the Statistik page is
     // already populated the moment the user first navigates to it instead of
     // recomputing everything from scratch on every visit.
@@ -104,32 +102,23 @@ struct RootView: View {
         .onGeometryChange(for: CGFloat.self, of: \.size.width) { windowWidth = $0 }
     }
 
+    /// Every page is built once and kept alive; switching only changes which
+    /// one is visible. Pages therefore keep their loaded data, sorting and
+    /// scroll position, and clicking through the sidebar is instant instead
+    /// of rebuilding (and re-sorting the whole collection) on every visit.
     private func detailContent(size: CGSize) -> some View {
-        VStack(spacing: 0) {
-            if let error = refresh.error {
-                AppBanner(message: error, kind: .warning, actionTitle: "Erneut versuchen", action: { refreshNow() }, onDismiss: { refresh.error = nil })
-                    .padding(.horizontal, AppStyle.pagePadding)
-                    .padding(.top, AppStyle.itemSpacing)
-                    .transition(AppStyle.funnelTransition())
-            }
-            // Every page is built once and kept alive; switching only changes which
-            // one is visible. Pages therefore keep their loaded data, sorting and
-            // scroll position, and clicking through the sidebar is instant instead
-            // of rebuilding (and re-sorting the whole collection) on every visit.
-            ZStack {
-                ForEach(Destination.allCases) { page in
-                    let active = page == activePage
-                    pageContent(page)
-                        .environment(\.isActivePage, active)
-                        .animation(AppStyle.fadeAnimation) { $0.opacity(active ? 1 : 0) }
-                        .allowsHitTesting(active)
-                        .disabled(!active)
-                        .accessibilityHidden(!active)
-                }
+        ZStack {
+            ForEach(Destination.allCases) { page in
+                let active = page == activePage
+                pageContent(page)
+                    .environment(\.isActivePage, active)
+                    .animation(AppStyle.fadeAnimation) { $0.opacity(active ? 1 : 0) }
+                    .allowsHitTesting(active)
+                    .disabled(!active)
+                    .accessibilityHidden(!active)
             }
         }
         .frame(width: size.width, height: size.height, alignment: .topLeading)
-        .animation(AppStyle.standardAnimation, value: refresh.error)
     }
 
     private var sidebarButton: some View {
@@ -160,7 +149,6 @@ struct RootView: View {
         placing = copy.id
         destination = .shelf
     }
-    private func refreshNow() { Task { await refresh.refresh(releases, context: context) } }
 }
 
 /// "Übersicht": collection and wantlist behind one

@@ -111,10 +111,6 @@ extension View {
         glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
     }
 
-    func appGlassButton() -> some View {
-        buttonStyle(.glass)
-    }
-
     /// Standard hover feedback (subtle background tint) shared by every interactive
     /// card/row in the app, so hover always looks and animates the same way.
     func appHoverable(_ hovering: Bool, cornerRadius: CGFloat = AppStyle.cardRadius) -> some View {
@@ -421,19 +417,6 @@ private struct CoverGridMotion: ViewModifier {
             .clipped()
             .onAppear { previousWidth = width }
             .onChange(of: width) { _, new in previousWidth = new }
-    }
-}
-
-extension View {
-    /// Same quiet chrome as the segmented section picker, for header controls
-    /// that sit next to it (record count, sort menu).
-    /// `prominent` fills it with the accent colour, like the selected segment.
-    func headerPill(prominent: Bool = false) -> some View {
-        padding(.horizontal, 8)
-            .frame(height: AppStyle.controlHeight)
-            .foregroundStyle(prominent ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
-            .background(prominent ? AnyShapeStyle(Color(nsColor: .controlAccentColor)) : AnyShapeStyle(Color.primary.opacity(0.05)),
-                        in: RoundedRectangle(cornerRadius: 6))
     }
 }
 

@@ -19,6 +19,27 @@ import Observation
     private var generation = 0
     /// Keeps the context of `copies` alive while they are shown.
     @ObservationIgnored private var readContext: ModelContext?
+
+    init() {
+        // `copies` live in their own context, which doesn't learn about
+        // deletions elsewhere: after "Alles zurücksetzen", loading a shelf or
+        // release of one of them crashes ("backing data could no longer be
+        // found"). The reset posts on the main thread before anything is drawn
+        // again, so everything is dropped right there; the page reloads on the
+        // save that came with it.
+        NotificationCenter.default.addObserver(forName: .plattenregalDidReset, object: nil, queue: nil) { [weak self] _ in
+            MainActor.assumeIsolated { self?.forget() }
+        }
+    }
+
+    /// Drops every loaded record; an unfinished `reload` won't commit either.
+    func forget() {
+        generation += 1; calculating = false
+        copies = []; copiesByID = [:]; history = []
+        statistics = CollectionStatistics()
+        readContext = nil
+        version += 1
+    }
     func reload(container: ModelContainer) async {
         generation += 1; let current = generation
         calculating = true

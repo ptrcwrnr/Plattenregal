@@ -50,7 +50,7 @@ extension AllTests {
             model.loadIfNeeded()
             #expect(changes == 0)
             model.token = "typo"
-            await model.test()            // rejected: nothing stored, nothing announced
+            await model.startTest()?.value            // rejected: nothing stored, nothing announced
             #expect(changes == 0)
             keychain.token = "good"; model.load()
             model.remove()
@@ -62,7 +62,7 @@ extension AllTests {
             let model = model(keychain, accepted: { accepted.append($0) }) { _ in "listener" }
             model.loadIfNeeded()
             model.token = "new"
-            await model.test()
+            await model.startTest()?.value
             #expect(accepted == [DiscogsAPIClient.fingerprint(of: "new")])
         }
 
@@ -72,7 +72,7 @@ extension AllTests {
             let model = model(keychain, syncRunning: { running }) { _ in running = true; return "listener" }
             model.loadIfNeeded()
             model.token = "new"
-            await model.test()
+            await model.startTest()?.value
             #expect(keychain.token == "good")
             #expect(model.failed)
             #expect(model.verified == nil)
@@ -82,9 +82,9 @@ extension AllTests {
             let model = model(keychain) { _ in try await Task.sleep(for: .seconds(30)); return "listener" }
             model.loadIfNeeded()
             model.token = "new"
-            let task = Task { await model.test() }
+            let task = model.startTest()
             try? await Task.sleep(for: .milliseconds(100))
-            task.cancel(); await task.value
+            model.cancelTest(); await task?.value
             #expect(keychain.token == "good")
             #expect(!model.busy)
             #expect(!model.failed)
@@ -108,7 +108,7 @@ extension AllTests {
             model.loadIfNeeded()
             #expect(model.storedFingerprint == DiscogsAPIClient.fingerprint(of: "good"))
             model.token = "new"
-            await model.test()
+            await model.startTest()?.value
             #expect(model.storedFingerprint == DiscogsAPIClient.fingerprint(of: "new"))
             model.remove()
             #expect(model.storedFingerprint == nil)
@@ -122,7 +122,7 @@ extension AllTests {
             // A line break or space inside (pasted wrongly) must never reach the HTTP header.
             for bad in ["abc\ndef", "abc def", "abc\u{0}def", "tökén"] {
                 model.token = bad
-                await model.test()
+                await model.startTest()?.value
                 #expect(!tested)
                 #expect(keychain.token == "good")
                 #expect(model.failed)
@@ -137,7 +137,7 @@ extension AllTests {
             let model = model(keychain) { _ in throw DiscogsError.unauthorized }
             model.loadIfNeeded()
             model.token = "typo"
-            await model.test()
+            await model.startTest()?.value
             #expect(keychain.token == "good")
             #expect(model.hasStoredToken)
             #expect(model.failed)
@@ -148,7 +148,7 @@ extension AllTests {
             let model = model(keychain) { _ in "listener" }
             model.loadIfNeeded()
             model.token = "  new \n"
-            await model.test()
+            await model.startTest()?.value
             #expect(keychain.token == "new")
             #expect(model.hasStoredToken)
             #expect(model.status == "Verbunden als listener")
@@ -158,7 +158,7 @@ extension AllTests {
             let model = model(keychain) { _ in throw DiscogsError.offline }
             model.loadIfNeeded()
             model.token = "new"
-            await model.test()
+            await model.startTest()?.value
             #expect(keychain.token == "new")
             #expect(model.hasStoredToken)
             #expect(model.failed)

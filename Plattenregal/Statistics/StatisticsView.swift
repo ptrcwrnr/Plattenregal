@@ -155,6 +155,12 @@ struct StatisticsView: View {
             Task { await model.reload(container: context.container) }
         }
         .onDisappear { reloadTask?.cancel() }
+        // The model already let go of its records (see `StatisticsViewModel.forget`).
+        .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in
+            opened = nil; filter = nil
+            // The Discogs account is gone as well.
+            Task { await model.initialLoad(container: context.container) }
+        }
         .sheet(item: $filter) { group in
             VStack(spacing: 0) {
                 AppSheetHeader(title: group.name, onClose: { filter = nil })

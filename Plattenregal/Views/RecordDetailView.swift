@@ -38,7 +38,7 @@ struct RecordDetailView: View {
                         Text(copy.discogsActive ? "In der Collection · Ordner „\(folderName)“" : "Nicht mehr in der Discogs-Collection")
                         Text("Bewertung: \(rating) · Hinzugefügt: \(DiscogsDate.parse(copy.discogsDateAdded)?.formatted(date: .abbreviated, time: .omitted) ?? "—")")
                         if let data = copy.discogsNotes, let notes = try? JSONDecoder().decode([DiscogsNote].self, from: data) {
-                            ForEach(notes.filter { !$0.value.isEmpty }, id: \.field_id) { Text("\(Self.noteTitle($0.field_id)): \($0.value)") }
+                            ForEach(notes.filter { !$0.value.isEmpty }, id: \.field_id) { Text("\($0.fieldTitle): \($0.value)") }
                         }
                     }
                     Divider()
@@ -72,21 +72,10 @@ struct RecordDetailView: View {
         guard let stars = copy.discogsRating, stars > 0 else { return "keine" }
         return String(repeating: "★", count: stars) + String(repeating: "☆", count: max(0, 5 - stars))
     }
-    /// Discogs' three default collection fields; custom fields keep their number.
-    static func noteTitle(_ field: Int) -> String {
-        switch field {
-        case 1: "Zustand Platte"
-        case 2: "Zustand Hülle"
-        case 3: "Notizen"
-        default: "Feld \(field)"
-        }
-    }
 }
 struct ReleaseMetadataView: View {
-    @Environment(\.metadataClock) private var metadataClock
     let release: Release
     var body: some View {
-        let _ = metadataClock
         VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
             HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
                 CoverView(url: release.coverURL, size: 220)
