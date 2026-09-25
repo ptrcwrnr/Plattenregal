@@ -26,82 +26,92 @@ struct RecordDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                     if let r = copy.release {
-                        ReleaseMetadataView(release: r)
+                        ReleaseHeaderView(release: r, collectionStatus: collectionStatus)
+                    }
+                    locationCard
+                    if let r = copy.release {
                         if !r.isFresh && !DemoMode.isActive {
                             // Just this release — `refresh` would start a sync of the whole collection.
                             GhostButton(title: "Discogs-Daten aktualisieren") { Task { await refresh.reload([r], context: context) } }
                                 .disabled(refresh.busy || DiscogsSyncService.shared.busy)
                         }
+                        if !r.tracks.isEmpty { TracklistView(tracks: r.tracks) }
                     }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Discogs").font(.headline)
-                        Text(copy.discogsActive ? "In der Collection · Ordner „\(folderName)“" : "Nicht mehr in der Discogs-Collection")
-                        Text("Bewertung: \(rating) · Hinzugefügt: \(DiscogsDate.parse(copy.discogsDateAdded)?.formatted(date: .abbreviated, time: .omitted) ?? "—")")
-                        if let data = copy.discogsNotes, let notes = try? JSONDecoder().decode([DiscogsNote].self, from: data) {
-                            ForEach(notes.filter { !$0.value.isEmpty }, id: \.field_id) { Text("\($0.fieldTitle): \($0.value)") }
-                        }
-                    }
-                    Divider()
-                    HStack {
-                        Label(ShelfRangeLabels.location(of: copy, labels: labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf), excluded: exclusions.contains { $0.copyID == copy.id }), systemImage: "square.grid.3x3").font(AppStyle.dialogTitle).foregroundStyle(.tint)
-                        Spacer()
-                        if let showShelf { GhostButton(title: copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen", action: showShelf) }
-                    }
-                    Grid(alignment: .leading, horizontalSpacing: 30, verticalSpacing: 12) {
-                        GridRow { Text("Zustand").foregroundStyle(.secondary); Text(copy.condition.isEmpty ? "—" : copy.condition) }
-                        GridRow { Text("Kaufpreis").foregroundStyle(.secondary); Text(copy.purchasePrice.map { $0.formatted(.currency(code: "EUR")) } ?? "—") }
-                        GridRow { Text("Kaufdatum").foregroundStyle(.secondary); Text(copy.purchaseDate?.formatted(date: .abbreviated, time: .omitted) ?? "—") }
-                        GridRow { Text("Hinzugefügt").foregroundStyle(.secondary); Text(copy.dateAdded.formatted(date: .abbreviated, time: .omitted)) }
-                    }
-                    Text("Notizen").font(.headline)
-                    Text(copy.notes.isEmpty ? "Noch keine Notizen." : copy.notes).textSelection(.enabled)
                     if let error = refresh.error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
                 }.padding(AppStyle.pagePadding)
                 .animation(AppStyle.standardAnimation, value: refresh.error)
             }
         }.frame(width: 800, height: 760)
+        .appGlassSurface(cornerRadius: 0)
+        .presentationBackground(.clear)
         .sheet(isPresented: $editing) { RecordEditor(copy: copy) }
     }
 
+    /// Where the copy stands, large and with the way to the shelf right next to it.
+    private var locationCard: some View {
+        let location = ShelfRangeLabels.location(
+            of: copy,
+            labels: labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf),
+            excluded: exclusions.contains { $0.copyID == copy.id }
+        )
+        return HStack(spacing: AppStyle.rowSpacing) {
+            Image(systemName: "square.grid.3x3.fill")
+                .font(.system(size: 30))
+                .foregroundStyle(copy.shelf == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Standort").font(.callout).foregroundStyle(.secondary)
+                Text(location).font(.title.weight(.semibold)).lineLimit(2)
+            }
+            Spacer(minLength: AppStyle.rowSpacing)
+            if let showShelf {
+                Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen", action: showShelf)
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
+            }
+        }
+        .padding(AppStyle.cardPadding + 4)
+        .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+    }
+
+    private var collectionStatus: String {
+        copy.discogsActive ? "Discogs-Ordner „\(folderName)“" : "Nicht mehr in der Discogs-Collection"
+    }
     private var folderName: String {
         guard let id = copy.discogsFolderID else { return "Unbekannt" }
         return folders.first { $0.folderID == id && $0.owner == copy.discogsOwner }?.name
             ?? (id == 1 ? "Uncategorized" : "Ordner \(id)")
     }
-    private var rating: String {
-        guard let stars = copy.discogsRating, stars > 0 else { return "keine" }
-        return String(repeating: "★", count: stars) + String(repeating: "☆", count: max(0, 5 - stars))
+}
+struct ReleaseHeaderView: View {
+    let release: Release
+    let collectionStatus: String
+    var body: some View {
+        HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
+            CoverView(url: release.coverURL, size: 220)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(release.displayArtist).font(.title2).foregroundStyle(.secondary)
+                Text(release.displayTitle).font(AppStyle.pageTitle).textSelection(.enabled)
+                Text([release.year.map(String.init), release.country.isEmpty ? nil : release.country, release.format].compactMap { $0 }.joined(separator: " · "))
+                Text(release.displayLabel).font(.headline)
+                Text(release.catalogNumber).foregroundStyle(.secondary)
+                Text(release.genres.joined(separator: " · "))
+                Text(release.styles.joined(separator: " · ")).foregroundStyle(.secondary)
+                Text(collectionStatus).foregroundStyle(.secondary)
+                if let url = release.sourceURL { Link("Pressung auf Discogs öffnen ↗", destination: url) }
+            }
+        }
     }
 }
-struct ReleaseMetadataView: View {
-    let release: Release
+struct TracklistView: View {
+    let tracks: [Track]
     var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-            HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
-                CoverView(url: release.coverURL, size: 220)
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(release.displayArtist).font(.title2).foregroundStyle(.secondary)
-                    Text(release.displayTitle).font(AppStyle.pageTitle).textSelection(.enabled)
-                    Text([release.year.map(String.init), release.country.isEmpty ? nil : release.country, release.format].compactMap { $0 }.joined(separator: " · "))
-                    Text(release.displayLabel).font(.headline)
-                    Text(release.catalogNumber).foregroundStyle(.secondary)
-                    Text(release.genres.joined(separator: " · "))
-                    Text(release.styles.joined(separator: " · ")).foregroundStyle(.secondary)
-                    if let url = release.sourceURL { Link("Pressung auf Discogs öffnen ↗", destination: url) }
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+            Text("Tracklist").font(.headline)
+            ForEach(Array(tracks.enumerated()), id: \.offset) { _, track in
+                HStack {
+                    Text(track.position).monospaced().foregroundStyle(.secondary).frame(width: 50, alignment: .leading)
+                    Text(track.title); Spacer(); Text(track.duration).monospacedDigit().foregroundStyle(.secondary)
                 }
-            }
-            if !release.tracks.isEmpty {
-                Text("Tracklist").font(.headline)
-                ForEach(Array(release.tracks.enumerated()), id: \.offset) { _, track in
-                    HStack {
-                        Text(track.position).monospaced().foregroundStyle(.secondary).frame(width: 50, alignment: .leading)
-                        Text(track.title); Spacer(); Text(track.duration).monospacedDigit().foregroundStyle(.secondary)
-                    }
-                }
-            }
-            if !release.isFresh {
-                Text("Gespeicherter Stand · wird beim nächsten Discogs-Abgleich aktualisiert.")
-                    .font(.caption).foregroundStyle(.secondary)
             }
         }
     }
@@ -109,10 +119,11 @@ struct ReleaseMetadataView: View {
 
 /// Compact popover for a single click on a cover in the overview: cover,
 /// label, year and the tracklist. Copies behind one cover share the release,
-/// so the first one stands for all of them.
+/// so the first one stands for all of them. `expand` opens the detail window.
 struct RecordPopover: View {
     @Environment(\.modelContext) private var context
     let copy: RecordCopy
+    var expand: (() -> Void)? = nil
     /// Tracklists are loaded after each collection sync; this only covers a
     /// record whose tracklist isn't there yet (e.g. while that is still running).
     @State private var loadingTracks = false
@@ -138,6 +149,15 @@ struct RecordPopover: View {
                     }
                     .font(.callout)
                     .padding(.top, AppStyle.tightSpacing)
+                }
+                Spacer(minLength: 0)
+                if let expand {
+                    Button(action: expand) {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    }
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                    .help("Details öffnen")
                 }
             }
 

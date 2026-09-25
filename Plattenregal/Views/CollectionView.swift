@@ -273,7 +273,10 @@ struct CollectionView: View {
                                                 }
                                             }
                                             .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
-                                                RecordPopover(copy: group.primary)
+                                                RecordPopover(copy: group.primary) {
+                                                    quickLook = nil
+                                                    opened = group.primary
+                                                }
                                             }
                                             .contextMenu { gridContextMenu(group, items: items) }
                                             .help("\(copy.release?.displayArtist ?? "Unbekannt") · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? " · \(group.copies.count) Exemplare" : "")")

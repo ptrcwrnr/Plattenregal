@@ -1,3 +1,9 @@
+# Detailfenster aufgeräumt, Standort prominent, Vergrößern im Popover · 25.09.2026
+
+- **Popover der Übersicht**: Ein runder Glas-Knopf oben rechts (↖↘) öffnet das Detailfenster. Damit ist es auch in der Coveransicht ohne Rechtsklick erreichbar.
+- **Detailfenster**: Zustand, Kaufpreis, Kaufdatum, Hinzugefügt, Notizen, Discogs-Notizfelder, Bewertung und der Hinweis „Gespeicherter Stand …“ sind entfernt. Das Fenster liegt auf Glas.
+- **Standort**: eigene Glas-Karte direkt unter Cover und Metadaten, Fach groß, daneben „Im Regal anzeigen“ bzw. „Platz im Regal finden“ als hervorgehobener Knopf. Der Discogs-Ordner steht jetzt klein bei den Metadaten.
+
 # Platten-Popover der Übersicht verschlankt · 25.09.2026
 
 - Ein Klick auf ein Cover zeigt nur noch Cover, Interpret, Titel, Label, Jahr, Style, Trennlinie und Tracklist. Standort und der Schalter „Nicht im Regal“ sind entfallen; „Nicht im Regal“ bleibt über Rechtsklick, Mehrfachauswahl, Bearbeiten und die Fach-Tabelle erreichbar.
