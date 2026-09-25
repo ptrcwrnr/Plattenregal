@@ -167,7 +167,7 @@ Finale Version: 66 Tests ohne Fehler; Debug- und Release-Build erfolgreich. Deta
 10. Wantlist entfernen ohne Löschung des Releases.
 11. Zwei Instanzen einer identischen Release-ID.
 12. Pagination-Abbruch auf Seite 2 ohne lokale Änderungen.
-13. KALLAX, Position, Notizen, Favorit, Zustand, Kaufpreis, Kaufdatum und lokales Hinzufügedatum bleiben bei Update, Verschiebung und Entfernung erhalten.
+13. Fach und Position bleiben bei Update, Verschiebung und Entfernung erhalten.
 14. Einzelordner-Sync entfernt keine Collection-Mitgliedschaft anderer/verschobener Exemplare.
 15. Wechsel Wantlist → Collection.
 16. Isolation verschiedener Accounts.

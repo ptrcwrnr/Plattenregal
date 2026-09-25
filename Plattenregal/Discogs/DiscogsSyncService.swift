@@ -401,7 +401,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                     copy.discogsFolderID = dto.folder_id; copy.discogsDateAdded = dto.date_added
                     copy.discogsRating = dto.rating; copy.discogsNotes = notes
                     copy.discogsActive = true; copy.lastDiscogsSync = now
-                    // Never write shelf, positionInShelf, notes, condition or purchase data.
+                    // Never write shelf or positionInShelf.
                 }
                 for copy in owned where copy.discogsActive && !ids.contains(copy.discogsInstanceID) {
                     if case .folder(let id) = snapshot.scope, id != 0 {

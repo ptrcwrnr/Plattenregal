@@ -1,3 +1,10 @@
+# Eigene Angaben pro Exemplar entfernt · 25.09.2026
+
+- **Zustand, Kaufpreis, Kaufdatum, Notizen und das lokale Hinzufügedatum** sind aus der App verschwunden: aus dem Bearbeiten-Fenster, den Demo-Daten und dem Datenmodell. Neues Schema **V14** (leichte Migration von V13); vorhandene Werte werden dabei verworfen. Export und Sicherung enthielten sie nicht – die Export-Spalten „Zustand“, „Notizen“ und „Bewertung“ kommen aus Discogs und bleiben.
+- **Bearbeiten-Fenster**: nur noch „Nicht im Regal“.
+- Entfallen: `PriceInput` samt Test, die `edit:`-Parameter von `PositionService.move`, `unplace` und `setExcluded` (nur noch vom Bearbeiten-Fenster genutzt).
+- README und VALIDIERUNG angepasst.
+
 # Detailfenster aufgeräumt, Standort prominent, Vergrößern im Popover · 25.09.2026
 
 - **Popover der Übersicht**: Ein runder Glas-Knopf oben rechts (↖↘) öffnet das Detailfenster. Damit ist es auch in der Coveransicht ohne Rechtsklick erreichbar.

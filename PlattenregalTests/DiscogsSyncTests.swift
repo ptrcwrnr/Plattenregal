@@ -47,15 +47,15 @@ extension AllTests {
             catch is CancellationError {}
             #expect(try copies(c).first?.discogsActive == true)
         }
-        @Test func unplacedCopyCanBeEditedAndPlaced() throws {
+        @Test func unplacedCopyCanBePlaced() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry()])
             let copy = try #require(c.mainContext.fetch(FetchDescriptor<RecordCopy>()).first)
             let service = PositionService(context: c.mainContext)
-            try service.unplace(copy) { copy.notes = "Local unplaced note" }
+            try service.unplace(copy)
             let shelf = try #require(c.mainContext.fetch(FetchDescriptor<Shelf>()).first)
             try service.move(copy, to: shelf, position: 1)
-            #expect(copy.positionInShelf == 1); #expect(copy.notes == "Local unplaced note")
+            #expect(copy.positionInShelf == 1)
             #expect(copy.discogsInstanceID == 100)
         }
         @Test func wantlistFailureAfterCompleteCollectionDoesNotCommit() async throws {
@@ -188,22 +188,17 @@ extension AllTests {
             #expect(Set(items.compactMap(\.discogsInstanceID)) == [100, 200])
             #expect(Set(items.compactMap { $0.release?.id }).count == 1)
         }
-        @Test func kallaxAndAllLocalFieldsSurviveUpdateAndRemoval() throws {
+        @Test func shelfPlaceSurvivesUpdateAndRemoval() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             let shelf = try #require(c.mainContext.fetch(FetchDescriptor<Shelf>()).first)
             try merge(c, collection: [entry()])
             let copy = try #require(c.mainContext.fetch(FetchDescriptor<RecordCopy>()).first)
-            try PositionService(context: c.mainContext).move(copy, to: shelf, position: 1) {
-                copy.notes = "LOCAL"; copy.condition = "Mint"; copy.purchasePrice = 37.5
-                copy.purchaseDate = Date(timeIntervalSince1970: 123); copy.dateAdded = Date(timeIntervalSince1970: 456)
-            }
+            try PositionService(context: c.mainContext).move(copy, to: shelf, position: 1)
             let id = copy.id; let shelfID = shelf.id
             try merge(c, collection: [entry()]); try merge(c, collection: [entry(folder: 9)]); try merge(c, collection: [])
             let restored = try #require(copies(c).first { $0.id == id })
             #expect(restored.shelf?.id == shelfID); #expect(restored.positionInShelf == 1)
-            #expect(restored.notes == "LOCAL"); #expect(restored.condition == "Mint")
-            #expect(restored.purchasePrice == 37.5); #expect(restored.purchaseDate == Date(timeIntervalSince1970: 123))
-            #expect(restored.dateAdded == Date(timeIntervalSince1970: 456)); #expect(restored.discogsActive == false)
+            #expect(restored.discogsActive == false)
             try merge(c, collection: [entry()]); #expect(try copies(c).count == 1)
         }
         @Test func folderSyncDoesNotRemoveCollectionMembershipOrOtherFolders() throws {
@@ -243,13 +238,12 @@ extension AllTests {
                 copy.notes = "Preserve"; copy.purchasePrice = 12
                 container.mainContext.insert(copy); try container.mainContext.save(); return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV13.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
             let migrated = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let copy = try #require(copies(migrated).first)
             #expect(copy.id == id); #expect(copy.positionInShelf == 37); #expect(copy.shelf?.number == 6)
-            #expect(copy.notes == "Preserve"); #expect(copy.purchasePrice == 12)
             try merge(migrated, collection: [entry()])
-            #expect(try copies(migrated).first?.notes == "Preserve")
+            #expect(try copies(migrated).first?.positionInShelf == 37)
         }
         @Test func v11MigrationDropsOnlyRecordsWithoutDiscogsIDs() throws {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -272,14 +266,14 @@ extension AllTests {
                 context.insert(LibrarySchemaV10.RecordCopy(release: manual, shelf: shelf, position: 2))
                 try context.save(); return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV13.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
             let migrated = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
                                               configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let context = ModelContext(migrated)
             let copies = try context.fetch(FetchDescriptor<RecordCopy>())
             #expect(copies.map(\.id) == [syncedID])
             #expect(copies.first?.discogsInstanceID == 100); #expect(copies.first?.discogsOwner == "fixture")
-            #expect(copies.first?.discogsActive == false); #expect(copies.first?.notes == "BLEIBT")
+            #expect(copies.first?.discogsActive == false)
             #expect(copies.first?.shelf?.number == 3)
             #expect(Set(try context.fetch(FetchDescriptor<Release>()).map(\.discogsID)) == [42, 43])
             #expect(try context.fetchCount(FetchDescriptor<WantlistEntry>()) == 1)

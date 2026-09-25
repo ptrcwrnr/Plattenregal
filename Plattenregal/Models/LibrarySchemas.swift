@@ -4,7 +4,7 @@ import OSLog
 
 // Every version of the SwiftData store, oldest first, and the plan that
 // migrates between them. The app opens the store with the newest version
-// (see LibraryStorage); the typealiases after V12 and V13 name its current models.
+// (see LibraryStorage); the typealiases after V14 name its current models.
 // Released versions stay frozen: changes go into a new VersionedSchema.
 
 // Freeze V1 when shipping. Future changes belong in a new VersionedSchema.
@@ -996,15 +996,6 @@ enum LibrarySchemaV12: VersionedSchema {
     }
 }
 
-// The current schema is V13 (see `LibraryStorage`). It only adds
-// `MissingCopyMark` and carries every other model over from V12 unchanged,
-// so these still name the V12 classes – they *are* the current models.
-typealias Release = LibrarySchemaV12.Release
-typealias RecordCopy = LibrarySchemaV12.RecordCopy
-typealias Shelf = LibrarySchemaV12.Shelf
-typealias WantlistEntry = LibrarySchemaV12.WantlistEntry
-typealias Cabinet = LibrarySchemaV12.Cabinet
-
 // V13 adds a local-only "Nicht auffindbar" mark for records that should stand
 // in a shelf but weren't found there while sorting. Stored separately (like
 // OptimizationExclusion), so every existing model is carried over unchanged.
@@ -1026,9 +1017,143 @@ enum LibrarySchemaV13: VersionedSchema {
 }
 typealias MissingCopyMark = LibrarySchemaV13.MissingCopyMark
 
+// V14 drops the copy's own purchase data (condition, price, purchase date,
+// notes, date added): Discogs is the only source, and the app no longer shows
+// or edits them. Only `RecordCopy` changes; the models around it are carried
+// over from V12 because their relationships point at this version's classes.
+enum LibrarySchemaV14: VersionedSchema {
+    static let versionIdentifier = Schema.Version(14, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [Release.self, RecordCopy.self, Shelf.self,
+         LibrarySchemaV2.DiscogsFolder.self, WantlistEntry.self, LibrarySchemaV2.DiscogsAccount.self,
+         CollectionValueSnapshot.self, ReleaseMarketValue.self,
+         OptimizationExclusion.self, Cabinet.self, MissingCopyMark.self]
+    }
+
+    @Model final class Cabinet {
+        @Attribute(.unique) var id: UUID
+        var name: String
+        var rows: Int
+        var columns: Int
+        /// Inactive cabinets keep their records but are hidden on the shelf
+        /// page and skipped when sorting in (e.g. records put into storage).
+        var isActive: Bool = true
+        var sortOrder: Int
+        @Relationship(deleteRule: .cascade, inverse: \Shelf.cabinet) var shelves: [Shelf] = []
+        init(name: String, rows: Int, columns: Int, sortOrder: Int) {
+            id = UUID(); self.name = name; self.rows = rows; self.columns = columns
+            self.sortOrder = sortOrder; isActive = true
+        }
+    }
+
+    @Model final class Release {
+        // One release per Discogs ID.
+        #Unique<Release>([\.discogsID])
+        @Attribute(.unique) var id: UUID
+        var discogsID: Int = 0
+        var masterID: Int?
+        var basicInformation: Data?
+        var artist: String
+        var title: String
+        var year: Int?
+        var label: String
+        var catalogNumber: String
+        var country: String
+        var format: String
+        var genres: [String]
+        var styles: [String]
+        var tracks: [Track]
+        var coverURL: String?
+        var fetchedAt: Date?
+        /// When the full Discogs release (tracklist, country) was last loaded.
+        /// `nil` = never; decides which tracklists to (re)load after a sync.
+        var detailsFetchedAt: Date?
+        @Relationship(deleteRule: .deny, inverse: \RecordCopy.release) var copies: [RecordCopy] = []
+        init(discogsID: Int, artist: String, title: String) {
+            id = UUID(); self.discogsID = discogsID; self.artist = artist; self.title = title
+            label = ""; catalogNumber = ""; country = ""; format = "Vinyl"
+            genres = []; styles = []; tracks = []
+        }
+        var isFresh: Bool { fetchedAt.map { Date().timeIntervalSince($0) < 6 * 3600 - 30 } ?? false }
+        // Stored names keep Discogs' "(3)" suffix (search and re-sync rely on the
+        // raw value); only what is shown drops it.
+        var displayArtist: String { artist.isEmpty ? "Unbekannter Interpret" : DiscogsName.clean(artist) }
+        var displayLabel: String { DiscogsName.clean(label) }
+        var displayTitle: String { title.isEmpty ? "Release #\(discogsID)" : title }
+        /// None in the demo: its sample IDs belong to unrelated releases on Discogs.
+        var sourceURL: URL? { DemoMode.isActive ? nil : URL(string: "https://www.discogs.com/release/\(discogsID)") }
+    }
+
+    @Model final class RecordCopy {
+        @Attribute(.unique) var id: UUID
+        var release: Release?
+        var shelf: Shelf?
+        var discogsInstanceID: Int = 0
+        var discogsOwner: String = ""
+        var discogsFolderID: Int?
+        var discogsDateAdded: String?
+        var discogsRating: Int?
+        var discogsNotes: Data?
+        var lastDiscogsSync: Date?
+        /// `false` once the copy left the collection (sold, other account); it
+        /// keeps its shelf place until removed on the shelf page.
+        var discogsActive: Bool = true
+        var positionInShelf: Int
+        init(release: Release, instanceID: Int, owner: String, shelf: Shelf? = nil, position: Int = 0) {
+            id = UUID(); self.release = release; self.shelf = shelf
+            discogsInstanceID = instanceID; discogsOwner = owner; discogsActive = true
+            positionInShelf = position
+        }
+    }
+
+    @Model final class Shelf {
+        @Attribute(.unique) var id: UUID
+        @Attribute(.unique) var number: Int
+        var row: Int
+        var column: Int
+        var name: String
+        /// Not meant for records (e.g. "Vivian"); skipped when sorting in.
+        var isReserved: Bool = false
+        /// Place inside the cabinet, 1…rows × columns in reading order.
+        var sortOrder: Int
+        var cabinet: Cabinet?
+        @Relationship(deleteRule: .deny, inverse: \RecordCopy.shelf) var copies: [RecordCopy] = []
+        init(number: Int, cabinet: Cabinet? = nil, slot: Int? = nil) {
+            let slot = slot ?? number
+            let columns = cabinet?.columns ?? ShelfGeometry.columns
+            id = UUID(); self.number = number; sortOrder = slot
+            row = (slot - 1) / columns + 1; column = (slot - 1) % columns + 1; name = ""
+        }
+        var title: String { name.isEmpty ? "Fach \(sortOrder)" : name }
+    }
+
+    // Carried over from V12 unchanged, other than pointing at this version's Release.
+    @Model final class WantlistEntry {
+        @Attribute(.unique) var key: String
+        var owner: String
+        var releaseID: Int
+        var release: Release?
+        var dateAdded: String?
+        var rating: Int?
+        var notes: String?
+        var lastDiscogsSync: Date?
+        init(owner: String, release: Release, releaseID: Int) {
+            self.owner = owner; self.release = release; self.releaseID = releaseID
+            key = "\(owner)-\(releaseID)"
+        }
+    }
+}
+
+// The current schema is V14 (see `LibraryStorage`).
+typealias Release = LibrarySchemaV14.Release
+typealias RecordCopy = LibrarySchemaV14.RecordCopy
+typealias Shelf = LibrarySchemaV14.Shelf
+typealias WantlistEntry = LibrarySchemaV14.WantlistEntry
+typealias Cabinet = LibrarySchemaV14.Cabinet
+
 enum LibraryMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [LibrarySchemaV1.self, LibrarySchemaV2.self, LibrarySchemaV3.self, LibrarySchemaV4.self, LibrarySchemaV5.self, LibrarySchemaV6.self, LibrarySchemaV7.self, LibrarySchemaV8.self, LibrarySchemaV9.self, LibrarySchemaV10.self, LibrarySchemaV11.self, LibrarySchemaV12.self, LibrarySchemaV13.self]
+        [LibrarySchemaV1.self, LibrarySchemaV2.self, LibrarySchemaV3.self, LibrarySchemaV4.self, LibrarySchemaV5.self, LibrarySchemaV6.self, LibrarySchemaV7.self, LibrarySchemaV8.self, LibrarySchemaV9.self, LibrarySchemaV10.self, LibrarySchemaV11.self, LibrarySchemaV12.self, LibrarySchemaV13.self, LibrarySchemaV14.self]
     }
     static var stages: [MigrationStage] {
         [.lightweight(fromVersion: LibrarySchemaV1.self, toVersion: LibrarySchemaV2.self),
@@ -1044,7 +1169,8 @@ enum LibraryMigrationPlan: SchemaMigrationPlan {
          // Cabinets are created (and existing compartments assigned to the
          // first one) in `LibraryStorage.prepareShelves`.
          .lightweight(fromVersion: LibrarySchemaV11.self, toVersion: LibrarySchemaV12.self),
-         .lightweight(fromVersion: LibrarySchemaV12.self, toVersion: LibrarySchemaV13.self)]
+         .lightweight(fromVersion: LibrarySchemaV12.self, toVersion: LibrarySchemaV13.self),
+         .lightweight(fromVersion: LibrarySchemaV13.self, toVersion: LibrarySchemaV14.self)]
     }
 
     // The Discogs IDs become required. Records without them (added by hand in

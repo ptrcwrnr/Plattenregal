@@ -131,11 +131,6 @@ enum DemoData {
             copy.discogsFolderID = album.genres.contains("Electronic") ? 2 : album.year < 1980 ? 3 : 1
             copy.lastDiscogsSync = now
             if index % 4 == 0 { copy.discogsRating = 3 + index % 3 }
-            if index % 5 == 0 {
-                copy.condition = "Very Good Plus (VG+)"
-                copy.purchasePrice = Decimal(18 + index % 20)
-                copy.purchaseDate = added
-            }
             context.insert(copy)
             copies.append((copy, album))
         }

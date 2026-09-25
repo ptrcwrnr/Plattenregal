@@ -19,26 +19,6 @@ extension AllTests {
         @discardableResult private func add(_ service: PositionService, _ shelf: Shelf, _ artist: String, _ title: String = "Album", at position: Int? = nil) throws -> RecordCopy {
             try service.insert(release: Release(artist: artist, title: title), shelf: shelf, position: position ?? shelf.copies.count + 1)
         }
-        @Test func priceInput() {
-            #expect(PriceInput.parse("")?.amount == nil)
-            #expect(PriceInput.parse("  ") == PriceInput.Parsed(amount: nil))
-            #expect(PriceInput.parse("24,99")?.amount == Decimal(string: "24.99"))
-            #expect(PriceInput.parse("24.99")?.amount == Decimal(string: "24.99"))
-            #expect(PriceInput.parse("24,99 €")?.amount == Decimal(string: "24.99"))
-            #expect(PriceInput.parse("€ 5")?.amount == 5)
-            #expect(PriceInput.parse("12,5")?.amount == Decimal(string: "12.5"))
-            #expect(PriceInput.parse("1.234,50")?.amount == Decimal(string: "1234.5"))
-            #expect(PriceInput.parse("1,234.50")?.amount == Decimal(string: "1234.5"))
-            #expect(PriceInput.parse("1.234")?.amount == 1234)
-            #expect(PriceInput.parse("1234")?.amount == 1234)
-            #expect(PriceInput.parse("-5") == nil)
-            #expect(PriceInput.parse("abc") == nil)
-            #expect(PriceInput.parse("12,345,6") == nil)
-            #expect(PriceInput.parse("1.2.3") == nil)
-            #expect(PriceInput.parse(",50") == nil)
-            #expect(PriceInput.parse("1.234,567") == nil)
-            #expect(PriceInput.parse("1.234.567")?.amount == 1234567)
-        }
         @Test func shelfGeometry() throws {
             let (container, shelves, _) = try fixture(); _ = container
             #expect(shelves.count == 12)
@@ -430,15 +410,14 @@ extension AllTests {
             #expect(restored.map(\.id) == [b.id, a.id])
             #expect(restored.map(\.positionInShelf) == [1, 2])
         }
-        @Test func rollbackRestoresPositionsAndMetadata() throws {
+        @Test func rollbackRestoresPositions() throws {
             let (container, shelves, service) = try fixture(); _ = container
             let a = try add(service, shelves[0], "A")
             #expect(throws: (any Error).self) { try service.save {
-                a.positionInShelf = 99; a.notes = "should not persist"
+                a.positionInShelf = 99
                 throw LibraryError.invalidPosition
             } }
             #expect(a.positionInShelf == 1)
-            #expect(a.notes == "")
         }
         @Test func normalization() throws {
             let (container, shelves, service) = try fixture(); _ = container
@@ -452,7 +431,7 @@ extension AllTests {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: directory) }
-            let schema = Schema(versionedSchema: LibrarySchemaV13.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
             let config = ModelConfiguration(schema: schema, url: directory.appendingPathComponent("Test.store"), cloudKitDatabase: .none)
             let id: UUID = try autoreleasepool {
                 let first = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)

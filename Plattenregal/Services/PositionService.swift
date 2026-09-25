@@ -73,7 +73,7 @@ struct PositionService {
     /// `found`: the record was just taken in hand and put there (sorting in),
     /// so a "Nicht auffindbar" mark goes in the same transaction. Plain
     /// moves (quick editor, undo) keep the mark.
-    func move(_ copy: RecordCopy, to shelf: Shelf, position: Int, found: Bool = false, edit: () -> Void = {}) throws {
+    func move(_ copy: RecordCopy, to shelf: Shelf, position: Int, found: Bool = false) throws {
         try validate(shelf: shelf, position: position, excluding: copy.id)
         let from = copy.shelf.map { "\(Self.name($0)), Position \(copy.positionInShelf)" } ?? "ohne Fach"
         var foundAgain = false
@@ -83,19 +83,18 @@ struct PositionService {
             copy.shelf = shelf
             destination.insert(copy, at: position - 1)
             if let oldShelf, oldShelf.id != shelf.id { renumber(ordered(oldShelf, excluding: copy.id)) }
-            renumber(destination); edit()
+            renumber(destination)
             try markExcluded([copy.id], false)
             if found { foundAgain = try markMissing([copy.id], false) }
         }
         AppLog.info("Regal", "\(Self.name(copy)): \(from) → \(Self.name(shelf)), Position \(position)\(foundAgain ? " · nicht mehr „Nicht auffindbar“" : "")")
     }
-    func unplace(_ copy: RecordCopy, edit: () -> Void = {}) throws {
+    func unplace(_ copy: RecordCopy) throws {
         let from = copy.shelf.map(Self.name) ?? "ohne Fach"
         try save {
             let oldShelf = copy.shelf
             copy.shelf = nil; copy.positionInShelf = 0
             if let oldShelf { renumber(ordered(oldShelf, excluding: copy.id)) }
-            edit()
         }
         AppLog.info("Regal", "\(Self.name(copy)) aus \(from) genommen")
     }
@@ -113,7 +112,7 @@ struct PositionService {
     /// Takes copies out of the shelf allocation entirely ("Nicht im Regal") or
     /// back in. Excluded copies are removed from their shelf and no longer count
     /// as waiting to be sorted in. Stored as `OptimizationExclusion` rows.
-    func setExcluded(_ copies: [RecordCopy], _ excluded: Bool, edit: () -> Void = {}) throws {
+    func setExcluded(_ copies: [RecordCopy], _ excluded: Bool) throws {
         try save {
             if excluded {
                 let sources = Dictionary(copies.compactMap { c in c.shelf.map { ($0.id, $0) } }, uniquingKeysWith: { a, _ in a }).values
@@ -126,7 +125,6 @@ struct PositionService {
             if excluded, try markMissing(Set(copies.map(\.id)), false) {
                 AppLog.info("Regal", "„Nicht auffindbar“ aufgehoben, weil „Nicht im Regal“ gesetzt wurde")
             }
-            edit()
         }
         AppLog.info("Regal", "\(excluded ? "Nicht im Regal" : "Wieder fürs Regal vorgesehen"): \(copies.map(Self.name).joined(separator: ", "))")
     }

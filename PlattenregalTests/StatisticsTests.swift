@@ -286,12 +286,11 @@ extension AllTests {
                 container.mainContext.insert(DiscogsFolder(owner: "fixture", id: 1, name: "Folder", count: 1))
                 try container.mainContext.save(); return c.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV13.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let context = container.mainContext
             let c = try #require(context.fetch(FetchDescriptor<RecordCopy>()).first)
             #expect(c.id == id); #expect(c.positionInShelf == 23); #expect(c.shelf?.number == 7)
-            #expect(c.notes == "LOCAL"); #expect(c.purchasePrice == Decimal(string: "23.45"))
             #expect(c.discogsInstanceID == 1); #expect(c.discogsOwner == "fixture")
             #expect(try context.fetchCount(FetchDescriptor<WantlistEntry>()) == 1)
             #expect(try context.fetchCount(FetchDescriptor<DiscogsAccount>()) == 1)
@@ -317,12 +316,12 @@ extension AllTests {
                 try container.mainContext.save()
                 return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV13.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
             let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
             let context = container.mainContext
             let copy = try #require(context.fetch(FetchDescriptor<RecordCopy>()).first)
-            #expect(copy.id == copyID); #expect(copy.shelf?.number == 4); #expect(copy.positionInShelf == 12); #expect(copy.notes == "BLEIBT")
+            #expect(copy.id == copyID); #expect(copy.shelf?.number == 4); #expect(copy.positionInShelf == 12)
             #expect(try context.fetchCount(FetchDescriptor<CollectionValueSnapshot>()) == 1)
             #expect(try context.fetchCount(FetchDescriptor<OptimizationExclusion>()) == 0)
             context.insert(OptimizationExclusion(copyID: copyID))
@@ -348,7 +347,7 @@ extension AllTests {
                 return (reserved.id, normal.id)
             }
 
-            let schema = Schema(versionedSchema: LibrarySchemaV13.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV14.self)
             let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
             try LibraryStorage.prepareShelves(in: container.mainContext)
