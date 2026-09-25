@@ -14,6 +14,13 @@ enum AppStyle {
     static let searchBarHeight: CGFloat = 34
     /// Wide enough for any query; wider only looks empty.
     static let searchBarMaxWidth: CGFloat = 480
+    /// A search bar sliding down out of the toolbar and back up, fading as it
+    /// goes; the page below follows with the same curve. Only a fade with
+    /// "Bewegung reduzieren".
+    static var searchBarAnimation: Animation { reduceMotion ? fadeAnimation : .smooth(duration: 0.35) }
+    static var searchBarTransition: AnyTransition {
+        reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity)
+    }
     static let cardPadding: CGFloat = 16
     static let sectionSpacing: CGFloat = 20
     static let rowSpacing: CGFloat = 12
@@ -238,7 +245,7 @@ struct SearchReveal: ViewModifier {
             .onChange(of: searchRequests?.count ?? 0) {
                 // Every page hears the request; only the visible one answers.
                 guard pageShown else { return }
-                withAnimation(AppStyle.standardAnimation) { isPresented = true }
+                withAnimation(AppStyle.searchBarAnimation) { isPresented = true }
                 // The field is inserted by this update; focus it once it exists.
                 DispatchQueue.main.async { focus.wrappedValue = true }
             }
@@ -250,7 +257,7 @@ struct SearchReveal: ViewModifier {
 
     private func hideIfEmpty() {
         guard isPresented, query.isEmpty else { return }
-        withAnimation(AppStyle.standardAnimation) { isPresented = false }
+        withAnimation(AppStyle.searchBarAnimation) { isPresented = false }
     }
 }
 

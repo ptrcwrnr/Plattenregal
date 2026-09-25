@@ -210,9 +210,8 @@ struct CollectionView: View {
                     otherSection: .wantlist
                 ) { pages.current = .wantlist }
                 .padding(.horizontal, AppStyle.pagePadding + 4)
-                .padding(.trailing, alphabetGutter)
                 .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
-                .transition(AppStyle.funnelTransition())
+                .transition(AppStyle.searchBarTransition)
             }
             if showsControls {
                 collectionControls(items: items)
@@ -397,7 +396,7 @@ struct CollectionView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         // The sync status line slides in/out and the content below follows smoothly.
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
-        .animation(AppStyle.standardAnimation, value: showsSearchBar)
+        .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .animation(AppStyle.standardAnimation, value: showsControls)
         .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
@@ -778,6 +777,9 @@ struct MatchedTrackLine: View {
 
 /// Search and the other section's matching results sit directly beside each other.
 /// The outlined result button appears only for a nonempty search with matches.
+/// The search bar of collection and wantlist, centered under the page switch
+/// in the toolbar. The button for the other page's hits hangs off its right
+/// end, so it never pushes the bar off center.
 struct OverviewSearchControl: View {
     let placeholder: String
     @Binding var query: String
@@ -791,32 +793,35 @@ struct OverviewSearchControl: View {
     }
 
     var body: some View {
-        // One glass container: the result button flows out of the search bar.
-        GlassEffectContainer(spacing: AppStyle.itemSpacing) {
-            HStack(spacing: AppStyle.itemSpacing) {
-                AppSearchField(placeholder: placeholder, text: $query, focus: focus)
-                    .frame(maxWidth: AppStyle.searchBarMaxWidth)
-                if showsOtherSection {
-                    Button(action: openOtherSection) {
-                        Text("\(otherCount) in der \(otherSection.rawValue)")
-                            .monospacedDigit()
-                            .lineLimit(1)
-                            .padding(.horizontal, 14)
-                            .frame(height: AppStyle.searchBarHeight)
-                            .foregroundStyle(.secondary)
-                            .contentShape(Capsule())
-                            .glassEffect(.regular.interactive(), in: .capsule)
+        AppSearchField(placeholder: placeholder, text: $query, focus: focus)
+            .frame(maxWidth: AppStyle.searchBarMaxWidth)
+            // A zero-width anchor on the bar's right edge; the button starts
+            // there and extends outward, so the bar stays centered.
+            .overlay(alignment: .trailing) {
+                Color.clear.frame(width: 0).overlay(alignment: .leading) {
+                    if showsOtherSection {
+                        Button(action: openOtherSection) {
+                            Text("\(otherCount) in der \(otherSection.rawValue)")
+                                .monospacedDigit()
+                                .lineLimit(1)
+                                .padding(.horizontal, 14)
+                                .frame(height: AppStyle.searchBarHeight)
+                                .foregroundStyle(.secondary)
+                                .contentShape(Capsule())
+                                .glassEffect(.regular.interactive(), in: .capsule)
+                        }
+                        .buttonStyle(.plain)
+                        .fixedSize()
+                        .padding(.leading, AppStyle.itemSpacing)
+                        .help("Treffer in der \(otherSection.rawValue) anzeigen")
+                        .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.rawValue) anzeigen")
+                        .transition(.opacity)
                     }
-                    .buttonStyle(.plain)
-                    .help("Treffer in der \(otherSection.rawValue) anzeigen")
-                    .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.rawValue) anzeigen")
-                    .transition(.opacity)
                 }
-                Spacer(minLength: 0)
             }
-        }
-        .font(.callout)
-        .animation(AppStyle.fadeAnimation, value: showsOtherSection)
+            .frame(maxWidth: .infinity)
+            .font(.callout)
+            .animation(AppStyle.fadeAnimation, value: showsOtherSection)
     }
 }
 

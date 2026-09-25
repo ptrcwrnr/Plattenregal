@@ -62,6 +62,8 @@ struct KallaxView: View {
     @FocusState private var searchFocused: Bool
     /// Whether ⌘F has revealed the search bar (see `SearchReveal`).
     @State private var searchPresented = false
+    /// Width of "Vermisst" and the sold-records note beside the search bar.
+    @State private var statusWidth: CGFloat = 0
     private var showsSearchBar: Bool { searchPresented || !searchQuery.isEmpty }
 
     /// The account the collection shows (see `DiscogsAccount.current`).
@@ -254,7 +256,7 @@ struct KallaxView: View {
         }
         .onChange(of: searchQuery) { applySearch() }
         .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: searchQuery)
-        .animation(AppStyle.standardAnimation, value: showsSearchBar)
+        .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         // Another account synced: other records count as in the collection.
         .onChange(of: owner) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         // Metadata and tracklist updates don't show up in `statsSignature`.
@@ -380,7 +382,10 @@ struct KallaxView: View {
         let sold = soldInShelves.count
         let hasStatus = !missing.isEmpty || sold > 0
         if showsSearchBar || hasStatus {
-            HStack(alignment: .center, spacing: AppStyle.rowSpacing) {
+            // The bar centered under the page switch in the toolbar, the status
+            // on the right; the bar keeps clear of the status on both sides,
+            // so it stays centered without running into it.
+            ZStack {
                 if showsSearchBar {
                     ShelfSearchField(
                         query: $searchQuery,
@@ -394,19 +399,23 @@ struct KallaxView: View {
                         place: startPlacement
                     )
                     .frame(maxWidth: AppStyle.searchBarMaxWidth)
-                    .transition(AppStyle.funnelTransition())
+                    .padding(.horizontal, statusWidth > 0 ? statusWidth + AppStyle.rowSpacing : 0)
+                    .transition(AppStyle.searchBarTransition)
                 }
-                Spacer(minLength: 0)
-                if !missing.isEmpty {
-                    MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
-                                         found: { setMissing($0, false) })
+                HStack(spacing: AppStyle.rowSpacing) {
+                    if !missing.isEmpty {
+                        MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
+                                             found: { setMissing($0, false) })
+                    }
+                    if sold > 0 {
+                        ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
+                            .frame(height: AppStyle.controlHeight)
+                    }
                 }
-                if sold > 0 {
-                    ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
-                        .frame(height: AppStyle.controlHeight)
-                }
+                .onGeometryChange(for: CGFloat.self, of: \.size.width) { statusWidth = $0 }
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .transition(AppStyle.funnelTransition())
+            .transition(AppStyle.searchBarTransition)
         }
     }
 

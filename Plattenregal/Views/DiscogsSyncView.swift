@@ -209,8 +209,7 @@ struct WantlistView: View {
                     otherSection: .collection
                 ) { pages.current = .collection }
                 .padding(.horizontal, pageMargin)
-                .padding(.trailing, alphabetGutter)
-                .transition(AppStyle.funnelTransition())
+                .transition(AppStyle.searchBarTransition)
             }
             if sync.hasStatus {
                 DiscogsSyncStatusView()
@@ -255,7 +254,7 @@ struct WantlistView: View {
         .padding(.top, AppStyle.pagePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
-        .animation(AppStyle.standardAnimation, value: showsSearchBar)
+        .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: query)
         .task { rebuildCollectionIndex(); rebuild() }
         .onChange(of: entries) { _, _ in rebuild() }
