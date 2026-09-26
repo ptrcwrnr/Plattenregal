@@ -25,8 +25,8 @@ import SwiftData
             } catch is CancellationError { return }
             catch { failed += 1; reason = error.reportedMessage() }
         }
-        AppLog.info("Discogs", failed == 0 ? "Release-Daten neu geladen: \(total) Release(s)"
-                    : "Release-Daten neu laden: \(failed) von \(total) fehlgeschlagen")
+        if failed == 0 { AppLog.info("Discogs", "Release-Daten neu geladen: \(total) Release(s)") }
+        else { AppLog.warning("Discogs", "Release-Daten neu laden: \(failed) von \(total) fehlgeschlagen") }
         // One message for the whole selection, saying how much went through.
         if failed > 0, let reason {
             error = total == 1 ? reason

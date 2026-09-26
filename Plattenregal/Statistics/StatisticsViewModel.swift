@@ -81,9 +81,8 @@ import Observation
     }
     /// Re-read when the page is shown: the token is changed in the settings.
     func updateTokenState() {
-        // The demo shows its sample value history as if connected.
-        if DemoMode.isActive { hasToken = true; return }
-        let stored = ((try? KeychainStore.load()) ?? nil).map { !$0.isEmpty } ?? false
+        // Same rule as everywhere else, demo included.
+        let stored = KeychainStore.hasToken
         if hasToken != stored { hasToken = stored }
     }
     func refresh(container: ModelContainer, force: Bool = true) async {
