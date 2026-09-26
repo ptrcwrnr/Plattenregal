@@ -459,14 +459,20 @@ private struct QuietIconColumnHeaders: NSViewRepresentable {
             // an icon column and on the column just before one.
             let clip = NSBezierPath(rect: bounds)
             clip.windingRule = .evenOdd
+            // Keep the line along the header's bottom edge intact.
+            let height = bounds.height - 2
+            let y = isFlipped ? bounds.minY : bounds.maxY - height
+            // The inset style's empty lead-in before the first column gets a
+            // divider of its own – there is nothing to separate there.
+            if !columns.isEmpty {
+                clip.appendRect(NSRect(x: bounds.minX, y: y, width: headerRect(ofColumn: 0).minX - bounds.minX + 1, height: height))
+            }
             for index in columns.indices {
                 let isIcon = columns[index].title.isEmpty
                 let beforeIcon = index + 1 < columns.count && columns[index + 1].title.isEmpty
                 guard isIcon || beforeIcon else { continue }
                 let edge = headerRect(ofColumn: index).maxX
-                // Keep the line along the header's bottom edge intact.
-                let height = bounds.height - 2
-                clip.appendRect(NSRect(x: edge - 2, y: isFlipped ? bounds.minY : bounds.maxY - height, width: 3, height: height))
+                clip.appendRect(NSRect(x: edge - 2, y: y, width: 3, height: height))
             }
             NSGraphicsContext.saveGraphicsState()
             clip.addClip()
