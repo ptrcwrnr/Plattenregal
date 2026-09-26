@@ -187,6 +187,9 @@ struct WantlistView: View {
     @State private var settingsTab: AppSettingsView.Tab?
     /// The entry whose menu is open, and where it was right-clicked.
     @State private var menuFor: (id: PersistentIdentifier, anchor: UnitPoint)?
+    /// The entry whose popover (with the tracklist) is open; in the list
+    /// also where it was double-clicked.
+    @State private var quickLook: (id: PersistentIdentifier, anchor: UnitPoint)?
     /// The window's page switch, to jump to the collection's hits.
     let pages: PageSelection<Destination>
 
@@ -336,7 +339,8 @@ struct WantlistView: View {
         .padding(.trailing, 8)
     }
 
-    /// Covers like the collection grid; click opens the release on Discogs.
+    /// Covers like the collection grid; a click shows the popover with the
+    /// tracklist and the way to Discogs.
     private func grid(_ rows: [WantlistEntry]) -> some View {
         // Width read live on every layout pass (no cached copy that could lag
         // behind a window resize); flexible columns keep covers inside their cells.
@@ -349,7 +353,7 @@ struct WantlistView: View {
             ScrollView {
                 LazyVGrid(columns: CoverGrid.columns(count: columnCount), alignment: .leading, spacing: 16) {
                     ForEach(rows) { entry in
-                        Button { open(entry) } label: {
+                        Button { quickLook = (entry.persistentModelID, .center) } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 CoverView(url: entry.release?.coverURL, size: nil)
                                     .overlay(alignment: .topLeading) {
@@ -358,6 +362,7 @@ struct WantlistView: View {
                                                 .transition(.opacity)
                                         }
                                     }
+
                                     .animation(AppStyle.quickAnimation, value: appliedQuery.isEmpty)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(entry.release?.displayArtist ?? "Unbekannter Interpret")
@@ -374,8 +379,11 @@ struct WantlistView: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .popover(isPresented: quickLookBinding(entry.persistentModelID), arrowEdge: .trailing) {
+                            RecordPopover(release: entry.release, discogsURL: sourceURL(entry))
+                        }
                         .id(entry.persistentModelID)
-                        .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – ") + (DemoMode.isActive ? "" : "\nKlicken, um auf Discogs zu öffnen"))
+                        .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – "))
                         // The app's own menu, as in the collection.
                         .onSecondaryClick { point in
                             if sourceURL(entry) != nil { menuFor = (entry.persistentModelID, point) }
@@ -446,14 +454,23 @@ struct WantlistView: View {
         .scrollContentBackground(.hidden)
         .scrollPosition(id: $scrollPosition, anchor: .top)
         .refreshShortcut(disabled: sync.busy, action: syncWantlist)
-        // Only for the double-click; the menu is the app's own (below).
-        .contextMenu(forSelectionType: WantlistEntry.ID.self) { _ in } primaryAction: { ids in
-            if let entry = rows.first(where: { ids.contains($0.id) }) { open(entry) }
-        }
+        // The app's own menu, and on double-click the popover – as in the collection.
         .overlay(TableRowClicks(secondary: { row, point in
             guard rows.indices.contains(row), sourceURL(rows[row]) != nil else { return }
             menuFor = (rows[row].persistentModelID, point)
+        }, double: { row, point in
+            guard rows.indices.contains(row) else { return }
+            quickLook = (rows[row].persistentModelID, point)
         }))
+        // Its own layer: two popovers on one view get in each other's way.
+        .background {
+            Color.clear.popover(isPresented: Binding(get: { quickLook != nil && layout != .grid }, set: { if !$0 { quickLook = nil } }),
+                                attachmentAnchor: .point(quickLook?.anchor ?? .center), arrowEdge: .trailing) {
+                if let id = quickLook?.id, let entry = rows.first(where: { $0.persistentModelID == id }) {
+                    RecordPopover(release: entry.release, discogsURL: sourceURL(entry))
+                }
+            }
+        }
         .popover(isPresented: Binding(get: { menuFor != nil && layout != .grid }, set: { if !$0 { menuFor = nil } }),
                  attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
             if let id = menuFor?.id, let entry = rows.first(where: { $0.persistentModelID == id }) {
@@ -464,6 +481,10 @@ struct WantlistView: View {
 
     @ViewBuilder private func entryMenu(_ entry: WantlistEntry) -> some View {
         Button("Auf Discogs öffnen") { open(entry) }
+    }
+
+    private func quickLookBinding(_ id: PersistentIdentifier) -> Binding<Bool> {
+        Binding(get: { quickLook?.id == id && layout == .grid }, set: { if !$0, quickLook?.id == id { quickLook = nil } })
     }
 
     private func menuBinding(_ id: PersistentIdentifier) -> Binding<Bool> {

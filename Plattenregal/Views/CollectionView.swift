@@ -52,14 +52,9 @@ struct CollectionView: View {
     // Room for the alphabet index; header, grid and table all leave it free
     // so their right edges stay aligned.
     private var alphabetGutter: CGFloat { 24 }
-    @State private var selection: Set<UUID> = []
-    @State private var selectionAnchor: UUID?
     /// Latest card frames for the rubber band. A plain reference, not state:
     /// the lazy grid republishes frames on every scroll step, and writing them
     /// must not re-render the view — but hit-testing needs the current layout.
-    @State private var cardFrames = CardFrameStore()
-    @State private var dragRectangle: CGRect?
-    @State private var dragBaseSelection: Set<UUID> = []
     /// List layout: the row whose menu or quick look is open, and where.
     @State private var tableMenu: (id: UUID, anchor: UnitPoint)?
     /// A Discogs token is stored; without one an empty collection leads to it.
@@ -287,15 +282,13 @@ struct CollectionView: View {
                                     LazyVGrid(columns: CoverGrid.columns(count: columnCount), alignment: .leading, spacing: CoverGrid.spacing) {
                                         ForEach(coverGroups) { group in
                                             let copy = group.primary
-                                            // A single click opens the popover; ⌘/⇧-click and the
-                                            // rubber band still select several records for bulk actions.
+                                            // A click opens the popover with the tracklist.
                                             Button {
-                                                select(group, in: coverGroups)
+                                                showQuickLook(copy)
                                             } label: {
                                                 RecordCard(
                                                     copy: copy,
                                                     copyCount: group.copies.count,
-                                                    selected: group.copies.contains { selection.contains($0.id) } || quickLook == copy.id,
                                                     placement: !searching || pages == nil ? nil : PlacementBadge(
                                                         inCollection: true,
                                                         inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false
@@ -304,14 +297,6 @@ struct CollectionView: View {
                                             }
                                             .buttonStyle(.plain)
                                             .id(copy.id)
-                                            .background {
-                                                GeometryReader { proxy in
-                                                    Color.clear.preference(
-                                                        key: RecordCardFrameKey.self,
-                                                        value: [copy.id: proxy.frame(in: .named("collectionGrid"))]
-                                                    )
-                                                }
-                                            }
                                             .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
                                                 RecordPopover(copy: group.primary)
                                             }
@@ -322,7 +307,7 @@ struct CollectionView: View {
                                             .popover(isPresented: contextMenuBinding(for: copy.id),
                                                      attachmentAnchor: .point(contextMenu?.anchor ?? .center),
                                                      arrowEdge: .trailing) {
-                                                AppMenu(dismiss: { contextMenu = nil }) { gridContextMenu(group, items: items) }
+                                                AppMenu(dismiss: { contextMenu = nil }) { gridContextMenu(group) }
                                             }
                                             .help("\(copy.release?.displayArtist ?? "Unbekannt") · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? " · \(group.copies.count) Exemplare" : "")")
                                             .accessibilityLabel("\(copy.release?.displayArtist ?? "Unbekannt"), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? ", \(group.copies.count) Exemplare" : "")")
@@ -330,36 +315,18 @@ struct CollectionView: View {
                                     }
                                     .coverGridMotion(width: width, columnCount: columnCount)
                                     .scrollTargetLayout()
-                                    if let dragRectangle {
-                                        Rectangle()
-                                            .fill(AppStyle.selectedBackground)
-                                            .overlay(Rectangle().stroke(AppStyle.selectedBorder, lineWidth: 1))
-                                            .frame(width: dragRectangle.width, height: dragRectangle.height)
-                                            .offset(x: dragRectangle.minX, y: dragRectangle.minY)
-                                            .allowsHitTesting(false)
-                                    }
                                 }
                                 .padding(.horizontal, AppStyle.pagePadding + 4)
                                 .padding(.vertical, CoverGrid.spacing)
                                 .padding(.trailing, alphabetGutter)
-                                .coordinateSpace(name: "collectionGrid")
-                                .onPreferenceChange(RecordCardFrameKey.self) { frames in
-                                    // Only needed for the rubber-band drag selection below. Stored
-                                    // outside SwiftUI state (see `CardFrameStore`), so plain
-                                    // scrolling doesn't re-render the whole view.
-                                    cardFrames.frames = frames
-                                }
-                                .simultaneousGesture(gridSelectionGesture)
                             }
                             .scrollPosition(id: $scrollPosition, anchor: .top)
-                            // Mouse drags already draw the selection rectangle here,
-                            // so pulling works with the trackpad (and ⌘R) only.
-                            .pullToRefresh(disabled: sync.busy, allowsMouseDrag: false) {
+                            .pullToRefresh(disabled: sync.busy) {
                                 sync.start(.collection, container: context.container)
                             }
                         }
                     } else {
-                        Table(items, selection: $selection) {
+                        Table(items) {
                             TableColumn("") { copy in CoverView(url: copy.release?.coverURL, size: 20) }.width(24)
                             TableColumn("Interpret") { copy in
                                 let artist = copy.release?.displayArtist ?? "—"
@@ -438,7 +405,6 @@ struct CollectionView: View {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
         .onChange(of: visibleIDs) { _, visibleIDs in
-            selection.formIntersection(Set(visibleIDs))
             if let scrollPosition, !visibleIDs.contains(scrollPosition) {
                 self.scrollPosition = nil
             }
@@ -490,14 +456,8 @@ struct CollectionView: View {
 
     // No "Löschen" here: every record shown comes from the Discogs collection,
     // and the next sync would bring a locally deleted copy back as a new one
-    // (without its shelf place). Records leave via Discogs; "Nicht einsortieren"
+    // (without its shelf place). Records leave via Discogs; "Nicht im Regal"
     // keeps one off the shelf.
-    @ViewBuilder private func bulkMenus(for ids: Set<UUID>, items: [RecordCopy]) -> some View {
-        // Shelf placement itself happens only on the shelf page.
-        let selected = items.filter { ids.contains($0.id) }
-        exclusionButton(for: selected)
-        refreshButton(for: selected)
-    }
 
     /// "Nicht im Regal" / "Wieder einsortieren", depending on whether all
     /// of the given copies are already kept out of the shelves.
@@ -508,13 +468,8 @@ struct CollectionView: View {
         }
     }
 
-    @ViewBuilder private func gridContextMenu(_ group: CollectionCoverGroup, items: [RecordCopy]) -> some View {
-        let groupIDs = Set(group.copies.map(\.id))
-        // Bulk actions only when the selection reaches beyond this release;
-        // its own copies alone keep the per-copy menus.
-        if !groupIDs.isDisjoint(with: selection), !selection.isSubset(of: groupIDs) {
-            bulkMenus(for: selection, items: items)
-        } else if group.copies.count > 1 {
+    @ViewBuilder private func gridContextMenu(_ group: CollectionCoverGroup) -> some View {
+        if group.copies.count > 1 {
             ForEach(Array(group.copies.enumerated()), id: \.element.id) { index, copy in
                 let excluded = excludedIDs.contains(copy.id)
                 if index > 0 { Divider() }
@@ -532,45 +487,18 @@ struct CollectionView: View {
         ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excludedIDs.contains(copy.id))
     }
 
-    /// A right-clicked row inside a larger selection acts on the selection.
     @ViewBuilder private func tableContextMenu(_ id: UUID, items: [RecordCopy]) -> some View {
-        if selection.count > 1 && selection.contains(id) {
-            bulkMenus(for: selection, items: items)
-        } else if let copy = items.first(where: { $0.id == id }) {
+        if let copy = items.first(where: { $0.id == id }) {
             AppMenuSection(title: location(copy))
             actions(copy)
         }
     }
 
-    private func select(_ group: CollectionCoverGroup, in groups: [CollectionCoverGroup]) {
-        let copy = group.primary
-        let groupIDs = Set(group.copies.map(\.id))
-        let modifiers = NSApp.currentEvent?.modifierFlags ?? NSEvent.modifierFlags
-        if modifiers.contains(.shift) {
-            // Without a usable anchor (none yet, or hidden by a search) the
-            // range starts at the clicked record instead of dropping the selection.
-            let end = groups.firstIndex(where: { $0.id == group.id })
-            let start = selectionAnchor.flatMap { anchor in
-                groups.firstIndex { $0.copies.contains { $0.id == anchor } }
-            } ?? end
-            guard let start, let end else { return }
-            let range = min(start, end)...max(start, end)
-            let ids = Set(range.flatMap { groups[$0].copies.map(\.id) })
-            if modifiers.contains(.command) { selection.formUnion(ids) }
-            else { selection = ids }
-            if selectionAnchor == nil || groups[start].id == group.id { selectionAnchor = copy.id }
-        } else if modifiers.contains(.command) {
-            if groupIDs.isSubset(of: selection) { selection.subtract(groupIDs) }
-            else { selection.formUnion(groupIDs) }
-            selectionAnchor = copy.id
-        } else {
-            // Plain click: the popover for this record. It isn't a bulk
-            // selection, so any marked records are released.
-            selection = []
-            selectionAnchor = copy.id
-            let justClosed = quickLookDismissed.map { $0.id == copy.id && Date().timeIntervalSince($0.at) < 0.4 } ?? false
-            if !justClosed { quickLook = copy.id }
-        }
+    /// A click on a cover: its popover – unless that very popover was just
+    /// closed by this click.
+    private func showQuickLook(_ copy: RecordCopy) {
+        let justClosed = quickLookDismissed.map { $0.id == copy.id && Date().timeIntervalSince($0.at) < 0.4 } ?? false
+        if !justClosed { quickLook = copy.id }
     }
 
     private func contextMenuBinding(for id: UUID) -> Binding<Bool> {
@@ -591,43 +519,10 @@ struct CollectionView: View {
         )
     }
 
-    private var gridSelectionGesture: some Gesture {
-        DragGesture(minimumDistance: 4, coordinateSpace: .named("collectionGrid"))
-            .onChanged { value in
-                if dragRectangle == nil {
-                    let modifiers = NSApp.currentEvent?.modifierFlags ?? NSEvent.modifierFlags
-                    dragBaseSelection = modifiers.contains(.command) ? selection : []
-                }
-                let rectangle = selectionRectangle(from: value.startLocation, to: value.location)
-                dragRectangle = rectangle
-                let hitIDs = Set(coverGroups.filter { group in
-                    guard let frame = cardFrames.frames[group.primary.id] else { return false }
-                    return frame.intersects(rectangle)
-                }.flatMap { $0.copies.map(\.id) })
-                selection = dragBaseSelection.union(hitIDs)
-            }
-            .onEnded { _ in
-                dragRectangle = nil
-                dragBaseSelection = []
-                // The first selected record in grid order, not an arbitrary
-                // element of the set, so a following ⇧-click finds it.
-                selectionAnchor = coverGroups.first { group in group.copies.contains { selection.contains($0.id) } }?.primary.id
-            }
-    }
-
-    private func selectionRectangle(from start: CGPoint, to end: CGPoint) -> CGRect {
-        CGRect(
-            x: min(start.x, end.x),
-            y: min(start.y, end.y),
-            width: abs(end.x - start.x),
-            height: abs(end.y - start.y)
-        )
-    }
-
     /// In the window the page has no header bar: page switch, grid/list and
-    /// search are in the toolbar. A row appears only for a selection. The
-    /// statistics sheet has no toolbar, so there it keeps search and layout.
-    private var showsControls: Bool { pages == nil || !selection.isEmpty }
+    /// search are in the toolbar. The statistics sheet has no toolbar, so
+    /// there it keeps search and layout.
+    private var showsControls: Bool { pages == nil }
 
     private func collectionControls(items: [RecordCopy]) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
@@ -635,28 +530,12 @@ struct CollectionView: View {
                 AppSearchField(placeholder: "Collection durchsuchen", text: queryBinding)
                     .frame(maxWidth: 380)
             }
-            selectionControls
             Spacer(minLength: AppStyle.rowSpacing)
             if pages == nil {
                 OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))
             }
         }
         .frame(height: AppStyle.searchBarHeight)
-    }
-    @ViewBuilder private var selectionControls: some View {
-        if !selection.isEmpty {
-            HStack(spacing: 4) {
-                Text("\(selection.count) ausgewählt").monospacedDigit().foregroundStyle(AppStyle.accent)
-                IconButton(systemImage: "xmark.circle.fill", help: "Auswahl aufheben") { selection.removeAll() }
-                    .foregroundStyle(.secondary)
-            }
-            .font(.callout)
-            .padding(.leading, 14)
-            .padding(.trailing, 4)
-            .frame(height: AppStyle.searchBarHeight)
-            .glassEffect(.regular, in: .capsule)
-            .fixedSize()
-        }
     }
     @ViewBuilder private func actions(_ copy: RecordCopy) -> some View {
         Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen") { showShelf(copy) }
@@ -721,7 +600,6 @@ struct CollectionCoverGroup: Identifiable {
 struct RecordCard: View {
     let copy: RecordCopy
     var copyCount = 1
-    var selected = false
     /// Set while searching: where this record is (see `PlacementBadge`).
     var placement: PlacementBadge? = nil
     var body: some View {
@@ -730,19 +608,6 @@ struct RecordCard: View {
                 if let placement { placement.transition(.opacity) }
             }
             .animation(AppStyle.quickAnimation, value: placement == nil)
-            .overlay {
-                RoundedRectangle(cornerRadius: 6)
-                    .strokeBorder(selected ? AppStyle.selectedBorder : Color.clear, lineWidth: 2)
-            }
-            .overlay(alignment: .topTrailing) {
-                if selected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title3)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, AppStyle.accent)
-                        .padding(6)
-                }
-            }
             .overlay(alignment: .bottomTrailing) {
                 if copyCount > 1 {
                     Text("\(copyCount)×")
@@ -754,19 +619,7 @@ struct RecordCard: View {
                         .padding(6)
                 }
             }
-            .animation(AppStyle.quickAnimation, value: selected)
             .contentShape(Rectangle())
-    }
-}
-
-private final class CardFrameStore {
-    var frames: [UUID: CGRect] = [:]
-}
-
-private struct RecordCardFrameKey: PreferenceKey {
-    static let defaultValue: [UUID: CGRect] = [:]
-    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
-        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
     }
 }
 

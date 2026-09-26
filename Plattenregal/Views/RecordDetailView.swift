@@ -109,12 +109,22 @@ struct ReleaseHeaderView: View {
         }
     }
 }
-/// Compact popover for a single click on a cover in the overview: cover,
-/// label, year and the tracklist (the detail window has none). Copies behind one cover share the release,
-/// so the first one stands for all of them. `expand` opens the detail window.
+/// Compact popover for a click on a cover in the collection or wantlist:
+/// cover, label, year and the tracklist. Copies behind one cover share the
+/// release, so the first one stands for all of them.
 struct RecordPopover: View {
     @Environment(\.modelContext) private var context
-    let copy: RecordCopy
+    let release: Release?
+    /// Shown as a small arrow in the corner (the wantlist, whose covers have
+    /// no other way to Discogs than the menu).
+    var discogsURL: URL?
+    @Environment(\.openURL) private var openURL
+
+    init(copy: RecordCopy) { release = copy.release }
+    init(release: Release?, discogsURL: URL? = nil) {
+        self.release = release
+        self.discogsURL = discogsURL
+    }
     /// Tracklists are loaded after each collection sync; this only covers a
     /// record whose tracklist isn't there yet (e.g. while that is still running).
     @State private var loadingTracks = false
@@ -123,7 +133,6 @@ struct RecordPopover: View {
     @State private var triedLoadingTracks = false
 
     var body: some View {
-        let release = copy.release
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
                 CoverView(url: release?.coverURL, size: 128)
@@ -142,6 +151,18 @@ struct RecordPopover: View {
                     .padding(.top, AppStyle.tightSpacing)
                 }
                 Spacer(minLength: 0)
+                if let discogsURL {
+                    Button { openURL(discogsURL) } label: {
+                        Image(systemName: "arrow.up.forward")
+                            .font(.system(size: 11, weight: .bold))
+                            .frame(width: 26, height: 26)
+                            .contentShape(Circle())
+                            .glassEffect(.regular.interactive(), in: .circle)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Auf Discogs öffnen")
+                    .accessibilityLabel("Auf Discogs öffnen")
+                }
             }
 
             if let tracks = release?.tracks, !tracks.isEmpty {
@@ -165,9 +186,9 @@ struct RecordPopover: View {
         }
         .padding(AppStyle.cardPadding)
         .frame(width: 400)
-        .task(id: copy.id) {
+        .task(id: release?.persistentModelID) {
             // The demo is offline and has no tracklists; no attempt, no error.
-            guard !DemoMode.isActive, let release = copy.release, release.tracks.isEmpty else { return }
+            guard !DemoMode.isActive, let release, release.tracks.isEmpty else { return }
             // Already asked: Discogs has no tracklist for it. Not again on every
             // opening – that cost a request and a spinner each time.
             if release.detailsFetchedAt != nil { triedLoadingTracks = true; return }
