@@ -153,9 +153,9 @@ struct GeneralSettingsView: View {
     @AppStorage(DisplaySettings.wantlistOrderKey) private var wantlistOrder = OverviewOrder.alphabetical
 
     /// Switching to "Zufällig" shuffles anew, not only each launch.
-    private func order(_ stored: Binding<OverviewOrder>) -> Binding<OverviewOrder> {
+    private func order(_ stored: Binding<OverviewOrder>, scope: String) -> Binding<OverviewOrder> {
         Binding(get: { stored.wrappedValue }, set: { new in
-            if new == .random && stored.wrappedValue != .random { OverviewOrder.reshuffle() }
+            if new == .random && stored.wrappedValue != .random { OverviewOrder.reshuffle(scope) }
             stored.wrappedValue = new
         })
     }
@@ -170,12 +170,12 @@ struct GeneralSettingsView: View {
                 }
                 Divider()
                 SettingsRow(title: "Reihenfolge Collection", hint: collectionOrder.hint) {
-                    GlassSegmentedPicker(selection: order($collectionOrder), options: OverviewOrder.allCases) { Text($0.title) }
+                    GlassSegmentedPicker(selection: order($collectionOrder, scope: DisplaySettings.collectionOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Reihenfolge der Collection")
                 }
                 Divider()
                 SettingsRow(title: "Reihenfolge Wantlist", hint: wantlistOrder.hint) {
-                    GlassSegmentedPicker(selection: order($wantlistOrder), options: OverviewOrder.allCases) { Text($0.title) }
+                    GlassSegmentedPicker(selection: order($wantlistOrder, scope: DisplaySettings.wantlistOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Reihenfolge der Wantlist")
                 }
             }

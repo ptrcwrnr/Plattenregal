@@ -267,7 +267,7 @@ extension AllTests {
             #expect(try ModelContext(container).fetchCount(FetchDescriptor<CollectionValueSnapshot>()) == 0)
             #expect(try ModelContext(container).fetch(FetchDescriptor<RecordCopy>()).first?.discogsActive == true)
         }
-        @Test func v2ToV6MigrationPreservesCollectionKallaxWantlistAndAccounts() throws {
+        @Test func v2StoreMigratesWithCollectionShelvesWantlistAndAccounts() throws {
             let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: dir) }
@@ -298,7 +298,7 @@ extension AllTests {
             try CollectionValueHistoryService.store(value: value(), owner: "fixture", copies: [c], context: context)
             #expect(try context.fetchCount(FetchDescriptor<CollectionValueSnapshot>()) == 1)
         }
-        @Test func v3ToV6MigrationAddsOptimizationExclusionSchemaWithoutDataLoss() throws {
+        @Test func v3StoreMigratesWithSnapshotsAndTakesExclusions() throws {
             let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: dir) }
@@ -328,7 +328,7 @@ extension AllTests {
             try context.save()
             #expect(try context.fetch(FetchDescriptor<OptimizationExclusion>()).first?.copyID == copyID)
         }
-        @Test func v6ToV8MigrationDropsInfoTextAndTurnsCapacityZeroIntoReserved() throws {
+        @Test func v6StoreDropsInfoTextAndTurnsCapacityZeroIntoReserved() throws {
             let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: dir) }
@@ -359,6 +359,71 @@ extension AllTests {
             #expect(reserved.isReserved)
             #expect(!normal.isReserved)
             #expect(shelves.count == ShelfGeometry.count)
+        }
+        /// The step every store made before the schema cleanup: V13 → V15
+        /// drops the copy's own data, Discogs rating and notes and the unused
+        /// market values, but keeps places, locks, marks, snapshots and accounts.
+        @Test func v13StoreKeepsPlacesAndMarksWhileDroppingUnusedData() throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let url = dir.appendingPathComponent("Migration.store")
+            let (placedID, missingID, excludedID): (UUID, UUID, UUID) = try autoreleasepool {
+                let schema = Schema(versionedSchema: LibrarySchemaV13.self)
+                let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+                let context = container.mainContext
+                let cabinet = LibrarySchemaV12.Cabinet(name: "Kallax", rows: 1, columns: 2, sortOrder: 0)
+                context.insert(cabinet)
+                let open = LibrarySchemaV12.Shelf(number: 1, cabinet: cabinet, slot: 1)
+                let locked = LibrarySchemaV12.Shelf(number: 2, cabinet: cabinet, slot: 2)
+                locked.isReserved = true; locked.name = "Plattenspieler"
+                open.cabinet = cabinet; locked.cabinet = cabinet
+                let release = LibrarySchemaV12.Release(discogsID: 42, artist: "Air", title: "Moon Safari")
+                context.insert(release)
+                func copy(_ instance: Int) -> LibrarySchemaV12.RecordCopy {
+                    let copy = LibrarySchemaV12.RecordCopy(release: release, instanceID: instance, owner: "fixture")
+                    context.insert(copy)
+                    copy.discogsRating = 5; copy.discogsNotes = Data("[]".utf8); copy.lastDiscogsSync = .now
+                    copy.notes = "weg"; copy.condition = "Mint"; copy.purchasePrice = 20
+                    copy.discogsFolderID = 1; copy.discogsDateAdded = "2020-01-01"
+                    return copy
+                }
+                let placed = copy(1), missing = copy(2), excluded = copy(3)
+                placed.shelf = open; placed.positionInShelf = 1
+                missing.shelf = open; missing.positionInShelf = 2
+                let want = LibrarySchemaV12.WantlistEntry(owner: "fixture", release: release, releaseID: 42)
+                want.rating = 3; want.notes = "Wunsch"
+                context.insert(want)
+                context.insert(LibrarySchemaV2.DiscogsAccount(username: "fixture"))
+                context.insert(LibrarySchemaV2.DiscogsFolder(owner: "fixture", id: 1, name: "Vinyl", count: 3))
+                context.insert(LibrarySchemaV3.CollectionValueSnapshot(owner: "fixture", date: .now, value: try value(), count: 3, unique: 1, signature: "seed"))
+                context.insert(LibrarySchemaV3.ReleaseMarketValue(owner: "fixture", releaseID: 42, value: 10, currency: "EUR", condition: "", source: "test"))
+                context.insert(LibrarySchemaV4.OptimizationExclusion(copyID: excluded.id))
+                context.insert(LibrarySchemaV13.MissingCopyMark(copyID: missing.id))
+                try context.save()
+                return (placed.id, missing.id, excluded.id)
+            }
+            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+            let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
+                                               configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+            let context = container.mainContext
+            let copies = try context.fetch(FetchDescriptor<RecordCopy>())
+            #expect(copies.count == 3)
+            let placed = try #require(copies.first { $0.id == placedID })
+            #expect(placed.shelf?.number == 1 && placed.positionInShelf == 1)
+            #expect(placed.discogsFolderID == 1 && placed.discogsDateAdded == "2020-01-01" && placed.release?.discogsID == 42)
+            #expect(copies.first { $0.id == missingID }?.positionInShelf == 2)
+            let locked = try #require(context.fetch(FetchDescriptor<Shelf>()).first { $0.number == 2 })
+            #expect(locked.isReserved && locked.name == "Plattenspieler")
+            #expect(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID) == [missingID])
+            #expect(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID) == [excludedID])
+            #expect(try context.fetch(FetchDescriptor<WantlistEntry>()).first?.notes == "Wunsch")
+            #expect(try context.fetchCount(FetchDescriptor<CollectionValueSnapshot>()) == 1)
+            #expect(try context.fetchCount(FetchDescriptor<DiscogsAccount>()) == 1)
+            #expect(try context.fetch(FetchDescriptor<DiscogsFolder>()).first?.name == "Vinyl")
+            // The migrated store works as usual.
+            try PositionService(context: context).setMissing([placed], true)
+            #expect(try context.fetchCount(FetchDescriptor<MissingCopyMark>()) == 2)
         }
     }
 }

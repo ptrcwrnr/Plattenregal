@@ -7,14 +7,22 @@ extension AllTests {
         @Test func overviewOrderShufflesStablyAndSortsNewestFirst() {
             let items = Array(1...50)
             let alphabetical: ([Int]) -> [Int] = { $0.sorted() }
-            let random = OverviewOrder.random.apply(items, alphabetical: alphabetical, key: { $0 }, added: { _ in nil })
+            func random(_ items: [Int], _ scope: String = "collection") -> [Int] {
+                OverviewOrder.random.apply(items, scope: scope, alphabetical: alphabetical, key: { $0 }, added: { _ in nil })
+            }
+            let shuffled = random(items)
             // Same order within one launch, all items kept, not just the alphabetical one.
-            #expect(random == OverviewOrder.random.apply(items.reversed(), alphabetical: alphabetical, key: { $0 }, added: { _ in nil }))
-            #expect(random.sorted() == items)
-            #expect(random != items)
+            #expect(shuffled == random(items.reversed()))
+            #expect(shuffled.sorted() == items)
+            #expect(shuffled != items)
+            // Shuffling the wantlist anew leaves the collection's order alone.
+            OverviewOrder.reshuffle("wantlist")
+            #expect(random(items) == shuffled)
+            OverviewOrder.reshuffle("collection")
+            #expect(random(items) != shuffled)
             // Newest first; undated last, in alphabetical order.
             let date = { (n: Int) -> Date? in n > 3 ? nil : Date(timeIntervalSince1970: Double(n)) }
-            #expect(OverviewOrder.recent.apply([5, 1, 4, 3, 2], alphabetical: alphabetical, key: { $0 }, added: date) == [3, 2, 1, 4, 5])
+            #expect(OverviewOrder.recent.apply([5, 1, 4, 3, 2], scope: "collection", alphabetical: alphabetical, key: { $0 }, added: date) == [3, 2, 1, 4, 5])
         }
 
         /// In-memory stand-in for the keychain.

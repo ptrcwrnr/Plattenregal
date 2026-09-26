@@ -8,8 +8,6 @@ struct RecordDetailView: View {
     @Query private var shelves: [Shelf]
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     let copy: RecordCopy
-    /// The calling page's current labels; computed here (once) without them.
-    var labels: ShelfLabels? = nil
     var showShelf: (() -> Void)?
     @State private var labelCache = ShelfLabelCache()
     @State private var error: String?
@@ -41,7 +39,7 @@ struct RecordDetailView: View {
     private var locationCard: some View {
         let location = ShelfRangeLabels.location(
             of: copy,
-            labels: labels ?? labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf),
+            labels: labelCache.labels(for: shelves, style: labelStyle, showing: copy.shelf),
             excluded: excluded
         )
         return VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {

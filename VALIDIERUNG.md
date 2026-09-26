@@ -4,7 +4,7 @@ Stand nach dem Umbau auf Rubriken in der Toolbar, einheitliches Liquid Glass, de
 
 ## Ergebnis
 
-- Gesamte Testsuite: **168 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die CoreData-Meldungen im Testlauf („Migration was completed by another client“, „Persistent History … has to be truncated“) stammen aus den Migrationstests und sind keine Fehler.
+- Gesamte Testsuite: **169 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die CoreData-Meldungen im Testlauf („Migration was completed by another client“, „Persistent History … has to be truncated“) stammen aus den Migrationstests und sind keine Fehler.
 
 | Testdatei | Tests | Schwerpunkt |
 |---|---|---|

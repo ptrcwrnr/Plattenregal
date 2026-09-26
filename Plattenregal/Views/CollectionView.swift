@@ -54,14 +54,12 @@ struct CollectionView: View {
     /// Kept with any order, so switching it never changes the cover size.
     private var alphabetGutter: CGFloat { 24 }
     @AppStorage(DisplaySettings.collectionOrderKey) private var order = OverviewOrder.alphabetical
-    /// Latest card frames for the rubber band. A plain reference, not state:
-    /// the lazy grid republishes frames on every scroll step, and writing them
-    /// must not re-render the view — but hit-testing needs the current layout.
-    /// List layout: the row whose menu or quick look is open, and where.
+    /// List layout: the row whose menu is open, and where it was right-clicked.
     @State private var tableMenu: (id: UUID, anchor: UnitPoint)?
     /// A Discogs token is stored; without one an empty collection leads to it.
     @State private var hasToken = true
     @State private var settingsTab: AppSettingsView.Tab?
+    /// List layout: the row whose popover is open (double-click), and where.
     @State private var tableQuickLook: (id: UUID, anchor: UnitPoint)?
     /// Copy whose popover is open (single click on a cover).
     @State private var quickLook: UUID?
@@ -88,10 +86,10 @@ struct CollectionView: View {
         self.analyticsFilter = analyticsFilter
     }
 
-    // Cached so that unrelated re-renders (e.g. the card-frame tracking below,
-    // which updates as the lazy grid scrolls) don't force this filter/sort pass
-    // to redo its work on every frame — that repeated O(n log n) work over the
-    // full collection was the source of the scroll and navigation stutter.
+    // Cached so that unrelated re-renders (popovers, scrolling) don't force
+    // this filter/sort pass to redo its work on every frame — that repeated
+    // O(n log n) work over the full collection was the source of the scroll
+    // and navigation stutter.
     @State private var items: [RecordCopy] = []
     @State private var coverGroups: [CollectionCoverGroup] = []
     // Cached alongside `items`: building this (Unicode folding per artist name)
@@ -133,7 +131,7 @@ struct CollectionView: View {
             (analyticsIDs == nil || analyticsIDs!.contains(copy.id)) &&
             copy.isInCurrentCollection(owner: owner)
         }
-        base = order.apply(matched, alphabetical: SortingService.sortedByAlphabetSection,
+        base = order.apply(matched, scope: DisplaySettings.collectionOrderKey, alphabetical: SortingService.sortedByAlphabetSection,
                            key: { CollectionCoverGroup.identity(of: $0) },
                            added: { DiscogsDate.parse($0.discogsDateAdded) })
         searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
@@ -671,8 +669,6 @@ struct MatchedTrackLine: View {
     }
 }
 
-/// Search and the other section's matching results sit directly beside each other.
-/// The outlined result button appears only for a nonempty search with matches.
 /// The search bar of collection and wantlist, centered under the page switch
 /// in the toolbar. The button for the other page's hits hangs off its right
 /// end, so it never pushes the bar off center.

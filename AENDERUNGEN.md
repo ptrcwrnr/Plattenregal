@@ -1,3 +1,11 @@
+# Prüfung der letzten Änderungen · 26.09.2026
+
+- **Zufällige Reihenfolge je Seite** (`OverviewOrder`): Collection und Wantlist teilten sich einen Zufallswert. Stellte man die Wantlist auf „Zufällig“, war die Collection-Reihenfolge danach eine andere – sichtbar erst beim nächsten Sync, als plötzliches Umsortieren. Jetzt mischt jede Seite für sich.
+- **Statistik und Token** (`StatisticsViewModel`): wertete einen nicht lesbaren Schlüsselbund als „Token fehlt“, der Rest der App als „vorhanden“. Jetzt überall dieselbe Regel (`KeychainStore.hasToken`).
+- **„Platte hinzufügen“**: Das Ziel-Detail („zwischen … und …“) liest keine inzwischen gelöschte Platte mehr. In den Einstellungen prüft „Fach sperren“, ob das Fach noch existiert.
+- Protokoll: „x von y fehlgeschlagen“ beim Neuladen als Warnung. Veraltete Kommentare (Auswahlrahmen, Detailansicht) und ein ungenutzter Parameter entfernt.
+- Tests: neuer Migrationstest V13 → V15 (`v13StoreKeepsPlacesAndMarksWhileDroppingUnusedData`) – der Weg jeder bestehenden Datenbank; `fittingShelves` gegen `spots` geprüft; Export ohne entfernte Spalten; getrennte Zufallsreihenfolgen. Die älteren Migrationstests heißen nach dem, was sie prüfen, statt „V6“/„V8“ als Ziel zu nennen.
+
 # Fehlermeldungen und Protokoll nachgezogen · 26.09.2026
 
 - **„Discogs-Daten aktualisieren“** (Collection-Menü): Das Fehlerfenster hieß wie bei einer Regal-Änderung „Änderung nicht gespeichert“, auch wenn nur Discogs nicht erreichbar war. Jetzt „Discogs-Daten nicht aktualisiert“ mit dem Grund. Das Protokoll hält neben dem Beginn auch das Ergebnis fest („neu geladen“ bzw. „x von y fehlgeschlagen“).

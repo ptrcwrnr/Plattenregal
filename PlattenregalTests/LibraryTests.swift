@@ -553,6 +553,14 @@ extension AllTests.LibraryTests {
         #expect(last.count == 1 && last[0].shelf.id == shelves[1].id && last[0].position == 3)
         #expect(last[0].before?.id == moby.id && last[0].after == nil)
 
+        // "Platte hinzufügen" asks for many records at once: the same shelves as `spots`.
+        let batch = ["Beck", "Cure", "2raumwohnung", "Zappa", "Mouse on Mars"].map(loose)
+        let fitting = AlphabeticalPlacement.fittingShelves(for: batch, in: shelves)
+        for copy in batch {
+            #expect(fitting[copy.id]?.map(\.id) == AlphabeticalPlacement.spots(for: copy, in: shelves).map(\.shelf.id))
+        }
+        #expect(AlphabeticalPlacement.fittingShelves(for: batch, in: [shelves[4]]).isEmpty)
+
         // A copy that already stands somewhere doesn't count as its own neighbour.
         let again = AlphabeticalPlacement.spots(for: can, in: shelves)
         #expect(again.count == 2 && again[0].position == 2 && again[0].before?.id == abba.id)

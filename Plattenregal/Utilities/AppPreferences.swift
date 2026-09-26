@@ -53,25 +53,33 @@ enum OverviewOrder: String, CaseIterable, Identifiable {
     }
 
     /// New with each launch and each switch to "Zufällig" in the settings;
-    /// in between the random order stays put.
-    @MainActor private static var shuffleSeed = UInt64.random(in: .min ... .max)
-    @MainActor static func reshuffle() { shuffleSeed = .random(in: .min ... .max) }
-    /// Position of `key` in the current random order.
-    @MainActor static func shuffleRank(_ key: some Hashable) -> Int {
+    /// in between the random order stays put. One per page (its storage key):
+    /// shuffling the wantlist must not reorder the collection on its next sync.
+    @MainActor private static var shuffleSeeds: [String: UInt64] = [:]
+    @MainActor static func reshuffle(_ scope: String) { shuffleSeeds[scope] = .random(in: .min ... .max) }
+    /// Position of `key` in the current random order of `scope`.
+    @MainActor static func shuffleRank(_ key: some Hashable, scope: String) -> Int {
+        let seed = shuffleSeeds[scope] ?? {
+            let seed = UInt64.random(in: .min ... .max)
+            shuffleSeeds[scope] = seed
+            return seed
+        }()
         var hasher = Hasher()
-        hasher.combine(shuffleSeed)
+        hasher.combine(seed)
         hasher.combine(key)
         return hasher.finalize()
     }
 
     /// `items` in this order. `key` identifies an item for the shuffle
-    /// (copies of one release share it, so they stay one tile).
-    @MainActor func apply<T, K: Hashable>(_ items: [T], alphabetical: ([T]) -> [T], key: (T) -> K, added: (T) -> Date?) -> [T] {
+    /// (copies of one release share it, so they stay one tile); `scope` names
+    /// the page, see `shuffleSeeds`.
+    @MainActor func apply<T, K: Hashable>(_ items: [T], scope: String, alphabetical: ([T]) -> [T], key: (T) -> K, added: (T) -> Date?) -> [T] {
         switch self {
         case .alphabetical:
             return alphabetical(items)
         case .random:
-            return items.map { (Self.shuffleRank(key($0)), $0) }.sorted { $0.0 < $1.0 }.map(\.1)
+            let ranks = items.map { Self.shuffleRank(key($0), scope: scope) }
+            return zip(ranks, items).sorted { $0.0 < $1.0 }.map(\.1)
         case .recent:
             // Undated ones last, in alphabetical order.
             let sorted = alphabetical(items)

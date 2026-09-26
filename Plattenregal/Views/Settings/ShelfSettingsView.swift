@@ -49,6 +49,8 @@ struct ShelfSettingsView: View {
 
     /// Unlocking drops the name as well.
     private func setLocked(_ shelf: Shelf, _ locked: Bool) {
+        // Removed meanwhile (cabinet made smaller, backup restored).
+        guard !shelf.isDeleted, shelf.modelContext != nil else { return }
         do {
             try PositionService(context: context).configure(shelf, name: locked ? shelf.name : "", isReserved: locked)
             shelfError = nil

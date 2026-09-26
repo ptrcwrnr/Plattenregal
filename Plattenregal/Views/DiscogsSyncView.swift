@@ -297,7 +297,7 @@ struct WantlistView: View {
     private func rebuild() {
         let owner = owner
         let owned = owner.map { owner in entries.filter { $0.owner == owner } } ?? entries
-        sortedEntries = order.apply(owned, alphabetical: WantlistPresentation.sorted,
+        sortedEntries = order.apply(owned, scope: DisplaySettings.wantlistOrderKey, alphabetical: WantlistPresentation.sorted,
                                     key: \.releaseID, added: { DiscogsDate.parse($0.dateAdded) })
         searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
         loaded = true

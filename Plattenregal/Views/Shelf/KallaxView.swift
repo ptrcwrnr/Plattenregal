@@ -1,9 +1,6 @@
 import SwiftUI
 import SwiftData
 
-/// The shelf page as one calm column: a slim header bar (search after ⌘F, status), the
-/// KALLAX drawn as a single piece of furniture, and the selected compartment
-/// underneath at full width (spine strip, then a compact table of its records).
 /// What other pages ask of the shelf page. An object, not a binding: pages
 /// live in separate hosting views (see `PageStack`), and only Observation
 /// reaches across.
@@ -13,6 +10,9 @@ import SwiftData
     var placing: UUID?
 }
 
+/// The shelf page as one calm column: a slim header bar (search after ⌘F, status), the
+/// KALLAX drawn as a single piece of furniture, and the selected compartment
+/// underneath at full width (spine strip, then a compact table of its records).
 struct KallaxView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Shelf.number) private var allShelves: [Shelf]

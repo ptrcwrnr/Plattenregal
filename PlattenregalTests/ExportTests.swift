@@ -94,6 +94,9 @@ extension AllTests {
             #expect(full.rows.allSatisfy { $0.values.count == full.columns.count })
             let tracklist = try #require(full.column(ExportColumn.tracklist))
             #expect(full.rows.first?.values[tracklist] == "A1 Honey (3:27)")
+            // The copy group holds only what Discogs provides.
+            #expect(full.column(ExportColumn.folder) != nil && full.column(ExportColumn.added) != nil)
+            #expect(full.columns.allSatisfy { !["Zustand Platte", "Zustand Hülle", "Notizen", "Bewertung"].contains($0) })
             let link = try #require(full.column(ExportColumn.link))
             #expect(full.rows.first?.values[link] == "https://www.discogs.com/release/\(release.discogsID)")
         }

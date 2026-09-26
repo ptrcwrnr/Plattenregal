@@ -37,7 +37,14 @@ final class ShelfAssignmentSession: Identifiable {
         self.shelf = shelf
     }
 
-    var hovered: RecordCopy? { hoveredID.flatMap { id in candidates.first { $0.id == id } } }
+    /// `nil` once the record or the shelf is gone (see `isGone`).
+    var hovered: RecordCopy? {
+        hoveredID.flatMap { id in candidates.first { $0.id == id } }.flatMap { isGone($0) ? nil : $0 }
+    }
+    /// The last record added here, while it still stands in this shelf.
+    var lastAddedHere: RecordCopy? {
+        lastAdded.flatMap { !isGone($0) && $0.shelf?.id == shelf.id ? $0 : nil }
+    }
 
     func hover(_ copy: RecordCopy, _ hovering: Bool) {
         if hovering { hoveredID = copy.id } else if hoveredID == copy.id { hoveredID = nil }
@@ -223,7 +230,7 @@ struct ShelfAssignmentView: View {
             if let other = session.belongsElsewhere[copy.id] { return "\(artist) gehört in „\(other)“ – Pfeil führt dorthin" }
             return "\(artist) \(place(session.spot(for: copy)))"
         }
-        if let copy = session.lastAdded, copy.shelf?.id == session.shelf.id {
+        if let copy = session.lastAddedHere {
             let spot = session.spot(for: copy)
             return "Zuletzt „\(copy.release?.displayArtist ?? "—")“ \(place(spot))"
         }
