@@ -66,6 +66,9 @@ struct ShelfCopyTable: View {
     /// Shelf the rows were last built for: only a new shelf scrolls to the
     /// selected record, not every data refresh.
     @State private var loadedShelfID: UUID?
+    /// The row whose menu is open, and where in the table it was right-clicked.
+    @State private var menuFor: (id: UUID, anchor: UnitPoint)?
+    @State private var error: String?
 
     private func quickEditBinding(_ id: UUID) -> Binding<Bool> {
         Binding(get: { quickEditID == id }, set: { if !$0, quickEditID == id { quickEditID = nil } })
@@ -98,6 +101,30 @@ struct ShelfCopyTable: View {
         guard loadedShelfID != shelf.id else { return }
         loadedShelfID = shelf.id
         if let id = focusCopy?.id { proxy.scrollTo(id, anchor: .center) }
+    }
+
+    /// The row's right-click menu (an `AppMenu`, like the collection's).
+    @ViewBuilder private func rowMenu(_ copy: RecordCopy) -> some View {
+        Button("Exemplar bearbeiten …") { quickEditID = copy.id }
+        Button("Platz im Regal zeigen") { find(copy) }
+        Divider()
+        if missing.contains(copy.id) {
+            Button("Wieder gefunden") { setMissing(copy, false) }
+        } else {
+            Button("Als vermisst markieren") { setMissing(copy, true) }
+        }
+        // Takes it out of the shelf for good: it no longer waits to be sorted in.
+        Button("Nicht im Regal") {
+            do { try PositionService(context: context).setExcluded([copy], true) }
+            catch { self.error = error.reportedMessage() }
+        }
+        Button("Aus Fach entfernen") { unplace(copy) }
+        // Only for records no longer in the Discogs collection: an
+        // active one would come back with the next sync as a new copy.
+        if !copy.isInCurrentCollection(owner: owner) {
+            Divider()
+            Button("Aus Sammlung löschen …", role: .destructive) { delete(copy) }
+        }
     }
 
     var body: some View {
@@ -162,26 +189,23 @@ struct ShelfCopyTable: View {
             .background(TableRowClickToggle { select(nil) })
             .alternatingRowBackgrounds(.disabled)
             .scrollContentBackground(.hidden)
-            .contextMenu(forSelectionType: UUID.self) { ids in
-                if let id = ids.first, let copy = items.first(where: { $0.id == id })?.copy {
-                    Button("Exemplar bearbeiten") { quickEditID = copy.id }
-                    Button("Platz im Regal zeigen") { find(copy) }
-                    if missing.contains(copy.id) {
-                        Button("Wieder gefunden") { setMissing(copy, false) }
-                    } else {
-                        Button("Als vermisst markieren") { setMissing(copy, true) }
-                    }
-                    Button("Aus Fach entfernen") { unplace(copy) }
-                    // Only for records no longer in the Discogs collection: an
-                    // active one would come back with the next sync as a new copy.
-                    if !copy.isInCurrentCollection(owner: owner) {
-                        Divider()
-                        Button("Aus Sammlung löschen …", role: .destructive) { delete(copy) }
-                    }
-                }
-            } primaryAction: { ids in
+            // Only for the double-click; the menu is the app's own (below).
+            .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
                 if let id = ids.first, items.contains(where: { $0.id == id }) { quickEditID = id }
             }
+            .overlay(TableRowSecondaryClick { row, point in
+                guard items.indices.contains(row) else { return }
+                menuFor = (items[row].id, point)
+            })
+            .popover(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } }),
+                     attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+                if let id = menuFor?.id, let copy = items.first(where: { $0.id == id })?.copy {
+                    AppMenu(dismiss: { menuFor = nil }) { rowMenu(copy) }
+                }
+            }
+            .alert("Änderung nicht möglich", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+                Button("OK") {}
+            } message: { Text(error ?? "") }
             .task(id: signature) {
                 guard quickEditID == nil else { reloadPending = true; return }
                 reload(proxy)
@@ -489,6 +513,39 @@ private struct TableRowClickToggle: NSViewRepresentable {
             }
             pending = item
             DispatchQueue.main.asyncAfter(deadline: .now() + NSEvent.doubleClickInterval, execute: item)
+        }
+    }
+}
+
+/// Right-click (or Control-click) on a row of the table beneath: reports the
+/// row and the click position as a unit point of this overlay, to anchor an
+/// `AppMenu` there. Every other event goes straight through to the table.
+private struct TableRowSecondaryClick: NSViewRepresentable {
+    let action: (Int, UnitPoint) -> Void
+    func makeNSView(context: Context) -> Catcher { Catcher() }
+    func updateNSView(_ view: Catcher, context: Context) { view.action = action }
+
+    final class Catcher: NSView {
+        var action: ((Int, UnitPoint) -> Void)?
+        override var isFlipped: Bool { true }
+        private static func isSecondary(_ event: NSEvent?) -> Bool {
+            guard let event else { return false }
+            return event.type == .rightMouseDown
+                || (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
+        }
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            Self.isSecondary(NSApp.currentEvent) ? super.hitTest(point) : nil
+        }
+        override func rightMouseDown(with event: NSEvent) { fire(event) }
+        override func mouseDown(with event: NSEvent) {
+            if Self.isSecondary(event) { fire(event) } else { super.mouseDown(with: event) }
+        }
+        private func fire(_ event: NSEvent) {
+            guard let table = nearbyTable(), bounds.width > 0, bounds.height > 0 else { return }
+            let row = table.row(at: table.convert(event.locationInWindow, from: nil))
+            guard row >= 0 else { return }
+            let p = convert(event.locationInWindow, from: nil)
+            action?(row, UnitPoint(x: p.x / bounds.width, y: p.y / bounds.height))
         }
     }
 }

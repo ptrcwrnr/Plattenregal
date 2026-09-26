@@ -266,11 +266,7 @@ struct MissingCopiesControl: View {
     var body: some View {
         Button { isPresented.toggle() } label: {
             // A glass capsule like the search bar beside it.
-            HStack(spacing: 5) {
-                Circle().fill(AppStyle.errorColor).frame(width: 6, height: 6)
-                Text("Vermisst").lineLimit(1)
-                Image(systemName: "chevron.down").font(.caption2.weight(.semibold))
-            }
+            Text("Vermisst").lineLimit(1)
             .padding(.horizontal, 14)
             .frame(height: AppStyle.searchBarHeight)
             .foregroundStyle(.secondary)
