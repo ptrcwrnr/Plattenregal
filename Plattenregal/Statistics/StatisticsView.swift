@@ -167,7 +167,10 @@ struct StatisticsView: View {
             VStack(spacing: 0) {
                 AppSheetHeader(title: group.name, onClose: { filter = nil })
                 CollectionView(showShelf: { copy in filter = nil; showShelf(copy) }, analyticsFilter: group)
-            }.frame(minWidth: 850, minHeight: 650)
+            }
+            .frame(minWidth: 850, minHeight: 650)
+            .appGlassSurface(cornerRadius: 0)
+            .presentationBackground(.clear)
         }
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy) { opened = nil; showShelf(copy) } }
     }

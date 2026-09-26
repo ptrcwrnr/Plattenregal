@@ -391,25 +391,20 @@ struct AppBadge: View {
     }
 }
 
-/// Standard sheet header: title, optional subtitle, close/cancel button, divider.
-/// Used by every modal sheet so they all read as one dialog language.
+/// Top of a sheet: the red light where a window has its traffic lights
+/// (closes it, as does Esc), the title beside it.
 struct AppSheetHeader: View {
     let title: String
-    var closeTitle: String = "Schließen"
-    var onClose: (() -> Void)?
+    let onClose: () -> Void
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text(title).font(AppStyle.dialogTitle)
-                Spacer()
-                if let onClose {
-                    GhostButton(title: closeTitle, action: onClose)
-                        .keyboardShortcut(.cancelAction)
-                }
-            }
-            .padding(AppStyle.pagePadding)
-            Divider()
+        HStack(spacing: AppStyle.rowSpacing) {
+            SheetCloseLight(action: onClose)
+            Text(title).font(AppStyle.dialogTitle).lineLimit(1)
+            Spacer(minLength: 0)
         }
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, AppStyle.itemSpacing)
     }
 }
 
