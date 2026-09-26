@@ -469,7 +469,8 @@ struct ArtistPodium: View {
                                 .font(.system(.callout, design: .rounded, weight: .bold))
                                 .foregroundStyle(rank == 1 ? .white : .primary)
                                 .frame(width: 28, height: 28)
-                                .background(rank == 1 ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.regularMaterial), in: Circle())
+                                .background(rank == 1 ? AppStyle.accent : .clear, in: Circle())
+                                .glassEffect(rank == 1 ? .identity : .regular, in: .circle)
                                 .padding(6)
                         }
                         .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
@@ -579,7 +580,7 @@ struct RandomRecordCard: View {
                 .keyboardShortcut("r", modifiers: [.command, .shift])
                 .help("Neue Platte ziehen (⇧⌘R)")
                 SecondaryButton(title: pick.shelf == nil ? "Platz im Regal finden" : "Im Regal zeigen") { showShelf(pick) }
-                GhostButton(title: "Details") { open(pick) }
+                SecondaryButton(title: "Details") { open(pick) }
             }
             .controlSize(.large)
         }

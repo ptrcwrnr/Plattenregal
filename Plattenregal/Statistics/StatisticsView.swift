@@ -124,6 +124,7 @@ struct StatisticsView: View {
             .pullToRefresh(disabled: refreshBlocked, action: refresh)
             .overlay(alignment: .top) { activityPill }
         }
+        .background { AmbientBackdrop(covers: ambientCovers) }
         // Loading starts eagerly at app launch (see RootView) so this page is
         // already populated by the time it's shown; no per-appearance reload here.
         .onChange(of: model.owner) { _, _ in Task { await model.reload(container: context.container) } }
@@ -169,6 +170,11 @@ struct StatisticsView: View {
             }.frame(minWidth: 850, minHeight: 650)
         }
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy) { opened = nil; showShelf(copy) } }
+    }
+
+    /// Behind the page: the covers of the latest additions.
+    private var ambientCovers: [String] {
+        Array(model.statistics.recentlyAdded.lazy.compactMap { model.copiesByID[$0]?.release?.coverURL }.prefix(3))
     }
 
     private var refreshBlocked: Bool { model.busy || DiscogsSyncService.shared.busy }
@@ -293,7 +299,7 @@ struct StatisticsView: View {
 // MARK: - Card chrome
 
 /// A card on the statistics page: its title (also the drag handle for
-/// reordering) and content on a quiet rounded surface.
+/// reordering) and content on a Liquid Glass surface.
 private struct StatisticsMovableArea<Content: View>: View {
     let section: StatisticsSection
     var prominent = false
@@ -326,7 +332,7 @@ private struct StatisticsMovableArea<Content: View>: View {
                 .fill(prominent
                       ? AnyShapeStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.16), AppStyle.accent.opacity(0.03)],
                                                      startPoint: .topLeading, endPoint: .bottomTrailing))
-                      : AnyShapeStyle(Color.primary.opacity(0.03)))
+                      : AnyShapeStyle(Color.clear))
         }
         .backgroundPreferenceValue(StatisticsBackdropKey.self) { url in
             // A card's content can ask for a blurred cover behind the whole card.
@@ -343,9 +349,11 @@ private struct StatisticsMovableArea<Content: View>: View {
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: AppStyle.controlRadius))
+        .appGlassSurface(cornerRadius: AppStyle.controlRadius)
+        // The glass brings its own edge; a frame only marks the drop target.
         .overlay {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
-                .strokeBorder(isTargeted ? AppStyle.selectedBorder : AppStyle.borderColor, lineWidth: isTargeted ? 2 : 1)
+                .strokeBorder(AppStyle.selectedBorder.opacity(isTargeted ? 1 : 0), lineWidth: 2)
         }
         .dropDestination(for: String.self) { items, _ in
             guard let first = items.first else { return false }
