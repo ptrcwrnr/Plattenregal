@@ -189,6 +189,34 @@ private struct AmbientCover: View {
     }
 }
 
+/// Closes a sheet the way the window closes: a red light in the top left
+/// corner like the window's own, showing its × on hover. Esc closes too.
+struct SheetCloseLight: View {
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Circle()
+                .fill(Color(red: 1, green: 0.37, blue: 0.34))
+                .overlay(Circle().strokeBorder(Color.black.opacity(0.12), lineWidth: 0.5))
+                .overlay {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 7, weight: .heavy))
+                        .foregroundStyle(Color(red: 0.5, green: 0.05, blue: 0.03))
+                        .opacity(hovering ? 1 : 0)
+                }
+                .frame(width: 14, height: 14)
+                .contentShape(Circle().inset(by: -4))
+        }
+        .buttonStyle(.plain)
+        .keyboardShortcut(.cancelAction)
+        .onHover { hovering = $0 }
+        .help("Schließen")
+        .accessibilityLabel("Schließen")
+    }
+}
+
 /// One button vocabulary for the whole app: Primary (main action), Secondary
 /// (normal action), Ghost (low-emphasis/secondary action), Icon (compact icon-only).
 /// Primary and Secondary are Liquid Glass; the main action is told apart by

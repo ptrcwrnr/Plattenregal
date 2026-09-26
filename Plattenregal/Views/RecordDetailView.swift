@@ -15,11 +15,10 @@ struct RecordDetailView: View {
     @State private var error: String?
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("Meine Schallplatte").font(AppStyle.dialogTitle); Spacer()
-                GhostButton(title: "Schließen") { dismiss() }.keyboardShortcut(.cancelAction)
-            }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.cardPadding)
-            Divider()
+            // Where a window has its traffic lights.
+            SheetCloseLight { dismiss() }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16).padding(.top, 14)
             // Without the tracklist everything fits; the sheet is as tall as its content.
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 if let r = copy.release {
@@ -27,7 +26,7 @@ struct RecordDetailView: View {
                 }
                 locationCard
                 if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
-            }.padding(AppStyle.pagePadding)
+            }.padding(.horizontal, AppStyle.pagePadding).padding(.bottom, AppStyle.pagePadding).padding(.top, AppStyle.itemSpacing)
             .animation(AppStyle.standardAnimation, value: error)
         }.frame(width: 800)
         .fixedSize(horizontal: false, vertical: true)
@@ -105,7 +104,7 @@ struct ReleaseHeaderView: View {
                 Text(release.genres.joined(separator: " · "))
                 Text(release.styles.joined(separator: " · ")).foregroundStyle(.secondary)
                 if removedFromDiscogs { Text("Nicht mehr in der Discogs-Collection").foregroundStyle(.secondary) }
-                if let url = release.sourceURL { Link("Pressung auf Discogs öffnen ↗", destination: url) }
+                if let url = release.sourceURL { Link("Auf Discogs öffnen ↗", destination: url) }
             }
         }
     }
