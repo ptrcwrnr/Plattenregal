@@ -482,19 +482,12 @@ struct CollectionView: View {
                 actions(copy)
             }
         } else {
-            AppMenuSection(title: location(group.primary))
             actions(group.primary)
         }
     }
 
-    /// Where a copy stands, as the menu's heading (what the detail card showed).
-    private func location(_ copy: RecordCopy) -> String {
-        ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excludedIDs.contains(copy.id))
-    }
-
     @ViewBuilder private func tableContextMenu(_ id: UUID, items: [RecordCopy]) -> some View {
         if let copy = items.first(where: { $0.id == id }) {
-            AppMenuSection(title: location(copy))
             actions(copy)
         }
     }
