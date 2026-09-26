@@ -32,11 +32,68 @@ enum OverviewLayout: String, CaseIterable, Identifiable {
     var systemImage: String { self == .grid ? "square.grid.2x2" : "list.bullet" }
 }
 
+/// Order of the collection and wantlist. Only the alphabetical one has the
+/// letter index at the edge; the random one is shuffled anew on each launch.
+enum OverviewOrder: String, CaseIterable, Identifiable {
+    case alphabetical, random, recent
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .alphabetical: "Alphabetisch"
+        case .random: "Zufällig"
+        case .recent: "Neueste zuerst"
+        }
+    }
+    var hint: String {
+        switch self {
+        case .alphabetical: "Nach Interpret, mit dem Alphabet am Rand."
+        case .random: "Bei jedem Start neu gemischt – so fällt immer mal wieder etwas anderes ins Auge."
+        case .recent: "Zuletzt bei Discogs hinzugefügt zuerst."
+        }
+    }
+
+    /// Fixed for this run of the app, so the random order stays put while it
+    /// is open and changes with the next launch.
+    private static let launchSeed = UInt64.random(in: .min ... .max)
+    /// Position of `key` in this launch's random order.
+    static func shuffleRank(_ key: some Hashable) -> Int {
+        var hasher = Hasher()
+        hasher.combine(launchSeed)
+        hasher.combine(key)
+        return hasher.finalize()
+    }
+
+    /// `items` in this order. `key` identifies an item for the shuffle
+    /// (copies of one release share it, so they stay one tile).
+    func apply<T, K: Hashable>(_ items: [T], alphabetical: ([T]) -> [T], key: (T) -> K, added: (T) -> Date?) -> [T] {
+        switch self {
+        case .alphabetical:
+            return alphabetical(items)
+        case .random:
+            return items.map { (Self.shuffleRank(key($0)), $0) }.sorted { $0.0 < $1.0 }.map(\.1)
+        case .recent:
+            // Undated ones last, in alphabetical order.
+            let sorted = alphabetical(items)
+            let dated = sorted.enumerated().map { (added($0.element), $0.offset, $0.element) }
+            return dated.sorted { lhs, rhs in
+                switch (lhs.0, rhs.0) {
+                case let (l?, r?) where l != r: return l > r
+                case (_?, nil): return true
+                case (nil, _?): return false
+                default: return lhs.1 < rhs.1
+                }
+            }.map(\.2)
+        }
+    }
+}
+
 /// Keys and limits of the `@AppStorage` display settings, shared by the
 /// settings and the pages that read them.
 enum DisplaySettings {
     static let collectionLayoutKey = "collectionLayout"
     static let wantlistLayoutKey = "wantlistLayout"
+    static let collectionOrderKey = "collectionOrder"
+    static let wantlistOrderKey = "wantlistOrder"
     static let coverSizeKey = "coverSize"
     static let statisticsOrderKey = "statisticsSectionOrder"
 

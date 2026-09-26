@@ -184,6 +184,8 @@ struct AppearanceSettingsView: View {
     @State private var preferences = AppPreferences.shared
     @AppStorage(DisplaySettings.collectionLayoutKey) private var collectionLayout = OverviewLayout.grid
     @AppStorage(DisplaySettings.wantlistLayoutKey) private var wantlistLayout = OverviewLayout.grid
+    @AppStorage(DisplaySettings.collectionOrderKey) private var collectionOrder = OverviewOrder.alphabetical
+    @AppStorage(DisplaySettings.wantlistOrderKey) private var wantlistOrder = OverviewOrder.alphabetical
     @AppStorage(DisplaySettings.coverSizeKey) private var storedCoverSize = DisplaySettings.defaultCoverSize
     @AppStorage(DisplaySettings.statisticsOrderKey) private var statisticsOrder = ""
 
@@ -218,6 +220,18 @@ struct AppearanceSettingsView: View {
                 SettingsRow(title: "Collection") { OverviewLayoutPicker(selection: $collectionLayout) }
                 Divider()
                 SettingsRow(title: "Wantlist") { OverviewLayoutPicker(selection: $wantlistLayout) }
+            }
+            SettingsCard(title: "Reihenfolge",
+                         subtitle: "Wie Collection und Wantlist angeordnet sind. Das Alphabet am Rand gibt es nur bei alphabetischer Reihenfolge.") {
+                SettingsRow(title: "Collection", hint: collectionOrder.hint) {
+                    GlassSegmentedPicker(selection: $collectionOrder, options: OverviewOrder.allCases) { Text($0.title) }
+                        .accessibilityLabel("Reihenfolge der Collection")
+                }
+                Divider()
+                SettingsRow(title: "Wantlist", hint: wantlistOrder.hint) {
+                    GlassSegmentedPicker(selection: $wantlistOrder, options: OverviewOrder.allCases) { Text($0.title) }
+                        .accessibilityLabel("Reihenfolge der Wantlist")
+                }
             }
             SettingsCard(title: "Cover",
                          subtitle: "Die Spalten füllen die Fensterbreite immer ganz aus.") {

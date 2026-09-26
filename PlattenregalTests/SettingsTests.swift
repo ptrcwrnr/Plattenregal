@@ -4,6 +4,19 @@ import Testing
 
 extension AllTests {
     @MainActor struct SettingsTests {
+        @Test func overviewOrderShufflesStablyAndSortsNewestFirst() {
+            let items = Array(1...50)
+            let alphabetical: ([Int]) -> [Int] = { $0.sorted() }
+            let random = OverviewOrder.random.apply(items, alphabetical: alphabetical, key: { $0 }, added: { _ in nil })
+            // Same order within one launch, all items kept, not just the alphabetical one.
+            #expect(random == OverviewOrder.random.apply(items.reversed(), alphabetical: alphabetical, key: { $0 }, added: { _ in nil }))
+            #expect(random.sorted() == items)
+            #expect(random != items)
+            // Newest first; undated last, in alphabetical order.
+            let date = { (n: Int) -> Date? in n > 3 ? nil : Date(timeIntervalSince1970: Double(n)) }
+            #expect(OverviewOrder.recent.apply([5, 1, 4, 3, 2], alphabetical: alphabetical, key: { $0 }, added: date) == [3, 2, 1, 4, 5])
+        }
+
         /// In-memory stand-in for the keychain.
         private final class FakeKeychain {
             var token: String?

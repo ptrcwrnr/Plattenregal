@@ -195,7 +195,8 @@ struct WantlistView: View {
 
     /// Same margins as the collection (see CollectionView).
     private var pageMargin: CGFloat { AppStyle.pagePadding + 4 }
-    private var alphabetGutter: CGFloat { 24 }
+    private var alphabetGutter: CGFloat { order == .alphabetical ? 24 : 0 }
+    @AppStorage(DisplaySettings.wantlistOrderKey) private var order = OverviewOrder.alphabetical
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
         width - 2 * pageMargin - alphabetGutter
     }
@@ -258,7 +259,7 @@ struct WantlistView: View {
                             .padding(.horizontal, pageMargin)
                             .padding(.trailing, alphabetGutter)
                     }
-                    alphabetNavigation
+                    if order == .alphabetical { alphabetNavigation }
                 }
             }
         }
@@ -269,6 +270,7 @@ struct WantlistView: View {
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: query)
         .settingsOpener($settingsTab)
+        .onChange(of: order) { _, _ in scrollPosition = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
         .task { rebuildCollectionIndex(); rebuild() }
         .onChange(of: entries) { _, _ in rebuild() }
@@ -296,7 +298,8 @@ struct WantlistView: View {
     private func rebuild() {
         let owner = owner
         let owned = owner.map { owner in entries.filter { $0.owner == owner } } ?? entries
-        sortedEntries = WantlistPresentation.sorted(owned)
+        sortedEntries = order.apply(owned, alphabetical: WantlistPresentation.sorted,
+                                    key: \.releaseID, added: { DiscogsDate.parse($0.dateAdded) })
         searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
         loaded = true
         applyQuery()

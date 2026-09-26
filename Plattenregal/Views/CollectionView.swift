@@ -51,7 +51,8 @@ struct CollectionView: View {
     }
     // Room for the alphabet index; header, grid and table all leave it free
     // so their right edges stay aligned.
-    private var alphabetGutter: CGFloat { 24 }
+    private var alphabetGutter: CGFloat { showsAlphabetIndex ? 24 : 0 }
+    @AppStorage(DisplaySettings.collectionOrderKey) private var order = OverviewOrder.alphabetical
     /// Latest card frames for the rubber band. A plain reference, not state:
     /// the lazy grid republishes frames on every scroll step, and writing them
     /// must not re-render the view — but hit-testing needs the current layout.
@@ -129,7 +130,9 @@ struct CollectionView: View {
             (analyticsIDs == nil || analyticsIDs!.contains(copy.id)) &&
             copy.isInCurrentCollection(owner: owner)
         }
-        base = showsAlphabetIndex ? SortingService.sortedByAlphabetSection(matched) : SortingService.sorted(matched)
+        base = order.apply(matched, alphabetical: SortingService.sortedByAlphabetSection,
+                           key: { CollectionCoverGroup.identity(of: $0) },
+                           added: { DiscogsDate.parse($0.discogsDateAdded) })
         searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
         letters = showsAlphabetIndex
             ? Dictionary(base.map { ($0.id, SortingService.alphabetSection(for: $0.release?.displayArtist ?? "")) }, uniquingKeysWith: { a, _ in a })
@@ -410,6 +413,7 @@ struct CollectionView: View {
             }
         }
         .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
+        .onChange(of: order) { _, _ in scrollPosition = nil; rebuildBase(animated: true) }
         .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantlistIndex(); rebuildBase() }
         .onChange(of: copies) { _, _ in rebuildBase() }
         .onChange(of: labelStyle) { _, style in shelfLabels = ShelfRangeLabels.compute(for: shelves, style: style) }
@@ -440,7 +444,7 @@ struct CollectionView: View {
         }
     }
 
-    private var showsAlphabetIndex: Bool { true }
+    private var showsAlphabetIndex: Bool { order == .alphabetical }
 
     private func alphabetAnchors(for items: [RecordCopy]) -> [String: UUID] {
         items.reduce(into: [:]) { result, copy in
