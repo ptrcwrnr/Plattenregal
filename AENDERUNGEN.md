@@ -1,3 +1,9 @@
+# Letzte Prüfung: Cover ohne Bild, verschobene Ordner · 26.09.2026
+
+- **Leere Cover-URL** (`DiscogsBasicInformation.apply`): Discogs schickt für Platten ohne Bild `""`. Das wurde als Cover gespeichert und belegte z. B. einen der drei Plätze im Ambient-Hintergrund. Jetzt bleibt es leer, und wenn nur das Vorschaubild existiert, wird es verwendet. Greift nach dem nächsten Sync.
+- **Verschobener Sicherungs- oder Export-Ordner** (`FolderAccess.url`): Das veraltete Lesezeichen wurde ohne geöffneten Zugriff erneuert – das scheitert in der Sandbox still, es blieb dauerhaft veraltet. Jetzt mit Zugriff.
+- Test: `emptyCoverFallsBackToThumbnailOrNothing` (171 Tests, 0 Fehler).
+
 # Zweite Prüfung: Kontowahl, Discogs-Wartezeit · 26.09.2026
 
 - **Aktuelles Discogs-Konto** (`DiscogsAccount.lastSync`): Zählte den ersten vorhandenen Sync-Zeitpunkt (Voll-Sync vor Collection vor Wantlist) statt des neuesten. Nach einem alten Voll-Sync von Konto A, einem Sync von Konto B und einem neuen Collection-Sync von A blieb B „aktuell“ – Collection, Regal, Statistik, Export und Sicherung zeigten das falsche Konto. Jetzt entscheidet der neueste Sync gleich welcher Art.

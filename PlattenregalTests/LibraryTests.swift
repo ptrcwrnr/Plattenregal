@@ -401,6 +401,19 @@ extension AllTests {
             #expect(line([A(id: 1, name: "Solo", join: "")]) == "Solo")
             #expect(line([]) == "")
         }
+        @Test func emptyCoverFallsBackToThumbnailOrNothing() throws {
+            func cover(_ image: String?, _ thumb: String?) throws -> String? {
+                let basic = DiscogsBasicInformation(id: 1, title: "T", artists: nil, year: nil, labels: nil, formats: nil,
+                    genres: nil, styles: nil, cover_image: image, thumb: thumb, resource_url: nil, master_id: nil)
+                let release = Release(discogsID: 1, artist: "", title: "")
+                try basic.apply(to: release, at: .now)
+                return release.coverURL
+            }
+            #expect(try cover("https://example.com/c.jpg", "https://example.com/t.jpg") == "https://example.com/c.jpg")
+            #expect(try cover("", "https://example.com/t.jpg") == "https://example.com/t.jpg")
+            #expect(try cover(" ", nil) == nil)
+            #expect(try cover(nil, "") == nil)
+        }
         @Test func positionsSurviveReload() throws {
             let (container, shelves, service) = try fixture()
             let a = try add(service, shelves[0], "A")

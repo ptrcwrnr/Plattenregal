@@ -16,8 +16,13 @@ nonisolated struct FolderAccess: Sendable {
         var stale = false
         guard let url = try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale)
         else { return nil }
-        if stale, let renewed = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
-            AppDefaults.store.set(renewed, forKey: key)
+        if stale {
+            // A new security-scoped bookmark needs the folder open, or it fails silently.
+            let access = url.startAccessingSecurityScopedResource()
+            defer { if access { url.stopAccessingSecurityScopedResource() } }
+            if let renewed = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+                AppDefaults.store.set(renewed, forKey: key)
+            }
         }
         return url
     }

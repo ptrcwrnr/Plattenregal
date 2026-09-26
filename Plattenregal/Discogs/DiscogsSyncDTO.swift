@@ -56,7 +56,8 @@ nonisolated struct DiscogsBasicInformation: Codable, Sendable {
         release.catalogNumber = (labels ?? []).compactMap(\.catno).joined(separator: ", ")
         release.format = (formats ?? []).map { ([$0.qty, $0.name] + ($0.descriptions ?? []).map { Optional($0) }).compactMap { $0 }.joined(separator: " · ") }.joined(separator: ", ")
         release.genres = genres ?? []; release.styles = styles ?? []
-        release.coverURL = cover_image
+        // Discogs sends "" for releases without an image; the thumbnail stands in when only it exists.
+        release.coverURL = [cover_image, thumb].compactMap { $0?.trimmingCharacters(in: .whitespaces) }.first { !$0.isEmpty }
         release.masterID = master_id
         release.basicInformation = try DiscogsEncoding.data(self)
         release.fetchedAt = date
