@@ -183,6 +183,8 @@ struct WantlistView: View {
     @State private var visibleEntries: [WantlistEntry] = []
     @State private var alphabetIndex: [String: PersistentIdentifier] = [:]
     @State private var scrollPosition: PersistentIdentifier?
+    @State private var hasToken = true
+    @State private var settingsTab: AppSettingsView.Tab?
     /// The entry whose menu is open, and where it was right-clicked.
     @State private var menuFor: (id: PersistentIdentifier, anchor: UnitPoint)?
     /// The window's page switch, to jump to the collection's hits.
@@ -228,8 +230,12 @@ struct WantlistView: View {
                     "Wantlist ist leer",
                     systemImage: "heart.text.clipboard",
                     description: Text(DemoMode.isActive ? DemoMode.emptyHint : "Die Wantlist kommt von Discogs. Den Token dafür trägst du in den Einstellungen ein."),
-                    actionTitle: DemoMode.isActive ? "Demo neu starten" : sync.busy ? nil : "Jetzt synchronisieren"
-                ) { if DemoMode.isActive { DemoMode.restart() } else { syncWantlist() } }
+                    actionTitle: DemoMode.isActive ? "Demo neu starten" : !hasToken ? "Token eintragen" : sync.busy ? nil : "Jetzt synchronisieren"
+                ) {
+                    if DemoMode.isActive { DemoMode.restart() }
+                    else if !hasToken { settingsTab = .discogs }
+                    else { syncWantlist() }
+                }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if visibleEntries.isEmpty {
                 AppEmptyState(
@@ -259,6 +265,8 @@ struct WantlistView: View {
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: query)
+        .settingsOpener($settingsTab)
+        .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
         .task { rebuildCollectionIndex(); rebuild() }
         .onChange(of: entries) { _, _ in rebuild() }
         .onChange(of: copies) { _, _ in rebuildCollectionIndex(); applyQuery() }

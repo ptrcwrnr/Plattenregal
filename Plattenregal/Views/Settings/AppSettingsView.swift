@@ -2,6 +2,39 @@ import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 
+/// A settings tab asked for from the main window ("Token eintragen" on an
+/// empty collection, "Belegung wiederherstellen" on an empty shelf). Read
+/// when the settings window opens, and followed while it is already open.
+@MainActor @Observable
+final class SettingsRequest {
+    static let shared = SettingsRequest()
+    private(set) var tab: AppSettingsView.Tab?
+    private(set) var count = 0
+    func show(_ tab: AppSettingsView.Tab) { self.tab = tab; count += 1 }
+    /// The requested tab, once.
+    func take() -> AppSettingsView.Tab? { defer { tab = nil }; return tab }
+}
+
+extension View {
+    /// Opens the settings window on `tab`.
+    func settingsOpener(_ open: Binding<AppSettingsView.Tab?>) -> some View {
+        modifier(SettingsOpener(tab: open))
+    }
+}
+
+private struct SettingsOpener: ViewModifier {
+    @Binding var tab: AppSettingsView.Tab?
+    @Environment(\.openSettings) private var openSettings
+    func body(content: Content) -> some View {
+        content.onChange(of: tab) { _, requested in
+            guard let requested else { return }
+            SettingsRequest.shared.show(requested)
+            openSettings()
+            tab = nil
+        }
+    }
+}
+
 /// Settings in the same card language as the app's pages: rounded titles,
 /// quiet card surfaces and the shared button vocabulary.
 struct AppSettingsView: View {
@@ -13,8 +46,9 @@ struct AppSettingsView: View {
         if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--settings-tab=") }),
            let tab = Tab(rawValue: String(raw.dropFirst("--settings-tab=".count))) { return tab }
         #endif
-        return .general
+        return SettingsRequest.shared.take() ?? .general
     }()
+    @State private var request = SettingsRequest.shared
 
     var body: some View {
         // The same Liquid Glass switch as the main window, instead of tabs.
@@ -30,6 +64,8 @@ struct AppSettingsView: View {
             }
         }
         .frame(width: 760, height: 620)
+        // Asked for from the main window while this one is already open.
+        .onChange(of: request.count) { if let asked = request.take() { tab = asked } }
         .navigationTitle(tab.rawValue)
         .toolbar(removing: .title)
         .toolbar {

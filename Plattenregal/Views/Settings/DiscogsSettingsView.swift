@@ -12,6 +12,7 @@ struct DiscogsSettingsView: View {
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
     @State private var confirmingRemoval = false
+    @FocusState private var tokenFocused: Bool
 
     /// The account the stored token belongs to. After a successful test with
     /// a token for another account, the old account's tiles and folders are
@@ -37,6 +38,9 @@ struct DiscogsSettingsView: View {
             SettingsCard(title: "Konto",
                          subtitle: DemoMode.isActive ? "Im Demo-Modus ist Discogs ausgeschaltet – Token und Synchronisierung sind gesperrt, dein gespeicherter Token wird nicht gelesen." : accountStatus) {
                 SecureField("Persönlicher API-Token", text: $model.token)
+                    .focused($tokenFocused)
+                    // Without a token (first start) the field is where to begin.
+                    .onAppear { if !model.hasStoredToken && !DemoMode.isActive { tokenFocused = true } }
                     .textFieldStyle(.plain)
                     .padding(.horizontal, 10)
                     .frame(height: AppStyle.controlHeight)

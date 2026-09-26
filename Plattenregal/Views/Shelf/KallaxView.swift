@@ -78,6 +78,7 @@ struct KallaxView: View {
     /// whose records changed are computed again.
     @State private var shelfContent = ShelfContentCache()
     @State private var palette = StylePalette()
+    @State private var settingsTab: AppSettingsView.Tab?
     /// The side the next cabinet slides in from (see `show(_:)`).
     @State private var cabinetEdge: Edge = .trailing
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
@@ -217,6 +218,11 @@ struct KallaxView: View {
             let lit = searchResults.litShelfIDs
             VStack(alignment: .leading, spacing: 28) {
                 if DemoMode.isActive { DemoBanner() }
+                if nothingPlaced {
+                    // Typically right after a new install and the first sync.
+                    AppBanner(message: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her.",
+                              kind: .info, actionTitle: "Belegung wiederherstellen …", action: { settingsTab = .backup })
+                }
                 header
                     // The search results float over the rack below.
                     .zIndex(1)
@@ -262,6 +268,7 @@ struct KallaxView: View {
             if !searchQuery.isEmpty { applySearch() }
         }
         .onChange(of: searchQuery) { applySearch() }
+        .settingsOpener($settingsTab)
         .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: searchQuery)
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         // Another account synced: other records count as in the collection.
@@ -342,6 +349,11 @@ struct KallaxView: View {
         guard let shelf = detailShelf, !shelf.isReserved,
               let style = shelfStats[shelf.id]?.dominantColorStyle else { return nil }
         return palette.color(for: style, solid: true)
+    }
+
+    /// Records are there, but none stands in a shelf yet.
+    private var nothingPlaced: Bool {
+        !DemoMode.isActive && !allCopies.isEmpty && !allCopies.contains { $0.shelf != nil }
     }
 
     /// Narrow cabinets (1 × 4, 2 × 2 …) keep roughly square compartments

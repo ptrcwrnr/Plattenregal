@@ -62,6 +62,9 @@ struct CollectionView: View {
     @State private var dragBaseSelection: Set<UUID> = []
     /// List layout: the row whose menu or quick look is open, and where.
     @State private var tableMenu: (id: UUID, anchor: UnitPoint)?
+    /// A Discogs token is stored; without one an empty collection leads to it.
+    @State private var hasToken = true
+    @State private var settingsTab: AppSettingsView.Tab?
     @State private var tableQuickLook: (id: UUID, anchor: UnitPoint)?
     /// Copy whose popover is open (single click on a cover).
     @State private var quickLook: UUID?
@@ -254,10 +257,17 @@ struct CollectionView: View {
                         AppEmptyState("Noch keine Schallplatten", systemImage: "opticaldisc",
                             description: Text(DemoMode.emptyHint), actionTitle: "Demo neu starten") { DemoMode.restart() }
                     } else {
-                        AppEmptyState("Noch keine Schallplatten", systemImage: "opticaldisc",
-                            description: Text("Die Collection kommt von Discogs. Den Token dafür trägst du in den Einstellungen ein."),
-                            actionTitle: sync.busy ? nil : "Jetzt synchronisieren") {
-                            sync.start(.collection, container: context.container)
+                        if hasToken {
+                            AppEmptyState("Noch keine Schallplatten", systemImage: "opticaldisc",
+                                description: Text("Die Collection kommt von Discogs. Eine Synchronisierung holt deine Sammlung."),
+                                actionTitle: sync.busy ? nil : "Jetzt synchronisieren") {
+                                sync.start(.collection, container: context.container)
+                            }
+                        } else {
+                            // First start: nothing works without the token, so that is the way in.
+                            AppEmptyState("Willkommen bei Plattenregal", systemImage: "opticaldisc",
+                                description: Text("Deine Collection kommt von Discogs. Trag deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her."),
+                                actionTitle: "Token eintragen") { settingsTab = .discogs }
                         }
                     }
                 }
@@ -422,6 +432,8 @@ struct CollectionView: View {
         .animation(AppStyle.standardAnimation, value: showsControls)
         .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
         .background { if analyticsFilter == nil { AmbientBackdrop(covers: ambientCovers) } }
+        .settingsOpener($settingsTab)
+        .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }

@@ -6,6 +6,14 @@ nonisolated enum KeychainStore {
         kSecAttrService as String: "de.private.Plattenregal.discogs", kSecAttrAccount as String: "personal-token"] }
     /// Demo launches use sample data and must never read – or overwrite – the real token.
     private static var isDemo: Bool { DemoMode.isActive }
+    /// A non-empty token is stored. An unreadable keychain counts as yes: the
+    /// sync then reports the actual problem.
+    static var hasToken: Bool {
+        // The demo never touches the keychain.
+        if DemoMode.isActive { return true }
+        do { return !(try load() ?? "").isEmpty } catch { return true }
+    }
+
     static func load() throws -> String? {
         if isDemo { return nil }
         var q = query; q[kSecReturnData as String] = true; q[kSecMatchLimit as String] = kSecMatchLimitOne
