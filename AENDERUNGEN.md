@@ -1,3 +1,12 @@
+# Zweite Prüfung: Kontowahl, Discogs-Wartezeit · 26.09.2026
+
+- **Aktuelles Discogs-Konto** (`DiscogsAccount.lastSync`): Zählte den ersten vorhandenen Sync-Zeitpunkt (Voll-Sync vor Collection vor Wantlist) statt des neuesten. Nach einem alten Voll-Sync von Konto A, einem Sync von Konto B und einem neuen Collection-Sync von A blieb B „aktuell“ – Collection, Regal, Statistik, Export und Sicherung zeigten das falsche Konto. Jetzt entscheidet der neueste Sync gleich welcher Art.
+- **Wartezeit bei „zu viele Anfragen“** (`DiscogsAPIClient.retryDelay`): Ein unsinnig großes `Retry-After` hätte jede Discogs-Anfrage stundenlang ohne Rückmeldung blockiert. Jetzt höchstens 10 Minuten; Leerzeichen und vergangene Zeitpunkte werden sauber behandelt.
+- **Belegung zurücksetzen in der Demo**: Die Meldung verwies auf eine Sicherung, die die Demo nie schreibt.
+- „Ohne Collection aus dem Regal nehmen“ mit inzwischen leerer Liste schreibt nichts und protokolliert nichts.
+- Veraltete Kommentare (Wantlist als „kompakte Tabelle“, „Auswahl aufheben“) und der Vorschau-Name „Übersicht“ angepasst.
+- Tests: `mostRecentSyncOfAnyKindPicksTheCurrentAccount`, `retryAfterSecondsAndHTTPDate` um Grenzfälle erweitert (170 Tests, 0 Fehler).
+
 # Prüfung der letzten Änderungen · 26.09.2026
 
 - **Zufällige Reihenfolge je Seite** (`OverviewOrder`): Collection und Wantlist teilten sich einen Zufallswert. Stellte man die Wantlist auf „Zufällig“, war die Collection-Reihenfolge danach eine andere – sichtbar erst beim nächsten Sync, als plötzliches Umsortieren. Jetzt mischt jede Seite für sich.

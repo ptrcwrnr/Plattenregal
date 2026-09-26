@@ -101,6 +101,8 @@ struct PositionService {
     /// Takes several copies out of their shelves in one transaction: either all
     /// of them leave and every affected shelf closes its gaps, or none does.
     func unplace(_ copies: [RecordCopy]) throws {
+        // The confirmation may come after the last one left by other means.
+        guard !copies.isEmpty else { return }
         try save {
             let ids = Set(copies.map(\.id))
             let sources = Dictionary(copies.compactMap { c in c.shelf.map { ($0.id, $0) } }, uniquingKeysWith: { a, _ in a }).values

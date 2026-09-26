@@ -125,7 +125,7 @@ private struct ErrorInfoButton: View {
     }
 }
 
-/// The small "x" used to cancel a running task, like "Auswahl aufheben".
+/// The small "x" used to cancel a running sync.
 private struct CancelIconButton: View {
     let help: String
     let action: () -> Void
@@ -140,8 +140,9 @@ private struct CancelIconButton: View {
         .accessibilityLabel(help)
     }
 }
-/// Wantlist in the shelf/statistics style: slim header bar (search, count,
-/// sync) and a compact table instead of cards.
+/// The Discogs wantlist as covers or a list, like the collection: search
+/// after ⌘F, a popover with the tracklist on click, the app's own menu on
+/// right-click.
 struct WantlistView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL

@@ -117,10 +117,17 @@ actor DiscogsAPIClient {
     private static let httpDate = Date.VerbatimFormatStyle(
         format: "\(weekday: .abbreviated), \(day: .twoDigits) \(month: .abbreviated) \(year: .defaultDigits) \(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits):\(second: .twoDigits) GMT",
         locale: Locale(identifier: "en_US_POSIX"), timeZone: .gmt, calendar: Calendar(identifier: .gregorian))
+    /// Discogs counts in one-minute windows; anything far beyond (a broken
+    /// header or proxy) would block every request for hours without a word.
+    nonisolated static let maximumRetryDelay = 600
     nonisolated static func retryDelay(_ value: String?, now: Date = .now) -> Int {
-        if let value, let seconds = Int(value) { return max(1, seconds) }
-        if let value, let date = try? httpDate.parseStrategy.parse(value) { return max(1, Int(ceil(date.timeIntervalSince(now)))) }
-        return 60
+        let seconds: Int
+        if let value, let parsed = Int(value.trimmingCharacters(in: .whitespaces)) { seconds = parsed }
+        else if let value, let date = try? httpDate.parseStrategy.parse(value) {
+            let interval = date.timeIntervalSince(now)
+            seconds = interval.isFinite ? Int(ceil(min(interval, Double(maximumRetryDelay)))) : 60
+        } else { return 60 }
+        return min(max(1, seconds), maximumRetryDelay)
     }
     private func request<T: Decodable>(path: String, items: [URLQueryItem] = []) async throws -> T {
         for attempt in 0...2 {

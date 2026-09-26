@@ -52,6 +52,6 @@ enum PreviewData {
         } catch { fatalError("In-memory preview failed: \(error)") }
     }
 }
-#Preview("Übersicht") { RootView().modelContainer(PreviewData.container).frame(width: 1250, height: 850) }
+#Preview("Hauptfenster") { RootView().modelContainer(PreviewData.container).frame(width: 1250, height: 850) }
 #Preview("KALLAX") { KallaxView(requests: ShelfRequests()).modelContainer(PreviewData.container).frame(width: 1000, height: 800) }
 #endif

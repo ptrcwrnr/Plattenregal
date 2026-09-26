@@ -25,6 +25,11 @@ extension AllTests {
             #expect(DiscogsAPIClient.retryDelay("12") == 12)
             #expect(DiscogsAPIClient.retryDelay(nil) == 60)
             #expect(DiscogsAPIClient.retryDelay("Thu, 01 Jan 1970 00:01:00 GMT", now: Date(timeIntervalSince1970: 0)) == 60)
+            // Past dates wait a second, absurd values no longer than the cap.
+            #expect(DiscogsAPIClient.retryDelay("Thu, 01 Jan 1970 00:01:00 GMT", now: Date(timeIntervalSince1970: 3600)) == 1)
+            #expect(DiscogsAPIClient.retryDelay("9999999") == DiscogsAPIClient.maximumRetryDelay)
+            #expect(DiscogsAPIClient.retryDelay("-5") == 1)
+            #expect(DiscogsAPIClient.retryDelay("bald") == 60)
         }
         @Test func largeCollectionMergeAndRepeat() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -221,6 +226,17 @@ extension AllTests {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry()]); try merge(c, collection: [], owner: "other")
             #expect(try copies(c).first?.discogsActive == true)
+        }
+        @Test func mostRecentSyncOfAnyKindPicksTheCurrentAccount() {
+            let day = { (n: Double) in Date(timeIntervalSince1970: n * 86400) }
+            // A: full sync on day 1, B: collection on day 2, then A again, only its collection, on day 3.
+            let a = DiscogsAccount(username: "a"); a.lastFullSync = day(1); a.lastCollectionSync = day(3)
+            let b = DiscogsAccount(username: "b"); b.lastCollectionSync = day(2); b.lastWantlistSync = day(2)
+            #expect(DiscogsAccount.current(in: [a, b])?.username == "a")
+            #expect(DiscogsAccount.current(in: [b, a])?.username == "a")
+            b.lastWantlistSync = day(4)
+            #expect(DiscogsAccount.current(in: [a, b])?.username == "b")
+            #expect(DiscogsAccount.current(in: []) == nil)
         }
         /// From V2 on, the oldest store with synced copies, all the way to the current schema.
         @Test func oldStoreMigrationPreservesLocalData() throws {

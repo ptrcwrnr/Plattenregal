@@ -91,7 +91,9 @@ extension DiscogsAccount {
     static func current(in accounts: [DiscogsAccount]) -> DiscogsAccount? {
         accounts.max { $0.lastSync < $1.lastSync }
     }
-    var lastSync: Date { lastFullSync ?? lastCollectionSync ?? lastWantlistSync ?? .distantPast }
+    /// The latest of its syncs, whichever kind: a collection sync after an
+    /// older full sync makes the account current again.
+    var lastSync: Date { [lastFullSync, lastCollectionSync, lastWantlistSync].compactMap { $0 }.max() ?? .distantPast }
 }
 
 extension RecordCopy {

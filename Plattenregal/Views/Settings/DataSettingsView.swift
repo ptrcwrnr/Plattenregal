@@ -250,7 +250,9 @@ struct DataSettingsView: View {
         case .locations:
             do {
                 try service.resetLocations()
-                resetStatus = ("Alle Standorte zurückgesetzt. Die vorherige Belegung liegt unter „Sicherung“.", false)
+                // The demo writes no backups (see `ResetService.safetyBackup`).
+                resetStatus = (DemoMode.isActive ? "Alle Standorte zurückgesetzt."
+                               : "Alle Standorte zurückgesetzt. Die vorherige Belegung liegt unter „Sicherung“.", false)
             } catch { resetStatus = (error.reportedMessage(), true) }
         case .settings:
             ResetService.resetSettings()
