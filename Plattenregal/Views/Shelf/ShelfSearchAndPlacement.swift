@@ -173,6 +173,7 @@ struct ShelfPositionStrip: View {
                 onSelect: select
             )
             .frame(height: 46)
+            .overlay { pulledOutCover }
             HStack(spacing: AppStyle.rowSpacing) {
                 Group {
                     if let insertionPosition {
@@ -201,6 +202,28 @@ struct ShelfPositionStrip: View {
             .font(.caption)
             .foregroundStyle(.secondary)
         }
+    }
+
+    /// The pulled-out record's cover on a small glass card beside its spine,
+    /// on whichever side has room. Purely visual: clicks reach the spines.
+    private var pulledOutCover: some View {
+        GeometryReader { geometry in
+            if let copy = selectedCopy, let slot = selectedSlot {
+                let card: CGFloat = 52
+                let width = geometry.size.width / CGFloat(max(slots, stats.spineStyles.count, 1))
+                let spine = (CGFloat(slot) - 0.5) * width
+                let offset = max(width, 3) + 8 + card / 2
+                let x = spine + offset + card / 2 <= geometry.size.width ? spine + offset : spine - offset
+                CoverView(url: copy.release?.coverURL, size: card - 8)
+                    .padding(4)
+                    .glassEffect(.regular, in: .rect(cornerRadius: 10))
+                    .position(x: x, y: geometry.size.height - card / 2)
+                    .id(copy.id)
+                    .transition(AppStyle.reduceMotion ? .opacity : .scale(scale: 0.8, anchor: .bottom).combined(with: .opacity))
+            }
+        }
+        .allowsHitTesting(false)
+        .animation(AppStyle.standardAnimation, value: selectedCopy?.id)
     }
 }
 

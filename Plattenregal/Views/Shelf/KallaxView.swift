@@ -77,6 +77,8 @@ struct KallaxView: View {
     /// whose records changed are computed again.
     @State private var shelfContent = ShelfContentCache()
     @State private var palette = StylePalette()
+    /// The side the next cabinet slides in from (see `show(_:)`).
+    @State private var cabinetEdge: Edge = .trailing
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
 
     /// Compartments of the active cabinets, cabinet by cabinet in reading
@@ -225,6 +227,7 @@ struct KallaxView: View {
                     stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
                     rangeLabel: { rangeLabels[$0.id] },
                     palette: palette,
+                    spineSlots: spineSlots,
                     selectedID: detailShelf?.id,
                     litIDs: lit,
                     lockPreview: lockPreview,
@@ -233,8 +236,11 @@ struct KallaxView: View {
                 )
                 // A compact overview with roughly KALLAX-like proportions, so the
                 // compartment area below (strip + table) gets most of the height.
-                .frame(height: CGFloat(shownCabinet?.rows ?? ShelfGeometry.rows) * 62 + 2)
+                .frame(height: ShelfFurnitureMetrics.height(rows: shownCabinet?.rows ?? ShelfGeometry.rows))
                 .frame(maxWidth: furnitureWidth(geometry.size.width), alignment: .leading)
+                // Another cabinet slides in from the side it lies on.
+                .id(shownCabinet?.id)
+                .transition(AppStyle.reduceMotion ? .opacity : .push(from: cabinetEdge))
                 shelfDetail
                     .frame(maxHeight: .infinity, alignment: .top)
             }
@@ -242,6 +248,7 @@ struct KallaxView: View {
             .padding(.top, AppStyle.pagePadding)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
+            .background { ShelfAmbience(color: ambientColor, coverURL: focusCopy?.release?.coverURL) }
             .onExitCommand { if placement != nil { cancelPlacement() } else { deselect() } }
             .overlay(alignment: .bottom) { undoToast }
         }
@@ -325,6 +332,13 @@ struct KallaxView: View {
         ) { Button("OK") {} } message: { Text(error ?? "") }
     }
 
+    /// The mood behind the glass: the selected compartment's main genre color.
+    private var ambientColor: Color? {
+        guard let shelf = detailShelf, !shelf.isReserved,
+              let style = shelfStats[shelf.id]?.dominantColorStyle else { return nil }
+        return palette.color(for: style, solid: true)
+    }
+
     /// Narrow cabinets (1 × 4, 2 × 2 …) keep roughly square compartments
     /// instead of stretching across the whole page.
     private func furnitureWidth(_ available: CGFloat) -> CGFloat {
@@ -371,7 +385,10 @@ struct KallaxView: View {
         guard cabinet.id != shownCabinet?.id else { return }
         let own = shelves.filter { $0.cabinet?.id == cabinet.id }
         guard let shelf = own.first(where: { !$0.isReserved && !$0.copies.isEmpty }) ?? own.first else { return }
-        selectShelf(shelf)
+        let from = activeCabinets.firstIndex { $0.id == shownCabinet?.id } ?? 0
+        let to = activeCabinets.firstIndex { $0.id == cabinet.id } ?? 0
+        cabinetEdge = to > from ? .trailing : .leading
+        withAnimation(AppStyle.layoutAnimation ?? AppStyle.fadeAnimation) { selectShelf(shelf) }
     }
 
     /// The search bar (only after ⌘F) and the status controls beside it;
@@ -480,6 +497,9 @@ struct KallaxView: View {
                         delete: { pendingDelete = $0 },
                         setMissing: setMissing
                     )
+                    .padding(.vertical, 4)
+                    .appGlassSurface(cornerRadius: AppStyle.cardRadius + 4)
+                    .modifier(FadeInOnChange(value: shown.id))
                 }
             }
         } else {
@@ -548,8 +568,7 @@ struct KallaxView: View {
             .font(.callout)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(.regularMaterial, in: Capsule())
-            .overlay(Capsule().strokeBorder(AppStyle.borderColor))
+            .glassEffect(.regular, in: .capsule)
             .padding(.bottom, 16)
             .transition(AppStyle.funnelTransition(from: .bottom))
             .task(id: entry.id) {
@@ -729,5 +748,78 @@ struct KallaxView: View {
         if placement?.copy.id == copy.id { placement = nil }
         do { try PositionService(context: context).delete(copy) }
         catch { self.error = error.reportedMessage() }
+    }
+}
+
+/// Behind the shelf page: a faint glow in the selected compartment's genre
+/// color, and the picked record's cover, heavily blurred, once it has loaded.
+/// Gives the glass something to refract without competing with it.
+private struct ShelfAmbience: View {
+    let color: Color?
+    let coverURL: String?
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            if let color {
+                RadialGradient(colors: [color.opacity(scheme == .dark ? 0.3 : 0.16), .clear],
+                               center: .top, startRadius: 0, endRadius: 620)
+                    .transition(.opacity)
+            }
+            if let coverURL {
+                AmbientCover(url: coverURL)
+                    .id(coverURL)
+                    .transition(.opacity)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .animation(AppStyle.fadeAnimation.speed(0.6), value: coverURL)
+        .animation(AppStyle.fadeAnimation.speed(0.6), value: color)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// A cover as a blurred wash; nothing at all until the image is there, so
+/// no placeholder ever flashes behind the page.
+private struct AmbientCover: View {
+    let url: String
+    @State private var image: NSImage?
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        ZStack {
+            if let image {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 640, height: 360)
+                    .blur(radius: 90)
+                    .opacity(scheme == .dark ? 0.32 : 0.22)
+                    .transition(.opacity)
+            }
+        }
+        .animation(AppStyle.fadeAnimation.speed(0.6), value: image != nil)
+        .task(id: url) {
+            guard let parsed = URL(string: url),
+                  let loaded = try? await CoverCache.shared.image(parsed, maximumPixelSize: 128) else { return }
+            image = NSImage(cgImage: loaded.image, size: .zero)
+        }
+    }
+}
+
+/// Fades the content in afresh whenever `value` changes, e.g. the table
+/// when another compartment is picked, without rebuilding it.
+private struct FadeInOnChange<Value: Equatable>: ViewModifier {
+    let value: Value
+    @State private var opacity: Double = 1
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(opacity)
+            .onChange(of: value) {
+                opacity = 0
+                withAnimation(AppStyle.fadeAnimation) { opacity = 1 }
+            }
     }
 }

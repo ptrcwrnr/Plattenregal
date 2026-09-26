@@ -61,7 +61,8 @@ struct StylePalette {
 
     func color(for style: String, solid: Bool = false) -> Color {
         let base = Self.mapping[Self.normalize(style)] ?? Self.other
-        return solid ? base : base.opacity(0.9)
+        // A touch translucent, so the sheen and the glass around them shine through.
+        return solid ? base : base.opacity(0.94)
     }
 }
 
@@ -93,16 +94,21 @@ struct SpineRack: View {
     @State private var width: CGFloat = 0
 
     var body: some View {
-        SpineCanvas(
-            styles: styles,
-            slots: max(slots, styles.count, 1),
-            palette: palette,
-            liftedPosition: liftedPosition,
-            lift: lift,
-            insertionPosition: insertionPosition,
-            missingPositions: missingPositions,
-            reservesHeadroom: selectable
-        )
+        // The insertion gap breathes; the timeline only runs while there is one.
+        let pulsing = insertionPosition != nil && !AppStyle.reduceMotion
+        TimelineView(.animation(paused: !pulsing)) { timeline in
+            SpineCanvas(
+                styles: styles,
+                slots: max(slots, styles.count, 1),
+                palette: palette,
+                liftedPosition: liftedPosition,
+                lift: lift,
+                insertionPosition: insertionPosition,
+                missingPositions: missingPositions,
+                reservesHeadroom: selectable,
+                pulse: pulsing ? (sin(timeline.date.timeIntervalSinceReferenceDate * 2 * .pi / 1.6) + 1) / 2 : 0.6
+            )
+        }
         .contentShape(Rectangle())
         .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
         .onTapGesture { location in
@@ -135,10 +141,31 @@ private struct SpineCanvas: View, Animatable {
     let insertionPosition: Int?
     let missingPositions: Set<Int>
     let reservesHeadroom: Bool
+    /// 0…1, how brightly the insertion gap glows right now.
+    let pulse: Double
 
     nonisolated var animatableData: Double {
         get { lift }
         set { lift = newValue }
+    }
+
+    /// Light from the left across each sleeve: a sheen on one edge, shade on
+    /// the other, so the bars read as cardboard rather than flat color.
+    private static let sheen = Gradient(stops: [
+        .init(color: .white.opacity(0.32), location: 0),
+        .init(color: .white.opacity(0.06), location: 0.35),
+        .init(color: .clear, location: 0.6),
+        .init(color: .black.opacity(0.24), location: 1),
+    ])
+
+    private func drawSpine(_ rect: CGRect, color: Color, alpha: Double, in context: GraphicsContext) {
+        var context = context
+        context.opacity = alpha
+        let path = Path(roundedRect: rect, cornerRadius: min(1, rect.width / 2))
+        context.fill(path, with: .color(color))
+        guard rect.width >= 2 else { return }
+        context.fill(path, with: .linearGradient(Self.sheen, startPoint: CGPoint(x: rect.minX, y: 0),
+                                                 endPoint: CGPoint(x: rect.maxX, y: 0)))
     }
 
     var body: some View {
@@ -151,13 +178,12 @@ private struct SpineCanvas: View, Animatable {
             // Leave room above the row so a pulled-out spine (1.4×) still fits.
             let scale: CGFloat = reservesHeadroom ? 0.66 : 0.8
             let t = CGFloat(lift)
+            let dim = liftedPosition != nil ? 1 - 0.45 * Double(t) : 1
             for (index, style) in styles.enumerated() {
                 let jitter = CGFloat((index &* 37 &+ style.count &* 11) % 9) / 100
                 let isLifted = liftedPosition == index + 1
                 if isLifted && t > 0 { continue }
                 let height = min(usable, usable * (scale + jitter * (reservesHeadroom ? 0.5 : 1)))
-                var color = palette.color(for: style)
-                if liftedPosition != nil { color = color.opacity(1 - 0.45 * Double(t)) }
                 let rect = CGRect(x: CGFloat(index) * slot + (slot - baseWidth) / 2, y: usable - height,
                                   width: baseWidth, height: height)
                 if missingPositions.contains(index + 1) {
@@ -167,7 +193,7 @@ private struct SpineCanvas: View, Animatable {
                                    with: .color(AppStyle.errorColor.opacity(liftedPosition != nil ? 0.8 - 0.35 * Double(t) : 0.8)),
                                    lineWidth: line)
                 } else {
-                    context.fill(Path(roundedRect: rect, cornerRadius: min(1, baseWidth / 2)), with: .color(color))
+                    drawSpine(rect, color: palette.color(for: style), alpha: dim, in: context)
                 }
             }
             // Draw the lifted spine last so its wider body sits on top of its neighbours.
@@ -177,32 +203,20 @@ private struct SpineCanvas: View, Animatable {
                 let height = min(usable, usable * (scale + jitter * (reservesHeadroom ? 0.5 : 1)) * (1 + 0.4 * t))
                 let width = min(slot * 1.6, baseWidth * (1 + 0.5 * t))
                 let rect = CGRect(x: CGFloat(index) * slot + (slot - width) / 2, y: usable - height, width: width, height: height)
-                let color = palette.color(for: style, solid: true)
-                context.fill(Path(roundedRect: rect, cornerRadius: min(1, width / 2)), with: .color(color))
+                drawSpine(rect, color: palette.color(for: style, solid: true), alpha: 1, in: context)
             }
-            // The gap a new record goes into: an accent bar standing between the spines, a bit taller than them.
+            // The gap a new record goes into: a thin accent line standing
+            // between the spines, glowing softly around it.
             if let position = insertionPosition, position >= 1 {
-                let width: CGFloat = 3
-                let x = min(max(CGFloat(position - 1) * slot - width / 2, 0), size.width - width)
-                let rect = CGRect(x: x, y: 0, width: width, height: usable)
-                context.fill(Path(roundedRect: rect, cornerRadius: width / 2), with: .color(AppStyle.accent))
+                let x = min(max(CGFloat(position - 1) * slot, 1), size.width - 1)
+                let core = CGRect(x: x - 1, y: 0, width: 2, height: usable)
+                context.drawLayer { glow in
+                    glow.addFilter(.blur(radius: 4))
+                    glow.opacity = 0.3 + 0.5 * pulse
+                    glow.fill(Path(roundedRect: core.insetBy(dx: -3, dy: 2), cornerRadius: 4), with: .color(AppStyle.accent))
+                }
+                context.fill(Path(roundedRect: core, cornerRadius: 1), with: .color(AppStyle.accent))
             }
-        }
-    }
-}
-
-/// Diagonal hatching for reserved compartments.
-private struct HatchPattern: View {
-    var body: some View {
-        Canvas { context, size in
-            var path = Path()
-            var x = -size.height
-            while x < size.width {
-                path.move(to: CGPoint(x: x, y: size.height))
-                path.addLine(to: CGPoint(x: x + size.height, y: 0))
-                x += 7
-            }
-            context.stroke(path, with: .color(Color.secondary.opacity(0.18)), lineWidth: 1)
         }
     }
 }
@@ -402,9 +416,11 @@ private struct MissingCopyRow: View {
 
 // MARK: - Shelf furniture
 
-/// The KALLAX as one piece of furniture: a single outer frame with the
-/// compartments separated by thin dividers, so the rack is the one distinct
-/// shape on the page.
+/// The KALLAX as one piece of furniture: a single Liquid Glass body with the
+/// compartments set into it as shallow wells, so the rack is the one distinct
+/// shape on the page. The selected compartment rises out of its well as a
+/// raised plate that glides from compartment to compartment; the pointer
+/// casts a soft light across the glass.
 struct ShelfFurniture<Menu: View>: View {
     let shelves: [Shelf]
     let rows: Int
@@ -412,6 +428,8 @@ struct ShelfFurniture<Menu: View>: View {
     let stats: (Shelf) -> ShelfStatistics
     let rangeLabel: (Shelf) -> String?
     let palette: StylePalette
+    /// Shared slot count, so a sleeve has the same width in every compartment.
+    let spineSlots: Int
     let selectedID: UUID?
     /// Shelves kept at full strength; `nil` = no search/focus, nothing dimmed.
     let litIDs: Set<UUID>?
@@ -419,8 +437,13 @@ struct ShelfFurniture<Menu: View>: View {
     let select: (Shelf) -> Void
     @ViewBuilder let menu: (Shelf) -> Menu
 
-    private static var frameColor: Color { Color.primary.opacity(0.28) }
-    private static var dividerColor: Color { Color.primary.opacity(0.14) }
+    @Namespace private var plate
+    /// Written on every pointer move; only `HoverLight` reads it, so moving the
+    /// pointer never rebuilds the compartments.
+    @State private var light = HoverLight.Spot()
+
+    static var wellRadius: CGFloat { ShelfFurnitureMetrics.wellRadius }
+    static var gap: CGFloat { ShelfFurnitureMetrics.gap }
 
     /// Always the cabinet's full grid of equal cells, addressed by the place
     /// in the cabinet, so a missing shelf can never shift or stretch its neighbours.
@@ -434,12 +457,10 @@ struct ShelfFurniture<Menu: View>: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(grid.enumerated()), id: \.offset) { index, row in
-                if index > 0 { Self.dividerColor.frame(height: 1) }
-                HStack(spacing: 0) {
-                    ForEach(row, id: \.0) { number, shelf in
-                        if (number - 1) % columns > 0 { Self.dividerColor.frame(width: 1) }
+        VStack(spacing: Self.gap) {
+            ForEach(Array(grid.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: Self.gap) {
+                    ForEach(row, id: \.0) { _, shelf in
                         if let shelf {
                             Button { select(shelf) } label: {
                                 ShelfCompartment(
@@ -447,7 +468,9 @@ struct ShelfFurniture<Menu: View>: View {
                                     stats: stats(shelf),
                                     rangeLabel: rangeLabel(shelf),
                                     palette: palette,
+                                    spineSlots: spineSlots,
                                     lockPreview: lockPreview,
+                                    plate: plate,
                                     selected: selectedID == shelf.id,
                                     dimmed: litIDs.map { !$0.contains(shelf.id) } ?? false
                                 )
@@ -456,16 +479,96 @@ struct ShelfFurniture<Menu: View>: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .contextMenu { menu(shelf) }
                         } else {
-                            Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity)
+                            ShelfWell().frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
                     }
                 }
                 .frame(maxHeight: .infinity)
             }
         }
-        .background(Color.primary.opacity(0.025))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
-        .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Self.frameColor, lineWidth: 2))
+        .padding(Self.gap)
+        .overlay { HoverLight(spot: light).clipShape(.rect(cornerRadius: Self.wellRadius + Self.gap)) }
+        .onContinuousHover { phase in
+            switch phase {
+            case .active(let point): light.point = point; light.visible = true
+            case .ended: light.visible = false
+            }
+        }
+        .appGlassSurface(cornerRadius: Self.wellRadius + Self.gap)
+    }
+}
+
+/// A soft glow following the pointer over the glass body.
+private struct HoverLight: View {
+    @Observable final class Spot {
+        var point: CGPoint = .zero
+        var visible = false
+    }
+    let spot: Spot
+    private static let color = Color.adaptive(NSColor.white.withAlphaComponent(0.45), NSColor.white.withAlphaComponent(0.09))
+
+    var body: some View {
+        Circle()
+            .fill(RadialGradient(colors: [Self.color, .clear], center: .center, startRadius: 0, endRadius: 130))
+            .frame(width: 260, height: 260)
+            .position(spot.point)
+            .opacity(spot.visible ? 1 : 0)
+            .animation(AppStyle.standardAnimation, value: spot.visible)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .allowsHitTesting(false)
+    }
+}
+
+/// A compartment's recess in the glass body: a little darker than the glass,
+/// shaded under its top edge and catching light along its bottom edge.
+private struct ShelfWell: View {
+    private static let fill = Color.adaptive(NSColor.black.withAlphaComponent(0.06), NSColor.black.withAlphaComponent(0.22))
+    private static let shade = Color.adaptive(NSColor.black.withAlphaComponent(0.2), NSColor.black.withAlphaComponent(0.5))
+    private static let rim = Color.adaptive(NSColor.white.withAlphaComponent(0.7), NSColor.white.withAlphaComponent(0.07))
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
+        shape
+            .fill(Self.fill.shadow(.inner(color: Self.shade, radius: 2.5, y: 1.5)))
+            .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, Self.rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
+    }
+}
+
+/// The selected compartment lifted out of its well: brighter than the glass,
+/// with a highlight along its top edge and a soft shadow beneath.
+private struct RaisedPlate: View {
+    private static let fill = Color.adaptive(NSColor.white, NSColor.white.withAlphaComponent(0.13))
+    private static let edge = Color.adaptive(NSColor.white, NSColor.white.withAlphaComponent(0.28))
+    private static let shadow = Color.adaptive(NSColor.black.withAlphaComponent(0.2), NSColor.black.withAlphaComponent(0.5))
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
+        shape
+            .fill(Self.fill)
+            .overlay(shape.strokeBorder(LinearGradient(colors: [Self.edge, .clear], startPoint: .top, endPoint: .center), lineWidth: 1))
+            .shadow(color: Self.shadow, radius: 6, y: 2.5)
+    }
+}
+
+/// A locked compartment: its well frosted over like milk glass.
+private struct FrostedWell: View {
+    private static let frost = Color.adaptive(NSColor.white.withAlphaComponent(0.55), NSColor.white.withAlphaComponent(0.07))
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
+            .fill(LinearGradient(colors: [Self.frost, Self.frost.opacity(0.5)], startPoint: .top, endPoint: .bottom))
+            .overlay(RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius).strokeBorder(Self.frost, lineWidth: 1))
+    }
+}
+
+/// Metrics the non-generic helpers and the shelf page share with `ShelfFurniture`.
+enum ShelfFurnitureMetrics {
+    static let wellRadius: CGFloat = 10
+    static let gap: CGFloat = 5
+    private static let rowHeight: CGFloat = 66
+    /// Height of the whole rack for a cabinet with this many rows.
+    static func height(rows: Int) -> CGFloat {
+        CGFloat(rows) * rowHeight + CGFloat(rows + 1) * gap
     }
 }
 
@@ -474,29 +577,33 @@ private struct ShelfCompartment: View {
     let stats: ShelfStatistics
     let rangeLabel: String?
     let palette: StylePalette
+    let spineSlots: Int
     let lockPreview: ShelfLockPreview
+    let plate: Namespace.ID
     var selected = false
     var dimmed = false
-    @State private var hovering = false
 
     /// Follows the options popover's switch immediately (see `ShelfLockPreview`).
     private var isReserved: Bool { lockPreview.isLocked(shelf) }
 
     var body: some View {
         content
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            // Always in the tree and faded via opacity: the most reliable way to
-            // animate it, independent of how the change arrives.
-            .background { HatchPattern().opacity(isReserved ? 1 : 0) }
-            .background(selected ? AppStyle.accent.opacity(0.12) : hovering ? AppStyle.hoverBackground : Color.clear)
+            .background {
+                ZStack {
+                    ShelfWell()
+                    // Always in the tree and faded via opacity: the most reliable way to
+                    // animate it, independent of how the change arrives.
+                    FrostedWell().opacity(isReserved ? 1 : 0)
+                    if selected {
+                        RaisedPlate().matchedGeometryEffect(id: "plate", in: plate)
+                    }
+                }
+            }
             .contentShape(Rectangle())
             .opacity(dimmed ? 0.3 : 1)
-            .onHover { hovering = $0 }
-            .animation(AppStyle.quickAnimation, value: selected)
             .animation(AppStyle.standardAnimation, value: dimmed)
-            // Hatching and label crossfade when the shelf is (un)locked.
+            // Frost and label crossfade when the shelf is (un)locked.
             .animation(AppStyle.standardAnimation, value: isReserved)
             .accessibilityElement(children: .ignore)
             .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
@@ -505,27 +612,36 @@ private struct ShelfCompartment: View {
 
     @ViewBuilder private var content: some View {
         if isReserved {
-            HStack(spacing: 5) {
-                Image(systemName: "lock")
-                Text(shelf.name.isEmpty ? "Gesperrt" : shelf.name).lineLimit(1)
+            VStack(spacing: 3) {
+                Image(systemName: "lock.fill").font(.callout)
+                if !shelf.name.isEmpty { Text(shelf.name).font(.caption).lineLimit(1) }
             }
-            .font(.caption)
             .foregroundStyle(.tertiary)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if stats.count > 0 {
             VStack(alignment: .leading, spacing: 0) {
-                Text(rangeLabel ?? "—")
-                    .font(.system(.title3, design: .rounded, weight: .semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                Spacer(minLength: 4)
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(palette.color(for: stats.dominantColorStyle ?? "", solid: true))
-                        .frame(width: 6, height: 6)
-                    Text(AppStyle.records(stats.count)).monospacedDigit()
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(rangeLabel ?? "—")
+                        .font(.system(.title3, design: .rounded, weight: .semibold))
+                        // The accent marks the choice, in the text only.
+                        .foregroundStyle(selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.primary))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    Spacer(minLength: 4)
+                    Text(stats.count.formatted())
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                Spacer(minLength: 2)
+                // The records themselves, standing on the compartment's floor.
+                SpineRack(styles: stats.spineStyles, slots: spineSlots, palette: palette)
+                    .frame(height: 22)
+                    .padding(.horizontal, 10)
+                    .opacity(selected ? 1 : 0.8)
+                    .allowsHitTesting(false)
             }
         } else {
             // Without a view here the compartment collapses to nothing and
@@ -533,6 +649,8 @@ private struct ShelfCompartment: View {
             Text("Leer")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+                .padding(.horizontal, 12)
+                .padding(.top, 9)
         }
     }
 
@@ -578,17 +696,15 @@ struct ShelfStyleLegend: View {
 
 private extension Color {
     static func adaptive(hex light: UInt32, dark: UInt32) -> Color {
-        func rgb(_ v: UInt32) -> (Double, Double, Double) {
-            (Double(v >> 16 & 0xFF) / 255, Double(v >> 8 & 0xFF) / 255, Double(v & 0xFF) / 255)
+        func rgb(_ v: UInt32) -> NSColor {
+            NSColor(srgbRed: Double(v >> 16 & 0xFF) / 255, green: Double(v >> 8 & 0xFF) / 255, blue: Double(v & 0xFF) / 255, alpha: 1)
         }
-        return adaptive(light: rgb(light), dark: rgb(dark))
+        return adaptive(rgb(light), rgb(dark))
     }
 
-    static func adaptive(light: (Double, Double, Double), dark: (Double, Double, Double)) -> Color {
+    static func adaptive(_ light: NSColor, _ dark: NSColor) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
-            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            let c = isDark ? dark : light
-            return NSColor(srgbRed: c.0, green: c.1, blue: c.2, alpha: 1)
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? dark : light
         })
     }
 }
