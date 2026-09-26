@@ -10,7 +10,11 @@ struct ShelfSettingsView: View {
     @Query(sort: \Cabinet.sortOrder) private var cabinets: [Cabinet]
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @State private var cabinetID: UUID?
-    @State private var selectedID: UUID?
+    /// The compartment whose menu is open (a click on its tile).
+    @State private var menuID: UUID?
+    /// The locked compartment whose name is being edited.
+    @State private var namingID: UUID?
+    @State private var shelfError: String?
     @State private var adding = false
     @State private var error: String?
     @State private var labels = ShelfLabels()
@@ -18,6 +22,38 @@ struct ShelfSettingsView: View {
     @FocusState private var stripFocused: Bool
 
     private var cabinet: Cabinet? { cabinets.first { $0.id == cabinetID } ?? cabinets.first }
+
+    private func shown(_ id: Binding<UUID?>, _ shelf: UUID) -> Binding<Bool> {
+        Binding(get: { id.wrappedValue == shelf }, set: { if !$0, id.wrappedValue == shelf { id.wrappedValue = nil } })
+    }
+
+    /// Same entries as the compartment's menu on the shelf page.
+    @ViewBuilder private func lockMenu(_ shelf: Shelf) -> some View {
+        if shelf.isReserved {
+            Button("Namen ändern …") { namingID = shelf.id }
+            Button("Fach entsperren") { setLocked(shelf, false) }
+        } else {
+            Button {
+                setLocked(shelf, true)
+            } label: {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Fach sperren")
+                    if !shelf.copies.isEmpty {
+                        Text("Nur leere Fächer lassen sich sperren").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .disabled(!shelf.copies.isEmpty)
+        }
+    }
+
+    /// Unlocking drops the name as well.
+    private func setLocked(_ shelf: Shelf, _ locked: Bool) {
+        do {
+            try PositionService(context: context).configure(shelf, name: locked ? shelf.name : "", isReserved: locked)
+            shelfError = nil
+        } catch { shelfError = error.reportedMessage() }
+    }
 
     /// The labels sort every record's artist, so they're only recomputed when
     /// something they depend on changed – not on each click or animation frame.
@@ -45,7 +81,7 @@ struct ShelfSettingsView: View {
                     CabinetEditor(cabinet: cabinet, isOnly: cabinets.count == 1,
                                   isOnlyActive: cabinet.isActive && !cabinets.contains { $0.isActive && $0.id != cabinet.id },
                                   isFirst: cabinet.id == cabinets.first?.id, isLast: cabinet.id == cabinets.last?.id,
-                                  report: report, deleted: { cabinetID = nil; selectedID = nil })
+                                  report: report, deleted: { cabinetID = nil; menuID = nil; namingID = nil })
                         .id(cabinet.id)
                 }
                 if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
@@ -62,21 +98,23 @@ struct ShelfSettingsView: View {
                             GridRow {
                                 ForEach(1...cabinet.columns, id: \.self) { column in
                                     if let shelf = own.first(where: { $0.sortOrder == row * cabinet.columns + column }) {
-                                        ShelfTile(shelf: shelf, label: labels[shelf.id], selected: shelf.id == selectedID) {
-                                            withAnimation(AppStyle.quickAnimation) {
-                                                selectedID = selectedID == shelf.id ? nil : shelf.id
+                                        ShelfTile(shelf: shelf, label: labels[shelf.id],
+                                                  selected: shelf.id == menuID || shelf.id == namingID) { menuID = shelf.id }
+                                            .popover(isPresented: shown($menuID, shelf.id), arrowEdge: .bottom) {
+                                                AppMenu(dismiss: { menuID = nil }) { lockMenu(shelf) }
                                             }
-                                        }
+                                            .background {
+                                                Color.clear.popover(isPresented: shown($namingID, shelf.id), arrowEdge: .bottom) {
+                                                    ShelfNamePopover(shelf: shelf)
+                                                }
+                                            }
                                     }
                                 }
                             }
                         }
                     }
-                    if let shelf = own.first(where: { $0.id == selectedID }) {
-                        ShelfLockEditor(shelf: shelf).id(shelf.id)
-                    } else {
-                        SettingsNote("Wähle ein Fach, um es zu sperren – z. B. für Deko oder andere Dinge. Gesperrte Fächer werden beim Einsortieren übersprungen.")
-                    }
+                    SettingsNote("Klicke auf ein Fach, um es zu sperren oder zu entsperren – z. B. für Deko oder andere Dinge. Gesperrte Fächer werden beim Einsortieren übersprungen.")
+                    if let shelfError { AppBanner(message: shelfError, kind: .error).transition(AppStyle.funnelTransition()) }
                 }
             }
 
@@ -90,7 +128,8 @@ struct ShelfSettingsView: View {
                 }
             }
         }
-        .onChange(of: cabinetID) { selectedID = nil; error = nil }
+        .onChange(of: cabinetID) { menuID = nil; namingID = nil; error = nil; shelfError = nil }
+        .animation(AppStyle.standardAnimation, value: shelfError)
         .task(id: labelSignature) { labels = ShelfRangeLabels.compute(for: shelves, style: labelStyle) }
     }
 
@@ -454,84 +493,3 @@ private struct ShelfTile: View {
     }
 }
 
-/// Lock switch + name for the selected compartment, same wording as the
-/// options popover on the shelf page. Follows changes made there while open.
-private struct ShelfLockEditor: View {
-    let shelf: Shelf
-    @Environment(\.modelContext) private var context
-    @State private var isLocked: Bool
-    @State private var name: String
-    /// The name as last stored, so the save on disappear doesn't touch the
-    /// model when nothing changed – the shelf may just have been removed by
-    /// making the cabinet smaller.
-    @State private var savedName: String
-    @State private var error: String?
-
-    init(shelf: Shelf) {
-        self.shelf = shelf
-        _isLocked = State(initialValue: shelf.isReserved)
-        _name = State(initialValue: shelf.name)
-        _savedName = State(initialValue: shelf.name)
-    }
-    private var canLock: Bool { shelf.isReserved || shelf.copies.isEmpty }
-    private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-            SettingsRow(title: "Sperren",
-                        hint: canLock ? nil : "Nur leere Fächer können gesperrt werden.") {
-                Toggle("Fach sperren", isOn: $isLocked).labelsHidden().toggleStyle(.switch)
-                    .disabled(!canLock)
-            }
-            if isLocked {
-                SettingsRow(title: "Name") {
-                    TextField("Optional, z. B. „Deko“", text: $name)
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 10)
-                        .frame(width: 220, height: AppStyle.controlHeight)
-                        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
-                        .onSubmit(saveName)
-                }
-                .transition(AppStyle.funnelTransition())
-            }
-            if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
-        }
-        .animation(AppStyle.standardAnimation, value: isLocked)
-        .animation(AppStyle.standardAnimation, value: error)
-        // Only real user changes are written; syncing back from the store
-        // (or undoing a failed save) must not trigger another save.
-        .onChange(of: isLocked) { _, locked in
-            guard locked != shelf.isReserved else { return }
-            save(locked: locked, name: locked ? trimmedName : "")
-        }
-        .onChange(of: shelf.isReserved) { _, stored in isLocked = stored }
-        .onChange(of: shelf.name) { _, stored in
-            savedName = stored
-            if stored != trimmedName { name = stored }
-        }
-        .task(id: name) {
-            // Saves once typing pauses, so the name sticks without pressing ↩.
-            try? await Task.sleep(for: .milliseconds(500))
-            guard !Task.isCancelled else { return }
-            saveName()
-        }
-        // Tab switch or closed window inside the pause: don't lose the name.
-        .onDisappear(perform: saveName)
-    }
-
-    private func saveName() {
-        guard isLocked, trimmedName != savedName, shelf.modelContext != nil else { return }
-        save(locked: true, name: trimmedName)
-    }
-
-    private func save(locked: Bool, name: String) {
-        do {
-            try PositionService(context: context).configure(shelf, name: name, isReserved: locked)
-            savedName = name
-            error = nil
-        } catch {
-            self.error = error.reportedMessage()
-            isLocked = shelf.isReserved
-        }
-    }
-}

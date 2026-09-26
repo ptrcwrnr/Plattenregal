@@ -28,7 +28,8 @@ struct KallaxView: View {
     let requests: ShelfRequests
     /// The record being sorted in and the spots it fits alphabetically.
     @State private var placement: Placement?
-    @State private var showsShelfOptions = false
+    /// "Namen ändern …" from a locked compartment's menu.
+    @State private var showsNameEditor = false
     @State private var lockPreview = ShelfLockPreview()
     /// The open "Platte hinzufügen" sheet. A new session per opening, so a
     /// reopened sheet always starts from fresh data.
@@ -276,7 +277,7 @@ struct KallaxView: View {
         // the locations: the sheet's list and target shelf may be stale or gone.
         .onChange(of: changes.shelvesVersion) {
             if assignment != nil { AppLog.info("Regal", "„Platte hinzufügen“ geschlossen: Regale wurden in den Einstellungen geändert") }
-            assignment = nil; showsShelfOptions = false; sortingShelf = nil
+            assignment = nil; showsNameEditor = false; sortingShelf = nil
         }
         // "Alles zurücksetzen" deleted every record: nothing here may keep
         // pointing at one – reading a deleted model crashes.
@@ -475,7 +476,7 @@ struct KallaxView: View {
                 if shown.isReserved || shown.copies.isEmpty {
                     ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                         if locked {
-                            detailNote("Gesperrtes Fach – nicht für Platten vorgesehen. Über die Fachoptionen kannst du die Sperre aufheben.")
+                            detailNote("Gesperrtes Fach – nicht für Platten vorgesehen. Per Rechtsklick auf das Fach kannst du es entsperren.")
                         } else {
                             HStack(spacing: AppStyle.itemSpacing) {
                                 detailNote("Noch keine Platten in diesem Fach.")
@@ -526,6 +527,11 @@ struct KallaxView: View {
             .font(AppStyle.pageTitle)
             .lineLimit(1)
             .layoutPriority(1)
+            .popover(isPresented: $showsNameEditor, arrowEdge: .bottom) {
+                // Fresh state per shelf: a name seeded for one shelf must
+                // never be saved onto another.
+                ShelfNamePopover(shelf: shown).id(shown.id)
+            }
             ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                 if locked {
                     Image(systemName: "lock")
@@ -544,13 +550,6 @@ struct KallaxView: View {
                     }
                     .disabled(locked)
                 }
-                IconButton(systemImage: "slider.horizontal.3", help: "Fachoptionen") { showsShelfOptions.toggle() }
-                    .popover(isPresented: $showsShelfOptions, arrowEdge: .bottom) {
-                        ShelfOptionsPopover(shelf: shown, preview: lockPreview)
-                            // Fresh state per shelf: values seeded for one shelf must
-                            // never be saved onto another.
-                            .id(shown.id)
-                    }
             }
             .foregroundStyle(.secondary)
             .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
@@ -584,14 +583,49 @@ struct KallaxView: View {
         }
     }
 
+    /// The compartment's right-click menu (an `AppMenu`, like the collection's).
     @ViewBuilder private func shelfMenu(for shelf: Shelf) -> some View {
+        let locked = lockPreview.isLocked(shelf)
         Button("Inhalt anzeigen") { selectShelf(shelf) }
-        Button("Platte hinzufügen …") { startAssignment(shelf) }
-            .disabled(shelf.isReserved)
-        Divider()
-        Button("Fachoptionen …") { selectShelf(shelf); showsShelfOptions = true }
+        Button("Platte hinzufügen …") { selectShelf(shelf); startAssignment(shelf) }
+            .disabled(locked)
         Button("Alphabetisch sortieren …") { sortingShelf = shelf }
-            .disabled(shelf.copies.count < 2)
+            .disabled(locked || shelf.copies.count < 2)
+        Divider()
+        if locked {
+            Button("Namen ändern …") { selectShelf(shelf); showsNameEditor = true }
+            Button("Fach entsperren") { setLocked(shelf, false) }
+        } else {
+            Button {
+                setLocked(shelf, true)
+            } label: {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Fach sperren")
+                    if !shelf.copies.isEmpty {
+                        Text("Nur leere Fächer lassen sich sperren").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .disabled(!shelf.copies.isEmpty)
+        }
+    }
+
+    /// Shows the new state at once via `lockPreview` and saves once the
+    /// compartment has faded over: saving makes the page recompute, which
+    /// would stutter mid-animation. Unlocking drops the name as well.
+    private func setLocked(_ shelf: Shelf, _ locked: Bool) {
+        withAnimation(AppStyle.standardAnimation) { lockPreview.set(locked, for: shelf) }
+        Task {
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !shelf.isDeleted, shelf.modelContext != nil else { return lockPreview.clear(shelf) }
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                do { try PositionService(context: context).configure(shelf, name: locked ? shelf.name : "", isReserved: locked) }
+                catch { self.error = error.reportedMessage() }
+                lockPreview.clear(shelf)
+            }
+        }
     }
 
     /// New records go to their alphabetical place in the compartment.
@@ -611,7 +645,7 @@ struct KallaxView: View {
                 cancelPlacement()
             }
         }
-        if highlight != shelf.id { showsShelfOptions = false }
+        if highlight != shelf.id { showsNameEditor = false }
         withAnimation(AppStyle.standardAnimation) { highlight = shelf.id }
     }
 
@@ -658,7 +692,7 @@ struct KallaxView: View {
     }
 
     private func startPlacement(_ copy: RecordCopy) {
-        searchQuery = ""; focusCopy = nil; showsShelfOptions = false
+        searchQuery = ""; focusCopy = nil; showsNameEditor = false
         var new = Placement(copy: copy, shelves: shelves)
         new.excluded = exclusions.contains { $0.copyID == copy.id }
         new.missing = missingIDs.contains(copy.id)

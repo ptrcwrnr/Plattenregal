@@ -436,6 +436,8 @@ struct ShelfFurniture<Menu: View>: View {
     @ViewBuilder let menu: (Shelf) -> Menu
 
     @Namespace private var plate
+    /// The compartment whose menu is open, and where it was right-clicked.
+    @State private var menuFor: (id: UUID, anchor: UnitPoint)?
     /// Written on every pointer move; only `HoverLight` reads it, so moving the
     /// pointer never rebuilds the compartments.
     @State private var light = HoverLight.Spot()
@@ -473,7 +475,14 @@ struct ShelfFurniture<Menu: View>: View {
                             }
                             .buttonStyle(.plain)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .contextMenu { menu(shelf) }
+                            // The app's own menu, as in the collection.
+                            .onSecondaryClick { point in menuFor = (shelf.id, point) }
+                            .popover(isPresented: Binding(
+                                get: { menuFor?.id == shelf.id },
+                                set: { if !$0, menuFor?.id == shelf.id { menuFor = nil } }
+                            ), attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+                                AppMenu(dismiss: { menuFor = nil }) { menu(shelf) }
+                            }
                         } else {
                             ShelfWell().frame(maxWidth: .infinity, maxHeight: .infinity)
                         }

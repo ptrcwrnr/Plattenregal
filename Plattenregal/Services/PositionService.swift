@@ -10,7 +10,7 @@ enum LibraryError: LocalizedError {
         switch self {
         case .missingMarkNotSaved(let found, _):
             "\(found ? "„Wieder gefunden“" : "„Vermisst“") konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
-        case .reserved: "Dieses Fach ist gesperrt und nimmt keine Platten auf. Die Sperre lässt sich in den Fachoptionen aufheben."
+        case .reserved: "Dieses Fach ist gesperrt und nimmt keine Platten auf. Per Rechtsklick auf das Fach lässt es sich entsperren."
         case .invalidPosition: "Diese Position gibt es in dem Fach nicht. Wähle eine Zahl zwischen 1 und der Stelle direkt hinter der letzten Platte."
         case .missingRelease: "Die Platte oder das Fach gibt es nicht mehr – vielleicht wurde gerade etwas geändert. Bitte versuche es noch einmal."
         case .reservedNotEmpty: "Ein Fach mit Platten lässt sich nicht sperren. Nimm die Platten zuerst heraus."
