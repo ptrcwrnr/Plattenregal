@@ -195,7 +195,8 @@ struct WantlistView: View {
 
     /// Same margins as the collection (see CollectionView).
     private var pageMargin: CGFloat { AppStyle.pagePadding + 4 }
-    private var alphabetGutter: CGFloat { order == .alphabetical ? 24 : 0 }
+    /// Kept with any order, so switching it never changes the cover size.
+    private var alphabetGutter: CGFloat { 24 }
     @AppStorage(DisplaySettings.wantlistOrderKey) private var order = OverviewOrder.alphabetical
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
         width - 2 * pageMargin - alphabetGutter

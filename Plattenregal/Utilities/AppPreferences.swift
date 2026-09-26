@@ -52,20 +52,21 @@ enum OverviewOrder: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Fixed for this run of the app, so the random order stays put while it
-    /// is open and changes with the next launch.
-    private static let launchSeed = UInt64.random(in: .min ... .max)
-    /// Position of `key` in this launch's random order.
-    static func shuffleRank(_ key: some Hashable) -> Int {
+    /// New with each launch and each switch to "Zufällig" in the settings;
+    /// in between the random order stays put.
+    @MainActor private static var shuffleSeed = UInt64.random(in: .min ... .max)
+    @MainActor static func reshuffle() { shuffleSeed = .random(in: .min ... .max) }
+    /// Position of `key` in the current random order.
+    @MainActor static func shuffleRank(_ key: some Hashable) -> Int {
         var hasher = Hasher()
-        hasher.combine(launchSeed)
+        hasher.combine(shuffleSeed)
         hasher.combine(key)
         return hasher.finalize()
     }
 
     /// `items` in this order. `key` identifies an item for the shuffle
     /// (copies of one release share it, so they stay one tile).
-    func apply<T, K: Hashable>(_ items: [T], alphabetical: ([T]) -> [T], key: (T) -> K, added: (T) -> Date?) -> [T] {
+    @MainActor func apply<T, K: Hashable>(_ items: [T], alphabetical: ([T]) -> [T], key: (T) -> K, added: (T) -> Date?) -> [T] {
         switch self {
         case .alphabetical:
             return alphabetical(items)

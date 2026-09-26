@@ -51,7 +51,8 @@ struct CollectionView: View {
     }
     // Room for the alphabet index; header, grid and table all leave it free
     // so their right edges stay aligned.
-    private var alphabetGutter: CGFloat { showsAlphabetIndex ? 24 : 0 }
+    /// Kept with any order, so switching it never changes the cover size.
+    private var alphabetGutter: CGFloat { 24 }
     @AppStorage(DisplaySettings.collectionOrderKey) private var order = OverviewOrder.alphabetical
     /// Latest card frames for the rubber band. A plain reference, not state:
     /// the lazy grid republishes frames on every scroll step, and writing them
