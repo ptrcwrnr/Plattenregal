@@ -210,7 +210,7 @@ struct CollectionView: View {
                     .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
-            if showsSearchBar, let pages {
+            if let pages {
                 OverviewSearchControl(
                     placeholder: "Collection durchsuchen",
                     query: queryBinding,
@@ -220,7 +220,7 @@ struct CollectionView: View {
                 ) { pages.current = .wantlist }
                 .padding(.horizontal, AppStyle.pagePadding + 4)
                 .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
-                .transition(AppStyle.searchBarTransition)
+                .searchBarSlot(shown: showsSearchBar)
             }
             if showsControls {
                 collectionControls(items: items)

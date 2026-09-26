@@ -18,9 +18,6 @@ enum AppStyle {
     /// goes; the page below follows with the same curve. Only a fade with
     /// "Bewegung reduzieren".
     static var searchBarAnimation: Animation { reduceMotion ? fadeAnimation : .smooth(duration: 0.35) }
-    static var searchBarTransition: AnyTransition {
-        reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity)
-    }
     static let cardPadding: CGFloat = 16
     static let sectionSpacing: CGFloat = 20
     static let rowSpacing: CGFloat = 12
@@ -347,6 +344,27 @@ struct SearchReveal: ViewModifier {
     }
 }
 
+/// A search bar that is always there and only faded, slid and collapsed.
+/// Inserted on the first ⌘F it popped in at full strength instead of fading:
+/// its glass and text field were being set up in that very frame and the
+/// insert transition skipped ahead. Mounted from the start, revealing it is
+/// a plain animation of a view that already exists.
+private struct SearchBarSlot: ViewModifier {
+    let shown: Bool
+    let collapsedSpacing: CGFloat
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown || AppStyle.reduceMotion ? 0 : -AppStyle.searchBarHeight)
+            .frame(height: shown ? nil : 0, alignment: .bottom)
+            .padding(.bottom, shown ? 0 : -collapsedSpacing)
+            .allowsHitTesting(shown)
+            // Not reachable with Tab while hidden.
+            .disabled(!shown)
+            .accessibilityHidden(!shown)
+    }
+}
+
 extension View {
     /// Clear Liquid Glass for a button, as a capsule like every other glass
     /// control. Without `.tint(nil)` the glass takes the app-wide accent tint
@@ -360,6 +378,13 @@ extension View {
         padding(.horizontal, 12)
             .frame(height: AppStyle.searchBarHeight)
             .glassEffect(.regular.interactive(), in: .capsule)
+    }
+
+    /// Keeps a search bar (or a row holding one) mounted while hidden; see
+    /// `SearchBarSlot`. `collapsedSpacing`: the stack spacing to take back
+    /// while collapsed, so a hidden bar leaves no gap.
+    func searchBarSlot(shown: Bool, collapsedSpacing: CGFloat = 0) -> some View {
+        modifier(SearchBarSlot(shown: shown, collapsedSpacing: collapsedSpacing))
     }
 
     /// See `SearchReveal`. Show the search while `isPresented || !query.isEmpty`.

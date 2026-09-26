@@ -209,17 +209,15 @@ struct WantlistView: View {
                     .padding(.horizontal, pageMargin)
                     .padding(.trailing, alphabetGutter)
             }
-            if showsSearchBar {
-                OverviewSearchControl(
-                    placeholder: "Wantlist durchsuchen",
-                    query: Bindable(search).query,
-                    focus: $searchFocused,
-                    otherCount: collectionMatches,
-                    otherSection: .collection
-                ) { pages.current = .collection }
-                .padding(.horizontal, pageMargin)
-                .transition(AppStyle.searchBarTransition)
-            }
+            OverviewSearchControl(
+                placeholder: "Wantlist durchsuchen",
+                query: Bindable(search).query,
+                focus: $searchFocused,
+                otherCount: collectionMatches,
+                otherSection: .collection
+            ) { pages.current = .collection }
+            .padding(.horizontal, pageMargin)
+            .searchBarSlot(shown: showsSearchBar, collapsedSpacing: AppStyle.sectionSpacing)
             if sync.hasStatus {
                 DiscogsSyncStatusView()
                     .font(.callout)

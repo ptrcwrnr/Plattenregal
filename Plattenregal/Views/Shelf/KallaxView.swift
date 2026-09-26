@@ -409,48 +409,46 @@ struct KallaxView: View {
     }
 
     /// The search bar (only after ⌘F) and the status controls beside it;
-    /// nothing at all when neither is there, so the rack moves up.
+    /// collapsed when neither is there, so the rack moves up. Always
+    /// mounted, see `searchBarSlot`.
     @ViewBuilder private var header: some View {
         // Both walk the whole collection: once per body, not per use.
         let missing = missingCopies
         let sold = soldInShelves.count
         let hasStatus = !missing.isEmpty || sold > 0
-        if showsSearchBar || hasStatus {
-            // The bar centered under the page switch in the toolbar, the status
-            // on the right; the bar keeps clear of the status on both sides,
-            // so it stays centered without running into it.
-            ZStack {
-                if showsSearchBar {
-                    ShelfSearchField(
-                        query: $searchQuery,
-                        focused: $searchFocused,
-                        matches: searchResults.placed,
-                        unplaced: searchResults.unplaced,
-                        hidden: searchResults.hidden,
-                        labels: rangeLabels,
-                        missing: missingIDs,
-                        onClear: { searchQuery = "" },
-                        place: startPlacement
-                    )
-                    .frame(maxWidth: AppStyle.searchBarMaxWidth)
-                    .padding(.horizontal, statusWidth > 0 ? statusWidth + AppStyle.rowSpacing : 0)
-                    .transition(AppStyle.searchBarTransition)
+        // The bar centered under the page switch in the toolbar, the status
+        // on the right; the bar keeps clear of the status on both sides,
+        // so it stays centered without running into it.
+        ZStack {
+            ShelfSearchField(
+                query: $searchQuery,
+                focused: $searchFocused,
+                matches: searchResults.placed,
+                unplaced: searchResults.unplaced,
+                hidden: searchResults.hidden,
+                labels: rangeLabels,
+                missing: missingIDs,
+                onClear: { searchQuery = "" },
+                place: startPlacement
+            )
+            .frame(maxWidth: AppStyle.searchBarMaxWidth)
+            .padding(.horizontal, statusWidth > 0 ? statusWidth + AppStyle.rowSpacing : 0)
+            .searchBarSlot(shown: showsSearchBar)
+            HStack(spacing: AppStyle.rowSpacing) {
+                if !missing.isEmpty {
+                    MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
+                                         found: { setMissing($0, false) })
                 }
-                HStack(spacing: AppStyle.rowSpacing) {
-                    if !missing.isEmpty {
-                        MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
-                                             found: { setMissing($0, false) })
-                    }
-                    if sold > 0 {
-                        ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
-                            .frame(height: AppStyle.controlHeight)
-                    }
+                if sold > 0 {
+                    ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
+                        .frame(height: AppStyle.controlHeight)
                 }
-                .onGeometryChange(for: CGFloat.self, of: \.size.width) { statusWidth = $0 }
-                .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .transition(AppStyle.searchBarTransition)
+            .onGeometryChange(for: CGFloat.self, of: \.size.width) { statusWidth = $0 }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
+        // 28: the page's stack spacing (see `body`).
+        .searchBarSlot(shown: showsSearchBar || hasStatus, collapsedSpacing: 28)
     }
 
     @ViewBuilder private var shelfDetail: some View {
