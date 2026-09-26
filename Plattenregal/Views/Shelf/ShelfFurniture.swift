@@ -465,7 +465,6 @@ struct ShelfFurniture<Menu: View>: View {
                                     shelf: shelf,
                                     stats: stats(shelf),
                                     rangeLabel: rangeLabel(shelf),
-                                    palette: palette,
                                     lockPreview: lockPreview,
                                     plate: plate,
                                     selected: selectedID == shelf.id,
@@ -562,7 +561,7 @@ private struct FrostedWell: View {
 enum ShelfFurnitureMetrics {
     static let wellRadius: CGFloat = 10
     static let gap: CGFloat = 5
-    private static let rowHeight: CGFloat = 58
+    private static let rowHeight: CGFloat = 52
     /// Height of the whole rack for a cabinet with this many rows.
     static func height(rows: Int) -> CGFloat {
         CGFloat(rows) * rowHeight + CGFloat(rows + 1) * gap
@@ -573,7 +572,6 @@ private struct ShelfCompartment: View {
     let shelf: Shelf
     let stats: ShelfStatistics
     let rangeLabel: String?
-    let palette: StylePalette
     let lockPreview: ShelfLockPreview
     let plate: Namespace.ID
     var selected = false
@@ -615,7 +613,8 @@ private struct ShelfCompartment: View {
             .foregroundStyle(.tertiary)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if stats.count > 0 {
-            VStack(alignment: .leading, spacing: 0) {
+            // The range in the top left corner, the count in the top right.
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(rangeLabel ?? "—")
                     .font(.system(.title3, design: .rounded, weight: .semibold))
                     // The accent marks the choice, in the text only.
@@ -623,17 +622,13 @@ private struct ShelfCompartment: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 Spacer(minLength: 4)
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(palette.color(for: stats.dominantColorStyle ?? "", solid: true))
-                        .frame(width: 6, height: 6)
-                    Text(AppStyle.records(stats.count)).monospacedDigit()
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                Text(stats.count.formatted())
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .fixedSize()
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 9)
+            .padding(.top, 9)
         } else {
             // Without a view here the compartment collapses to nothing and
             // can't be clicked, so empty shelves get a quiet placeholder.
