@@ -330,7 +330,7 @@ private struct StatisticsMovableArea<Content: View>: View {
         .background {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
                 .fill(prominent
-                      ? AnyShapeStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.16), AppStyle.accent.opacity(0.03)],
+                      ? AnyShapeStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.07), AppStyle.accent.opacity(0.0)],
                                                      startPoint: .topLeading, endPoint: .bottomTrailing))
                       : AnyShapeStyle(Color.clear))
         }
