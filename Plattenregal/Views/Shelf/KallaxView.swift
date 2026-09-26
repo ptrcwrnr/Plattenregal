@@ -287,7 +287,7 @@ struct KallaxView: View {
             if let copy = closingAssignment?.lastAdded { focusCopy = copy }
             closingAssignment = nil
         }) { session in
-            ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id])
+            ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id], labels: rangeLabels)
         }
         .confirmationDialog(
             soldToRemove == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldToRemove) Platten ohne Collection aus dem Regal nehmen?",

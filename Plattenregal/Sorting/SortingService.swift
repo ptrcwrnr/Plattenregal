@@ -166,6 +166,29 @@ enum AlphabeticalPlacement {
         )]
     }
 
+    /// The shelves each of `copies` (without a shelf) fits alphabetically,
+    /// by copy ID – the shelves of `spots`, for many records in one go.
+    static func fittingShelves(for copies: [RecordCopy], in shelves: [Shelf]) -> [UUID: [Shelf]] {
+        let runs = runs(of: shelves, excluding: nil)
+        guard let lastRun = runs.last else { return [:] }
+        var result: [UUID: [Shelf]] = [:]
+        for copy in copies {
+            let target = key(copy)
+            guard let index = runs.firstIndex(where: { target.localizedStandardCompare($0.last) != .orderedDescending }) else {
+                result[copy.id] = [lastRun.shelf]
+                continue
+            }
+            let run = runs[index]
+            // Between two shelves: the end of the one fits as well as the start of the next.
+            if index > 0 && target.localizedStandardCompare(run.first) == .orderedAscending {
+                result[copy.id] = [runs[index - 1].shelf, run.shelf]
+            } else {
+                result[copy.id] = [run.shelf]
+            }
+        }
+        return result
+    }
+
     /// Where a placed `copy` stands right now and between which records — to
     /// put it back after taking it out. At either end of its shelf the
     /// neighbour comes from the shelf before or after it in the alphabetical

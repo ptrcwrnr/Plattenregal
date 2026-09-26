@@ -27,6 +27,9 @@ final class ShelfAssignmentSession: Identifiable {
     private(set) var lastAdded: RecordCopy?
     /// Candidates marked "Vermisst": they stay in the list, paused.
     private(set) var missing: Set<UUID> = []
+    /// For candidates that belong in another shelf alphabetically: its name,
+    /// shown in their row ("gehört in „K – Ma“").
+    private(set) var belongsElsewhere: [UUID: String] = [:]
     var error: String?
     @ObservationIgnored let table = ShelfAssignmentTableController()
 
@@ -47,7 +50,10 @@ final class ShelfAssignmentSession: Identifiable {
         return candidates.filter { searchIndex.matches($0.id, words) }
     }
 
-    func load(_ context: ModelContext, owner: String?) {
+    /// Taken once: the list is a snapshot and must not reorder while records
+    /// are added or paused. Records that fit this shelf alphabetically come
+    /// first, then the rest, the paused ones last – each by artist.
+    func load(_ context: ModelContext, owner: String?, labels: ShelfLabels) {
         guard !loaded else { return }
         loaded = true
         self.owner = owner
@@ -55,9 +61,19 @@ final class ShelfAssignmentSession: Identifiable {
             let copies = try context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.shelf == nil }))
             let excluded = Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID))
             let available = ShelfAssignmentPresentation.candidates(copies, owner: owner, excluding: excluded)
-            candidates = ShelfAssignmentPresentation.sortedByArtist(available)
-            searchIndex = SearchIndex(available, id: \.id, text: SortingService.searchText)
             missing = Set(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID))
+            let shelves = Shelf.inUse(try context.fetch(FetchDescriptor<Shelf>()))
+            let fits = AlphabeticalPlacement.fittingShelves(for: available, in: shelves)
+            for copy in available {
+                guard let other = fits[copy.id], !other.isEmpty, !other.contains(where: { $0.id == shelf.id }) else { continue }
+                belongsElsewhere[copy.id] = other.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) }
+                    .joined(separator: " oder ")
+            }
+            let sorted = ShelfAssignmentPresentation.sortedByArtist(available)
+            let paused = sorted.filter { missing.contains($0.id) }
+            let active = sorted.filter { !missing.contains($0.id) }
+            candidates = active.filter { belongsElsewhere[$0.id] == nil } + active.filter { belongsElsewhere[$0.id] != nil } + paused
+            searchIndex = SearchIndex(available, id: \.id, text: SortingService.searchText)
         } catch { self.error = error.reportedMessage() }
     }
 
@@ -111,6 +127,8 @@ struct ShelfAssignmentView: View {
     @Bindable var session: ShelfAssignmentSession
     let owner: String?
     let rangeLabel: String?
+    /// All shelf names, for the rows that belong elsewhere.
+    let labels: ShelfLabels
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
@@ -135,6 +153,7 @@ struct ShelfAssignmentView: View {
             .padding(.top, AppStyle.itemSpacing)
             ZStack {
                 ShelfAssignmentTable(controller: session.table, items: items, missing: session.missing,
+                                     belongsElsewhere: session.belongsElsewhere,
                                      toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) }) { [session, context] copy in
                     session.add(copy, in: context)
                 }
@@ -152,7 +171,7 @@ struct ShelfAssignmentView: View {
         .appGlassSurface(cornerRadius: 0)
         .presentationBackground(.clear)
         .animation(AppStyle.standardAnimation, value: session.error)
-        .onAppear { session.load(context, owner: owner) }
+        .onAppear { session.load(context, owner: owner, labels: labels) }
     }
 
     /// Where the records go, like "Standort" on the detail card, with the
@@ -211,6 +230,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
     let controller: ShelfAssignmentTableController
     let items: [RecordCopy]
     let missing: Set<UUID>
+    let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
     let add: (RecordCopy) -> Void
 
@@ -233,6 +253,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
         }
         controller.add = add
         controller.toggleMissing = toggleMissing
+        controller.belongsElsewhere = belongsElsewhere
         controller.setMissing(missing)
         controller.apply(items)
     }
@@ -248,6 +269,8 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     private let table = NSTableView()
     private var items: [RecordCopy] = []
     private var missing: Set<UUID> = []
+    /// Fixed for a session (see `ShelfAssignmentSession.load`).
+    fileprivate var belongsElsewhere: [UUID: String] = [:]
     fileprivate var add: (RecordCopy) -> Void = { _ in }
     fileprivate var toggleMissing: (RecordCopy) -> Void = { _ in }
 
@@ -319,7 +342,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let copy = items[row]
-        let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id),
+        let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id), belongsIn: belongsElsewhere[copy.id],
                                          toggleMissing: { [weak self] in self?.toggleMissing(copy) }) { [weak self] in self?.add(copy) }
         let id = NSUserInterfaceItemIdentifier("ShelfAssignmentRow")
         if let host = tableView.makeView(withIdentifier: id, owner: nil) as? NSHostingView<ShelfAssignmentRow> {
@@ -345,6 +368,8 @@ private struct ShelfAssignmentRow: View {
     let copy: RecordCopy
     /// Marked "Vermisst": shown paused, still addable once it turns up.
     let missing: Bool
+    /// The shelf it fits alphabetically, when that isn't this one.
+    let belongsIn: String?
     let toggleMissing: () -> Void
     let add: () -> Void
 
@@ -358,6 +383,14 @@ private struct ShelfAssignmentRow: View {
                 HStack(spacing: 6) {
                     Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     if missing { MissingBadge() }
+                    if let belongsIn {
+                        Text("gehört in „\(belongsIn)“")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .help("Passt alphabetisch in „\(belongsIn)“, nicht in dieses Fach")
+                    }
                 }
             }
             .opacity(missing ? 0.55 : 1)
