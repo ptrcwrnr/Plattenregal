@@ -546,6 +546,25 @@ enum FocusRings {
     }
 }
 
+/// The glass bubble macOS shows over the cursor with the input source (or
+/// Caps Lock) when a text field gets the focus. Turned off for this app by
+/// writing the switch into its own preferences domain, where macOS reads it
+/// – a registered default stays in this process and was not seen. Someone
+/// who switched it on or off in macOS on purpose (global domain) keeps that.
+enum InputSourceIndicator {
+    static let key = "TSMLanguageIndicatorEnabled"
+
+    static func disableForApp(_ defaults: UserDefaults = .standard) {
+        let global = defaults.persistentDomain(forName: UserDefaults.globalDomain)
+        if global?[key] != nil {
+            // Chosen in macOS: follow that, and drop an earlier override of ours.
+            defaults.removeObject(forKey: key)
+        } else if defaults.object(forKey: key) as? Bool != false {
+            defaults.set(false, forKey: key)
+        }
+    }
+}
+
 /// A choice between a few options in the app's Liquid Glass look: no gray
 /// track and no gray pill behind the chosen option – it is marked by the
 /// accent color alone. In the toolbar the toolbar's own glass is the

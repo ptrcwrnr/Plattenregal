@@ -25,6 +25,19 @@ extension AllTests {
             #expect(OverviewOrder.recent.apply([5, 1, 4, 3, 2], scope: "collection", alphabetical: alphabetical, key: { $0 }, added: date) == [3, 2, 1, 4, 5])
         }
 
+        @Test func inputSourceBubbleIsStoredOffForTheApp() throws {
+            let suite = "InputSourceIndicatorTest"
+            let defaults = try #require(UserDefaults(suiteName: suite))
+            defer { defaults.removePersistentDomain(forName: suite) }
+            // Only when macOS itself leaves it open.
+            let global = UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)
+            try #require(global?[InputSourceIndicator.key] == nil)
+            defaults.set(true, forKey: InputSourceIndicator.key)
+            InputSourceIndicator.disableForApp(defaults)
+            // Persisted in the domain, not just registered in this process.
+            #expect(defaults.persistentDomain(forName: suite)?[InputSourceIndicator.key] as? Bool == false)
+        }
+
         /// In-memory stand-in for the keychain.
         private final class FakeKeychain {
             var token: String?

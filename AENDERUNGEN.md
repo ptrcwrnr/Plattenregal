@@ -1,3 +1,8 @@
+# Eingabequellen-Blase wirklich aus · 26.09.2026
+
+- Die Blase über dem Cursor erschien bei ⌘F wieder: Der nur registrierte Standard lebt allein im Prozess der App, macOS hat ihn nicht gesehen. `InputSourceIndicator.disableForApp()` schreibt `TSMLanguageIndicatorEnabled = false` jetzt dauerhaft in die Einstellungen der App. Wer die Blase in macOS ausdrücklich ein- oder ausgeschaltet hat (globale Domäne), behält das.
+- Test: `inputSourceBubbleIsStoredOffForTheApp`.
+
 # Ambient-Farbe · 26.09.2026
 
 - **Ambient-Farbe** (Einstellungen › Darstellung): ein Farbschein von oben über das ganze Fenster, bis unter die Rubriken (`AmbientGlow` in `RootView`, hinter allen Seiten). Aus oder eine der acht Akzentfarben, Standard Blau; die Reihe steht bündig unter der Akzentfarbe (`AmbientChoice`). Ersetzt den Hauch der Genrefarbe im Regal, der an der Toolbar hart abbrach – die Seiten liegen in eigenen Hosting-Views und reichen nicht darunter.

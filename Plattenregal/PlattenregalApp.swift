@@ -17,8 +17,9 @@ import OSLog
         // macOS shows a glass bubble with the input source (or Caps Lock) over
         // the cursor when a text field is focused first – right over the page
         // when ⌘F reveals the search. Off for this app unless switched on in
-        // macOS on purpose: registered defaults only fill in a missing key.
-        UserDefaults.standard.register(defaults: ["TSMLanguageIndicatorEnabled": false])
+        // macOS on purpose. Stored in the app's own domain: a registered
+        // default lives only in this process, and the bubble didn't see it.
+        InputSourceIndicator.disableForApp()
         // Before the first window, so it never flashes in the wrong mode –
         // also the error window, which has no `appAppearance()`.
         AppPreferences.shared.applyAppearance()
