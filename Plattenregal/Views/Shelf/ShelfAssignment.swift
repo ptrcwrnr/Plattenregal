@@ -104,8 +104,9 @@ final class ShelfAssignmentSession: Identifiable {
 }
 
 /// "+" in the compartment header: pick records that don't have a shelf yet.
-/// Same vocabulary as the rest of the app — sheet header, shared search field,
-/// compact rows with a quiet per-row action. All state is in the session.
+/// Built like the record detail card: a glass sheet closed by its red light,
+/// the target compartment on a tinted glass card, the shared search bar and
+/// compact rows with glass buttons. All state is in the session.
 struct ShelfAssignmentView: View {
     @Bindable var session: ShelfAssignmentSession
     let owner: String?
@@ -115,18 +116,23 @@ struct ShelfAssignmentView: View {
 
     var body: some View {
         let items = session.visible
-        VStack(spacing: 0) {
-            header(count: items.count)
-            AppSearchField(placeholder: "Platten ohne Fach durchsuchen", text: $session.query)
-                .padding(.horizontal, AppStyle.pagePadding)
-                .padding(.bottom, AppStyle.cardPadding)
-            if let error = session.error {
-                AppBanner(message: error, kind: .error)
-                    .padding(.horizontal, AppStyle.pagePadding)
-                    .padding(.bottom, AppStyle.itemSpacing)
-                    .transition(AppStyle.funnelTransition())
+        VStack(alignment: .leading, spacing: 0) {
+            // Where a window has its traffic lights; closing is "Fertig".
+            SheetCloseLight { dismiss() }
+                .padding(.horizontal, 16).padding(.top, 14)
+            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                Text("Platte hinzufügen").font(AppStyle.dialogTitle)
+                targetCard
+                AppSearchField(placeholder: "Platten ohne Fach durchsuchen", text: $session.query)
+                if let error = session.error {
+                    AppBanner(message: error, kind: .error)
+                        .transition(AppStyle.funnelTransition())
+                }
+                listCaption(count: items.count)
+                    .padding(.top, AppStyle.tightSpacing)
             }
-            Divider()
+            .padding(.horizontal, AppStyle.pagePadding)
+            .padding(.top, AppStyle.itemSpacing)
             ZStack {
                 ShelfAssignmentTable(controller: session.table, items: items, missing: session.missing,
                                      toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) }) { [session, context] copy in
@@ -142,54 +148,60 @@ struct ShelfAssignmentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 440, height: 620)
+        .frame(width: 460, height: 640)
+        .appGlassSurface(cornerRadius: 0)
+        .presentationBackground(.clear)
         .animation(AppStyle.standardAnimation, value: session.error)
         .onAppear { session.load(context, owner: owner) }
     }
 
-    private func header(count: Int) -> some View {
-        HStack(alignment: .center, spacing: AppStyle.rowSpacing) {
-            VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                Text("Platte hinzufügen").font(AppStyle.dialogTitle)
-                // One line, so a longer text never grows the header.
-                HStack(spacing: 0) {
-                    Text(subtitle(count: count)).foregroundStyle(.secondary)
-                        .lineLimit(1).truncationMode(.middle)
-                    // Its own text, so a long anchor name never cuts it off.
-                    if pausedCount > 0 {
-                        Text(" · \(pausedCount) vermisst").foregroundStyle(AppStyle.errorColor)
-                            .lineLimit(1).fixedSize()
-                    }
-                }
-                .font(.callout)
+    /// Where the records go, like "Standort" on the detail card, with the
+    /// records added so far on the right.
+    private var targetCard: some View {
+        HStack(spacing: AppStyle.rowSpacing) {
+            Image(systemName: "square.grid.3x3.fill")
+                .font(.system(size: 22))
+                .foregroundStyle(AppStyle.accent)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Kommt in").font(.caption).foregroundStyle(.secondary)
+                // One line, so a long anchor name never grows the card.
+                Text(target).font(.headline).lineLimit(1).truncationMode(.middle)
             }
             Spacer(minLength: AppStyle.itemSpacing)
-            Button { dismiss() } label: {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 14, weight: .semibold))
+            if session.addedCount > 0 {
+                Label("\(session.addedCount) hinzugefügt", systemImage: "checkmark")
+                    .font(.callout.weight(.medium))
                     .foregroundStyle(AppStyle.accent)
-                    .frame(width: 32, height: 32)
-                    .background(AppStyle.accent.opacity(0.11), in: RoundedRectangle(cornerRadius: 10))
+                    .contentTransition(.numericText())
+                    .fixedSize()
+                    .transition(.opacity)
             }
-            .buttonStyle(.plain)
-            .keyboardShortcut(.cancelAction)
-            .help("Fertig")
-            .accessibilityLabel("Fertig")
         }
-        .padding(.horizontal, AppStyle.pagePadding)
-        .padding(.top, AppStyle.pagePadding)
-        .padding(.bottom, AppStyle.cardPadding)
+        .padding(.horizontal, AppStyle.cardPadding)
+        .padding(.vertical, AppStyle.rowSpacing)
+        .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+        .animation(AppStyle.standardAnimation, value: session.addedCount)
+    }
+
+    private var target: String {
+        let shelf = rangeLabel.map { "„\($0)“" } ?? "dieses Fach"
+        let place = session.anchor.map { "nach „\($0.release?.displayArtist ?? "—")“" } ?? "ans Ende"
+        return "\(shelf) · \(place)"
+    }
+
+    private func listCaption(count: Int) -> some View {
+        HStack(spacing: 0) {
+            Text("\(AppStyle.records(count)) ohne Fach").foregroundStyle(.secondary)
+            if pausedCount > 0 {
+                Text(" · \(pausedCount) vermisst").foregroundStyle(AppStyle.errorColor)
+            }
+        }
+        .font(.caption)
+        .monospacedDigit()
+        .lineLimit(1)
     }
 
     private var pausedCount: Int { session.candidates.filter { session.missing.contains($0.id) }.count }
-
-    private func subtitle(count: Int) -> String {
-        let target = rangeLabel.map { "In „\($0)“" } ?? "In dieses Fach"
-        let place = session.anchor.map { "nach „\($0.release?.displayArtist ?? "—")“" } ?? "ans Ende"
-        var text = "\(target) \(place) · \(AppStyle.records(count)) ohne Fach"
-        if session.addedCount > 0 { text += " · \(session.addedCount) hinzugefügt" }
-        return text
-    }
 }
 
 /// Shows the session's table. SwiftUI may create and drop this wrapper as
@@ -231,7 +243,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
 /// next "+" ends up exactly under the pointer.
 @MainActor
 final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NSTableViewDelegate {
-    static let rowHeight: CGFloat = 48
+    static let rowHeight: CGFloat = 52
     let scrollView = NSScrollView()
     private let table = NSTableView()
     private var items: [RecordCopy] = []
@@ -340,7 +352,7 @@ private struct ShelfAssignmentRow: View {
         let artist = copy.release?.displayArtist ?? "—"
         let title = copy.release?.displayTitle ?? "—"
         HStack(spacing: AppStyle.rowSpacing) {
-            CoverView(url: copy.release?.coverURL, size: 36)
+            CoverView(url: copy.release?.coverURL, size: 38)
             VStack(alignment: .leading, spacing: 2) {
                 Text(artist).font(.callout.weight(.medium)).lineLimit(1)
                 HStack(spacing: 6) {
@@ -352,32 +364,37 @@ private struct ShelfAssignmentRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .help("\(artist) – \(title)")
             Spacer(minLength: AppStyle.itemSpacing)
-            Button(action: toggleMissing) {
-                Image(systemName: missing ? "pause.fill" : "pause")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: 30, height: 30)
-                    .background(missing ? AppStyle.errorColor.opacity(0.12) : AppStyle.hoverBackground, in: RoundedRectangle(cornerRadius: 9))
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(missing ? AppStyle.errorColor : .secondary)
-            .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
-            .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als vermisst markieren")
-            Button(action: add) {
-                Image(systemName: "plus")
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(width: 30, height: 30)
-                    .background(AppStyle.hoverBackground, in: RoundedRectangle(cornerRadius: 9))
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-            .help("Ins Fach hinzufügen")
-            .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
+            RowGlassButton(systemImage: missing ? "pause.fill" : "pause",
+                           color: missing ? AppStyle.errorColor : .secondary, action: toggleMissing)
+                .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
+                .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als vermisst markieren")
+            // The main action: accent in the glyph, like chosen options elsewhere.
+            RowGlassButton(systemImage: "plus", color: AppStyle.accent, action: add)
+                .help("Ins Fach hinzufügen")
+                .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
         }
         .padding(.horizontal, AppStyle.pagePadding)
         .frame(height: ShelfAssignmentTableController.rowHeight)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// A small round Liquid Glass button for a row's actions.
+private struct RowGlassButton: View {
+    let systemImage: String
+    let color: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 30, height: 30)
+                .contentShape(Circle())
+                .glassEffect(.regular.interactive(), in: .circle)
+        }
+        .buttonStyle(.plain)
     }
 }
 
