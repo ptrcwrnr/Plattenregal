@@ -421,6 +421,37 @@ private struct QuietIconColumnHeaders: NSViewRepresentable {
     }
 
     final class Header: NSTableHeaderView {
+        /// Frosted glass behind the header: the rows scroll underneath it, and
+        /// the see-through header let their text mix with the column titles.
+        private let frost: NSVisualEffectView = {
+            let view = NSVisualEffectView()
+            view.material = .headerView
+            view.blendingMode = .withinWindow
+            view.state = .active
+            return view
+        }()
+        private var frameObserver: NSObjectProtocol?
+
+        override func viewDidMoveToSuperview() {
+            super.viewDidMoveToSuperview()
+            if let frameObserver { NotificationCenter.default.removeObserver(frameObserver) }
+            frameObserver = nil
+            guard let clip = superview, let scroll = clip.superview else { return frost.removeFromSuperview() }
+            // Sits in the scroll view right below the header's clip view, so it
+            // covers the rows but never the column titles.
+            scroll.addSubview(frost, positioned: .below, relativeTo: clip)
+            frost.frame = clip.frame
+            clip.postsFrameChangedNotifications = true
+            frameObserver = NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: clip, queue: .main) { [weak self, weak clip] _ in
+                guard let clip else { return }
+                MainActor.assumeIsolated { self?.frost.frame = clip.frame }
+            }
+        }
+
+        isolated deinit {
+            if let frameObserver { NotificationCenter.default.removeObserver(frameObserver) }
+        }
+
         override func draw(_ dirtyRect: NSRect) {
             guard let table = tableView else { return super.draw(dirtyRect) }
             let columns = table.tableColumns
