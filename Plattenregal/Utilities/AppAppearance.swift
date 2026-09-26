@@ -128,23 +128,40 @@ extension View {
 }
 
 
-/// A quiet mood behind a page: a faint glow in `color` from the top, and a
-/// few covers washed out across the top edge, heavily blurred. Gives the
-/// glass something to refract without competing with the content.
+/// The chosen ambient color (Einstellungen › Darstellung) as a faint glow from
+/// the top of the window. Sits behind all pages and runs on under the
+/// toolbar, so it never ends in an edge below the page switch.
+struct AmbientGlow: View {
+    @State private var preferences = AppPreferences.shared
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        GeometryReader { geometry in
+            if let color = preferences.ambient.color {
+                RadialGradient(colors: [color.opacity(scheme == .dark ? 0.18 : 0.10), .clear],
+                               center: .top, startRadius: 0,
+                               endRadius: max(geometry.size.width, geometry.size.height) * 0.7)
+                    .transition(.opacity)
+            }
+        }
+        .ignoresSafeArea()
+        .animation(AppStyle.fadeAnimation, value: preferences.ambient)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// A quiet mood behind a page: a few covers washed out across the top edge,
+/// heavily blurred. Gives the glass something to refract without competing
+/// with the content.
 struct AmbientBackdrop: View {
     /// At most three are used; each fades in only once loaded.
     var covers: [String] = []
-    var color: Color? = nil
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         let shown = Array(covers.prefix(3))
         ZStack(alignment: .top) {
-            if let color {
-                RadialGradient(colors: [color.opacity(scheme == .dark ? 0.16 : 0.08), .clear],
-                               center: .top, startRadius: 0, endRadius: 600)
-                    .transition(.opacity)
-            }
             HStack(spacing: 0) {
                 ForEach(shown, id: \.self) { url in
                     AmbientCover(url: url).transition(.opacity)
@@ -157,7 +174,6 @@ struct AmbientBackdrop: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(AppStyle.fadeAnimation.speed(0.5), value: shown)
-        .animation(AppStyle.fadeAnimation.speed(0.5), value: color)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }

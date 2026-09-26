@@ -181,6 +181,17 @@ enum AccentChoice: String, CaseIterable, Identifiable {
     }
 }
 
+/// The faint glow behind every page, from the top of the window: off or one
+/// of the accent colors. Same count as `AccentChoice`, so both rows of
+/// swatches line up with "Aus" under "Wie macOS".
+enum AmbientChoice: String, CaseIterable, Identifiable {
+    case off, blue, purple, pink, red, orange, yellow, green, graphite
+    var id: Self { self }
+    var title: String { self == .off ? "Aus" : AccentChoice(rawValue: rawValue)?.title ?? rawValue }
+    /// nil when off.
+    var color: Color? { AccentChoice(rawValue: rawValue)?.color }
+}
+
 /// Settings that change the whole app at once. Observable, so every view
 /// reading `AppStyle.accent` redraws when the accent changes; stored in
 /// the same user defaults as the `@AppStorage` settings.
@@ -191,17 +202,20 @@ enum AccentChoice: String, CaseIterable, Identifiable {
         static let startPage = "startPage"
         static let appearance = "appearanceMode"
         static let accent = "accentChoice"
+        static let ambient = "ambientChoice"
     }
 
     var startPage: StartPage { didSet { store(startPage.rawValue, Key.startPage) } }
     var appearance: AppearanceMode { didSet { store(appearance.rawValue, Key.appearance); applyAppearance() } }
     var accent: AccentChoice { didSet { store(accent.rawValue, Key.accent) } }
+    var ambient: AmbientChoice { didSet { store(ambient.rawValue, Key.ambient) } }
 
     private init() {
         let defaults = AppDefaults.store
         startPage = defaults.string(forKey: Key.startPage).flatMap(StartPage.init) ?? .collection
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppearanceMode.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .system
+        ambient = defaults.string(forKey: Key.ambient).flatMap(AmbientChoice.init) ?? .blue
     }
 
     /// Light or dark for every window, including sheets and the settings.
@@ -214,6 +228,7 @@ enum AccentChoice: String, CaseIterable, Identifiable {
         startPage = .collection
         appearance = .system
         accent = .system
+        ambient = .blue
     }
 
     private func store(_ value: String, _ key: String) {

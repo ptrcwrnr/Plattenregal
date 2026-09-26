@@ -72,6 +72,7 @@ struct RootView: View {
                 }
             }
             .background(pageShortcuts)
+            .background { AmbientGlow() }
     }
 
     /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window.

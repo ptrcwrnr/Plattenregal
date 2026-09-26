@@ -50,9 +50,6 @@ struct ShelfStatistics {
                 return $0.style.localizedStandardCompare($1.style) == .orderedAscending
             }
     }
-
-    /// Color of the family most records on the shelf belong to.
-    var dominantColorStyle: String? { styleShares.first?.colorStyle }
 }
 
 /// Automatic shelf labels ("0 – B", "Ce – Di", "R – T", "B") derived from the

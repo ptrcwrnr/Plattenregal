@@ -1,3 +1,8 @@
+# Ambient-Farbe · 26.09.2026
+
+- **Ambient-Farbe** (Einstellungen › Darstellung): ein Farbschein von oben über das ganze Fenster, bis unter die Rubriken (`AmbientGlow` in `RootView`, hinter allen Seiten). Aus oder eine der acht Akzentfarben, Standard Blau; die Reihe steht bündig unter der Akzentfarbe (`AmbientChoice`). Ersetzt den Hauch der Genrefarbe im Regal, der an der Toolbar hart abbrach – die Seiten liegen in eigenen Hosting-Views und reichen nicht darunter.
+- Akzent- und Ambient-Farbe ohne grauen Erklärtext.
+
 # Letzte Prüfung: Cover ohne Bild, verschobene Ordner · 26.09.2026
 
 - **Leere Cover-URL** (`DiscogsBasicInformation.apply`): Discogs schickt für Platten ohne Bild `""`. Das wurde als Cover gespeichert und belegte z. B. einen der drei Plätze im Ambient-Hintergrund. Jetzt bleibt es leer, und wenn nur das Vorschaubild existiert, wird es verwendet. Greift nach dem nächsten Sync.

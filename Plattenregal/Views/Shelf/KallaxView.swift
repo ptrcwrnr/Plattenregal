@@ -254,7 +254,6 @@ struct KallaxView: View {
             .padding(.top, AppStyle.pagePadding)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
-            .background { AmbientBackdrop(color: ambientColor) }
             .onExitCommand { if placement != nil { cancelPlacement() } else { deselect() } }
             .overlay(alignment: .bottom) { undoToast }
         }
@@ -342,13 +341,6 @@ struct KallaxView: View {
             "Änderung nicht möglich",
             isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })
         ) { Button("OK") {} } message: { Text(error ?? "") }
-    }
-
-    /// The mood behind the glass: the selected compartment's main genre color.
-    private var ambientColor: Color? {
-        guard let shelf = detailShelf, !shelf.isReserved,
-              let style = shelfStats[shelf.id]?.dominantColorStyle else { return nil }
-        return palette.color(for: style, solid: true)
     }
 
     /// Records are there, but none stands in a shelf yet.

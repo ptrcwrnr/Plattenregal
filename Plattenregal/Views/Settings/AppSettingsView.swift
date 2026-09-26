@@ -223,11 +223,23 @@ struct AppearanceSettingsView: View {
                         .accessibilityLabel("Modus")
                 }
                 Divider()
-                SettingsRow(title: "Akzentfarbe", hint: preferences.accent.title) {
+                SettingsRow(title: "Akzentfarbe") {
                     HStack(spacing: 6) {
                         ForEach(AccentChoice.allCases) { choice in
-                            AccentSwatch(choice: choice, selected: preferences.accent == choice) {
+                            ColorSwatch(title: choice.title, color: choice.color, rainbow: choice == .system,
+                                        selected: preferences.accent == choice) {
                                 withAnimation(AppStyle.quickAnimation) { preferences.accent = choice }
+                            }
+                        }
+                    }
+                }
+                Divider()
+                SettingsRow(title: "Ambient-Farbe") {
+                    HStack(spacing: 6) {
+                        ForEach(AmbientChoice.allCases) { choice in
+                            ColorSwatch(title: choice.title, color: choice.color ?? .secondary, off: choice == .off,
+                                        selected: preferences.ambient == choice) {
+                                withAnimation(AppStyle.quickAnimation) { preferences.ambient = choice }
                             }
                         }
                     }
@@ -278,18 +290,28 @@ struct AppearanceSettingsView: View {
     }
 }
 
-private struct AccentSwatch: View {
-    let choice: AccentChoice
+/// One round color choice; `rainbow` for "Wie macOS", `off` for "Aus".
+private struct ColorSwatch: View {
+    let title: String
+    let color: Color
+    var rainbow = false
+    var off = false
     let selected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             ZStack {
-                if choice == .system {
+                if rainbow {
                     Circle().fill(AngularGradient(colors: [.red, .orange, .yellow, .green, .blue, .purple, .red], center: .center))
+                } else if off {
+                    Path { path in
+                        path.move(to: CGPoint(x: 15, y: 3))
+                        path.addLine(to: CGPoint(x: 3, y: 15))
+                    }
+                    .stroke(Color.secondary, lineWidth: 1.5)
                 } else {
-                    Circle().fill(choice.color)
+                    Circle().fill(color)
                 }
                 // Shadowed, so the mark stays visible on light swatches like yellow.
                 if selected {
@@ -300,12 +322,12 @@ private struct AccentSwatch: View {
             .frame(width: 18, height: 18)
             .overlay(Circle().strokeBorder(Color.primary.opacity(0.15)))
             .padding(3)
-            .overlay(Circle().strokeBorder(selected ? choice.color : .clear, lineWidth: 2))
+            .overlay(Circle().strokeBorder(selected ? color : .clear, lineWidth: 2))
             .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .help(choice.title)
-        .accessibilityLabel(choice.title)
+        .help(title)
+        .accessibilityLabel(title)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
