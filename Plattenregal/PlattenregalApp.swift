@@ -14,6 +14,11 @@ import OSLog
         AppLog.startSession(details: "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)" + (DemoMode.isActive ? " · Demo" : ""),
                             version: "\(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         FocusRings.disableGlobally()
+        // macOS shows a glass bubble with the input source (or Caps Lock) over
+        // the cursor when a text field is focused first – right over the page
+        // when ⌘F reveals the search. Off for this app unless switched on in
+        // macOS on purpose: registered defaults only fill in a missing key.
+        UserDefaults.standard.register(defaults: ["TSMLanguageIndicatorEnabled": false])
         // Before the first window, so it never flashes in the wrong mode –
         // also the error window, which has no `appAppearance()`.
         AppPreferences.shared.applyAppearance()
