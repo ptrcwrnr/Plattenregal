@@ -837,3 +837,86 @@ private struct SecondaryClickCatcher: NSViewRepresentable {
         }
     }
 }
+
+extension NSView {
+    /// A table sits next to its background and overlay views, not above
+    /// them: search upwards for the nearest ancestor that contains one.
+    func nearbyTable() -> NSTableView? {
+        func table(in view: NSView) -> NSTableView? {
+            if let table = view as? NSTableView { return table }
+            for subview in view.subviews { if let found = table(in: subview) { return found } }
+            return nil
+        }
+        var node = superview
+        while let current = node {
+            if let found = table(in: current) { return found }
+            node = current.superview
+        }
+        return nil
+    }
+}
+
+/// Right-click (or Control-click) and, optionally, double-click on a row of
+/// the SwiftUI `Table` beneath this overlay: reports the row (in the table's
+/// order) and the click position as a unit point of the overlay, e.g. to
+/// anchor an `AppMenu` or a popover there. Every other event goes straight
+/// through to the table.
+struct TableRowClicks: NSViewRepresentable {
+    var secondary: ((Int, UnitPoint) -> Void)?
+    var double: ((Int, UnitPoint) -> Void)?
+
+    func makeNSView(context: Context) -> Catcher { Catcher() }
+    func updateNSView(_ view: Catcher, context: Context) {
+        view.secondary = secondary
+        view.double = double
+    }
+    static func dismantleNSView(_ view: Catcher, coordinator: ()) { view.stop() }
+
+    final class Catcher: NSView {
+        var secondary: ((Int, UnitPoint) -> Void)?
+        var double: ((Int, UnitPoint) -> Void)? {
+            didSet { if (double == nil) != (oldValue == nil) { viewDidMoveToWindow() } }
+        }
+        private var monitor: Any?
+        override var isFlipped: Bool { true }
+
+        private static func isSecondary(_ event: NSEvent?) -> Bool {
+            guard let event else { return false }
+            return event.type == .rightMouseDown
+                || (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
+        }
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            Self.isSecondary(NSApp.currentEvent) ? super.hitTest(point) : nil
+        }
+        override func rightMouseDown(with event: NSEvent) { fire(event, secondary) }
+        override func mouseDown(with event: NSEvent) {
+            if Self.isSecondary(event) { fire(event, secondary) } else { super.mouseDown(with: event) }
+        }
+
+        // Double-clicks go to the table itself; they are only watched.
+        override func viewDidMoveToWindow() {
+            stop()
+            guard window != nil, double != nil else { return }
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+                guard let self, event.clickCount == 2, event.window === self.window,
+                      let table = self.nearbyTable(),
+                      self.window?.contentView?.hitTest(event.locationInWindow)?.isDescendant(of: table) == true
+                else { return event }
+                self.fire(event, self.double)
+                return event
+            }
+        }
+        func stop() {
+            if let monitor { NSEvent.removeMonitor(monitor) }
+            monitor = nil
+        }
+
+        private func fire(_ event: NSEvent, _ action: ((Int, UnitPoint) -> Void)?) {
+            guard let action, let table = nearbyTable(), bounds.width > 0, bounds.height > 0 else { return }
+            let row = table.row(at: table.convert(event.locationInWindow, from: nil))
+            guard row >= 0 else { return }
+            let p = convert(event.locationInWindow, from: nil)
+            action(row, UnitPoint(x: p.x / bounds.width, y: p.y / bounds.height))
+        }
+    }
+}

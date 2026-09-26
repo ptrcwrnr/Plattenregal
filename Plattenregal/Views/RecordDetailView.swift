@@ -115,7 +115,6 @@ struct ReleaseHeaderView: View {
 struct RecordPopover: View {
     @Environment(\.modelContext) private var context
     let copy: RecordCopy
-    var expand: (() -> Void)? = nil
     /// Tracklists are loaded after each collection sync; this only covers a
     /// record whose tracklist isn't there yet (e.g. while that is still running).
     @State private var loadingTracks = false
@@ -143,14 +142,6 @@ struct RecordPopover: View {
                     .padding(.top, AppStyle.tightSpacing)
                 }
                 Spacer(minLength: 0)
-                if let expand {
-                    Button(action: expand) {
-                        Image(systemName: "arrow.up.left.and.arrow.down.right")
-                    }
-                    .appGlassButton()
-                    .buttonBorderShape(.circle)
-                    .help("Details öffnen")
-                }
             }
 
             if let tracks = release?.tracks, !tracks.isEmpty {

@@ -193,10 +193,10 @@ struct ShelfCopyTable: View {
             .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
                 if let id = ids.first, items.contains(where: { $0.id == id }) { quickEditID = id }
             }
-            .overlay(TableRowSecondaryClick { row, point in
+            .overlay(TableRowClicks(secondary: { row, point in
                 guard items.indices.contains(row) else { return }
                 menuFor = (items[row].id, point)
-            })
+            }))
             .popover(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } }),
                      attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
                 if let id = menuFor?.id, let copy = items.first(where: { $0.id == id })?.copy {
@@ -445,24 +445,6 @@ private struct QuietIconColumnHeaders: NSViewRepresentable {
     }
 }
 
-private extension NSView {
-    /// A table sits next to its background views, not above them: search
-    /// upwards for the nearest ancestor that contains one.
-    func nearbyTable() -> NSTableView? {
-        func table(in view: NSView) -> NSTableView? {
-            if let table = view as? NSTableView { return table }
-            for subview in view.subviews { if let found = table(in: subview) { return found } }
-            return nil
-        }
-        var node = superview
-        while let current = node {
-            if let found = table(in: current) { return found }
-            node = current.superview
-        }
-        return nil
-    }
-}
-
 /// A plain click on the already selected row clears the selection, as a
 /// click on the pulled-out spine does. `NSTableView` keeps the row selected
 /// (only ⌘-click deselects), so this watches mouse-downs on the table itself.
@@ -513,39 +495,6 @@ private struct TableRowClickToggle: NSViewRepresentable {
             }
             pending = item
             DispatchQueue.main.asyncAfter(deadline: .now() + NSEvent.doubleClickInterval, execute: item)
-        }
-    }
-}
-
-/// Right-click (or Control-click) on a row of the table beneath: reports the
-/// row and the click position as a unit point of this overlay, to anchor an
-/// `AppMenu` there. Every other event goes straight through to the table.
-private struct TableRowSecondaryClick: NSViewRepresentable {
-    let action: (Int, UnitPoint) -> Void
-    func makeNSView(context: Context) -> Catcher { Catcher() }
-    func updateNSView(_ view: Catcher, context: Context) { view.action = action }
-
-    final class Catcher: NSView {
-        var action: ((Int, UnitPoint) -> Void)?
-        override var isFlipped: Bool { true }
-        private static func isSecondary(_ event: NSEvent?) -> Bool {
-            guard let event else { return false }
-            return event.type == .rightMouseDown
-                || (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
-        }
-        override func hitTest(_ point: NSPoint) -> NSView? {
-            Self.isSecondary(NSApp.currentEvent) ? super.hitTest(point) : nil
-        }
-        override func rightMouseDown(with event: NSEvent) { fire(event) }
-        override func mouseDown(with event: NSEvent) {
-            if Self.isSecondary(event) { fire(event) } else { super.mouseDown(with: event) }
-        }
-        private func fire(_ event: NSEvent) {
-            guard let table = nearbyTable(), bounds.width > 0, bounds.height > 0 else { return }
-            let row = table.row(at: table.convert(event.locationInWindow, from: nil))
-            guard row >= 0 else { return }
-            let p = convert(event.locationInWindow, from: nil)
-            action?(row, UnitPoint(x: p.x / bounds.width, y: p.y / bounds.height))
         }
     }
 }

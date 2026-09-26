@@ -183,6 +183,8 @@ struct WantlistView: View {
     @State private var visibleEntries: [WantlistEntry] = []
     @State private var alphabetIndex: [String: PersistentIdentifier] = [:]
     @State private var scrollPosition: PersistentIdentifier?
+    /// The entry whose menu is open, and where it was right-clicked.
+    @State private var menuFor: (id: PersistentIdentifier, anchor: UnitPoint)?
     /// The window's page switch, to jump to the collection's hits.
     let pages: PageSelection<Destination>
 
@@ -365,8 +367,15 @@ struct WantlistView: View {
                         }
                         .buttonStyle(.plain)
                         .id(entry.persistentModelID)
-                        .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – ") + (DemoMode.isActive ? "" : "\nKlicken, um bei Discogs zu öffnen"))
-                        .contextMenu { if sourceURL(entry) != nil { Button("Bei Discogs öffnen") { open(entry) } } }
+                        .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – ") + (DemoMode.isActive ? "" : "\nKlicken, um auf Discogs zu öffnen"))
+                        // The app's own menu, as in the collection.
+                        .onSecondaryClick { point in
+                            if sourceURL(entry) != nil { menuFor = (entry.persistentModelID, point) }
+                        }
+                        .popover(isPresented: menuBinding(entry.persistentModelID),
+                                 attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+                            AppMenu(dismiss: { menuFor = nil }) { entryMenu(entry) }
+                        }
                     }
                 }
                 .coverGridMotion(width: width, columnCount: columnCount)
@@ -418,8 +427,8 @@ struct WantlistView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .help("Bei Discogs öffnen")
-                .accessibilityLabel("Bei Discogs öffnen")
+                .help("Auf Discogs öffnen")
+                .accessibilityLabel("Auf Discogs öffnen")
                 }
             }
             .width(24)
@@ -429,13 +438,28 @@ struct WantlistView: View {
         .scrollContentBackground(.hidden)
         .scrollPosition(id: $scrollPosition, anchor: .top)
         .refreshShortcut(disabled: sync.busy, action: syncWantlist)
-        .contextMenu(forSelectionType: WantlistEntry.ID.self) { ids in
-            if let entry = rows.first(where: { ids.contains($0.id) }), sourceURL(entry) != nil {
-                Button("Bei Discogs öffnen") { open(entry) }
-            }
-        } primaryAction: { ids in
+        // Only for the double-click; the menu is the app's own (below).
+        .contextMenu(forSelectionType: WantlistEntry.ID.self) { _ in } primaryAction: { ids in
             if let entry = rows.first(where: { ids.contains($0.id) }) { open(entry) }
         }
+        .overlay(TableRowClicks(secondary: { row, point in
+            guard rows.indices.contains(row), sourceURL(rows[row]) != nil else { return }
+            menuFor = (rows[row].persistentModelID, point)
+        }))
+        .popover(isPresented: Binding(get: { menuFor != nil && layout != .grid }, set: { if !$0 { menuFor = nil } }),
+                 attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+            if let id = menuFor?.id, let entry = rows.first(where: { $0.persistentModelID == id }) {
+                AppMenu(dismiss: { menuFor = nil }) { entryMenu(entry) }
+            }
+        }
+    }
+
+    @ViewBuilder private func entryMenu(_ entry: WantlistEntry) -> some View {
+        Button("Auf Discogs öffnen") { open(entry) }
+    }
+
+    private func menuBinding(_ id: PersistentIdentifier) -> Binding<Bool> {
+        Binding(get: { menuFor?.id == id }, set: { if !$0, menuFor?.id == id { menuFor = nil } })
     }
 
     private func syncWantlist() {

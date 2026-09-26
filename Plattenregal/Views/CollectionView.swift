@@ -60,7 +60,9 @@ struct CollectionView: View {
     @State private var cardFrames = CardFrameStore()
     @State private var dragRectangle: CGRect?
     @State private var dragBaseSelection: Set<UUID> = []
-    @State private var opened: RecordCopy?
+    /// List layout: the row whose menu or quick look is open, and where.
+    @State private var tableMenu: (id: UUID, anchor: UnitPoint)?
+    @State private var tableQuickLook: (id: UUID, anchor: UnitPoint)?
     /// Copy whose popover is open (single click on a cover).
     @State private var quickLook: UUID?
     /// The cover whose right-click menu is open, and where it was clicked.
@@ -301,10 +303,7 @@ struct CollectionView: View {
                                                 }
                                             }
                                             .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
-                                                RecordPopover(copy: group.primary) {
-                                                    quickLook = nil
-                                                    opened = group.primary
-                                                }
+                                                RecordPopover(copy: group.primary)
                                             }
                                             .onSecondaryClick { point in
                                                 quickLook = nil
@@ -375,10 +374,28 @@ struct CollectionView: View {
                         .scrollContentBackground(.hidden)
                         .padding(.horizontal, AppStyle.pagePadding + 4)
                         .padding(.trailing, alphabetGutter)
-                        .contextMenu(forSelectionType: UUID.self) { ids in
-                            tableContextMenu(ids, items: items)
-                        } primaryAction: { ids in
-                            if ids.count == 1 { opened = copies.first(where: { ids.contains($0.id) }) }
+                        // The app's own menu and, on double-click, the quick look – as in the grid.
+                        .overlay(TableRowClicks(secondary: { row, point in
+                            guard items.indices.contains(row) else { return }
+                            tableMenu = (items[row].id, point)
+                        }, double: { row, point in
+                            guard items.indices.contains(row) else { return }
+                            tableQuickLook = (items[row].id, point)
+                        }))
+                        .popover(isPresented: Binding(get: { tableMenu != nil }, set: { if !$0 { tableMenu = nil } }),
+                                 attachmentAnchor: .point(tableMenu?.anchor ?? .center), arrowEdge: .trailing) {
+                            if let id = tableMenu?.id {
+                                AppMenu(dismiss: { tableMenu = nil }) { tableContextMenu(id, items: items) }
+                            }
+                        }
+                        // Its own layer: two popovers on one view get in each other's way.
+                        .background {
+                            Color.clear.popover(isPresented: Binding(get: { tableQuickLook != nil }, set: { if !$0 { tableQuickLook = nil } }),
+                                                attachmentAnchor: .point(tableQuickLook?.anchor ?? .center), arrowEdge: .trailing) {
+                                if let id = tableQuickLook?.id, let copy = items.first(where: { $0.id == id }) {
+                                    RecordPopover(copy: copy)
+                                }
+                            }
                         }
                         .scrollPosition(id: $scrollPosition, anchor: .top)
                         .refreshShortcut(disabled: sync.busy) {
@@ -405,7 +422,6 @@ struct CollectionView: View {
         .animation(AppStyle.standardAnimation, value: showsControls)
         .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
         .background { if analyticsFilter == nil { AmbientBackdrop(covers: ambientCovers) } }
-        .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
@@ -471,11 +487,11 @@ struct CollectionView: View {
         refreshButton(for: selected)
     }
 
-    /// "Nicht einsortieren" / "Wieder einsortieren", depending on whether all
+    /// "Nicht im Regal" / "Wieder einsortieren", depending on whether all
     /// of the given copies are already kept out of the shelves.
     @ViewBuilder private func exclusionButton(for selectedCopies: [RecordCopy]) -> some View {
         let allExcluded = !selectedCopies.isEmpty && selectedCopies.allSatisfy { excludedIDs.contains($0.id) }
-        Button(allExcluded ? "Wieder einsortieren" : "Nicht einsortieren") {
+        Button(allExcluded ? "Wieder einsortieren" : "Nicht im Regal") {
             perform { try PositionService(context: context).setExcluded(selectedCopies, !allExcluded) }
         }
     }
@@ -494,14 +510,22 @@ struct CollectionView: View {
                 actions(copy)
             }
         } else {
+            AppMenuSection(title: location(group.primary))
             actions(group.primary)
         }
     }
 
-    @ViewBuilder private func tableContextMenu(_ ids: Set<UUID>, items: [RecordCopy]) -> some View {
-        if ids.count > 1 {
-            bulkMenus(for: ids, items: items)
-        } else if let copy = items.first(where: { ids.contains($0.id) }) {
+    /// Where a copy stands, as the menu's heading (what the detail card showed).
+    private func location(_ copy: RecordCopy) -> String {
+        ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excludedIDs.contains(copy.id))
+    }
+
+    /// A right-clicked row inside a larger selection acts on the selection.
+    @ViewBuilder private func tableContextMenu(_ id: UUID, items: [RecordCopy]) -> some View {
+        if selection.count > 1 && selection.contains(id) {
+            bulkMenus(for: selection, items: items)
+        } else if let copy = items.first(where: { $0.id == id }) {
+            AppMenuSection(title: location(copy))
             actions(copy)
         }
     }
@@ -623,10 +647,9 @@ struct CollectionView: View {
         }
     }
     @ViewBuilder private func actions(_ copy: RecordCopy) -> some View {
-        Button("Öffnen") { opened = copy }
         Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen") { showShelf(copy) }
         if let url = copy.release?.sourceURL {
-            Button("Bei Discogs öffnen") { openURL(url) }
+            Button("Auf Discogs öffnen") { openURL(url) }
         }
         refreshButton(for: [copy])
         Divider()
