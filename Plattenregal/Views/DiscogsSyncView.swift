@@ -253,6 +253,7 @@ struct WantlistView: View {
         }
         .padding(.top, AppStyle.pagePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.release?.coverURL }.prefix(3))) }
         .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: query)

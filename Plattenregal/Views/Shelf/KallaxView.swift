@@ -227,7 +227,6 @@ struct KallaxView: View {
                     stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
                     rangeLabel: { rangeLabels[$0.id] },
                     palette: palette,
-                    spineSlots: spineSlots,
                     selectedID: detailShelf?.id,
                     litIDs: lit,
                     lockPreview: lockPreview,
@@ -248,7 +247,7 @@ struct KallaxView: View {
             .padding(.top, AppStyle.pagePadding)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
-            .background { ShelfAmbience(color: ambientColor, coverURL: focusCopy?.release?.coverURL) }
+            .background { AmbientBackdrop(covers: focusCopy?.release?.coverURL.map { [$0] } ?? [], color: ambientColor) }
             .onExitCommand { if placement != nil { cancelPlacement() } else { deselect() } }
             .overlay(alignment: .bottom) { undoToast }
         }
@@ -748,63 +747,6 @@ struct KallaxView: View {
         if placement?.copy.id == copy.id { placement = nil }
         do { try PositionService(context: context).delete(copy) }
         catch { self.error = error.reportedMessage() }
-    }
-}
-
-/// Behind the shelf page: a faint glow in the selected compartment's genre
-/// color, and the picked record's cover, heavily blurred, once it has loaded.
-/// Gives the glass something to refract without competing with it.
-private struct ShelfAmbience: View {
-    let color: Color?
-    let coverURL: String?
-    @Environment(\.colorScheme) private var scheme
-
-    var body: some View {
-        ZStack(alignment: .top) {
-            if let color {
-                RadialGradient(colors: [color.opacity(scheme == .dark ? 0.3 : 0.16), .clear],
-                               center: .top, startRadius: 0, endRadius: 620)
-                    .transition(.opacity)
-            }
-            if let coverURL {
-                AmbientCover(url: coverURL)
-                    .id(coverURL)
-                    .transition(.opacity)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .animation(AppStyle.fadeAnimation.speed(0.6), value: coverURL)
-        .animation(AppStyle.fadeAnimation.speed(0.6), value: color)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}
-
-/// A cover as a blurred wash; nothing at all until the image is there, so
-/// no placeholder ever flashes behind the page.
-private struct AmbientCover: View {
-    let url: String
-    @State private var image: NSImage?
-    @Environment(\.colorScheme) private var scheme
-
-    var body: some View {
-        ZStack {
-            if let image {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 640, height: 360)
-                    .blur(radius: 90)
-                    .opacity(scheme == .dark ? 0.32 : 0.22)
-                    .transition(.opacity)
-            }
-        }
-        .animation(AppStyle.fadeAnimation.speed(0.6), value: image != nil)
-        .task(id: url) {
-            guard let parsed = URL(string: url),
-                  let loaded = try? await CoverCache.shared.image(parsed, maximumPixelSize: 128) else { return }
-            image = NSImage(cgImage: loaded.image, size: .zero)
-        }
     }
 }
 

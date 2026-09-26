@@ -131,6 +131,64 @@ extension View {
 }
 
 
+/// A quiet mood behind a page: a faint glow in `color` from the top, and a
+/// few covers washed out across the top edge, heavily blurred. Gives the
+/// glass something to refract without competing with the content.
+struct AmbientBackdrop: View {
+    /// At most three are used; each fades in only once loaded.
+    var covers: [String] = []
+    var color: Color? = nil
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        let shown = Array(covers.prefix(3))
+        ZStack(alignment: .top) {
+            if let color {
+                RadialGradient(colors: [color.opacity(scheme == .dark ? 0.16 : 0.08), .clear],
+                               center: .top, startRadius: 0, endRadius: 600)
+                    .transition(.opacity)
+            }
+            HStack(spacing: 0) {
+                ForEach(shown, id: \.self) { url in
+                    AmbientCover(url: url).transition(.opacity)
+                }
+            }
+            .frame(maxWidth: shown.count == 1 ? 640 : .infinity)
+            .frame(height: 340)
+            .blur(radius: 100)
+            .opacity(scheme == .dark ? 0.2 : 0.12)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .animation(AppStyle.fadeAnimation.speed(0.5), value: shown)
+        .animation(AppStyle.fadeAnimation.speed(0.5), value: color)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// One cover of `AmbientBackdrop`; nothing at all until the image is there,
+/// so no placeholder ever flashes behind the page.
+private struct AmbientCover: View {
+    let url: String
+    @State private var image: NSImage?
+
+    var body: some View {
+        Color.clear
+            .overlay {
+                if let image {
+                    Image(nsImage: image).resizable().scaledToFill().transition(.opacity)
+                }
+            }
+            .clipped()
+            .animation(AppStyle.fadeAnimation.speed(0.5), value: image != nil)
+            .task(id: url) {
+                guard let parsed = URL(string: url),
+                      let loaded = try? await CoverCache.shared.image(parsed, maximumPixelSize: 96) else { return }
+                image = NSImage(cgImage: loaded.image, size: .zero)
+            }
+    }
+}
+
 /// One button vocabulary for the whole app: Primary (main action), Secondary
 /// (normal action), Ghost (low-emphasis/secondary action), Icon (compact icon-only).
 /// Primary and Secondary are Liquid Glass; the main action is told apart by

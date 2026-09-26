@@ -428,8 +428,6 @@ struct ShelfFurniture<Menu: View>: View {
     let stats: (Shelf) -> ShelfStatistics
     let rangeLabel: (Shelf) -> String?
     let palette: StylePalette
-    /// Shared slot count, so a sleeve has the same width in every compartment.
-    let spineSlots: Int
     let selectedID: UUID?
     /// Shelves kept at full strength; `nil` = no search/focus, nothing dimmed.
     let litIDs: Set<UUID>?
@@ -468,7 +466,6 @@ struct ShelfFurniture<Menu: View>: View {
                                     stats: stats(shelf),
                                     rangeLabel: rangeLabel(shelf),
                                     palette: palette,
-                                    spineSlots: spineSlots,
                                     lockPreview: lockPreview,
                                     plate: plate,
                                     selected: selectedID == shelf.id,
@@ -565,7 +562,7 @@ private struct FrostedWell: View {
 enum ShelfFurnitureMetrics {
     static let wellRadius: CGFloat = 10
     static let gap: CGFloat = 5
-    private static let rowHeight: CGFloat = 66
+    private static let rowHeight: CGFloat = 58
     /// Height of the whole rack for a cabinet with this many rows.
     static func height(rows: Int) -> CGFloat {
         CGFloat(rows) * rowHeight + CGFloat(rows + 1) * gap
@@ -577,7 +574,6 @@ private struct ShelfCompartment: View {
     let stats: ShelfStatistics
     let rangeLabel: String?
     let palette: StylePalette
-    let spineSlots: Int
     let lockPreview: ShelfLockPreview
     let plate: Namespace.ID
     var selected = false
@@ -620,29 +616,24 @@ private struct ShelfCompartment: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if stats.count > 0 {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(rangeLabel ?? "—")
-                        .font(.system(.title3, design: .rounded, weight: .semibold))
-                        // The accent marks the choice, in the text only.
-                        .foregroundStyle(selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.primary))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                    Spacer(minLength: 4)
-                    Text(stats.count.formatted())
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                        .fixedSize()
+                Text(rangeLabel ?? "—")
+                    .font(.system(.title3, design: .rounded, weight: .semibold))
+                    // The accent marks the choice, in the text only.
+                    .foregroundStyle(selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.primary))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Spacer(minLength: 4)
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(palette.color(for: stats.dominantColorStyle ?? "", solid: true))
+                        .frame(width: 6, height: 6)
+                    Text(AppStyle.records(stats.count)).monospacedDigit()
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 8)
-                Spacer(minLength: 2)
-                // The records themselves, standing on the compartment's floor.
-                SpineRack(styles: stats.spineStyles, slots: spineSlots, palette: palette)
-                    .frame(height: 22)
-                    .padding(.horizontal, 10)
-                    .opacity(selected ? 1 : 0.8)
-                    .allowsHitTesting(false)
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
         } else {
             // Without a view here the compartment collapses to nothing and
             // can't be clicked, so empty shelves get a quiet placeholder.

@@ -191,6 +191,15 @@ struct CollectionView: View {
         return shelfLabels.prefix(for: shelf) + (shelfLabels[shelf.id] ?? "–")
     }
 
+    /// Behind the page: the picked record's cover, else the first few of the list.
+    private var ambientCovers: [String] {
+        if let anchor = selectionAnchor, selection.contains(anchor),
+           let cover = items.first(where: { $0.id == anchor })?.release?.coverURL {
+            return [cover]
+        }
+        return Array(items.lazy.compactMap { $0.release?.coverURL }.prefix(3))
+    }
+
     var body: some View {
         let visibleIDs = items.map(\.id)
         VStack(spacing: 0) {
@@ -399,6 +408,7 @@ struct CollectionView: View {
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .animation(AppStyle.standardAnimation, value: showsControls)
         .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
+        .background { if analyticsFilter == nil { AmbientBackdrop(covers: ambientCovers) } }
         .sheet(item: $opened) { copy in RecordDetailView(copy: copy, labels: shelfLabels) { showShelf(copy); opened = nil } }
         .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
