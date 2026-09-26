@@ -112,7 +112,7 @@ extension AllTests {
             let a = try positions.insert(release: Release(artist: "Air", title: "Moon Safari"), shelf: nil)
             let b = try positions.insert(release: Release(artist: "Björk", title: "Post"), shelf: nil)
             let shelf = try #require(try context.fetch(FetchDescriptor<Shelf>()).first { $0.sortOrder == 1 })
-            let session = ShelfAssignmentSession(shelf: shelf, after: nil)
+            let session = ShelfAssignmentSession(shelf: shelf)
             session.load(context, owner: nil, labels: ShelfLabels())
             session.add(a, in: context)
             #expect(a.shelf?.id == shelf.id)
@@ -137,12 +137,16 @@ extension AllTests {
             let aphex = try positions.insert(release: Release(artist: "Aphex Twin", title: "Drukqs"), shelf: nil)
             try positions.setMissing([aphex], true)
 
-            let session = ShelfAssignmentSession(shelf: first, after: nil)
+            let session = ShelfAssignmentSession(shelf: first)
             session.load(context, owner: nil, labels: ShelfLabels())
             // Fits here, then belongs elsewhere, then paused (though it fits here).
             #expect(session.candidates.map(\.id) == [abba.id, zappa.id, aphex.id])
             #expect(session.belongsElsewhere[zappa.id] != nil)
             #expect(session.belongsElsewhere[abba.id] == nil && session.belongsElsewhere[aphex.id] == nil)
+
+            // "+" puts a record at its alphabetical place, not at the end.
+            session.add(abba, in: context)
+            #expect(abba.shelf?.id == first.id && abba.positionInShelf == 1)
         }
 
         // MARK: Large collection

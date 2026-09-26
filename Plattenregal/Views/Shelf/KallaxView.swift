@@ -287,7 +287,12 @@ struct KallaxView: View {
             if let copy = closingAssignment?.lastAdded { focusCopy = copy }
             closingAssignment = nil
         }) { session in
-            ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id], labels: rangeLabels)
+            ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id], labels: rangeLabels) { copy in
+                // Its own shelf instead: no record to pick up here afterwards.
+                closingAssignment = nil
+                assignment = nil
+                startPlacement(copy)
+            }
         }
         .confirmationDialog(
             soldToRemove == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldToRemove) Platten ohne Collection aus dem Regal nehmen?",
@@ -589,10 +594,9 @@ struct KallaxView: View {
             .disabled(shelf.copies.count < 2)
     }
 
-    /// New records go right after the one picked in the strip/table,
-    /// otherwise to the end of the compartment.
+    /// New records go to their alphabetical place in the compartment.
     private func startAssignment(_ shelf: Shelf) {
-        let session = ShelfAssignmentSession(shelf: shelf, after: focusCopy.flatMap { $0.shelf?.id == shelf.id ? $0 : nil })
+        let session = ShelfAssignmentSession(shelf: shelf)
         closingAssignment = session
         assignment = session
     }

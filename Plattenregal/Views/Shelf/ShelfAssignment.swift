@@ -13,8 +13,6 @@ import SwiftData
 final class ShelfAssignmentSession: Identifiable {
     let id = UUID()
     let shelf: Shelf
-    /// Copy selected in the compartment when the sheet opened; `nil` = append.
-    private let after: RecordCopy?
     var query = ""
     /// Records without a shelf, sorted by artist; loaded once, then only
     /// shrinks as records are added here.
@@ -30,18 +28,29 @@ final class ShelfAssignmentSession: Identifiable {
     /// For candidates that belong in another shelf alphabetically: its name,
     /// shown in their row ("gehört in „K – Ma“").
     private(set) var belongsElsewhere: [UUID: String] = [:]
+    /// The row under the pointer; the target card tells where it would go.
+    private(set) var hoveredID: UUID?
     var error: String?
     @ObservationIgnored let table = ShelfAssignmentTableController()
 
-    init(shelf: Shelf, after: RecordCopy?) {
+    init(shelf: Shelf) {
         self.shelf = shelf
-        self.after = after
     }
 
-    /// Where the next record goes: after the last one added here, otherwise
-    /// after the record selected when the sheet opened, otherwise at the end.
-    var anchor: RecordCopy? {
-        (lastAdded ?? after).flatMap { $0.shelf?.id == shelf.id ? $0 : nil }
+    var hovered: RecordCopy? { hoveredID.flatMap { id in candidates.first { $0.id == id } } }
+
+    func hover(_ copy: RecordCopy, _ hovering: Bool) {
+        if hovering { hoveredID = copy.id } else if hoveredID == copy.id { hoveredID = nil }
+    }
+
+    /// Where `copy` goes in this shelf: its alphabetical place among the
+    /// records there, and the two it would stand between.
+    func spot(for copy: RecordCopy) -> (position: Int, before: RecordCopy?, after: RecordCopy?) {
+        let items = PositionService.inShelfOrder(shelf.copies, excluding: copy.id)
+        let position = AlphabeticalPlacement.position(for: copy, in: shelf)
+        return (position,
+                position > 1 ? items[position - 2] : nil,
+                position <= items.count ? items[position - 1] : nil)
     }
 
     var visible: [RecordCopy] {
@@ -94,12 +103,10 @@ final class ShelfAssignmentSession: Identifiable {
             return
         }
         do {
-            let service = PositionService(context: context)
-            let position = anchor.map { $0.positionInShelf + 1 }
-                ?? service.ordered(shelf, excluding: copy.id).count + 1
-            // Standing in a shelf now, so it turned up after all.
-            try service.move(copy, to: shelf, position: position, found: true)
+            // Its alphabetical place; standing in a shelf now, it turned up after all.
+            try PositionService(context: context).move(copy, to: shelf, position: spot(for: copy).position, found: true)
             missing.remove(copy.id)
+            if hoveredID == copy.id { hoveredID = nil }
             candidates.removeAll { $0.id == copy.id }
             lastAdded = copy
             addedCount += 1
@@ -129,6 +136,8 @@ struct ShelfAssignmentView: View {
     let rangeLabel: String?
     /// All shelf names, for the rows that belong elsewhere.
     let labels: ShelfLabels
+    /// A record that belongs in another shelf: close and show its place there.
+    let findPlace: (RecordCopy) -> Void
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
@@ -154,7 +163,9 @@ struct ShelfAssignmentView: View {
             ZStack {
                 ShelfAssignmentTable(controller: session.table, items: items, missing: session.missing,
                                      belongsElsewhere: session.belongsElsewhere,
-                                     toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) }) { [session, context] copy in
+                                     toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
+                                     hover: { [session] copy, hovering in session.hover(copy, hovering) },
+                                     findPlace: findPlace) { [session, context] copy in
                     session.add(copy, in: context)
                 }
                 if session.loaded && items.isEmpty {
@@ -174,17 +185,20 @@ struct ShelfAssignmentView: View {
         .onAppear { session.load(context, owner: owner, labels: labels) }
     }
 
-    /// Where the records go, like "Standort" on the detail card, with the
-    /// records added so far on the right.
+    /// Where the records go, like "Standort" on the detail card: the shelf,
+    /// and – for the row under the pointer, else the last one added – the
+    /// two records it goes between. The count of additions on the right.
     private var targetCard: some View {
         HStack(spacing: AppStyle.rowSpacing) {
             Image(systemName: "square.grid.3x3.fill")
                 .font(.system(size: 22))
                 .foregroundStyle(AppStyle.accent)
             VStack(alignment: .leading, spacing: 1) {
-                Text("Kommt in").font(.caption).foregroundStyle(.secondary)
-                // One line, so a long anchor name never grows the card.
-                Text(target).font(.headline).lineLimit(1).truncationMode(.middle)
+                Text(rangeLabel.map { "Fach „\($0)“" } ?? "Dieses Fach").font(.headline).lineLimit(1)
+                // One line, so long names never grow the card.
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.middle)
+                    .contentTransition(.opacity)
             }
             Spacer(minLength: AppStyle.itemSpacing)
             if session.addedCount > 0 {
@@ -200,12 +214,31 @@ struct ShelfAssignmentView: View {
         .padding(.vertical, AppStyle.rowSpacing)
         .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
         .animation(AppStyle.standardAnimation, value: session.addedCount)
+        .animation(AppStyle.quickAnimation, value: session.hoveredID)
     }
 
-    private var target: String {
-        let shelf = rangeLabel.map { "„\($0)“" } ?? "dieses Fach"
-        let place = session.anchor.map { "nach „\($0.release?.displayArtist ?? "—")“" } ?? "ans Ende"
-        return "\(shelf) · \(place)"
+    private var detail: String {
+        if let copy = session.hovered {
+            let artist = "„\(copy.release?.displayArtist ?? "—")“"
+            if let other = session.belongsElsewhere[copy.id] { return "\(artist) gehört in „\(other)“ – Pfeil führt dorthin" }
+            return "\(artist) \(place(session.spot(for: copy)))"
+        }
+        if let copy = session.lastAdded, copy.shelf?.id == session.shelf.id {
+            let spot = session.spot(for: copy)
+            return "Zuletzt „\(copy.release?.displayArtist ?? "—")“ \(place(spot))"
+        }
+        return "Jede Platte kommt an ihre alphabetische Stelle"
+    }
+
+    /// "zwischen „Air“ und „Björk“", "vor „Air“", "nach „Zappa“", "als erste Platte".
+    private func place(_ spot: (position: Int, before: RecordCopy?, after: RecordCopy?)) -> String {
+        func name(_ copy: RecordCopy) -> String { "„\(copy.release?.displayArtist ?? "—")“" }
+        switch (spot.before, spot.after) {
+        case let (before?, after?): return "zwischen \(name(before)) und \(name(after))"
+        case let (nil, after?): return "ganz vorn, vor \(name(after))"
+        case let (before?, nil): return "ans Ende, nach \(name(before))"
+        case (nil, nil): return "als erste Platte"
+        }
     }
 
     private func listCaption(count: Int) -> some View {
@@ -232,6 +265,8 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
     let missing: Set<UUID>
     let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
+    let hover: (RecordCopy, Bool) -> Void
+    let findPlace: (RecordCopy) -> Void
     let add: (RecordCopy) -> Void
 
     // A fresh container each time, holding the one shared scroll view: when
@@ -253,6 +288,8 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
         }
         controller.add = add
         controller.toggleMissing = toggleMissing
+        controller.hover = hover
+        controller.findPlace = findPlace
         controller.belongsElsewhere = belongsElsewhere
         controller.setMissing(missing)
         controller.apply(items)
@@ -273,6 +310,8 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     fileprivate var belongsElsewhere: [UUID: String] = [:]
     fileprivate var add: (RecordCopy) -> Void = { _ in }
     fileprivate var toggleMissing: (RecordCopy) -> Void = { _ in }
+    fileprivate var hover: (RecordCopy, Bool) -> Void = { _, _ in }
+    fileprivate var findPlace: (RecordCopy) -> Void = { _ in }
 
     override init() {
         super.init()
@@ -343,7 +382,9 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let copy = items[row]
         let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id), belongsIn: belongsElsewhere[copy.id],
-                                         toggleMissing: { [weak self] in self?.toggleMissing(copy) }) { [weak self] in self?.add(copy) }
+                                         toggleMissing: { [weak self] in self?.toggleMissing(copy) },
+                                         hover: { [weak self] in self?.hover(copy, $0) },
+                                         findPlace: { [weak self] in self?.findPlace(copy) }) { [weak self] in self?.add(copy) }
         let id = NSUserInterfaceItemIdentifier("ShelfAssignmentRow")
         if let host = tableView.makeView(withIdentifier: id, owner: nil) as? NSHostingView<ShelfAssignmentRow> {
             host.rootView = rowView
@@ -371,6 +412,8 @@ private struct ShelfAssignmentRow: View {
     /// The shelf it fits alphabetically, when that isn't this one.
     let belongsIn: String?
     let toggleMissing: () -> Void
+    let hover: (Bool) -> Void
+    let findPlace: () -> Void
     let add: () -> Void
 
     var body: some View {
@@ -401,14 +444,21 @@ private struct ShelfAssignmentRow: View {
                            color: missing ? AppStyle.errorColor : .secondary, action: toggleMissing)
                 .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
                 .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als vermisst markieren")
+            if let belongsIn {
+                RowGlassButton(systemImage: "arrow.turn.up.right", color: .secondary, action: findPlace)
+                    .help("Zu „\(belongsIn)“ wechseln und dort einsortieren")
+                    .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
+            }
             // The main action: accent in the glyph, like chosen options elsewhere.
             RowGlassButton(systemImage: "plus", color: AppStyle.accent, action: add)
-                .help("Ins Fach hinzufügen")
+                .help(belongsIn == nil ? "An ihrer alphabetischen Stelle ins Fach hinzufügen" : "Trotzdem in dieses Fach hinzufügen")
                 .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
         }
         .padding(.horizontal, AppStyle.pagePadding)
         .frame(height: ShelfAssignmentTableController.rowHeight)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .onHover(perform: hover)
     }
 }
 
