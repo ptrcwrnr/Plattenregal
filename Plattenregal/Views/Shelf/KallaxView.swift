@@ -248,7 +248,7 @@ struct KallaxView: View {
             .padding(.top, AppStyle.pagePadding)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
-            .background { AmbientBackdrop(covers: focusCopy?.release?.coverURL.map { [$0] } ?? [], color: ambientColor) }
+            .background { AmbientBackdrop(color: ambientColor) }
             .onExitCommand { if placement != nil { cancelPlacement() } else { deselect() } }
             .overlay(alignment: .bottom) { undoToast }
         }
@@ -468,7 +468,7 @@ struct KallaxView: View {
                     if !shown.isReserved && stats.count > 0 {
                         ShelfPositionStrip(stats: stats, slots: spineSlots, palette: palette, selectedCopy: selectedCopy,
                                            selectedSlot: selectedCopy.flatMap { copy in ordered.firstIndex { $0.id == copy.id } }.map { $0 + 1 },
-                                           insertionPosition: spot?.position, missingSlots: missingSlots) { slot in
+                                           insertionPosition: spot?.position, missingSlots: missingSlots, copies: ordered) { slot in
                             if ordered.indices.contains(slot - 1) { toggleSelection(ordered[slot - 1]) }
                         }
                     }

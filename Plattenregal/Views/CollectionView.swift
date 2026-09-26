@@ -191,13 +191,9 @@ struct CollectionView: View {
         return shelfLabels.prefix(for: shelf) + (shelfLabels[shelf.id] ?? "–")
     }
 
-    /// Behind the page: the picked record's cover, else the first few of the list.
+    /// Behind the page: the first few covers of the list.
     private var ambientCovers: [String] {
-        if let anchor = selectionAnchor, selection.contains(anchor),
-           let cover = items.first(where: { $0.id == anchor })?.release?.coverURL {
-            return [cover]
-        }
-        return Array(items.lazy.compactMap { $0.release?.coverURL }.prefix(3))
+        Array(items.lazy.compactMap { $0.release?.coverURL }.prefix(3))
     }
 
     var body: some View {

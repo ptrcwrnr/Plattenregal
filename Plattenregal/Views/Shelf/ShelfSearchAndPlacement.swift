@@ -157,8 +157,20 @@ struct ShelfPositionStrip: View {
     var insertionPosition: Int? = nil
     /// 1-based spines marked "Vermisst"; drawn as an outline.
     var missingSlots: Set<Int> = []
+    /// The records in spine order, for the cover shown on hover.
+    let copies: [RecordCopy]
     let select: (Int) -> Void
 
+    /// The spine under the pointer (1-based), once the cover is shown.
+    @State private var hoveredSlot: Int?
+    /// The cover appears only after the pointer rested a moment, so passing
+    /// over the strip on the way to the table doesn't flash it; from then on
+    /// it follows the pointer at once, until it leaves the strip.
+    @State private var armed = false
+    @State private var arming: Task<Void, Never>?
+    /// Where the pointer is while the delay runs.
+    @State private var pendingSlot: Int?
+    @State private var rackWidth: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -173,7 +185,16 @@ struct ShelfPositionStrip: View {
                 onSelect: select
             )
             .frame(height: 46)
-            .overlay { pulledOutCover }
+            .onGeometryChange(for: CGFloat.self, of: \.size.width) { rackWidth = $0 }
+            .onContinuousHover { phase in
+                switch phase {
+                case .active(let point): hover(at: point.x)
+                case .ended:
+                    arming?.cancel(); arming = nil
+                    armed = false; hoveredSlot = nil
+                }
+            }
+            .overlay { hoverCover }
             HStack(spacing: AppStyle.rowSpacing) {
                 Group {
                     if let insertionPosition {
@@ -204,26 +225,41 @@ struct ShelfPositionStrip: View {
         }
     }
 
-    /// The pulled-out record's cover on a small glass card beside its spine,
-    /// on whichever side has room. Purely visual: clicks reach the spines.
-    private var pulledOutCover: some View {
+    private var slotWidth: CGFloat { rackWidth / CGFloat(max(slots, stats.spineStyles.count, 1)) }
+
+    private func hover(at x: CGFloat) {
+        guard slotWidth > 0 else { return }
+        let index = Int(x / slotWidth)
+        let slot = copies.indices.contains(index) ? index + 1 : nil
+        if armed { hoveredSlot = slot; return }
+        guard arming == nil else { pendingSlot = slot; return }
+        pendingSlot = slot
+        arming = Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            guard !Task.isCancelled else { return }
+            armed = true
+            hoveredSlot = pendingSlot
+            arming = nil
+        }
+    }
+    /// The hovered record's cover on a small glass card beside its spine, on
+    /// whichever side has room. Purely visual: clicks reach the spines.
+    private var hoverCover: some View {
         GeometryReader { geometry in
-            if let copy = selectedCopy, let slot = selectedSlot {
+            if let slot = hoveredSlot, copies.indices.contains(slot - 1) {
                 let card: CGFloat = 52
-                let width = geometry.size.width / CGFloat(max(slots, stats.spineStyles.count, 1))
-                let spine = (CGFloat(slot) - 0.5) * width
-                let offset = max(width, 3) + 8 + card / 2
+                let spine = (CGFloat(slot) - 0.5) * slotWidth
+                let offset = max(slotWidth, 3) + 8 + card / 2
                 let x = spine + offset + card / 2 <= geometry.size.width ? spine + offset : spine - offset
-                CoverView(url: copy.release?.coverURL, size: card - 8)
+                CoverView(url: copies[slot - 1].release?.coverURL, size: card - 8)
                     .padding(4)
                     .glassEffect(.regular, in: .rect(cornerRadius: 10))
                     .position(x: x, y: geometry.size.height - card / 2)
-                    .id(copy.id)
                     .transition(AppStyle.reduceMotion ? .opacity : .scale(scale: 0.8, anchor: .bottom).combined(with: .opacity))
             }
         }
         .allowsHitTesting(false)
-        .animation(AppStyle.standardAnimation, value: selectedCopy?.id)
+        .animation(AppStyle.quickAnimation, value: hoveredSlot)
     }
 }
 
