@@ -11,7 +11,11 @@ nonisolated enum KeychainStore {
     static var hasToken: Bool {
         // The demo never touches the keychain.
         if DemoMode.isActive { return true }
-        do { return !(try load() ?? "").isEmpty } catch { return true }
+        // Unreadable: offer the sync, which then says what's wrong.
+        do { return !(try load() ?? "").isEmpty } catch {
+            AppLog.warning("Discogs", "Schlüsselbund nicht lesbar, Token wird als vorhanden angenommen: \(error)")
+            return true
+        }
     }
 
     static func load() throws -> String? {

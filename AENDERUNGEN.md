@@ -1,3 +1,54 @@
+# Fehlermeldungen und Protokoll nachgezogen · 26.09.2026
+
+- **„Discogs-Daten aktualisieren“** (Collection-Menü): Das Fehlerfenster hieß wie bei einer Regal-Änderung „Änderung nicht gespeichert“, auch wenn nur Discogs nicht erreichbar war. Jetzt „Discogs-Daten nicht aktualisiert“ mit dem Grund. Das Protokoll hält neben dem Beginn auch das Ergebnis fest („neu geladen“ bzw. „x von y fehlgeschlagen“).
+- **Name eines gesperrten Fachs** (`ShelfNamePopover`): Return speicherte und schloss das Fenster in einem Zug – eine Fehlermeldung erschien in einem Fenster, das schon zu war. Jetzt bleibt es bei einem Fehler offen und zeigt ihn. Beim Schließen per Klick daneben bleibt der alte Name, der Fehler steht im Protokoll.
+- **Schlüsselbund nicht lesbar** (`KeychainStore.hasToken`): wurde stillschweigend als „Token vorhanden“ gewertet; jetzt mit Warnung im Protokoll.
+- README, STATISTIK.md und VALIDIERUNG.md auf den Stand der neuen Oberfläche gebracht.
+
+# Suche ohne Aufblitzen, keine Eingabequellen-Blase · 26.09.2026
+
+- Die Suchleisten von Collection, Wantlist und Regal sind von Anfang an da und werden nur ein- und ausgeblendet (`searchBarSlot`): verborgen ohne Höhe, unsichtbar und nicht erreichbar. Vorher wurden Glas und Textfeld erst beim ersten ⌘F aufgebaut, und die Leiste stand sofort da, statt einzublenden.
+- Die Eingabequellen-Blase von macOS, die beim ersten ⌘F über dem Cursor erschien, ist in der App abgeschaltet – nur als registrierter Standard (`TSMLanguageIndicatorEnabled`); wer sie in macOS ausdrücklich einschaltet, behält sie.
+
+# Reihenfolge von Collection und Wantlist · 26.09.2026
+
+- **Einstellungen → Allgemein → Start**, getrennt für Collection und Wantlist: alphabetisch (mit Alphabet am Rand), zufällig oder neueste zuerst (nach Discogs-Hinzufügedatum, Undatierte am Ende).
+- Zufällig mischt bei jedem Start und beim Umschalten auf „Zufällig“ neu, dazwischen bleibt die Reihenfolge stabil. Exemplare einer Veröffentlichung bleiben eine Kachel (`OverviewOrder`).
+- Der Rand fürs Alphabet bleibt bei jeder Reihenfolge gleich breit, damit sich die Covergröße beim Umschalten nicht ändert.
+- Test: `SettingsTests.overviewOrderShufflesStablyAndSortsNewestFirst`.
+
+# Collection und Wantlist: eigenes Menü statt Detailansicht · 26.09.2026
+
+- **Keine große Detailansicht mehr** in Collection und Wantlist, kein „Öffnen“, kein Vergrößern-Pfeil im Popover. Die Statistik öffnet einzelne Platten weiter in der Detailkarte (Ampel oben links, ohne Überschrift, „Auf Discogs öffnen“, „Nicht im Regal“ direkt in der Standort-Karte).
+- **Rechtsklick** öffnet an der Mausposition ein App-eigenes Menü (`AppMenu`) mit Hover-Zeilen: „Im Regal anzeigen“ bzw. „Platz im Regal finden“, „Auf Discogs öffnen“, „Discogs-Daten aktualisieren“, „Nicht im Regal“ bzw. „Wieder einsortieren“ – im Raster und in der Liste. Die Wantlist hat dasselbe Menü mit „Auf Discogs öffnen“.
+- **Keine Mehrfachauswahl** mehr (⌘/⇧-Klick, Auswahlrahmen, „x ausgewählt“, Rahmen und Haken am Cover). Ein Klick zeigt das kleine Popover, das Menü gilt immer der angeklickten Platte.
+- **Wantlist** mit demselben Popover samt Tracklist (`RecordPopover` nimmt dafür ein Release), Doppelklick in der Liste.
+- Das Detailfenster zeigt keine Tracklist mehr (die steht im Popover) und passt seine Höhe dem Inhalt an. „Discogs-Daten aktualisieren“ und der Discogs-Ordner sind aus ihm entfernt; der Dialog „Exemplar bearbeiten“ ist entfallen.
+- **Erster Start:** Ohne Token öffnet „Token eintragen“ auf der leeren Collection bzw. Wantlist die Einstellungen bei Discogs mit aktivem Token-Feld (`SettingsRequest`); mit Token bleibt es bei „Jetzt synchronisieren“. `KeychainStore.hasToken` (in der Demo immer ja).
+
+# Regal in Glas · 26.09.2026
+
+- **Regalbild** als ein Glaskörper, Fächer als eingelassene Mulden; das gewählte Fach hebt sich als Platte heraus und gleitet von Fach zu Fach. Lichtreflex folgt dem Zeiger. Fach: Bereich oben links, Plattenanzahl oben rechts, Genre-Punkt. Gesperrte Fächer als Milchglas statt Schraffur. Regalwechsel gleitet seitlich, „Rückgängig“ als Glas-Toast.
+- **Rückenleiste**: Rücken mit Glanz und Schatten, leuchtender Einfügespalt. Das Cover erscheint beim Überfahren (beim ersten Mal nach 450 ms, danach folgt es dem Zeiger sofort) als Glaskarte neben dem Rücken.
+- **Hintergrund**: ein Hauch der Genrefarbe des Fachs (`AmbientBackdrop`, auch in Collection, Wantlist und Statistik mit weichgezeichneten Covern).
+- **Fachsperre nur noch per Menü**: Das Optionssymbol neben „+“ ist entfernt. Rechtsklick auf ein Fach (im Regal) bzw. Klick darauf (in den Einstellungen) öffnet ein `AppMenu` mit „Fach sperren“/„Fach entsperren“ und „Namen ändern …“ für gesperrte Fächer (`ShelfNamePopover`).
+- **Fach-Tabelle** als Glaskarte mit eigenem Rechtsklickmenü, neu mit „Nicht im Regal“; Doppelklick öffnet weiter den Schnelleditor. „Vermisst“ oben rechts nur noch als Text in der Glaskapsel.
+- **„Platte hinzufügen“** im Glas-Design (Ampel, Zielkarte „Kommt in …“ mit Zähler, runde Glasknöpfe). Passende Platten zuerst, dann die übrigen mit „gehört in …“, pausierte zuletzt; die Reihenfolge wird beim Öffnen einmal festgelegt (`AlphabeticalPlacement.fittingShelves`). „+“ setzt an die alphabetische Stelle statt ans Ende; die Zielkarte zeigt „zwischen „X“ und „Y““. Der Pfeil bei Platten für ein anderes Fach schließt das Fenster und zeigt dort ihren Platz. Test: `ScenarioTests.addingListsFittingRecordsFirstAndPausedLast`.
+- **Leeres Regal**: Sind Platten da, aber keine einsortiert, bietet ein Hinweis „Belegung wiederherstellen …“ an (öffnet „Sicherung“).
+
+# Statistik in Glas · 26.09.2026
+
+- Karten auf Liquid Glass statt grauer Fläche; ein Rahmen erscheint nur als Ablageziel beim Umsortieren. Rang-Plaketten der Top-Künstler (außer Platz 1) aus Glas, „Details“ im Zufallsfund als Glasknopf, das Blau in „Deine Sammlung“ dezenter.
+- Hintergrund: die Cover der zuletzt hinzugefügten Platten, weichgezeichnet.
+- Die gefilterte Plattenliste als Glas-Sheet mit Ampel statt „Schließen“.
+
+# Rubriken in der Toolbar, einheitliches Liquid Glass · 25.09.2026
+
+- **Seitenleiste entfernt.** Oben in der Toolbar Collection · Wantlist · Regal · Statistik (⌘1–⌘4), rechts eine Glas-Gruppe mit Raster/Liste (nur Collection/Wantlist) und Lupe (nicht in der Statistik). Die Kopfzeile auf der Seite entfällt, Cover beginnen direkt unter der Toolbar. Das Zahnrad ist entfernt – Einstellungen über das App-Menü und ⌘,.
+- **Suche per ⌘F** oder Lupe, mittig unter den Rubriken, höchstens 480 pt breit. Sie bleibt, solange sie Text hat; leer und ohne Fokus verschwindet sie. Collection und Wantlist teilen Suchtext und Sichtbarkeit (`LibrarySearch`); „N in der Wantlist“ hängt rechts an der Leiste und springt zur anderen Rubrik. Ein- und Ausblenden gleitet aus der Toolbar, mit „Bewegung reduzieren“ nur Überblenden.
+- **Ruckelfreier Rubrikwechsel** (Time Profiler, Release, 12 Wechsel: Main-Thread-Last ~4,1 s → ~0,2 s; pro Wechsel 100–200 ms Hänger → 5–20 ms; keine Animation Hitches). `PageStack` hält jede Seite in einer eigenen, dauerhaft eingehängten Hosting-View und blendet nur per Core Animation über; verborgene Seiten bekommen keine Klicks, Kürzel, Fokus oder VoiceOver. Auswahl, Sichtbarkeit und ⌘F kommen als gleichbleibende Objekte (`PageSelection`, `PageVisibility`, `SearchRequests`, `PageActivity`), sodass sich beim Wechsel kein Umgebungswert ändert.
+- **`GlassSegmentedPicker`** ersetzt alle Umschalter (Toolbar, Einstellungen, Statistik, Regalauswahl): keine graue Spur, die gewählte Option trägt die Akzentfarbe. Knöpfe als Glas-Kapseln ohne Füllung, die Hauptaktion mit Akzentfarbe im Titel; Aufklappmenüs als `GlassMenuPicker`. Einstellungen mit Glas-Umschalter in der Toolbar statt Tabs.
+
 # „Nicht auffindbar“ heißt jetzt „Vermisst“ · 25.09.2026
 
 - Die Markierung heißt überall „Vermisst“: Etikett, Knöpfe, Menüs, Hinweise, Fehlermeldungen, Protokoll und Dokumentation.

@@ -1,4 +1,35 @@
-# Aktueller Stand · 25.09.2026 (Robustheitsprüfung und Aufräumen)
+# Aktueller Stand · 26.09.2026 (Liquid-Glass-Oberfläche)
+
+Stand nach dem Umbau auf Rubriken in der Toolbar, einheitliches Liquid Glass, dem eigenen Menü in Collection und Wantlist, der wählbaren Reihenfolge und dem neuen „Platte hinzufügen“ (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Gesamte Testsuite: **168 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die CoreData-Meldungen im Testlauf („Migration was completed by another client“, „Persistent History … has to be truncated“) stammen aus den Migrationstests und sind keine Fehler.
+
+| Testdatei | Tests | Schwerpunkt |
+|---|---|---|
+| `LibraryTests.swift` | 48 | Positionen, Sortierung, Suche, Speicherung, Fehlermeldungen, Absturz-Auswertung, Discogs-Mapping, Demo-Sammlung |
+| `DiscogsSyncTests.swift` | 33 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration |
+| `StatisticsTests.swift` | 28 | Auswertungen, Wertverlauf, Migrationen, Zurücksetzen |
+| `SettingsTests.swift` | 16 | Discogs-Token, Reihenfolge der Statistik, Reihenfolge von Collection und Wantlist |
+| `CabinetTests.swift` | 15 | Mehrere Regale, Größenänderung, Zurücksetzen, Einzelinstanz-Sperre |
+| `BackupTests.swift` | 13 | Sichern, Wiederherstellen, Aufbewahrung, Dateinamen |
+| `ExportTests.swift` | 8 | CSV (Maskierung, BOM, Formel-Schutz), Reihenfolge, Spalten, PDF |
+| `ScenarioTests.swift` | 7 | Abläufe gegen die echten Services: ohne Netz, Bremse, gelöschte Fächer, „Platte hinzufügen“, 10.000 Platten |
+
+- Neu:
+  - `SettingsTests.overviewOrderShufflesStablyAndSortsNewestFirst` – „Zufällig“ bleibt innerhalb eines Starts gleich und verliert nichts; „Neueste zuerst“ mit Undatierten am Ende.
+  - `ScenarioTests.addingListsFittingRecordsFirstAndPausedLast` – „Platte hinzufügen“ zeigt Passende zuerst, Platten für ein anderes Fach mit Hinweis, Vermisste zuletzt; „+“ setzt alphabetisch ein.
+- Rubrikwechsel mit dem Time Profiler gemessen (Release, 12 Wechsel): Main-Thread-Last ~4,1 s → ~0,2 s, keine Animation Hitches.
+- Fehlerwege der neuen Oberfläche per Code-Durchsicht geprüft: Jede Aktion im neuen Menü (Collection, Wantlist, Fach, Fach-Tabelle) meldet Fehler über `reportedMessage()` und schreibt sie ins Protokoll. Nachgebessert: Fenstertitel bei „Discogs-Daten aktualisieren“, Namens-Popover gesperrter Fächer, Warnung bei nicht lesbarem Schlüsselbund.
+
+## Nicht geprüft (dieser Durchgang)
+
+- Kein Release-Build und keine Codesign-Prüfung für diesen Stand.
+- Die Nachbesserungen an den Fehlermeldungen sind nicht in der laufenden App ausgelöst – ein fehlschlagendes Speichern oder ein unlesbarer Schlüsselbund lässt sich nicht gezielt herbeiführen.
+- Kein echter Abgleich mit Discogs; „Discogs-Daten aktualisieren“ aus dem neuen Menü nicht gegen Discogs ausgeführt.
+
+# Vorheriger Stand · 25.09.2026 (Robustheitsprüfung und Aufräumen)
 
 Stand nach drei Prüfrunden auf Robustheit, dem Entfernen von totem Code und dem Aufteilen der großen Views (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 
@@ -35,7 +66,7 @@ Stand nach drei Prüfrunden auf Robustheit, dem Entfernen von totem Code und dem
 - Kein echter Abgleich mit Discogs; die korrigierten Interpretennamen („A, B“ statt „A , B“) erscheinen in der eigenen Sammlung erst mit dem nächsten Sync.
 - Der Absturz-Handler nach einem Protokollwechsel während der Sitzung wurde nicht mit einem echten Absturz ausgelöst.
 
-# Vorheriger Stand · 25.09.2026 (Laufzeit-Messungen)
+# Älterer Stand · 25.09.2026 (Laufzeit-Messungen)
 
 ## Ergebnis
 

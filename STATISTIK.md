@@ -4,11 +4,12 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 
 ## Bedienung
 
-- In der Seitenleiste **Statistik** wählen.
+- Oben in der Toolbar die Rubrik **Statistik** wählen oder **⌘4**.
 - Grundlage sind dieselben Platten wie auf der Collection-Seite: die aktive Discogs-Collection des zuletzt synchronisierten Kontos. In Discogs entfernte, lokal noch vorhandene Exemplare zählen nicht mit – so stimmt jede Zahl mit der Liste überein, die sich beim Antippen öffnet.
 - **Aktualisieren** – die Seite nach unten ziehen oder **⌘R** – rechnet die Auswertungen neu und ruft den Sammlungswert ab. Nach jedem erfolgreichen Collection-Sync wird der Wert ebenfalls geladen; scheitert nur dieser Abruf, bleibt der Sync gespeichert und eine eigene Meldung erscheint.
 - Genres, Styles, Künstler, Labels, Jahre, Formate und Länder öffnen die passenden Platten als gefilterte Collection-Liste. Einzelne Platten öffnen ihre Detailansicht oder zeigen ihren Platz im Regal.
-- Reihenfolge der Abschnitte: **Einstellungen → Darstellung**.
+- Reihenfolge der Abschnitte: **Einstellungen → Darstellung**; auf der Seite selbst lassen sich Karten per Ziehen umsortieren (nur dann erscheint ein Rahmen als Ablageziel).
+- Aussehen: Karten auf Liquid Glass, Rang-Plaketten der Top-Künstler (außer Platz 1) aus Glas, dahinter weichgezeichnet die Cover der zuletzt hinzugefügten Platten. Die gefilterte Plattenliste öffnet als Glas-Sheet und schließt über die Ampel oben links.
 - Regal-Markierungen ändern die Statistik nicht: Platten mit „Nicht im Regal“ oder „Vermisst“ gehören weiter zur Collection und zählen voll mit.
 
 ## Abschnitte

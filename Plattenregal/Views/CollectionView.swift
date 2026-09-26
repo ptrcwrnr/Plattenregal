@@ -73,6 +73,8 @@ struct CollectionView: View {
     @State private var refresh = MetadataRefreshService()
     @Environment(\.openURL) private var openURL
     @State private var error: String?
+    /// Saving a shelf change and reloading from Discogs fail differently.
+    @State private var errorTitle = "Änderung nicht gespeichert"
 
     init(
         pages: PageSelection<Destination>? = nil,
@@ -405,7 +407,7 @@ struct CollectionView: View {
         .background { if analyticsFilter == nil { AmbientBackdrop(covers: ambientCovers) } }
         .settingsOpener($settingsTab)
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
-        .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+        .alert(errorTitle, isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
         .onChange(of: visibleIDs) { _, visibleIDs in
@@ -553,13 +555,15 @@ struct CollectionView: View {
             Button("Discogs-Daten aktualisieren") {
                 Task {
                     await refresh.reload(releases, context: context)
-                    if let message = refresh.error { error = message }
+                    if let message = refresh.error { errorTitle = "Discogs-Daten nicht aktualisiert"; error = message }
                 }
             }
             .disabled(refresh.busy || sync.busy)
         }
     }
-    private func perform(_ action: () throws -> Void) { do { try action() } catch { self.error = error.reportedMessage() } }
+    private func perform(_ action: () throws -> Void) {
+        do { try action() } catch { errorTitle = "Änderung nicht gespeichert"; self.error = error.reportedMessage() }
+    }
 }
 /// A grid tile represents one release, even when the collection contains
 /// several physical copies. Only the cover and a quiet copy count are shown.

@@ -52,7 +52,7 @@ struct ShelfNamePopover: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("Name des gesperrten Fachs").font(.callout.weight(.medium))
-            AppSearchField(placeholder: "z. B. Plattenspieler", text: $name, onSubmit: { save(); dismiss() }, focus: $focused)
+            AppSearchField(placeholder: "z. B. Plattenspieler", text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
             Text(error ?? "Erscheint im Regal anstelle von „Gesperrt“.")
                 .font(.caption)
                 .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
@@ -61,15 +61,19 @@ struct ShelfNamePopover: View {
         .padding(AppStyle.cardPadding)
         .frame(width: 280)
         .onAppear { focused = true }
-        .onDisappear(perform: save)
+        // Closing by clicking elsewhere can't show a failure any more; it is
+        // in the protocol, and the old name stays.
+        .onDisappear { _ = save() }
     }
 
-    private func save() {
+    /// `false` when saving failed; Return then keeps the popover open with
+    /// the message instead of closing over it.
+    @discardableResult private func save() -> Bool {
         // Removed meanwhile (cabinet resized or backup restored in the settings).
-        guard !shelf.isDeleted, shelf.modelContext != nil, shelf.isReserved else { return }
+        guard !shelf.isDeleted, shelf.modelContext != nil, shelf.isReserved else { return true }
         let newName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard newName != shelf.name else { return }
-        do { try PositionService(context: context).configure(shelf, name: newName, isReserved: true) }
-        catch { self.error = error.reportedMessage() }
+        guard newName != shelf.name else { return true }
+        do { try PositionService(context: context).configure(shelf, name: newName, isReserved: true); error = nil; return true }
+        catch { self.error = error.reportedMessage(); return false }
     }
 }

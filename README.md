@@ -12,8 +12,12 @@ Das Projekt ist für lokales Ad-hoc-Signing eingerichtet und braucht kein bezahl
 
 ## Was die App kann
 
-- **Collection und Wantlist aus Discogs.** Es gibt keine manuell angelegten Platten: Alles kommt aus dem Discogs-Konto. Abgeglichen wird auf Wunsch: die Collection auf ihrer Seite (nach unten ziehen oder ⌘R) oder in den Einstellungen, die Wantlist in ihrer eigenen Ansicht. Danach werden die Tracklisten im Hintergrund nachgeladen; ein unterbrochener Download läuft beim nächsten Start weiter.
-- **Regale und Fächer.** Beliebig viele Regale (IKEA-KALLAX-Größen oder eigene, 1–6 Spalten und Reihen), jedes Fach zeigt, wie viele Platten darin stehen. Platten einsortieren, verschieben, herausnehmen, Fächer alphabetisch sortieren, Fächer sperren (z. B. für Deko) und Platten als „Nicht im Regal“ markieren. Fächer heißen nach Buchstabenbereich („A – Be“) oder Nummer.
+- **Vier Rubriken** oben in der Toolbar: Collection · Wantlist · Regal · Statistik (⌘1–⌘4). Rechts daneben Raster/Liste und die Lupe; **⌘F** blendet die Suche der aktiven Seite mittig unter den Rubriken ein. Einstellungen über das App-Menü oder ⌘,. Die Oberfläche ist durchgehend Liquid Glass: Umschalter, Knöpfe, Menüs, Suchleisten und Karten aus Glas, dahinter ein dezenter Hauch der Cover bzw. der Genrefarbe.
+- **Collection und Wantlist aus Discogs.** Es gibt keine manuell angelegten Platten: Alles kommt aus dem Discogs-Konto. Abgeglichen wird auf Wunsch: die Collection auf ihrer Seite (nach unten ziehen oder ⌘R) oder in den Einstellungen, die Wantlist in ihrer eigenen Ansicht. Danach werden die Tracklisten im Hintergrund nachgeladen; ein unterbrochener Download läuft beim nächsten Start weiter. Ohne Token führt eine leere Collection oder Wantlist mit „Token eintragen“ direkt ins Token-Feld der Einstellungen.
+- **Platten ansehen.** Ein Klick auf ein Cover (in der Liste ein Doppelklick) zeigt ein kleines Popover mit Cover, Angaben und Tracklist – in Collection und Wantlist. Rechtsklick öffnet ein App-eigenes Menü: in der Collection „Im Regal anzeigen“ bzw. „Platz im Regal finden“, „Auf Discogs öffnen“, „Discogs-Daten aktualisieren“ und „Nicht im Regal“ bzw. „Wieder einsortieren“; in der Wantlist „Auf Discogs öffnen“. Mehrfachauswahl und die große Detailansicht gibt es in Collection und Wantlist nicht mehr.
+- **Reihenfolge** von Collection und Wantlist, je getrennt: alphabetisch (mit Alphabet am Rand), zufällig (bei jedem Start und beim Umschalten neu gemischt, sonst stabil) oder neueste zuerst (nach Discogs-Hinzufügedatum).
+- **Regale und Fächer.** Beliebig viele Regale (IKEA-KALLAX-Größen oder eigene, 1–6 Spalten und Reihen), jedes Fach zeigt, wie viele Platten darin stehen. Platten einsortieren, verschieben, herausnehmen, Fächer alphabetisch sortieren, Fächer sperren (z. B. für Deko; per Rechtsklick auf das Fach, gesperrte Fächer bekommen dort auch einen Namen) und Platten als „Nicht im Regal“ markieren. Fächer heißen nach Buchstabenbereich („A – Be“) oder Nummer. Das Regal ist ein Glaskörper mit Mulden, das gewählte Fach hebt sich heraus; Fach-Tabelle und Rückenleiste stehen darunter (Cover erscheint beim Überfahren eines Rückens). Sind Platten da, aber keine einsortiert, bietet die Seite „Belegung wiederherstellen …“ an.
+- **„Platte hinzufügen“** listet zuerst die Platten, die alphabetisch in das Fach passen, dann die übrigen (mit „gehört in …“ und einem Pfeil, der ihren Platz dort zeigt), vermisste zuletzt. „+“ setzt eine Platte an ihre alphabetische Stelle; die Zielkarte zeigt, zwischen welche beiden Platten sie kommt.
 - **„Vermisst“ beim Einsortieren.** Nur auf der Regalseite: Eine Platte, die gerade nicht zu finden ist, lässt sich zurückstellen (Pause-Knopf in „Platte hinzufügen“, Rechtsklick in der Fach-Tabelle) und später als „Wieder gefunden“ markieren. Die Übersicht „Vermisst“ neben der Suche listet alle markierten Platten nach Fach, mit Cover, „Zeigen“ und „Wieder gefunden“; im Streifen der Plattenrücken erscheinen sie als roter Umriss. Einsortieren von Hand gilt als gefunden. Collection, Statistik und Export bleiben davon unberührt.
 - **Suche und Sortierung** über Interpret, Titel, Label, Katalognummer, Genre, Style und mehr; Raster oder Liste mit einstellbarer Covergröße.
 - **Statistik** mit Verteilungen und dem Verlauf des Sammlungswerts (Details in [STATISTIK.md](STATISTIK.md)).
@@ -30,11 +34,13 @@ This application uses Discogs’ API but is not affiliated with, sponsored or en
 
 ## Einstellungen
 
+Die Tabs stehen als Glas-Umschalter in der Toolbar des Einstellungsfensters.
+
 | Tab | Inhalt |
 |---|---|
-| Allgemein | Startseite des Hauptfensters, Demo starten/beenden |
+| Allgemein | Startseite des Hauptfensters, Reihenfolge von Collection und Wantlist, Demo starten/beenden |
 | Darstellung | Hell/Dunkel, Akzentfarbe, Raster oder Liste, Covergröße, Reihenfolge der Statistik |
-| Regal | Regale anlegen, Größe ändern, umbenennen, (de)aktivieren, löschen; Fächer sperren; Beschriftung |
+| Regal | Regale anlegen, Größe ändern, umbenennen, (de)aktivieren, löschen; Fächer sperren und benennen (Klick aufs Fach öffnet dasselbe Menü wie im Regal); Beschriftung |
 | Discogs | Token, Verbindungstest, Synchronisierung |
 | Export | CSV/PDF von Collection oder Wantlist, automatischer Export in einen Ordner |
 | Sicherung | Belegung sichern und wiederherstellen, automatische Sicherung, Aufbewahrung, Speicherort |
@@ -80,6 +86,9 @@ Beispiele: Schlägt das Speichern einer Markierung fehl, heißt es „„Vermiss
 
 Weitere Fälle:
 
+- **Discogs-Daten aktualisieren** (Collection-Menü): Scheitert der Abruf, heißt das Fenster „Discogs-Daten nicht aktualisiert“ statt „Änderung nicht gespeichert“, die Meldung nennt den Grund (etwa keine Verbindung). Beginn und Ergebnis stehen im Protokoll.
+- **Name eines gesperrten Fachs:** Lässt er sich nicht speichern, bleibt das kleine Fenster bei Return offen und zeigt die Meldung, statt sich darüber zu schließen. Wird es durch einen Klick daneben geschlossen, bleibt der alte Name; der Fehler steht im Protokoll.
+- **Schlüsselbund nicht lesbar:** Die leere Collection bietet dann „Jetzt synchronisieren“ statt „Token eintragen“ an; der Abgleich sagt, was nicht stimmt. Im Protokoll eine Warnung.
 - **Zweite Instanz:** Statt einer Fehlerseite „Sammlung konnte nicht geöffnet werden“ erklärt „Plattenregal ist bereits geöffnet“, dass die andere Instanz beendet werden muss; Daten sind davon nie betroffen. Im Protokoll: „Sammlung nicht geöffnet: eine andere Instanz hält sie offen“.
 - **Alles zurücksetzen:** Die Datenbankinhalte werden in einem einzigen Speichervorgang gelöscht. Scheitert er, bleibt alles, wie es war, und die Meldung sagt, dass die Änderung nicht gespeichert werden konnte. Lässt sich danach nur der Token nicht aus dem Schlüsselbund löschen, heißt es „Alles andere ist zurückgesetzt, aber der Discogs-Token ließ sich nicht … löschen“.
 - **Seiten mit zwischengespeicherten Platten** (Regal, Statistik) lassen sie beim Zurücksetzen sofort los, bevor neu gezeichnet wird. Die Statistik liest ihre Platten in einem eigenen Datenbank-Kontext; ohne das stürzte SwiftData beim Nachladen einer gelöschten Platte ab („backing data could no longer be found“).
@@ -111,8 +120,9 @@ atos -o Plattenregal.app/Contents/MacOS/Plattenregal -l <Ladeadresse> <Adresse> 
 | Discogs | `Discogs/DiscogsAPIClient.swift`, `Discogs/DiscogsSyncService.swift`, `Discogs/DiscogsSyncDTO.swift`, `Discogs/DiscogsSettingsModel.swift`, `Discogs/MetadataRefreshService.swift` | API, Taktung, Abgleich, Tracklisten; Umsetzung der Discogs-Daten (ein gemeinsamer Weg für Sync und Einzel-Nachladen); Token-Verwaltung; Nachladen einzelner Releases |
 | Statistik | `Statistics/` | Auswertungen und Wertverlauf |
 | Fehler & Protokoll | `Utilities/ErrorMessages.swift`, `Utilities/AppLog.swift` | Verständliche Meldungen, Protokoll, Absturz-Handler |
-| Oberfläche | `Views/`, `Views/Shelf/`, `Views/Settings/`, `Utilities/AppAppearance.swift` | Fenster, Regalseite (Seite, Suche, Regalbild, Fach-Tabelle, „Platte hinzufügen“), ein Einstellungs-Tab pro Datei, gemeinsames Design |
-| Tests | `PlattenregalTests/` | Regal, Sicherung, Export, Discogs-Abgleich, Statistik, Einstellungen |
+| Oberfläche | `Views/`, `Views/Shelf/`, `Views/Settings/`, `Utilities/AppAppearance.swift` | Fenster, Regalseite (Seite, Suche, Regalbild, Fach-Tabelle, „Platte hinzufügen“), ein Einstellungs-Tab pro Datei, gemeinsame Glas-Bausteine (`GlassSegmentedPicker`, `GlassMenuPicker`, `AppMenu`, `AppSearchField`, `AmbientBackdrop`, Knöpfe) |
+| Seiten | `Views/RootView.swift`, `Views/PageStack.swift` | Rubriken in der Toolbar, ⌘1–⌘4, ⌘F; jede Seite bleibt in einer eigenen Hosting-View eingehängt und wird nur überblendet (ruckelfreier Wechsel) |
+| Tests | `PlattenregalTests/` | Regal, „Platte hinzufügen“, Sicherung, Export, Discogs-Abgleich, Statistik, Einstellungen, Reihenfolge |
 
 ## Entwicklung und Prüfung
 
