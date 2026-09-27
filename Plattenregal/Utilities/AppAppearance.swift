@@ -495,6 +495,13 @@ private struct SearchBarSlot: ViewModifier {
             .opacity(shown ? 1 : 0)
             .offset(y: shown || AppStyle.reduceMotion ? 0 : -AppStyle.searchBarHeight)
             .frame(height: shown ? nil : 0, alignment: .bottom)
+            // Cut off at the slot's top edge, so sliding up it vanishes under
+            // the page's edge instead of running into the page switch in the
+            // toolbar. Open to the sides and below for the glass and the
+            // results list hanging under the shelf search.
+            .mask(alignment: .top) {
+                Rectangle().padding(.horizontal, -100).padding(.bottom, -2000)
+            }
             .allowsHitTesting(shown)
             // Not reachable with Tab while hidden.
             .disabled(!shown)
