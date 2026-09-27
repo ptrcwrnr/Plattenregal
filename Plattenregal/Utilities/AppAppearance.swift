@@ -121,9 +121,17 @@ extension View {
 
     /// The large cards of the statistics and the settings: glass tinted
     /// toward the window color, so a card sets itself off the page softly
-    /// instead of with a hard edge.
+    /// instead of with a hard edge. The glass sits in its own layer clipped
+    /// to the card, which cuts off its built-in drop shadow; a much fainter
+    /// one takes its place.
     func appCardSurface(cornerRadius: CGFloat = AppStyle.controlRadius) -> some View {
-        glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)), in: .rect(cornerRadius: cornerRadius))
+        let shape = RoundedRectangle(cornerRadius: cornerRadius)
+        return background {
+            Rectangle().fill(.clear)
+                .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)), in: shape)
+                .clipShape(shape)
+                .shadow(color: .black.opacity(0.05), radius: 6, y: 1)
+        }
     }
 
     /// Standard hover feedback (subtle background tint) shared by every interactive
