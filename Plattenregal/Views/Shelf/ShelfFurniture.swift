@@ -456,7 +456,6 @@ struct ShelfFurniture<Menu: View>: View {
                             .onHover { inside in
                                 if inside { hoveredID = shelf.id } else if hoveredID == shelf.id { hoveredID = nil }
                             }
-                            .animation(AppStyle.quickAnimation, value: hoveredID == shelf.id)
                             // The app's own menu, as in the collection.
                             .onSecondaryClick { point in menuFor = (shelf.id, point) }
                             .popover(isPresented: Binding(
@@ -516,7 +515,10 @@ private struct CompartmentAddButton: View {
             .help("Platte hinzufügen")
             .accessibilityLabel("Platte hinzufügen")
             .opacity(visible ? 1 : 0)
-            .scaleEffect(visible ? 1 : 0.8)
+            .scaleEffect(visible ? 1 : 0.6)
+            // Fades and grows in (and out again) however it gets shown: on
+            // hover, or when another compartment is picked.
+            .animation(AppStyle.standardAnimation, value: visible)
             .allowsHitTesting(visible)
             .accessibilityHidden(!visible)
         }
@@ -593,6 +595,7 @@ private struct ShelfCompartment: View {
                     FrostedWell().opacity(isReserved ? 1 : 0)
                     // Under the pointer the well brightens a little — this one only.
                     HoveredWell().opacity(hovered && !selected ? 1 : 0)
+                        .animation(AppStyle.quickAnimation, value: hovered)
                     // Rises in place: fades and grows within this compartment
                     // instead of gliding over from the previous one.
                     RaisedPlate()
@@ -635,6 +638,7 @@ private struct ShelfCompartment: View {
                     .fixedSize()
                     // The "+" takes its place (see `CompartmentAddButton`).
                     .opacity(hovered || selected ? 0 : 1)
+                    .animation(AppStyle.standardAnimation, value: hovered || selected)
             }
             .padding(.horizontal, 12)
             .padding(.top, 9)
