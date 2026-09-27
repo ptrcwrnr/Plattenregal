@@ -75,6 +75,29 @@ struct StylePalette {
 /// With `selectable`, the selected position is pulled out like a real sleeve
 /// (taller, a bit wider, full opacity, smooth animation) while the rest dims
 /// slightly; clicking a spine reports its 1-based position.
+/// Where the spines stand: the first one flush with the left edge, and in a
+/// full row the last one flush with the right, so the strip lines up with
+/// the text above it. Shared by drawing, clicks and the hover cover.
+struct SpineLayout {
+    /// Share of a pitch left empty between two spines.
+    private static let gapRatio: CGFloat = 0.38
+    /// Distance from one spine's left edge to the next one's.
+    let pitch: CGFloat
+    let spineWidth: CGFloat
+
+    init(width: CGFloat, slots: Int) {
+        // n spines and n − 1 gaps fill the width exactly.
+        pitch = width / (CGFloat(max(slots, 1)) - Self.gapRatio)
+        spineWidth = max(0.8, pitch * (1 - Self.gapRatio))
+    }
+
+    var gap: CGFloat { pitch * Self.gapRatio }
+    func minX(_ index: Int) -> CGFloat { CGFloat(index) * pitch }
+    func midX(_ index: Int) -> CGFloat { minX(index) + spineWidth / 2 }
+    /// The spine at `x`; a gap belongs half to each neighbour.
+    func index(at x: CGFloat) -> Int { Int(max(0, x + gap / 2) / pitch) }
+}
+
 struct SpineRack: View {
     let styles: [String]
     let slots: Int
@@ -113,8 +136,7 @@ struct SpineRack: View {
         .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
         .onTapGesture { location in
             guard selectable, let onSelect, !styles.isEmpty, width > 0 else { return }
-            let slot = width / CGFloat(max(slots, styles.count, 1))
-            let index = Int(location.x / slot)
+            let index = SpineLayout(width: width, slots: max(slots, styles.count, 1)).index(at: location.x)
             if styles.indices.contains(index) { onSelect(index + 1) }
         }
         .onAppear {
@@ -172,8 +194,8 @@ private struct SpineCanvas: View, Animatable {
         Canvas { context, size in
             context.fill(Path(CGRect(x: 0, y: size.height - 1, width: size.width, height: 1)),
                          with: .color(AppStyle.borderColor))
-            let slot = size.width / CGFloat(slots)
-            let baseWidth = max(0.8, slot * 0.62)
+            let layout = SpineLayout(width: size.width, slots: slots)
+            let baseWidth = layout.spineWidth
             let usable = size.height - 1
             // Leave room above the row so a pulled-out spine (1.4×) still fits.
             let scale: CGFloat = reservesHeadroom ? 0.66 : 0.8
@@ -184,7 +206,7 @@ private struct SpineCanvas: View, Animatable {
                 let isLifted = liftedPosition == index + 1
                 if isLifted && t > 0 { continue }
                 let height = min(usable, usable * (scale + jitter * (reservesHeadroom ? 0.5 : 1)))
-                let rect = CGRect(x: CGFloat(index) * slot + (slot - baseWidth) / 2, y: usable - height,
+                let rect = CGRect(x: layout.minX(index), y: usable - height,
                                   width: baseWidth, height: height)
                 if missingPositions.contains(index + 1) {
                     // A gap where the record should stand: a red outline, like its tag.
@@ -201,14 +223,16 @@ private struct SpineCanvas: View, Animatable {
                 let index = position - 1, style = styles[index]
                 let jitter = CGFloat((index &* 37 &+ style.count &* 11) % 9) / 100
                 let height = min(usable, usable * (scale + jitter * (reservesHeadroom ? 0.5 : 1)) * (1 + 0.4 * t))
-                let width = min(slot * 1.6, baseWidth * (1 + 0.5 * t))
-                let rect = CGRect(x: CGFloat(index) * slot + (slot - width) / 2, y: usable - height, width: width, height: height)
+                let width = min(layout.pitch * 1.6, baseWidth * (1 + 0.5 * t))
+                // Grows around its middle, but never past the strip's edges.
+                let x = min(max(layout.midX(index) - width / 2, 0), size.width - width)
+                let rect = CGRect(x: x, y: usable - height, width: width, height: height)
                 drawSpine(rect, color: palette.color(for: style, solid: true), alpha: 1, in: context)
             }
             // The gap a new record goes into: a thin accent line standing
             // between the spines, glowing softly around it.
             if let position = insertionPosition, position >= 1 {
-                let x = min(max(CGFloat(position - 1) * slot, 1), size.width - 1)
+                let x = min(max(layout.minX(position - 1) - layout.gap / 2, 1), size.width - 1)
                 let core = CGRect(x: x - 1, y: 0, width: 2, height: usable)
                 context.drawLayer { glow in
                     glow.addFilter(.blur(radius: 4))

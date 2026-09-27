@@ -227,11 +227,11 @@ struct ShelfPositionStrip: View {
         }
     }
 
-    private var slotWidth: CGFloat { rackWidth / CGFloat(max(slots, stats.spineStyles.count, 1)) }
+    private var layout: SpineLayout { SpineLayout(width: rackWidth, slots: max(slots, stats.spineStyles.count, 1)) }
 
     private func hover(at x: CGFloat) {
-        guard slotWidth > 0 else { return }
-        let index = Int(x / slotWidth)
+        guard rackWidth > 0 else { return }
+        let index = layout.index(at: x)
         let slot = copies.indices.contains(index) ? index + 1 : nil
         if armed { hoveredSlot = slot; return }
         guard arming == nil else { pendingSlot = slot; return }
@@ -250,8 +250,8 @@ struct ShelfPositionStrip: View {
         GeometryReader { geometry in
             if let slot = hoveredSlot, copies.indices.contains(slot - 1) {
                 let card: CGFloat = 52
-                let spine = (CGFloat(slot) - 0.5) * slotWidth
-                let offset = max(slotWidth, 3) + 8 + card / 2
+                let spine = layout.midX(slot - 1)
+                let offset = max(layout.pitch, 3) + 8 + card / 2
                 let x = spine + offset + card / 2 <= geometry.size.width ? spine + offset : spine - offset
                 CoverView(url: copies[slot - 1].release?.coverURL, size: card - 8)
                     .padding(4)

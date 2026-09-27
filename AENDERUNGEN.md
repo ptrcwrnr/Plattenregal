@@ -1,6 +1,7 @@
 # Schmale Regale bündig mit dem Fachbereich · 27.09.2026
 
 - **Regale mit weniger als vier Spalten** (1 × 1, 2 × 2 …) waren auf höchstens 300 pt pro Spalte begrenzt, Fach-Titel („Y–Z“), Rückenleiste und Tabelle darunter liefen aber über die volle Breite. Das Regal nimmt jetzt immer die ganze Breite ein und schließt links und rechts bündig mit dem Bereich darunter ab – wie beim 4 × 3.
+- **Rückenleiste bündig mit dem Fach-Titel**: Jeder Rücken stand mittig in seinem Platz, der erste also rund 5 pt hinter der linken Kante – das „Y“ von „Y–Z“ ragte darüber hinaus. `SpineLayout` setzt den ersten Rücken jetzt genau an die Kante (bei vollem Fach den letzten genau an die rechte). Zeichnen, Klick, Hover-Cover und Einfügemarke rechnen mit demselben Layout; ein herausgezogener Rücken am Rand wächst nicht über die Leiste hinaus.
 
 # Kein Aufblitzen mehr beim ersten ⌘F · 27.09.2026
 
