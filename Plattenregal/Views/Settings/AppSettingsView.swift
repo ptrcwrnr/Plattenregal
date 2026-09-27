@@ -64,6 +64,8 @@ struct AppSettingsView: View {
             }
         }
         .frame(width: 760, height: 620)
+        // The chosen ambient color, as in the main window.
+        .background { AmbientGlow() }
         // Asked for from the main window while this one is already open.
         .onChange(of: request.count) { if let asked = request.take() { tab = asked } }
         .navigationTitle(tab.rawValue)
@@ -97,7 +99,7 @@ struct SettingsPage<Content: View>: View {
     }
 }
 
-/// One card: title (+ subtitle), then its rows.
+/// One glass card: title (+ subtitle), then its rows.
 struct SettingsCard<Content: View>: View {
     let title: String
     var subtitle: String?
@@ -112,7 +114,8 @@ struct SettingsCard<Content: View>: View {
         }
         .padding(AppStyle.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
+        // The same glass cards as the statistics page.
+        .appGlassSurface(cornerRadius: AppStyle.controlRadius)
     }
 }
 
