@@ -17,6 +17,9 @@ struct ExportSettingsView: View {
     @AppStorage(ScheduledExport.enabledKey) private var autoEnabled = false
     @AppStorage(ScheduledExport.intervalKey) private var autoInterval = ExportInterval.weekly
     @State private var scheduled = ScheduledExport.shared
+    /// The export folder, resolved when the page appears or the export ran –
+    /// not on every redraw (a bookmark can stall on a disconnected drive).
+    @State private var folder: URL?
     @State private var document: ExportDocument?
     /// The settings the file was built with: switching format or data while a
     /// large PDF is drawn must not save it as CSV or under the wrong name.
@@ -142,9 +145,7 @@ struct ExportSettingsView: View {
 
     /// Writes the export on its own into a fixed folder, with the settings above.
     private var automaticCard: some View {
-        let _ = scheduled.version
-        let folder = ScheduledExport.folder.url
-        return SettingsCard(title: "Automatisch exportieren",
+        SettingsCard(title: "Automatisch exportieren",
                             subtitle: DemoMode.isActive
                                 ? "In der Demo wird nicht automatisch exportiert. Über „Als … exportieren“ oben lässt sich die Beispielsammlung trotzdem als Datei sichern."
                                 : "Schreibt den Export mit den Einstellungen oben regelmäßig in einen Ordner – z. B. in iCloud Drive. Die Datei „\(ScheduledExport.fileName(for: settings))“ wird dabei jedes Mal ersetzt.") {
@@ -201,6 +202,8 @@ struct ExportSettingsView: View {
             autoStatus = nil; scheduled.settingsChanged()
         }
         .onChange(of: autoInterval) { scheduled.settingsChanged() }
+        .onAppear { folder = ScheduledExport.folder.url }
+        .onChange(of: scheduled.version) { folder = ScheduledExport.folder.url }
     }
 
     private func chooseExportFolder() {

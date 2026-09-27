@@ -105,6 +105,35 @@ extension AllTests {
             #expect(exclusions.map(\.copyID) == [c.id])
         }
 
+        @Test func previewAndRestoreAgreeOnTheCompartments() throws {
+            let (container, _, service) = try fixture()
+            let a = try service.insert(release: Release(artist: "A", title: "1"), shelf: nil, instanceID: 61)
+            let b = try service.insert(release: Release(artist: "B", title: "2"), shelf: nil, instanceID: 62)
+            let backupService = ShelfBackupService(context: container.mainContext)
+            // Hand-edited: a 1 × 1 cabinet listing two compartments – only the first is rebuilt.
+            let overfull = ShelfBackup(owner: nil, createdAt: .now, shelves: [],
+                cabinets: [.init(name: "Klein", columns: 1, rows: 1, isActive: true, shelves: [1, 2])],
+                placements: [.init(instanceID: 61, shelf: 1, position: 1), .init(instanceID: 62, shelf: 2, position: 1)],
+                notInShelf: [])
+            #expect(try backupService.preview(overfull).placed == 1)
+            try backupService.restore(overfull)
+            #expect(a.shelf?.number == 1 && b.shelf == nil)
+            // An empty cabinet list is no list: the file addresses compartments 1…12 like older ones.
+            let noCabinets = ShelfBackup(owner: nil, createdAt: .now, shelves: [], cabinets: [],
+                placements: [.init(instanceID: 62, shelf: 1, position: 1)], notInShelf: [])
+            #expect(try backupService.preview(noCabinets).placed == 1)
+        }
+
+        @Test func restoringTheCurrentLayoutNeedsNoConfirmation() throws {
+            let (container, shelves, service) = try fixture()
+            try service.insert(release: Release(artist: "A", title: "1"), shelf: shelves[0], instanceID: 71)
+            let backupService = ShelfBackupService(context: container.mainContext)
+            let backup = try backupService.makeBackup()
+            #expect(try backupService.preview(backup).unchanged)
+            try service.configure(shelves[1], name: "", isReserved: true)
+            #expect(try !backupService.preview(backup).unchanged)
+        }
+
         @Test func emptyLayoutIsRecognised() throws {
             let (container, shelves, service) = try fixture()
             let backupService = ShelfBackupService(context: container.mainContext)
@@ -157,6 +186,7 @@ extension AllTests {
 
         @Test func onlyOwnFilesCountAsAutomaticBackups() {
             #expect(ShelfAutoBackup.isOwnFile("Belegung 2026-09-24 10-41-05.json"))
+            #expect(ShelfAutoBackup.isOwnFile("Belegung 2026-09-24 10-41-05 +0200.json"))
             #expect(!ShelfAutoBackup.isOwnFile("Belegung Kopie.json"))
             #expect(!ShelfAutoBackup.isOwnFile("Plattenregal Belegung 2026-09-24.json"))
             #expect(!ShelfAutoBackup.isOwnFile("Belegung 2026-09-24 10-41-05.json.bak"))
@@ -168,6 +198,15 @@ extension AllTests {
             let later = try #require(ShelfAutoBackup.fileDate(of: "Belegung 2026-09-24 10-00-00.json"))
             #expect(later.timeIntervalSince(earlier) == 1)
             #expect(ShelfAutoBackup.fileDate(of: "Belegung Kopie.json") == nil)
+            // With the offset: the repeated hour in autumn keeps its order.
+            let summer = try #require(ShelfAutoBackup.fileDate(of: "Belegung 2026-10-25 02-30-00 +0200.json"))
+            let winter = try #require(ShelfAutoBackup.fileDate(of: "Belegung 2026-10-25 02-10-00 +0100.json"))
+            #expect(winter.timeIntervalSince(summer) == 40 * 60)
+            let date = Date(timeIntervalSince1970: 1_790_000_000)
+            let berlin = ShelfAutoBackup.fileName(for: date, in: TimeZone(identifier: "Europe/Berlin")!)
+            let newYork = ShelfAutoBackup.fileName(for: date, in: TimeZone(identifier: "America/New_York")!)
+            #expect(berlin != newYork && ShelfAutoBackup.isOwnFile(berlin))
+            #expect(ShelfAutoBackup.fileDate(of: berlin) == date && ShelfAutoBackup.fileDate(of: newYork) == date)
         }
 
         @Test func foreignAndNewerFilesAreRejected() {

@@ -17,6 +17,9 @@ struct BackupSettingsView: View {
     @State private var entries: [ShelfAutoBackup.Entry] = []
     /// The layout right now; read on reload, not on every redraw (it fetches every copy).
     @State private var current: ShelfBackup?
+    /// The chosen folder, resolved on reload: resolving a bookmark on every
+    /// redraw can stall on a slow or disconnected drive.
+    @State private var customFolder: URL?
     @State private var document: ExportDocument?
     @State private var saving = false
     @State private var importing = false
@@ -72,13 +75,12 @@ struct BackupSettingsView: View {
                     .disabled(DemoMode.isActive)
                 }
                 Divider()
-                SettingsRow(title: "Speicherort", hint: autoBackup.usesCustomFolder
-                            ? autoBackup.directory.map(FolderAccess.displayName)
-                            : ShelfAutoBackup.folder.isSet
+                SettingsRow(title: "Speicherort", hint: customFolder.map(FolderAccess.displayName)
+                            ?? (ShelfAutoBackup.folder.isSet
                                 ? "Der gewählte Ordner ist nicht erreichbar – bis er wieder da ist oder ein anderer gewählt wird, sichert die App in ihren eigenen Ordner."
-                                : "Im Ordner der App. Ein Ordner in iCloud Drive schützt die Belegung auch, wenn der Mac verloren geht.") {
+                                : "Im Ordner der App. Ein Ordner in iCloud Drive schützt die Belegung auch, wenn der Mac verloren geht.")) {
                     HStack(spacing: AppStyle.itemSpacing) {
-                        if autoBackup.directory != nil {
+                        if customFolder != nil || ShelfAutoBackup.defaultDirectory != nil {
                             GhostButton(title: "Im Finder zeigen", action: showInFinder)
                         }
                         Group {
@@ -179,16 +181,16 @@ struct BackupSettingsView: View {
     }
 
     private func showInFinder() {
-        guard let directory = autoBackup.directory else { return }
-        if autoBackup.usesCustomFolder {
+        if customFolder != nil {
             try? ShelfAutoBackup.folder.withAccess { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
-        } else {
+        } else if let directory = ShelfAutoBackup.defaultDirectory {
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             NSWorkspace.shared.activateFileViewerSelecting([directory])
         }
     }
 
     private func reload() {
+        customFolder = ShelfAutoBackup.folder.url
         entries = autoBackup.entries()
         current = try? ShelfBackupService(context: context).makeBackup()
     }
@@ -197,6 +199,7 @@ struct BackupSettingsView: View {
         do {
             try autoBackup.moveBackups(to: url)
             folderError = nil
+            reload()
             if autoEnabled { autoBackup.scheduleBackup(of: context.container) }
         } catch {
             folderError = FileTransferError.folderChangeFailed(error).reportedMessage()
@@ -215,7 +218,11 @@ struct BackupSettingsView: View {
 
     private func prepareRestore(_ backup: ShelfBackup) {
         status = nil
-        do { pendingRestore = try ShelfBackupService(context: context).preview(backup) }
+        do {
+            let preview = try ShelfBackupService(context: context).preview(backup)
+            // Nothing to confirm: the shelf already looks like this.
+            if preview.unchanged { status = (preview.message, false) } else { pendingRestore = preview }
+        }
         catch let error as ShelfBackupError { status = (error.reportedMessage(), true) }
         catch { status = (FileTransferError.restoreFailed(error).reportedMessage(), true) }
     }

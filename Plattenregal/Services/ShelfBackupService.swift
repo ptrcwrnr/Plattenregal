@@ -21,6 +21,14 @@ nonisolated struct ShelfBackup: Codable, Equatable, Sendable {
         var rows: Int
         var isActive: Bool
         var shelves: [Int]
+
+        /// The size a restore builds (clamped like the settings allow).
+        @MainActor var size: (columns: Int, rows: Int) {
+            let range = ShelfGeometry.sizeRange
+            return (min(max(columns, range.lowerBound), range.upperBound), min(max(rows, range.lowerBound), range.upperBound))
+        }
+        /// The compartments a restore recreates: as many as the grid holds.
+        @MainActor var restoredShelves: ArraySlice<Int> { shelves.prefix(size.columns * size.rows) }
     }
     struct Placement: Codable, Equatable, Sendable {
         var instanceID: Int
@@ -54,8 +62,9 @@ nonisolated struct ShelfBackup: Codable, Equatable, Sendable {
     @MainActor var applicablePlacements: [Placement] {
         let reserved = Set(shelves.filter(\.isReserved).map(\.number))
         // With cabinets in the file, only their compartments exist after a
-        // restore; older files address the compartments 1…12.
-        let known = cabinets.map { Set($0.flatMap(\.shelves)) } ?? Set(1...ShelfGeometry.count)
+        // restore (as many as each grid holds – the same rule as `rebuild`);
+        // older files, and hand-edited ones without cabinets, address 1…12.
+        let known = cabinets.flatMap { $0.isEmpty ? nil : Set($0.flatMap(\.restoredShelves)) } ?? Set(1...ShelfGeometry.count)
         var seen = Set<Int>()
         return placements.filter {
             known.contains($0.shelf) && !reserved.contains($0.shelf) && seen.insert($0.instanceID).inserted
@@ -97,8 +106,11 @@ struct ShelfRestorePreview {
     /// In the collection now, but without a place in the backup: they end up "ohne Fach".
     let unplaced: Int
     let otherAccount: Bool
+    /// The shelf already looks exactly like this.
+    var unchanged = false
 
     var message: String {
+        if unchanged { return "Die Belegung entspricht bereits dieser Sicherung – es würde sich nichts ändern." }
         var lines = ["\(AppStyle.records(placed)) werden wieder einsortiert."]
         if unplaced > 0 { lines.append("\(AppStyle.records(unplaced)) kommen in der Sicherung nicht vor und stehen danach ohne Fach.") }
         if missing > 0 { lines.append("\(AppStyle.records(missing)) aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.") }
@@ -184,7 +196,8 @@ struct ShelfBackupService {
             placed: placeable.filter { known.contains($0.instanceID) }.count,
             missing: placeable.filter { !known.contains($0.instanceID) }.count,
             unplaced: copies.filter { $0.isInCurrentCollection(owner: owner) && !covered.contains($0.discogsInstanceID) }.count,
-            otherAccount: backup.owner != nil && owner != nil && backup.owner != owner)
+            otherAccount: backup.owner != nil && owner != nil && backup.owner != owner,
+            unchanged: (try? makeBackup())?.hasSameLayout(as: backup) == true)
     }
 
     /// Replaces the whole layout in one transaction: shelf locks and names,
@@ -251,14 +264,13 @@ extension ShelfBackupService {
         var created: [Cabinet] = []
         for cabinet in try context.fetch(FetchDescriptor<Cabinet>()) { cabinet.shelves = []; context.delete(cabinet) }
         for (order, setting) in settings.enumerated() {
-            let columns = min(max(setting.columns, ShelfGeometry.sizeRange.lowerBound), ShelfGeometry.sizeRange.upperBound)
-            let rows = min(max(setting.rows, ShelfGeometry.sizeRange.lowerBound), ShelfGeometry.sizeRange.upperBound)
+            let (columns, rows) = setting.size
             let name = setting.name.trimmingCharacters(in: .whitespacesAndNewlines)
             let cabinet = Cabinet(name: name.isEmpty ? "Regal \(order + 1)" : name, rows: rows, columns: columns, sortOrder: order)
             cabinet.isActive = setting.isActive
             context.insert(cabinet)
             created.append(cabinet)
-            for (index, number) in setting.shelves.prefix(rows * columns).enumerated() where used.insert(number).inserted {
+            for (index, number) in setting.restoredShelves.enumerated() where used.insert(number).inserted {
                 let slot = index + 1
                 let shelf = byNumber[number] ?? {
                     Shelf.insert(number: number, cabinet: cabinet, slot: slot, in: context)
@@ -311,6 +323,11 @@ extension ShelfBackupService {
     private(set) var lastFailure: Date?
     private var pending: Task<Void, Never>?
     private var pendingContainer: ModelContainer?
+    /// Files already read, by their modification date: the list reloads after
+    /// every change and sync, and up to ~140 files of a large collection
+    /// (maybe in iCloud) must not be parsed again each time.
+    /// An unreadable file is kept as `nil`, so it isn't read and logged again.
+    private var cache: [URL: (modified: Date?, backup: ShelfBackup?)] = [:]
     private var observesTermination = false
 
     var isEnabled: Bool {
@@ -473,7 +490,7 @@ extension ShelfBackupService {
         if let newest = ownFiles().first,
            let latest = try? Self.inDirectory({ _ in try ShelfBackupService.read(newest.url) }),
            latest.hasSameLayout(as: backup) { return nil }
-        let name = filePrefix + fileDate.string(from: backup.createdAt) + ".json"
+        let name = fileName(for: backup.createdAt)
         try Self.inDirectory { directory in
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             try ShelfBackupService.encode(backup).write(to: directory.appendingPathComponent(name), options: .atomic)
@@ -491,19 +508,30 @@ extension ShelfBackupService {
 
     /// Newest first.
     func entries() -> [Entry] {
-        let urls = (try? Self.inDirectory { try FileManager.default.contentsOfDirectory(at: $0, includingPropertiesForKeys: nil) }) ?? []
-        // Only the app's own files: anything else in the folder is neither
-        // listed nor ever deleted when old backups are cleared.
-        return (try? Self.inDirectory { _ in urls.filter { Self.isOwnFile($0.lastPathComponent) }
-            .compactMap { url in
-                do { return Entry(url: url, backup: try ShelfBackupService.read(url)) }
-                catch {
-                    AppLog.warning("Sicherung", "Automatische Sicherung \(url.lastPathComponent) nicht lesbar, wird übergangen: \(error)")
-                    return nil
+        let files = (try? Self.inDirectory { directory in
+            // Only the app's own files: anything else in the folder is neither
+            // listed nor ever deleted when old backups are cleared.
+            try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.contentModificationDateKey])
+                .filter { Self.isOwnFile($0.lastPathComponent) }
+                .map { url in (url: url, modified: try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) }
+        }) ?? []
+        // Forget files that are gone (pruned, other folder).
+        let listed = Set(files.map(\.url))
+        cache = cache.filter { listed.contains($0.key) }
+        let unread = files.filter { file in cache[file.url].map { $0.modified != file.modified || file.modified == nil } ?? true }
+        if !unread.isEmpty {
+            try? Self.inDirectory { _ in
+                for file in unread {
+                    do { cache[file.url] = (file.modified, try ShelfBackupService.read(file.url)) }
+                    catch {
+                        cache[file.url] = (file.modified, nil)
+                        AppLog.warning("Sicherung", "Automatische Sicherung \(file.url.lastPathComponent) nicht lesbar, wird übergangen: \(error)")
+                    }
                 }
             }
+        }
+        return files.compactMap { file in cache[file.url]?.backup.map { Entry(url: file.url, backup: $0) } }
             .sorted { $0.backup.createdAt > $1.backup.createdAt }
-        }) ?? []
     }
 
     /// The app's own files, newest first, dated by their name – without
@@ -540,20 +568,36 @@ extension ShelfBackupService {
 
     nonisolated private static let filePrefix = "Belegung "
 
-    /// "Belegung 2026-09-24 10-41-05.json"
+    /// "Belegung 2026-09-24 10-41-05 +0200.json": local time, readable in the
+    /// Finder, with its offset – the newest file and the retention go by this
+    /// time, and without the offset the repeated hour when the clocks go back
+    /// (or a trip to another time zone) would put a newer file behind older ones.
+    nonisolated static func fileName(for date: Date, in timeZone: TimeZone = .current) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "yyyy-MM-dd HH-mm-ss Z"
+        return filePrefix + formatter.string(from: date) + ".json"
+    }
+
+    /// Own files, including those from before the offset was added
+    /// ("Belegung 2026-09-24 10-41-05.json", read as local time).
     nonisolated static func isOwnFile(_ name: String) -> Bool { fileDate(of: name) != nil }
 
     /// The time in an own file's name; `nil` for any other file.
     nonisolated static func fileDate(of name: String) -> Date? {
         guard name.hasPrefix(filePrefix), name.hasSuffix(".json") else { return nil }
-        return fileDate.date(from: String(name.dropFirst(filePrefix.count).dropLast(".json".count)))
+        let stamp = String(name.dropFirst(filePrefix.count).dropLast(".json".count))
+        return withOffset.date(from: stamp) ?? localTime.date(from: stamp)
     }
 
     // Only ever read after setup; DateFormatter is thread-safe for that.
-    nonisolated private static let fileDate: DateFormatter = {
+    nonisolated private static let withOffset = posixFormatter("yyyy-MM-dd HH-mm-ss Z")
+    nonisolated private static let localTime = posixFormatter("yyyy-MM-dd HH-mm-ss")
+    nonisolated private static func posixFormatter(_ format: String) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd HH-mm-ss"
+        formatter.dateFormat = format
         return formatter
-    }()
+    }
 }
