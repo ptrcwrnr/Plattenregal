@@ -229,7 +229,10 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay {
-                ZStack {
+                // Anchored at the top: a panel that grows (another list, a
+                // column folding out) extends downwards, and nothing moves
+                // under the pointer.
+                ZStack(alignment: .top) {
                     if let shown = item {
                         // No dimming: the toolbar is drawn by the window and would
                         // stay bright above it, a hard edge. A shadow sets the
@@ -245,12 +248,8 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                             .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)),
                                          in: .rect(cornerRadius: AppStyle.panelRadius))
                             .shadow(color: .black.opacity(0.18), radius: 30, y: 10)
-                            .background {
-                                // Esc: a key equivalent, so it works wherever the focus is.
-                                Button("Schließen") { item = nil }
-                                    .keyboardShortcut(.cancelAction)
-                                    .hidden()
-                            }
+                            // Esc closes it, wherever the focus is.
+                            .background { PanelEscapeMonitor { item = nil } }
                             .padding(AppStyle.pagePadding)
                             .transition(.scale(scale: 0.96).combined(with: .opacity))
                             .id(shown.id)
@@ -260,6 +259,34 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
             }
             .onChange(of: item?.id) { old, new in
                 if old != nil && new == nil { onDismiss?() }
+            }
+    }
+}
+
+/// Esc for a panel. A page is its own SwiftUI root (see `PageStack`), where
+/// a `.cancelAction` shortcut never sees the key, so the key is caught before
+/// the window handles it – only in the main window (a popover or dialog on
+/// top gets its Esc first) and only while the panel's page is shown.
+private struct PanelEscapeMonitor: View {
+    let close: () -> Void
+    @Environment(\.pageVisibility) private var visibility
+    @State private var monitor: Any?
+
+    var body: some View {
+        Color.clear
+            .onAppear {
+                guard monitor == nil else { return }
+                monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [visibility, close] event in
+                    guard event.keyCode == 53, event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty,
+                          let window = event.window, window === NSApp.mainWindow, window.attachedSheet == nil,
+                          visibility?.isShown ?? true else { return event }
+                    close()
+                    return nil
+                }
+            }
+            .onDisappear {
+                if let monitor { NSEvent.removeMonitor(monitor) }
+                monitor = nil
             }
     }
 }

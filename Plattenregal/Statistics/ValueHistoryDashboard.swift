@@ -172,6 +172,7 @@ struct HistoryLineChart: View {
                         Text("Maus über die Kurve bewegen, um Werte zu sehen.").font(.caption).foregroundStyle(.tertiary)
                     }
                 }
+                .lineLimit(1)
                 .frame(height: 18, alignment: .leading)
             }
         }

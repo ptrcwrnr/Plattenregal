@@ -54,6 +54,8 @@ struct CollectionView: View {
     /// Kept with any order, so switching it never changes the cover size.
     private var alphabetGutter: CGFloat { 24 }
     @AppStorage(DisplaySettings.collectionOrderKey) private var order = OverviewOrder.alphabetical
+    /// One artist's records follow the shelf's order (Einstellungen › Regal).
+    @AppStorage(ShelfSecondaryOrder.key) private var secondaryOrder = ShelfSecondaryOrder.title
     /// List layout: the row whose menu is open, and where it was right-clicked.
     @State private var tableMenu: (id: UUID, anchor: UnitPoint)?
     /// A Discogs token is stored; without one an empty collection leads to it.
@@ -409,6 +411,7 @@ struct CollectionView: View {
         }
         .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
         .onChange(of: order) { _, _ in scrollPosition = nil; rebuildBase(animated: true) }
+        .onChange(of: secondaryOrder) { _, _ in rebuildBase(animated: true) }
         .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantlistIndex(); rebuildBase() }
         .onChange(of: copies) { _, _ in rebuildBase() }
         .onChange(of: labelStyle) { _, style in shelfLabels = ShelfRangeLabels.compute(for: shelves, style: style) }

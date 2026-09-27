@@ -39,6 +39,7 @@ struct HoverBarChart: View {
                     .font(.caption).foregroundStyle(.tertiary)
             }
         }
+        .lineLimit(1)
         .frame(height: 18, alignment: .leading)
     }
 
