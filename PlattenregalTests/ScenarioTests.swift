@@ -123,7 +123,7 @@ extension AllTests {
             #expect(b.shelf?.id == shelf.id && b.positionInShelf == 1)
         }
 
-        @Test func addingListsFittingRecordsFirstAndPausedLast() throws {
+        @Test func addingListsFittingRecordsFirstPausedInPlace() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             let context = c.mainContext
             let positions = PositionService(context: context)
@@ -139,8 +139,10 @@ extension AllTests {
 
             let session = ShelfAssignmentSession(shelf: first)
             session.load(context, owner: nil, labels: ShelfLabels())
-            // Fits here, then belongs elsewhere, then paused (though it fits here).
-            #expect(session.candidates.map(\.id) == [abba.id, zappa.id, aphex.id])
+            // Fits here, then belongs elsewhere; a paused one keeps its place
+            // (the view lists it under "Vermisst"), so found again it returns there.
+            #expect(session.candidates.map(\.id) == [abba.id, aphex.id, zappa.id])
+            #expect(session.missing == [aphex.id])
             #expect(session.belongsElsewhere[zappa.id] != nil)
             #expect(session.belongsElsewhere[abba.id] == nil && session.belongsElsewhere[aphex.id] == nil)
 
