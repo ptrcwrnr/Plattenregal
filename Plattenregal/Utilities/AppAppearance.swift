@@ -734,6 +734,76 @@ private struct CoverGridMotion: ViewModifier {
     }
 }
 
+/// − value + in a Liquid Glass capsule, in place of the gray system stepper.
+struct GlassStepper: View {
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let label: (Int) -> String
+
+    var body: some View {
+        HStack(spacing: 2) {
+            step("minus", by: -1).disabled(value <= range.lowerBound)
+            Text(label(value))
+                .monospacedDigit()
+                .contentTransition(.numericText(value: Double(value)))
+                .padding(.horizontal, 4)
+            step("plus", by: 1).disabled(value >= range.upperBound)
+        }
+        .animation(AppStyle.quickAnimation, value: value)
+        .padding(.horizontal, 6)
+        .frame(height: 30)
+        .glassEffect(.regular.interactive(), in: .capsule)
+        .fixedSize()
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(label(value))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: value = min(value + 1, range.upperBound)
+            case .decrement: value = max(value - 1, range.lowerBound)
+            @unknown default: break
+            }
+        }
+    }
+
+    private func step(_ systemImage: String, by offset: Int) -> some View {
+        GlassStepButton(systemImage: systemImage) {
+            value = min(max(value + offset, range.lowerBound), range.upperBound)
+        }
+    }
+}
+
+/// A small round icon button inside a glass capsule (stepper, nudges).
+struct GlassStepButton: View {
+    let systemImage: String
+    var help: String = ""
+    let action: () -> Void
+    @Environment(\.isEnabled) private var isEnabled
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 20, height: 20)
+                .background(hovering && isEnabled ? AppStyle.hoverBackground : .clear, in: Circle())
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .opacity(isEnabled ? 1 : 0.35)
+        .onHover { hovering = $0 }
+        .help(help)
+    }
+}
+
+extension View {
+    /// Hover tooltips in charts: a small Liquid Glass tag instead of material.
+    func chartTooltipChrome() -> some View {
+        padding(.horizontal, 8).padding(.vertical, 4)
+            .glassEffect(.regular, in: .rect(cornerRadius: 8))
+    }
+}
+
 /// The app's activity ring: the same accent ring as the pull-to-refresh
 /// indicator. `progress` fills it; `nil` lets a short arc spin (a still
 /// arc with "Bewegung reduzieren").

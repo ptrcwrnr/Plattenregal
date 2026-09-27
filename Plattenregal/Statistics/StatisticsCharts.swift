@@ -33,9 +33,7 @@ struct HoverBarChart: View {
                             Text(bar.label).font(.caption.weight(.semibold))
                             Text(unit == "Platten" ? AppStyle.records(bar.count) : "\(bar.count) \(unit)").font(.caption2).foregroundStyle(.secondary)
                         }
-                        .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
-                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppStyle.borderColor))
+                        .chartTooltipChrome()
                     }
                 }
         }

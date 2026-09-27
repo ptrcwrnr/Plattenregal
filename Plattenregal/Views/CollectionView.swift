@@ -608,7 +608,7 @@ struct RecordCard: View {
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
-                        .background(.regularMaterial, in: Capsule())
+                        .glassEffect(.regular, in: .capsule)
                         .padding(6)
                 }
             }
@@ -722,7 +722,7 @@ struct PlacementBadge: View, Equatable {
             .foregroundStyle(.secondary)
             .padding(.horizontal, 7)
             .padding(.vertical, 3)
-            .background(.ultraThinMaterial, in: Capsule())
+            .glassEffect(.regular, in: .capsule)
             .padding(6)
             .accessibilityLabel("In: " + [inCollection ? "Collection" : nil, inWantlist ? "Wantlist" : nil].compactMap { $0 }.joined(separator: " und "))
     }

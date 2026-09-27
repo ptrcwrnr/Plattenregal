@@ -62,7 +62,7 @@ struct DiscogsSettingsView: View {
                         SecondaryButton(title: "Erneut lesen") { model.load() }
                             .disabled(model.busy)
                     }
-                    if model.busy { ProgressView().controlSize(.small) }
+                    if model.busy { ActivityRing(size: 14).transition(.opacity) }
                     Spacer()
                     Link("Token erstellen ↗", destination: URL(string: "https://www.discogs.com/settings/developers")!)
                         .font(.callout)

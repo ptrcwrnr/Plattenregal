@@ -166,7 +166,7 @@ struct DataSettingsView: View {
                     Button("Alles zurücksetzen …", role: .destructive) { pendingReset = .everything }
                         .appGlassButton()
                 }
-                if resetting { ProgressView().controlSize(.small) }
+                if resetting { ActivityRing(size: 14).transition(.opacity) }
                 if let resetStatus {
                     AppBanner(message: resetStatus.message, kind: resetStatus.failed ? .error : .success)
                         .transition(AppStyle.funnelTransition())

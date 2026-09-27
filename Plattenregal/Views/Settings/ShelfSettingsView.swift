@@ -277,8 +277,8 @@ private struct CabinetSizePicker: View {
             }
             if selection.wrappedValue == "custom" {
                 HStack(spacing: AppStyle.rowSpacing) {
-                    Stepper("\(columns) Spalten", value: $columns, in: ShelfGeometry.sizeRange)
-                    Stepper("\(rows) Reihen", value: $rows, in: ShelfGeometry.sizeRange)
+                    GlassStepper(value: $columns, range: ShelfGeometry.sizeRange) { "\($0) Spalten" }
+                    GlassStepper(value: $rows, range: ShelfGeometry.sizeRange) { "\($0) Reihen" }
                 }
                 .monospacedDigit()
             }

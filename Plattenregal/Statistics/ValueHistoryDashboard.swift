@@ -143,9 +143,7 @@ struct HistoryLineChart: View {
                                     Text(formatted(selected.value)).font(.caption.weight(.semibold)).monospacedDigit()
                                     Text(selected.date.formatted(date: .abbreviated, time: .omitted)).font(.caption2).foregroundStyle(.secondary)
                                 }
-                                .padding(.horizontal, 8).padding(.vertical, 4)
-                                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
-                                .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppStyle.borderColor))
+                                .chartTooltipChrome()
                             }
                     }
                 }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? "Exemplare")

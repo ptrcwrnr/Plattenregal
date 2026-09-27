@@ -172,7 +172,7 @@ struct RecordPopover: View {
                 Text("Tracklist").font(.headline)
                 if loadingTracks {
                     HStack(spacing: AppStyle.itemSpacing) {
-                        ProgressView().controlSize(.small)
+                        ActivityRing(size: 13)
                         Text("Wird von Discogs geladen …")
                     }
                     .font(.callout).foregroundStyle(.secondary)

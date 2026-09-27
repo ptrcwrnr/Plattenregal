@@ -255,67 +255,65 @@ private struct ShelfCopyQuickEditor: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                Section("Veröffentlichung") {
-                    LabeledContent("Interpret:") {
-                        Text(copy.release?.displayArtist ?? "—").textSelection(.enabled)
-                    }
-                    LabeledContent("Titel:") {
-                        Text(copy.release?.displayTitle ?? "—").textSelection(.enabled)
-                    }
-                }
-                Section("Zugehörigkeit") {
-                    Toggle("Nicht im Regal:", isOn: $notInShelf.animation(AppStyle.quickAnimation))
-                    if notInShelf {
-                        Text("Die Platte verlässt ihr Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen.")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-                Section("Lage") {
-                    Picker("Fach:", selection: $shelfID) {
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(copy.release?.displayTitle ?? "—").font(.headline).lineLimit(2)
+                Text(copy.release?.displayArtist ?? "—").foregroundStyle(.secondary).lineLimit(1)
+            }
+            .textSelection(.enabled)
+            Divider()
+            SettingsRow(title: "Nicht im Regal", hint: notInShelf
+                        ? "Die Platte verlässt ihr Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen."
+                        : nil) {
+                Toggle("Nicht im Regal", isOn: $notInShelf.animation(AppStyle.quickAnimation))
+                    .labelsHidden().toggleStyle(.switch)
+            }
+            Divider()
+            Group {
+                SettingsRow(title: "Fach") {
+                    GlassMenuPicker(title: "Fach", selection: $shelfID,
+                                    current: targetShelf.map(shelfLabel) ?? "–") {
                         ForEach(availableShelves) { shelf in
                             Text(shelfLabel(shelf)).tag(Optional(shelf.id))
                         }
                     }
-                    LabeledContent("Position:") {
-                        HStack(spacing: AppStyle.tightSpacing) {
-                            PositionNudgeButton(systemImage: "chevron.left", help: "Eine Position nach links") {
-                                position = max(position - 1, 1)
-                            }
-                            .disabled(position <= 1)
-                            TextField("Position", value: $position, format: .number)
-                                .labelsHidden()
-                                .textFieldStyle(.plain)
-                                .multilineTextAlignment(.center)
-                                .monospacedDigit()
-                                .frame(width: 34)
-                            PositionNudgeButton(systemImage: "chevron.right", help: "Eine Position nach rechts") {
-                                position = min(position + 1, maxPosition)
-                            }
-                            .disabled(position >= maxPosition)
-                            Text("von \(maxPosition)").monospacedDigit().foregroundStyle(.secondary)
-                                .padding(.leading, AppStyle.tightSpacing)
-                        }
-                    }
                 }
-                .disabled(notInShelf)
+                Divider()
+                SettingsRow(title: "Position", hint: "von \(maxPosition)") {
+                    HStack(spacing: 2) {
+                        GlassStepButton(systemImage: "chevron.left", help: "Eine Position nach links") {
+                            position = max(position - 1, 1)
+                        }
+                        .disabled(position <= 1)
+                        TextField("Position", value: $position, format: .number)
+                            .labelsHidden()
+                            .textFieldStyle(.plain)
+                            .multilineTextAlignment(.center)
+                            .monospacedDigit()
+                            .frame(width: 34)
+                        GlassStepButton(systemImage: "chevron.right", help: "Eine Position nach rechts") {
+                            position = min(position + 1, maxPosition)
+                        }
+                        .disabled(position >= maxPosition)
+                    }
+                    .padding(.horizontal, 6)
+                    .frame(height: 30)
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                }
             }
-            .formStyle(.grouped)
-            .scrollDisabled(true)
+            .disabled(notInShelf)
+            .opacity(notInShelf ? 0.5 : 1)
             if let error {
                 Text(error).font(.caption).foregroundStyle(AppStyle.errorColor)
-                    .padding(.horizontal, AppStyle.cardPadding)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             HStack {
                 Spacer()
                 PrimaryButton(title: "Speichern", action: save)
                     .keyboardShortcut(.defaultAction)
             }
-            .padding(.horizontal, AppStyle.cardPadding)
-            .padding(.bottom, AppStyle.cardPadding)
         }
+        .padding(AppStyle.cardPadding)
         .frame(width: 380)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear {
@@ -352,32 +350,6 @@ private struct ShelfCopyQuickEditor: View {
     }
 }
 
-/// Small chevron that moves a copy one slot left or right in the quick editor.
-/// Quiet at rest, a soft fill while hovered — no stepper chrome.
-private struct PositionNudgeButton: View {
-    let systemImage: String
-    let help: String
-    let action: () -> Void
-    @Environment(\.isEnabled) private var isEnabled
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .frame(width: 18, height: 18)
-                .background(hovering && isEnabled ? AppStyle.hoverBackground : .clear, in: RoundedRectangle(cornerRadius: 5))
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .opacity(isEnabled ? 1 : 0.35)
-        .onHover { hovering = $0 }
-        .animation(AppStyle.quickAnimation, value: hovering)
-        .help(help)
-        .accessibilityLabel(help)
-    }
-}
 
 /// Takes a copy out of its shelf (undoable via the toast). Quiet secondary
 /// color at rest, red only while hovered.

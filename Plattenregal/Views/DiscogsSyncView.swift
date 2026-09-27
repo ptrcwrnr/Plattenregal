@@ -12,10 +12,8 @@ struct DiscogsSyncStatusView: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
                 if sync.isRunning {
-                    HStack(spacing: 0) {
-                        Text("Synchronisierung läuft")
-                        AnimatedDots()
-                    }
+                    ActivityRing(size: 13)
+                    Text("Synchronisierung läuft")
                     CancelIconButton(help: "Synchronisierung abbrechen") { sync.cancel() }
                 } else {
                     Text(sync.status)
@@ -65,26 +63,6 @@ struct DiscogsSyncStatusView: View {
         // Errors live in the "i" popover, not in the line.
         if let summary = sync.summary { return (summary, nil, false) }
         return nil
-    }
-}
-
-/// Three dots filling up one after another; static with reduce motion.
-private struct AnimatedDots: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    var body: some View {
-        if reduceMotion {
-            Text("…")
-        } else {
-            TimelineView(.periodic(from: .now, by: 0.4)) { context in
-                let step = Int(context.date.timeIntervalSinceReferenceDate / 0.4) % 4
-                HStack(spacing: 0) {
-                    ForEach(0..<3, id: \.self) { index in
-                        Text(".").opacity(index < step ? 1 : 0)
-                    }
-                }
-                .accessibilityHidden(true)
-            }
-        }
     }
 }
 
