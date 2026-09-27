@@ -328,10 +328,14 @@ struct MissingCopiesColumn: View {
                     MissingCopyRow(copy: copy, show: { show(copy) }, found: {
                         withAnimation(AppStyle.standardAnimation) { found(copy) }
                     })
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+                    // Comes in from the list on the left, goes back there.
+                    .transition(.opacity.combined(with: .move(edge: .leading)))
                 }
             }
         }
+        // Marks set in the list on the left arrive through the store, outside
+        // any `withAnimation`: animate every change of the list here.
+        .animation(AppStyle.standardAnimation, value: copies.map(\.id))
         .padding(.horizontal, AppStyle.pagePadding - 8)
         .padding(.bottom, 8)
     }

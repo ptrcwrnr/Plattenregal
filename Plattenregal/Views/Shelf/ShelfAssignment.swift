@@ -68,7 +68,8 @@ final class ShelfAssignmentSession: Identifiable {
 
     /// Taken once: the list is a snapshot and must not reorder while records
     /// are added or paused. Records that fit this shelf alphabetically come
-    /// first, then the rest, the paused ones last – each by artist.
+    /// first, then the rest – each by artist. Paused ones keep their place,
+    /// so one found again returns right where it belongs.
     func load(_ context: ModelContext, owner: String?, labels: ShelfLabels) {
         guard !loaded else { return }
         loaded = true
@@ -86,9 +87,7 @@ final class ShelfAssignmentSession: Identifiable {
                     .joined(separator: " oder ")
             }
             let sorted = ShelfAssignmentPresentation.sortedByArtist(available)
-            let paused = sorted.filter { missing.contains($0.id) }
-            let active = sorted.filter { !missing.contains($0.id) }
-            candidates = active.filter { belongsElsewhere[$0.id] == nil } + active.filter { belongsElsewhere[$0.id] != nil } + paused
+            candidates = sorted.filter { belongsElsewhere[$0.id] == nil } + sorted.filter { belongsElsewhere[$0.id] != nil }
             searchIndex = SearchIndex(available, id: \.id, text: SortingService.searchText)
         } catch { self.error = error.reportedMessage() }
     }
@@ -229,6 +228,8 @@ struct ShelfAssignmentView: View {
             ZStack {
                 ShelfAssignmentTable(controller: session.table, items: items, missing: missingEnabled ? session.missing : [],
                                      missingEnabled: missingEnabled,
+                                     // The next one by artist that fits here: where to go on.
+                                     suggestedID: items.first { session.belongsElsewhere[$0.id] == nil }?.id,
                                      belongsElsewhere: session.belongsElsewhere,
                                      toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
                                      hover: { [session] copy, hovering in session.hover(copy, hovering) },
@@ -333,6 +334,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
     let items: [RecordCopy]
     let missing: Set<UUID>
     let missingEnabled: Bool
+    let suggestedID: UUID?
     let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
     let hover: (RecordCopy, Bool) -> Void
@@ -364,6 +366,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
         controller.setMissingEnabled(missingEnabled)
         controller.setMissing(missing)
         controller.apply(items)
+        controller.setSuggested(suggestedID)
     }
 }
 
@@ -378,6 +381,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     private var items: [RecordCopy] = []
     private var missing: Set<UUID> = []
     private var missingEnabled = true
+    private var suggestedID: UUID?
     /// Fixed for a session (see `ShelfAssignmentSession.load`).
     fileprivate var belongsElsewhere: [UUID: String] = [:]
     fileprivate var add: (RecordCopy) -> Void = { _ in }
@@ -419,6 +423,15 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
         table.reloadData()
     }
 
+    /// Moves the "Als Nächstes" mark, redrawing just the two rows.
+    func setSuggested(_ id: UUID?) {
+        guard id != suggestedID else { return }
+        let changed: Set<UUID?> = [suggestedID, id]
+        suggestedID = id
+        let rows = IndexSet(items.indices.filter { changed.contains(items[$0].id) })
+        if !rows.isEmpty { table.reloadData(forRowIndexes: rows, columnIndexes: IndexSet(integer: 0)) }
+    }
+
     /// Redraws only the rows whose "Vermisst" state changed.
     func setMissing(_ new: Set<UUID>) {
         guard new != missing else { return }
@@ -434,9 +447,12 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
         guard oldIDs != newIDs else { items = new; return }
         items = new
         if let removed = Self.removedIndexes(from: oldIDs, to: newIDs) {
-            // Records added here: animate just those rows; everything else,
-            // including the scroll offset, stays exactly in place.
+            // Records added here (or marked "Vermisst"): animate just those
+            // rows; everything else, including the scroll offset, stays in place.
             table.removeRows(at: removed, withAnimation: [.effectFade, .slideUp])
+        } else if let inserted = Self.removedIndexes(from: newIDs, to: oldIDs) {
+            // Found again: back at its place, sliding in.
+            table.insertRows(at: inserted, withAnimation: [.effectFade, .slideDown])
         } else {
             // First load or a new search: show the results from the top.
             table.reloadData()
@@ -461,6 +477,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let copy = items[row]
         let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id), missingEnabled: missingEnabled,
+                                         suggested: copy.id == suggestedID,
                                          belongsIn: belongsElsewhere[copy.id],
                                          toggleMissing: { [weak self] in self?.toggleMissing(copy) },
                                          hover: { [weak self] in self?.hover(copy, $0) },
@@ -491,6 +508,8 @@ private struct ShelfAssignmentRow: View {
     let missing: Bool
     /// Off in the settings: no pause button.
     let missingEnabled: Bool
+    /// The next one to add by artist: lightly marked.
+    let suggested: Bool
     /// The shelf it fits alphabetically, when that isn't this one.
     let belongsIn: String?
     let toggleMissing: () -> Void
@@ -504,7 +523,18 @@ private struct ShelfAssignmentRow: View {
         HStack(spacing: AppStyle.rowSpacing) {
             CoverView(url: copy.release?.coverURL, size: 38)
             VStack(alignment: .leading, spacing: 2) {
-                Text(artist).font(.callout.weight(.medium)).lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(artist).font(.callout.weight(.medium)).lineLimit(1)
+                    if suggested {
+                        Text("Als Nächstes")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(AppStyle.accent)
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(AppStyle.accent.opacity(0.12), in: Capsule())
+                            .fixedSize()
+                            .help("Nach Interpret die nächste Platte für dieses Fach")
+                    }
+                }
                 HStack(spacing: 6) {
                     Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     if missing { MissingBadge() }
@@ -541,6 +571,15 @@ private struct ShelfAssignmentRow: View {
         .padding(.horizontal, AppStyle.pagePadding)
         .frame(height: ShelfAssignmentTableController.rowHeight)
         .frame(maxWidth: .infinity, alignment: .leading)
+        // The suggested row: a faint accent wash behind it.
+        .background {
+            if suggested {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppStyle.accent.opacity(0.07))
+                    .padding(.horizontal, AppStyle.pagePadding - 10)
+                    .padding(.vertical, 2)
+            }
+        }
         .contentShape(Rectangle())
         .onHover(perform: hover)
     }
