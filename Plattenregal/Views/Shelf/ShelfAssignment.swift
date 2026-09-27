@@ -526,12 +526,7 @@ private struct ShelfAssignmentRow: View {
                 HStack(spacing: 6) {
                     Text(artist).font(.callout.weight(.medium)).lineLimit(1)
                     if suggested {
-                        Text("Als Nächstes")
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(AppStyle.accent)
-                            .padding(.horizontal, 5).padding(.vertical, 1)
-                            .background(AppStyle.accent.opacity(0.12), in: Capsule())
-                            .fixedSize()
+                        StatusTag(text: "Als Nächstes", color: AppStyle.accent)
                             .help("Nach Interpret die nächste Platte für dieses Fach")
                     }
                 }
@@ -574,7 +569,7 @@ private struct ShelfAssignmentRow: View {
         // The suggested row: a faint accent wash behind it.
         .background {
             if suggested {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: AppStyle.cardRadius)
                     .fill(AppStyle.accent.opacity(0.07))
                     .padding(.horizontal, AppStyle.pagePadding - 10)
                     .padding(.vertical, 2)
@@ -731,7 +726,7 @@ struct ShelfSortCheckView: View {
     private func summary(_ steps: [ShelfSortCheck.Step]) -> some View {
         let finished = steps.filter { done.contains($0.id) }.count
         return HStack(spacing: AppStyle.rowSpacing) {
-            Image(systemName: "arrow.left.arrow.right").font(.system(size: 20)).foregroundStyle(AppStyle.accent)
+            Image(systemName: "arrow.left.arrow.right").font(.system(size: 22)).foregroundStyle(AppStyle.accent)
             VStack(alignment: .leading, spacing: 1) {
                 Text(steps.count == 1 ? "1 Platte umstellen" : "\(steps.count) Platten umstellen").font(.headline)
                 Text("Der Reihe nach herausnehmen und an die neue Stelle stellen. Die übrigen bleiben, wo sie sind.")

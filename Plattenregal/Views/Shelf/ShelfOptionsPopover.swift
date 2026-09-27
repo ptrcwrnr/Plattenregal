@@ -53,7 +53,7 @@ struct ShelfNamePopover: View {
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("Name des gesperrten Fachs").font(.callout.weight(.medium))
             GlassTextField(placeholder: "z. B. Plattenspieler", text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
-            Text(error ?? "Erscheint im Regal anstelle von „Gesperrt“.")
+            Text(error ?? "Erscheint im Regal unter dem Schloss und als Titel des Fachs.")
                 .font(.caption)
                 .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
                 .fixedSize(horizontal: false, vertical: true)

@@ -217,6 +217,9 @@ struct KallaxView: View {
     /// Shared slot count for every spine row, so a sleeve has the same width in
     /// each compartment and the rows simply show how many records stand there —
     /// not a fill level.
+    /// Space between the page's big blocks: banners, header, rack, compartment.
+    private static let blockSpacing: CGFloat = 28
+
     private var spineSlots: Int {
         max(40, shelfStats.values.map(\.count).max() ?? 0)
     }
@@ -224,7 +227,7 @@ struct KallaxView: View {
     var body: some View {
         GeometryReader { geometry in
             let lit = searchResults.litShelfIDs
-            VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: Self.blockSpacing) {
                 if DemoMode.isActive { DemoBanner() }
                 if nothingPlaced {
                     // Typically right after a new install and the first sync.
@@ -237,7 +240,7 @@ struct KallaxView: View {
                     header
                         // The search results float over the rack below.
                         .zIndex(1)
-                    VStack(alignment: .leading, spacing: 28) {
+                    VStack(alignment: .leading, spacing: Self.blockSpacing) {
                         if activeCabinets.count > 1 { cabinetSwitcher }
                         ShelfFurniture(
                             shelves: shownCabinet.map { cabinet in shelves.filter { $0.cabinet?.id == cabinet.id } } ?? shelves,
@@ -382,7 +385,8 @@ struct KallaxView: View {
                 .keyboardShortcut(.rightArrow, modifiers: .command)
                 .hidden().frame(width: 0)
         }
-        .padding(.bottom, -14)
+        // Tabs and rack belong together: half the usual gap.
+        .padding(.bottom, -Self.blockSpacing / 2)
         .help("Zwischen den Regalen wechseln: ⌘← / ⌘→")
     }
 
@@ -465,8 +469,8 @@ struct KallaxView: View {
             .onGeometryChange(for: CGFloat.self, of: \.size.width) { statusWidth = $0 }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        // 28: the page's stack spacing (see `body`), collapsed along with the bar.
-        .padding(.bottom, 28)
+        // The page's block spacing, collapsed along with the bar.
+        .padding(.bottom, Self.blockSpacing)
         .searchBarSlot(shown: showsSearchBar || hasStatus)
     }
 
@@ -531,7 +535,9 @@ struct KallaxView: View {
                         delete: { pendingDelete = $0 },
                         setMissing: setMissing
                     )
-                    .padding(.vertical, 4)
+                    // Clipped to the card's corners: the header's frosted band
+                    // would otherwise stick out square at the top.
+                    .clipShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius + 4))
                     .appGlassSurface(cornerRadius: AppStyle.cardRadius + 4)
                     .modifier(FadeInOnChange(value: shown.id))
                 }
@@ -564,7 +570,8 @@ struct KallaxView: View {
             ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                 if locked {
                     Image(systemName: "lock")
-                } else {
+                } else if stats.count > 0 {
+                    // An empty one says so in the note below.
                     Text(AppStyle.records(stats.count)).monospacedDigit()
                 }
             }
@@ -578,7 +585,7 @@ struct KallaxView: View {
 
     @ViewBuilder private var undoToast: some View {
         if let entry = recentUnplace {
-            HStack(spacing: 12) {
+            HStack(spacing: AppStyle.rowSpacing) {
                 Text("Aus Fach entfernt")
                 // A shelf locked meanwhile takes no records, and a record marked
                 // "Nicht im Regal" meanwhile stays out; nothing to undo then.

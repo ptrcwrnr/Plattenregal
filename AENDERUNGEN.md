@@ -1,3 +1,14 @@
+# Regal: Feinschliff bei Optik und Konsistenz · 27.09.2026
+
+- **Tabelle im Fach**: Die mattierte Kopfzeile hatte eckige Ecken und stand oben aus der abgerundeten Glasfläche heraus (im inaktiven Fenster als grauer Balken gut sichtbar). Die Tabelle ist jetzt auf die Rundung der Fläche zugeschnitten, der 4-pt-Streifen über der Kopfzeile entfällt.
+- **Leere Fächer**: „Leer“ steht mittig im Fach wie Schloss und Name eines gesperrten Fachs, statt klein oben links etwas höher als die Buchstaben der Nachbarfächer. Im Detailbereich entfällt „0 Platten“ – die Zeile darunter sagt es schon.
+- **Einheitliche Etiketten**: „Vermisst“, „Nicht in der Collection“ und „Als Nächstes“ nutzen einen gemeinsamen Baustein `StatusTag` statt dreier Nachbauten.
+- **Vermisst-Spalte**: Hover-Hintergrund wie in Suche und „Sortierung prüfen“ (`appHoverable`, gleiche Rundung); die Anzahl mit Tausenderpunkt über `AppStyle.records`.
+- **„Sortierung prüfen“**: Symbol der Umstell-Karte in derselben Größe wie das Häkchen von „Alles in Ordnung“ und das Fach-Symbol in „Platte hinzufügen“ (22 pt).
+- **Hinweis beim Namen eines gesperrten Fachs** stimmt jetzt: Der Name erscheint unter dem Schloss und als Titel des Fachs (vorher: „anstelle von ‚Gesperrt‘“, das nirgends steht).
+- Feste Werte durch Stil-Konstanten ersetzt: Abstand zwischen den großen Blöcken der Seite (`blockSpacing`, auch für Suchleiste und Regal-Reiter), Rundung der Suchtreffer und der vorgeschlagenen Zeile, Abstand im Rückgängig-Hinweis.
+- In der Demo geprüft, hell und dunkel, mit 4 × 3 und 2 × 2 samt leerem und gesperrtem Fach.
+
 # „Reihenfolge übernehmen“ schließt das Fenster · 27.09.2026
 
 - **Erster Klick danach ging ins Leere**: Nach „Reihenfolge übernehmen“ blieb „Sortierung prüfen“ offen (mit „Alles in Ordnung“). Ein offenes Glasfenster fängt Klicks daneben ab, um sich zu schließen – der erste Klick auf ein anderes Fach schloss also nur das Fenster. Jetzt schließt es sich nach dem erfolgreichen Speichern selbst, der nächste Klick erreicht sofort das Fach. Scheitert das Speichern, bleibt es mit der Fehlermeldung offen.

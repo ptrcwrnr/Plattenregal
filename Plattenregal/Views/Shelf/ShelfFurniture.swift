@@ -265,16 +265,24 @@ struct ShelfStatusControl: View {
     }
 }
 
-/// Small tag on a record marked "Vermisst" (table, search, "Platte hinzufügen").
-struct MissingBadge: View {
+/// Small colored tag beside a record's title ("Vermisst", "Nicht in der
+/// Collection", "Als Nächstes"), the same everywhere on the shelf page.
+struct StatusTag: View {
+    let text: String
+    let color: Color
     var body: some View {
-        Text("Vermisst")
+        Text(text)
             .font(.caption2.weight(.medium))
-            .foregroundStyle(AppStyle.errorColor)
+            .foregroundStyle(color)
             .padding(.horizontal, 5).padding(.vertical, 1)
-            .background(AppStyle.errorColor.opacity(0.12), in: Capsule())
+            .background(color.opacity(0.12), in: Capsule())
             .fixedSize()
     }
+}
+
+/// Small tag on a record marked "Vermisst" (table, search, "Platte hinzufügen").
+struct MissingBadge: View {
+    var body: some View { StatusTag(text: "Vermisst", color: AppStyle.errorColor) }
 }
 
 /// The "Vermisst" column beside "Platte hinzufügen": grouped by shelf (in
@@ -315,7 +323,7 @@ struct MissingCopiesColumn: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Vermisst").font(AppStyle.dialogTitle)
-                    Text(copies.count == 1 ? "1 Platte" : "\(copies.count) Platten")
+                    Text(AppStyle.records(copies.count))
                         .font(.callout).foregroundStyle(.secondary).monospacedDigit()
                         .contentTransition(.numericText())
                     Spacer()
@@ -405,9 +413,9 @@ private struct MissingCopyRow: View {
         .font(.callout)
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(hovering ? AppStyle.hoverBackground : .clear, in: RoundedRectangle(cornerRadius: 6))
+        // Like the rows of the search and "Sortierung prüfen".
+        .appHoverable(hovering, cornerRadius: 8)
         .onHover { hovering = $0 }
-        .animation(AppStyle.quickAnimation, value: hovering)
     }
 }
 
@@ -672,12 +680,12 @@ private struct ShelfCompartment: View {
             .padding(.top, 9)
         } else {
             // Without a view here the compartment collapses to nothing and
-            // can't be clicked, so empty shelves get a quiet placeholder.
+            // can't be clicked, so empty shelves get a quiet placeholder –
+            // centered like a locked one's, not posing as a range label.
             Text("Leer")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
-                .padding(.horizontal, 12)
-                .padding(.top, 9)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 

@@ -160,11 +160,7 @@ struct ShelfCopyTable: View {
                                 .help("Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht")
                         }
                         if item.sold {
-                            Text("Nicht in der Collection")
-                                .font(.caption2.weight(.medium))
-                                .foregroundStyle(AppStyle.warningColor)
-                                .padding(.horizontal, 5).padding(.vertical, 1)
-                                .background(AppStyle.warningColor.opacity(0.12), in: Capsule())
+                            StatusTag(text: "Nicht in der Collection", color: AppStyle.warningColor)
                                 .help("Nicht (mehr) in deiner Discogs-Collection – über den Papierkorb aus dem Fach nehmen")
                         }
                     }

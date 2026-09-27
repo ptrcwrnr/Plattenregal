@@ -109,7 +109,7 @@ struct ShelfSearchField: View {
             }
         }
         // Same glass as the system popovers in the overview.
-        .appGlassSurface(cornerRadius: 12)
+        .appGlassSurface(cornerRadius: AppStyle.surfaceRadius)
     }
 }
 
