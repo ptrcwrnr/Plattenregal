@@ -1,3 +1,9 @@
+# Nur noch ein Hauptfenster · 27.09.2026
+
+- **⌘N öffnet kein zweites Hauptfenster mehr**: Statt `WindowGroup` eine einzelne `Window`-Szene. Ein zweites Fenster lud und berechnete jede Seite ein weiteres Mal (Statistik, Suchindex, Regal). Das Menü „Ablage“ fällt damit weg – es enthielt nur „Neues Fenster“.
+- **Die App läuft weiter, wenn das Fenster geschlossen wird** (`applicationShouldTerminateAfterLastWindowClosed` → nein), wie bisher: Automatischer Export, Tracklisten und Sicherungen laufen weiter. Ein Klick aufs Dock-Symbol holt das Fenster zurück.
+- In der Demo geprüft: ⌘N ohne Wirkung, nach ⌘W läuft die App weiter, das Fenster kommt per Dock zurück.
+
 # Randfälle und Logik: zweite Runde · 27.09.2026
 
 - **Rückfragen in der Demo versprachen eine Sicherung**, die es dort absichtlich nie gibt („Die aktuelle Belegung wird vorher gesichert“) – vor „Wiederherstellen“ und „Standorte zurücksetzen“. In der Demo entfällt der Satz jetzt, wie schon in der Erfolgsmeldung danach.

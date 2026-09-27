@@ -2,7 +2,15 @@ import SwiftUI
 import SwiftData
 import OSLog
 
+/// With a single `Window` scene macOS would quit the app when that window
+/// closes; like before, it keeps running (automatic export, tracklist
+/// download, backups) and the Dock or the Fenster menu brings the window back.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+}
+
 @main struct PlattenregalApp: App {
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     private let container: ModelContainer?
     private let startupError: String?
     /// Another instance has the collection open; not a problem with the data.
@@ -65,7 +73,10 @@ import OSLog
         #endif
     }
     var body: some Scene {
-        WindowGroup {
+        // One main window: a second one (⌘N) would load and compute every
+        // page again. `Window` drops "Neues Fenster"; closed, it comes back
+        // from the Dock or the Fenster menu.
+        Window("Plattenregal", id: "main") {
             if let container, Self.previewsSettings {
                 AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
             } else if let container {
