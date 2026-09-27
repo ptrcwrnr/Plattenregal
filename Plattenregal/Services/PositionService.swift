@@ -6,8 +6,12 @@ enum LibraryError: LocalizedError {
     /// Saving "Vermisst" / "Wieder gefunden" failed; the database
     /// error is kept for the protocol.
     case missingMarkNotSaved(found: Bool, any Error)
+    /// "Reihenfolge übernehmen" (Sortierung prüfen) couldn't be saved.
+    case orderNotSaved(any Error)
     var errorDescription: String? {
         switch self {
+        case .orderNotSaved:
+            "Die neue Reihenfolge konnte nicht gespeichert werden – das Fach ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
         case .missingMarkNotSaved(let found, _):
             "\(found ? "„Wieder gefunden“" : "„Vermisst“") konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
         case .reserved: "Dieses Fach ist gesperrt und nimmt keine Platten auf. Per Rechtsklick auf das Fach lässt es sich entsperren."
@@ -180,8 +184,11 @@ struct PositionService {
     /// Puts the shelf's records in alphabetical order (artist, then the
     /// chosen order for one artist's records, see `ShelfSecondaryOrder`).
     func sortAlphabetically(_ shelf: Shelf, by order: ShelfSecondaryOrder = .current) throws {
-        try save { renumber(ShelfSortCheck.sortedCopies(shelf.copies, by: order)) }
-        AppLog.info("Regal", "\(Self.name(shelf)) alphabetisch sortiert (\(order.title))")
+        let sorted = ShelfSortCheck.sortedCopies(shelf.copies, by: order)
+        let moved = sorted.enumerated().filter { $1.positionInShelf != $0 + 1 }.count
+        do { try save { renumber(sorted) } }
+        catch { throw LibraryError.orderNotSaved(error) }
+        AppLog.info("Regal", "\(Self.name(shelf)) sortiert nach Interpret, dann \(order.title): \(moved) von \(sorted.count) Positionen geändert")
     }
     func configure(_ shelf: Shelf, name: String, isReserved: Bool) throws {
         guard !isReserved || shelf.copies.isEmpty else { throw LibraryError.reservedNotEmpty }

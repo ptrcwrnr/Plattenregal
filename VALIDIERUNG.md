@@ -1,4 +1,43 @@
-# Aktueller Stand · 26.09.2026 (Liquid-Glass-Oberfläche)
+# Aktueller Stand · 27.09.2026 (Fenster ohne Ampel, Vermisst-Spalte, Sortierung prüfen)
+
+Stand nach den Glasfenstern über der Seite, der Vermisst-Spalte in „Platte hinzufügen“, dem Plus im Fach, „Sortierung prüfen“ mit wählbarer Reihenfolge bei gleichem Interpreten und drei Prüfrunden auf Robustheit (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Gesamte Testsuite: **174 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die Meldung „Discogs JSON decoding failed“ im Testlauf kommt aus einem Test, der eine ungültige Antwort absichtlich prüft.
+
+| Testdatei | Tests | Schwerpunkt |
+|---|---|---|
+| `LibraryTests.swift` | 51 | Positionen, Sortierung, Sortierprüfung, Suche, Speicherung, Fehlermeldungen, Absturz-Auswertung, Discogs-Mapping, Demo-Sammlung |
+| `DiscogsSyncTests.swift` | 34 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration |
+| `StatisticsTests.swift` | 29 | Auswertungen, Wertverlauf, Migrationen, Zurücksetzen |
+| `SettingsTests.swift` | 17 | Discogs-Token, Reihenfolge der Statistik, Reihenfolge von Collection und Wantlist, Eingabequellen-Blase |
+| `CabinetTests.swift` | 15 | Mehrere Regale, Größenänderung, Zurücksetzen, Einzelinstanz-Sperre |
+| `BackupTests.swift` | 13 | Sichern, Wiederherstellen, Aufbewahrung, Dateinamen |
+| `ExportTests.swift` | 8 | CSV (Maskierung, BOM, Formel-Schutz), Reihenfolge, Spalten, PDF |
+| `ScenarioTests.swift` | 7 | Abläufe gegen die echten Services: ohne Netz, Bremse, gelöschte Fächer, „Platte hinzufügen“, 10.000 Platten |
+
+- Neu bzw. geändert:
+  - `LibraryTests.sortCheckMovesFewestRecordsInTargetOrder` – bei einer falsch stehenden Platte genau ein Schritt mit richtigem Platz und richtigen Nachbarn; nach „Reihenfolge übernehmen“ keiner mehr.
+  - `LibraryTests.sortCheckByYearWithinArtist` – nach Titel in Ordnung, nach Jahr ein Schritt; Sortieren nach Jahr ordnet die Platten eines Interpreten chronologisch.
+  - `LibraryTests.errorsReachTheUserInPlainGerman` – zusätzlich die Meldung für eine nicht gespeicherte Reihenfolge, ohne Fehlercode.
+  - `ScenarioTests.addingListsFittingRecordsFirstPausedInPlace` (vorher `…AndPausedLast`) – zurückgestellte Platten behalten ihren Platz in der Liste.
+- **Laufende App** (Debug-Build, eigene Sammlung, Klicks und Tasten per Maus- und Tastatur-Ereignissen):
+  - „Platte hinzufügen“ über das Plus im Fach für das richtige Fach geöffnet; Vermisst-Spalte ein- und ausgeklappt; eine Platte als „Wieder gefunden“ markiert (rechts heraus, links an ihrer Stelle hinein) und wieder zurückgestellt – Daten danach wie vorher (17 vermisst).
+  - „Sortierung prüfen“ auf „He – La“: nach Titel 1 Schritt, nach Jahr 6; ein auffälliger Vorschlag in einer Kopie der Datenbank nachgerechnet und bestätigt. „Reihenfolge übernehmen“ bewusst nicht ausgeführt, um die echten Positionen nicht zu ändern.
+  - Esc schließt „Platte hinzufügen“ und die Plattenliste der Statistik (vor der Korrektur nicht); ⌘F öffnet die Suche ohne Lupe; ⌘← / ⌘→ wechseln die Regale; Rechtsklick auf die Toolbar zeigt kein Menü.
+  - Statistik: Wertezeile unter der Zeitreise („2000er · 522 Platten“), Plattenliste mit Titel, ohne Suchleiste.
+  - Hinzufügen-Knopf war zunächst zu „Hinzufü…“ abgeschnitten, die Abdunklung hinter den Fenstern endete hart an der Toolbar – beides gesehen und behoben.
+- **Protokoll** der Testläufe durchgesehen: keine Absturzblöcke, keine Fehlermeldungen; „Wieder gefunden“ und „Vermisst“ des Tests stehen darin. Eine Warnung „nicht normal beendet“ (9:56) gehört zu einer Testinstanz, die während eines Neubaus beendet wurde.
+
+## Nicht geprüft (dieser Durchgang)
+
+- „Als Nächstes“ in „Platte hinzufügen“ nicht gesehen: alle Platten ohne Fach sind in der eigenen Sammlung als vermisst markiert.
+- „Reihenfolge übernehmen“ nicht in der laufenden App ausgelöst (würde echte Positionen ändern); abgedeckt durch die Tests.
+- Die neue Fehlermeldung und die neuen Protokollzeilen nicht in der laufenden App ausgelöst – ein fehlschlagendes Speichern lässt sich nicht gezielt herbeiführen; geprüft ist der Meldungstext.
+- Kein Release-Build, keine Codesign-Prüfung, kein Abgleich mit Discogs für diesen Stand.
+
+# Vorheriger Stand · 26.09.2026 (Liquid-Glass-Oberfläche)
 
 Stand nach dem Umbau auf Rubriken in der Toolbar, einheitliches Liquid Glass, dem eigenen Menü in Collection und Wantlist, der wählbaren Reihenfolge und dem neuen „Platte hinzufügen“ (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 

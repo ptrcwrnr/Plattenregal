@@ -149,6 +149,13 @@ struct ShelfSettingsView: View {
             }
         }
         .onChange(of: cabinetID) { menuID = nil; namingID = nil; error = nil; shelfError = nil }
+        // Both change what the shelf page shows and where records go: worth a line in the protocol.
+        .onChange(of: secondaryOrder) { old, new in
+            AppLog.info("Einstellungen", "Bei gleichem Interpreten jetzt nach \(new.title) statt \(old.title)")
+        }
+        .onChange(of: missingEnabled) { _, on in
+            AppLog.info("Einstellungen", "Vermisst-Liste \(on ? "eingeschaltet" : "ausgeschaltet – Markierungen bleiben gespeichert")")
+        }
         .animation(AppStyle.standardAnimation, value: shelfError)
         .task(id: labelSignature) { labels = ShelfRangeLabels.compute(for: shelves, style: labelStyle) }
     }

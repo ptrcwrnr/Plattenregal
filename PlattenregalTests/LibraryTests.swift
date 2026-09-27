@@ -195,6 +195,10 @@ extension AllTests {
             let mark = LibraryError.missingMarkNotSaved(found: false, saveFailure).userMessage
             #expect(mark.hasPrefix("„Vermisst“ konnte nicht gespeichert werden"))
             #expect(LibraryError.missingMarkNotSaved(found: true, saveFailure).userMessage.hasPrefix("„Wieder gefunden“"))
+            // "Reihenfolge übernehmen" says the shelf is unchanged, not a general save error.
+            let order = LibraryError.orderNotSaved(saveFailure).userMessage
+            #expect(order.hasPrefix("Die neue Reihenfolge konnte nicht gespeichert werden"))
+            #expect(!order.contains("134030"))
             #expect(!mark.contains("134030"))
             #expect(URLError(.notConnectedToInternet).userMessage == DiscogsError.offline.errorDescription)
             #expect(NSError(domain: "Other", code: 1).userMessage == ErrorMessages.generic)

@@ -693,7 +693,8 @@ struct ShelfSortCheckView: View {
         .animation(AppStyle.standardAnimation, value: order)
         .animation(AppStyle.standardAnimation, value: error)
         // Another order is another list of moves.
-        .onChange(of: order) { done = [] }
+        .onChange(of: order) { done = []; logCheck() }
+        .onAppear { logCheck() }
     }
 
     private func inOrder(count: Int) -> some View {
@@ -714,7 +715,10 @@ struct ShelfSortCheckView: View {
                 HStack(spacing: AppStyle.rowSpacing) {
                     Text("Beim Einsortieren gilt bisher „\(savedOrder.title)“.").font(.caption).foregroundStyle(.secondary)
                     Spacer(minLength: 0)
-                    SecondaryButton(title: "„\(order.title)“ übernehmen") { savedOrder = order }
+                    SecondaryButton(title: "„\(order.title)“ übernehmen") {
+                        AppLog.info("Regal", "Bei gleichem Interpreten jetzt nach \(order.title) statt \(savedOrder.title) (aus „Sortierung prüfen“)")
+                        savedOrder = order
+                    }
                 }
             }
         }
@@ -754,10 +758,22 @@ struct ShelfSortCheckView: View {
         }
     }
 
+    /// For the protocol: which compartment was checked, by what, and the result.
+    private func logCheck() {
+        guard !gone else { return }
+        let copies = PositionService.inShelfOrder(shelf.copies.filter { !$0.isDeleted && $0.modelContext != nil })
+        let count = ShelfSortCheck.steps(copies, by: order).count
+        AppLog.info("Regal", "Sortierung geprüft: \(PositionService.name(shelf)), Interpret, dann \(order.title) – "
+                    + (count == 0 ? "alles in Ordnung" : "\(count) von \(copies.count) Platten umzustellen"))
+    }
+
     private func apply() {
         guard !gone else { return }
         do {
             try PositionService(context: context).sortAlphabetically(shelf, by: order)
+            if savedOrder != order {
+                AppLog.info("Regal", "Bei gleichem Interpreten jetzt nach \(order.title) statt \(savedOrder.title) (aus „Sortierung prüfen“)")
+            }
             savedOrder = order
             done = []
             error = nil

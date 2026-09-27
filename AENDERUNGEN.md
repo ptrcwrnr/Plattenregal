@@ -1,3 +1,36 @@
+# Drei Prüfrunden, Fehlermeldungen und Protokoll · 27.09.2026
+
+- **Esc schloss die Glasfenster nie**: Die Seiten sind eigene SwiftUI-Wurzeln (`PageStack`), dort erreicht ein `.cancelAction`-Kürzel die Taste nicht. Jetzt fängt eine eigene Abfrage (`PanelEscapeMonitor`) Esc ab – nur für das Fenster, in dem das Panel liegt (nicht aus dem Einstellungsfenster heraus), nur bei sichtbarer Seite und nicht, solange ein Popover oder eine Rückfrage davorliegt. In der App geprüft.
+- **Fenster oben verankert** statt mittig: Wuchs ein Fenster (andere Sortierung, Spalte klappt auf), rutschte der Inhalt unter dem Zeiger weg – so wurde ein Schritt in „Sortierung prüfen“ versehentlich abgehakt.
+- **Collection** sortiert sofort neu, wenn die Reihenfolge bei gleichem Interpreten geändert wird. „Sortierung prüfen“ liest keine gerade gelöschten Platten. Wertezeilen der Diagramme brechen nicht um. Einstellungsschlüssel der Vermisst-Spalte zentral in `DisplaySettings`.
+- **Fehlermeldung** `LibraryError.orderNotSaved`: Scheitert „Reihenfolge übernehmen“, heißt es „Die neue Reihenfolge konnte nicht gespeichert werden – das Fach ist unverändert …“ statt der allgemeinen Speicher-Meldung.
+- **Protokoll**: jede Prüfung mit Fach, Sortierung und Ergebnis; „Reihenfolge übernehmen“ mit der Zahl geänderter Positionen; Wechsel der Reihenfolge bei gleichem Interpreten (in den Einstellungen oder aus der Prüfung); Vermisst-Liste ein/aus.
+- Protokoll der Testläufe durchgesehen: keine Absturzblöcke, keine Fehlermeldungen. Eine Warnung „nicht normal beendet“ (9:56) stammt von einer Testinstanz, die während eines Neubaus beendet wurde.
+- Test: `errorsReachTheUserInPlainGerman` um die neue Meldung erweitert (174 Tests, 0 Fehler).
+
+# Sortierung prüfen, Reihenfolge bei gleichem Interpreten · 27.09.2026
+
+- **„Sortierung prüfen“** im Rechtsklick-Menü eines Fachs (ersetzt „Alphabetisch sortieren …“): prüft die gespeicherte Reihenfolge und zeigt die kleinstmögliche Zahl an Umstellungen als nummerierte Schritte zum Abhaken – Platte mit Cover, jetziger Platz, „hinter …“ bzw. „ganz vorn, vor …“ mit Cover des Nachbarn. Die Schritte stehen in der Reihenfolge ihrer Zielplätze, sodass jeder nur auf Platten verweist, die dann schon richtig stehen (`ShelfSortCheck.steps`: alle außer einer längsten schon richtig stehenden Folge). „Reihenfolge übernehmen“ speichert die neue Reihenfolge.
+- **Reihenfolge bei gleichem Interpreten** (`ShelfSecondaryOrder`: Titel, Jahr, Label/Katalognummer), wählbar in der Prüfung und unter Einstellungen → Regal → Einsortieren. Der Interpret bleibt erster Schlüssel (`SortingService.sortKey`), Fachnamen und Platzsuche bleiben gültig; die Wahl gilt auch für Platzsuche, „Platte hinzufügen“ und die alphabetische Collection.
+- Menüpunkte „Platte hinzufügen“ und „Sortierung prüfen“ ohne Auslassungspunkte.
+- Tests: `sortCheckMovesFewestRecordsInTargetOrder`, `sortCheckByYearWithinArtist`.
+
+# Platte hinzufügen mit Vermisst-Spalte · 27.09.2026
+
+- **Vermisst-Spalte** rechts in „Platte hinzufügen“ statt eigenem Knopf „Vermisst“ auf der Regalseite: nach Fach gruppiert, mit „Zeigen“ und „Wieder gefunden“. Nur vorhanden, solange etwas vermisst wird (das Fenster bleibt sonst schmal), einklappbar (dann „x vermisst ‹“ oben; gemerkt). Links stehen nur noch einsortierbare Platten; Zurückstellen und Wiederfinden wandern animiert zwischen Liste und Spalte, Gefundene kehren an ihre Stelle zurück statt ans Ende. Ist links nichts mehr, heißt es „Nur noch vermisste Platten“.
+- **„Als Nächstes“**: die nächste passende Platte (nach Interpret) ist leicht hervorgehoben.
+- **Vermisst-Liste abschaltbar** (Einstellungen → Regal → Einsortieren): ohne Zurückstellen, Spalte, Etiketten und Umrisse; die Markierungen bleiben gespeichert.
+- **„+“ im Fach** statt Knopf unter dem Regal: kleines Glas-Plus oben rechts beim Überfahren und im gewählten Fach, an der Stelle der Plattenanzahl; blendet beim Fachwechsel ein und aus. Nicht bei gesperrten Fächern.
+- Test `addingListsFittingRecordsFirstPausedInPlace` (vorher `…AndPausedLast`): Zurückgestellte behalten ihren Platz.
+
+# Fenster ohne Ampel, Oberfläche feiner · 27.09.2026
+
+- **Glasfenster über der Seite** (`appPanel`) statt Sheets mit Ampel: Plattenliste und Plattendetails der Statistik, „Platte hinzufügen“. Schließen per Klick daneben oder Esc; keine Abdunklung mehr (sie endete hart an der Toolbar), ein weicher Schatten setzt das Fenster ab. `SheetCloseLight` und `AppSheetHeader` entfernt.
+- **Statistik**: Plattenliste ohne Suchleiste, Titel neben Raster/Liste. Werte beim Überfahren in einer festen Zeile unter dem Diagramm statt im mitwandernden Glas-Kästchen (`chartTooltipChrome` entfernt). Letztes Datum der Zeitachse ragt nicht mehr in die Werteachse. Karten zur Fensterfarbe getönt, eingebauter Glas-Schatten abgeschnitten (`appCardSurface`, auch in den Einstellungen).
+- **Regal**: Hover hellt nur noch das Fach unter dem Zeiger auf (statt eines wandernden Lichtscheins über mehrere Fächer); die Auswahl-Platte blendet im Fach ein statt übers Regal zu gleiten. Regal-Reiter mit feinen Trennlinien, ohne Fachanzahl und Plattenzahl daneben. Umbenennen-Popover des Regal-Reiters in normaler Schrift statt Tab-Blau.
+- **Toolbar**: Lupe entfernt (Suche über ⌘F), kein Rechtsklick-Menü „Symbol und Text“ mehr (`windowToolbarLabelStyle(fixed: .iconOnly)`).
+- Inaktive Fenster bleiben beim nativen Verhalten (macOS flacht das Glas ab).
+
 # Eingabequellen-Blase wirklich aus · 26.09.2026
 
 - Die Blase über dem Cursor erschien bei ⌘F wieder: Der nur registrierte Standard lebt allein im Prozess der App, macOS hat ihn nicht gesehen. `InputSourceIndicator.disableForApp()` schreibt `TSMLanguageIndicatorEnabled = false` jetzt dauerhaft in die Einstellungen der App. Wer die Blase in macOS ausdrücklich ein- oder ausgeschaltet hat (globale Domäne), behält das.
