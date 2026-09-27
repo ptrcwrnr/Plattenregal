@@ -609,6 +609,8 @@ struct KallaxView: View {
                             }
                         }
                         .font(.callout)
+                        .lineLimit(1)
+                        .fixedSize()
                     }
                     .appGlassButton()
                     .help(missing > 0 ? "Platte hinzufügen · \(missing) beim Einsortieren vermisst" : "Platte hinzufügen")
