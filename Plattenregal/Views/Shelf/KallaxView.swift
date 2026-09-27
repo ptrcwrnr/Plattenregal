@@ -49,7 +49,8 @@ struct KallaxView: View {
     /// Count for the question, taken when it is asked – `soldInShelves` walks
     /// the whole collection and must not run on every rebuild of the page.
     @State private var soldToRemove = 0
-    @State private var sortingShelf: Shelf?
+    /// The open "Sortierung prüfen".
+    @State private var sortCheck: ShelfSortCheckRequest?
     @State private var error: String?
 
     // Search inside the shelf view only lists matches with their location; it
@@ -153,7 +154,7 @@ struct KallaxView: View {
     }
 
     private func forgetCopies() {
-        closingAssignment = nil; assignment = nil
+        closingAssignment = nil; assignment = nil; sortCheck = nil
         focusCopy = nil; placement = nil; recentUnplace = nil
         pendingDelete = nil; confirmRemoveSold = false
     }
@@ -297,7 +298,7 @@ struct KallaxView: View {
         // the locations: the sheet's list and target shelf may be stale or gone.
         .onChange(of: changes.shelvesVersion) {
             if assignment != nil { AppLog.info("Regal", "„Platte hinzufügen“ geschlossen: Regale wurden in den Einstellungen geändert") }
-            assignment = nil; showsNameEditor = false; sortingShelf = nil
+            assignment = nil; showsNameEditor = false; sortCheck = nil
         }
         // "Alles zurücksetzen" deleted every record: nothing here may keep
         // pointing at one – reading a deleted model crashes.
@@ -324,6 +325,9 @@ struct KallaxView: View {
                                 },
                                 found: { setMissing($0, false) })
         }
+        .appPanel(item: $sortCheck) { request in
+            ShelfSortCheckView(shelf: request.shelf, rangeLabel: rangeLabels[request.shelf.id])
+        }
         .confirmationDialog(
             soldToRemove == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldToRemove) Platten ohne Collection aus dem Regal nehmen?",
             isPresented: $confirmRemoveSold
@@ -344,21 +348,6 @@ struct KallaxView: View {
             Button("Abbrechen", role: .cancel) { pendingDelete = nil }
         } message: {
             Text("Die Platte ist nicht (mehr) in deiner Discogs-Collection. Löschen entfernt sie samt Fach und Position; die übrigen Platten im Fach rücken auf. Das lässt sich nicht rückgängig machen.")
-        }
-        .confirmationDialog(
-            "Physische Reihenfolge ändern?",
-            isPresented: Binding(get: { sortingShelf != nil }, set: { if !$0 { sortingShelf = nil } })
-        ) {
-            Button("Fach alphabetisch sortieren") {
-                if let shelf = sortingShelf, !shelf.isDeleted, shelf.modelContext != nil {
-                    do { try PositionService(context: context).sortAlphabetically(shelf) }
-                    catch { self.error = error.reportedMessage() }
-                }
-                sortingShelf = nil
-            }
-            Button("Abbrechen", role: .cancel) { sortingShelf = nil }
-        } message: {
-            Text("Die gespeicherten Positionen dieses Fachs ändern sich. Stelle die Platten anschließend auch im Regal in diese Reihenfolge.")
         }
         .alert(
             "Änderung nicht möglich",
@@ -627,9 +616,9 @@ struct KallaxView: View {
     @ViewBuilder private func shelfMenu(for shelf: Shelf) -> some View {
         let locked = lockPreview.isLocked(shelf)
         Button("Inhalt anzeigen") { selectShelf(shelf) }
-        Button("Platte hinzufügen …") { selectShelf(shelf); startAssignment(shelf) }
+        Button("Platte hinzufügen") { selectShelf(shelf); startAssignment(shelf) }
             .disabled(locked)
-        Button("Alphabetisch sortieren …") { sortingShelf = shelf }
+        Button("Sortierung prüfen") { selectShelf(shelf); sortCheck = ShelfSortCheckRequest(shelf: shelf) }
             .disabled(locked || shelf.copies.count < 2)
         Divider()
         if locked {

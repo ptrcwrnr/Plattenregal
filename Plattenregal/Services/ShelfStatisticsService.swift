@@ -156,7 +156,7 @@ enum ShelfRangeLabels {
     static func ends(of shelf: Shelf) -> Ends? {
         guard !shelf.isReserved else { return nil }
         // Only the ends matter: one pass instead of sorting every key.
-        let keys = shelf.copies.map(SortingService.sortKey)
+        let keys = shelf.copies.map { SortingService.sortKey($0) }
         guard let first = keys.min(by: AlphabeticalPlacement.ascending), let last = keys.max(by: AlphabeticalPlacement.ascending) else { return nil }
         return Ends(first: letters(first), last: letters(last))
     }

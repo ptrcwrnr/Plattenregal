@@ -177,10 +177,11 @@ struct PositionService {
         AppLog.info("Regal", "Gelöscht: \(description)")
     }
     func normalize(_ shelf: Shelf) throws { try save { renumber(ordered(shelf)) } }
-    /// Puts the shelf's records in alphabetical order (artist, then title).
-    func sortAlphabetically(_ shelf: Shelf) throws {
-        try save { renumber(SortingService.sorted(shelf.copies)) }
-        AppLog.info("Regal", "\(Self.name(shelf)) alphabetisch sortiert")
+    /// Puts the shelf's records in alphabetical order (artist, then the
+    /// chosen order for one artist's records, see `ShelfSecondaryOrder`).
+    func sortAlphabetically(_ shelf: Shelf, by order: ShelfSecondaryOrder = .current) throws {
+        try save { renumber(ShelfSortCheck.sortedCopies(shelf.copies, by: order)) }
+        AppLog.info("Regal", "\(Self.name(shelf)) alphabetisch sortiert (\(order.title))")
     }
     func configure(_ shelf: Shelf, name: String, isReserved: Bool) throws {
         guard !isReserved || shelf.copies.isEmpty else { throw LibraryError.reservedNotEmpty }

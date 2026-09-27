@@ -589,3 +589,189 @@ enum ShelfAssignmentPresentation {
             .map(\.copy)
     }
 }
+
+// MARK: - Sortierung prüfen
+
+/// One opening of "Sortierung prüfen" for a compartment.
+struct ShelfSortCheckRequest: Identifiable {
+    let id = UUID()
+    let shelf: Shelf
+}
+
+/// "Sortierung prüfen" from a compartment's menu: checks its stored order
+/// and, where records are out of place, lists the moves at the shelf one by
+/// one – each only refers to records that already stand right. Once they
+/// are done, "Reihenfolge übernehmen" stores the new order.
+struct ShelfSortCheckView: View {
+    let shelf: Shelf
+    let rangeLabel: String?
+    @Environment(\.modelContext) private var context
+    @AppStorage(ShelfSecondaryOrder.key) private var savedOrder = ShelfSecondaryOrder.title
+    @State private var order = ShelfSecondaryOrder.current
+    /// Steps ticked off at the shelf.
+    @State private var done: Set<UUID> = []
+    @State private var error: String?
+
+    private var gone: Bool { shelf.isDeleted || shelf.modelContext == nil }
+
+    var body: some View {
+        let copies = gone ? [] : PositionService.inShelfOrder(shelf.copies)
+        let steps = ShelfSortCheck.steps(copies, by: order)
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Sortierung prüfen").font(AppStyle.dialogTitle)
+                Text("\(rangeLabel.map { "Fach „\($0)“" } ?? "Dieses Fach") · \(AppStyle.records(copies.count)) · Plätze von links gezählt")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            HStack(spacing: AppStyle.rowSpacing) {
+                Text("Nach Interpret, bei gleichem Interpreten nach").font(.callout).foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                GlassSegmentedPicker(selection: $order, options: ShelfSecondaryOrder.allCases, small: true) { Text($0.title) }
+                    .accessibilityLabel("Bei gleichem Interpreten nach")
+            }
+            if steps.isEmpty {
+                inOrder(count: copies.count)
+            } else {
+                summary(steps)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                            SortStepRow(number: index + 1, step: step, done: done.contains(step.id)) {
+                                if done.contains(step.id) { done.remove(step.id) } else { done.insert(step.id) }
+                            }
+                        }
+                    }
+                }
+                .frame(maxHeight: 360)
+                .fixedSize(horizontal: false, vertical: true)
+                footer(steps)
+            }
+            if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
+        }
+        .padding(AppStyle.pagePadding)
+        .frame(width: 560)
+        .animation(AppStyle.standardAnimation, value: order)
+        .animation(AppStyle.standardAnimation, value: error)
+        // Another order is another list of moves.
+        .onChange(of: order) { done = [] }
+    }
+
+    private func inOrder(count: Int) -> some View {
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            HStack(spacing: AppStyle.rowSpacing) {
+                Image(systemName: "checkmark.circle.fill").font(.system(size: 22)).foregroundStyle(AppStyle.successColor)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Alles in Ordnung").font(.headline)
+                    Text(count < 2 ? "Zu wenige Platten, um etwas zu prüfen." : "Alle \(count) Platten stehen in der richtigen Reihenfolge.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, AppStyle.cardPadding)
+            .padding(.vertical, AppStyle.rowSpacing)
+            .accentGlassCard()
+            if order != savedOrder {
+                HStack(spacing: AppStyle.rowSpacing) {
+                    Text("Beim Einsortieren gilt bisher „\(savedOrder.title)“.").font(.caption).foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                    SecondaryButton(title: "„\(order.title)“ übernehmen") { savedOrder = order }
+                }
+            }
+        }
+    }
+
+    private func summary(_ steps: [ShelfSortCheck.Step]) -> some View {
+        let finished = steps.filter { done.contains($0.id) }.count
+        return HStack(spacing: AppStyle.rowSpacing) {
+            Image(systemName: "arrow.left.arrow.right").font(.system(size: 20)).foregroundStyle(AppStyle.accent)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(steps.count == 1 ? "1 Platte umstellen" : "\(steps.count) Platten umstellen").font(.headline)
+                Text("Der Reihe nach herausnehmen und an die neue Stelle stellen. Die übrigen bleiben, wo sie sind.")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: AppStyle.itemSpacing)
+            Text("\(finished) / \(steps.count)")
+                .font(.callout.weight(.medium)).monospacedDigit()
+                .foregroundStyle(finished == steps.count ? AppStyle.successColor : .secondary)
+                .contentTransition(.numericText())
+        }
+        .padding(.horizontal, AppStyle.cardPadding)
+        .padding(.vertical, AppStyle.rowSpacing)
+        .accentGlassCard()
+        .animation(AppStyle.quickAnimation, value: finished)
+    }
+
+    private func footer(_ steps: [ShelfSortCheck.Step]) -> some View {
+        HStack(spacing: AppStyle.rowSpacing) {
+            Text(order == savedOrder
+                 ? "Wenn alles umgestellt ist, die neue Reihenfolge übernehmen."
+                 : "Übernimmt „\(order.title)“ auch für Platzsuche und Hinzufügen in allen Fächern.")
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: AppStyle.itemSpacing)
+            PrimaryButton(title: "Reihenfolge übernehmen") { apply() }
+        }
+    }
+
+    private func apply() {
+        guard !gone else { return }
+        do {
+            try PositionService(context: context).sortAlphabetically(shelf, by: order)
+            savedOrder = order
+            done = []
+            error = nil
+        } catch { self.error = error.reportedMessage() }
+    }
+}
+
+/// One move: the record with its cover and where it stands now, then where
+/// it goes – behind the record shown (or at the very front, before it).
+private struct SortStepRow: View {
+    let number: Int
+    let step: ShelfSortCheck.Step
+    let done: Bool
+    let toggle: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        let release = step.copy.release
+        Button(action: toggle) {
+            HStack(spacing: AppStyle.rowSpacing) {
+                ZStack {
+                    Circle().strokeBorder(done ? Color.clear : Color.secondary.opacity(0.4), lineWidth: 1)
+                    if done {
+                        Image(systemName: "checkmark.circle.fill").font(.system(size: 22)).foregroundStyle(AppStyle.successColor)
+                    } else {
+                        Text("\(number)").font(.caption.weight(.semibold)).monospacedDigit().foregroundStyle(.secondary)
+                    }
+                }
+                .frame(width: 22, height: 22)
+                CoverView(url: release?.coverURL, size: 40)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("\(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
+                        .font(.callout.weight(.medium)).lineLimit(1).truncationMode(.middle)
+                    HStack(spacing: 5) {
+                        Text("Platz \(step.position)").monospacedDigit()
+                        Image(systemName: "arrow.right").font(.caption2.weight(.semibold))
+                        if let neighbour = step.before ?? step.after {
+                            CoverView(url: neighbour.release?.coverURL, size: 16)
+                            Text("\(step.before == nil ? "ganz vorn, vor" : "hinter") „\(neighbour.release?.displayArtist ?? "—") – \(neighbour.release?.displayTitle ?? "—")“")
+                                .lineLimit(1).truncationMode(.middle)
+                        }
+                    }
+                    .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 8).padding(.vertical, 6)
+            .opacity(done ? 0.45 : 1)
+            .contentShape(Rectangle())
+            .appHoverable(hovering, cornerRadius: 8)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .animation(AppStyle.quickAnimation, value: done)
+        .help(done ? "Doch noch nicht umgestellt" : "Als umgestellt abhaken")
+    }
+}

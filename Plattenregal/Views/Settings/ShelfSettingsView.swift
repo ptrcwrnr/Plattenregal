@@ -10,6 +10,7 @@ struct ShelfSettingsView: View {
     @Query(sort: \Cabinet.sortOrder) private var cabinets: [Cabinet]
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
+    @AppStorage(ShelfSecondaryOrder.key) private var secondaryOrder = ShelfSecondaryOrder.title
     @State private var cabinetID: UUID?
     /// The compartment whose menu is open (a click on its tile).
     @State private var menuID: UUID?
@@ -122,7 +123,12 @@ struct ShelfSettingsView: View {
             }
 
             SettingsCard(title: "Einsortieren",
-                         subtitle: "Was beim Hinzufügen von Platten ins Fach hilft.") {
+                         subtitle: "Wie die Platten im Fach stehen und was beim Hinzufügen hilft.") {
+                SettingsRow(title: "Bei gleichem Interpreten nach", hint: "Immer zuerst nach Interpret. \(secondaryOrder.hint) Gilt für Platzsuche, Hinzufügen und „Sortierung prüfen“.") {
+                    GlassSegmentedPicker(selection: $secondaryOrder, options: ShelfSecondaryOrder.allCases) { Text($0.title) }
+                        .accessibilityLabel("Bei gleichem Interpreten nach")
+                }
+                Divider()
                 SettingsRow(title: "Vermisst-Liste",
                             hint: missingEnabled
                             ? "Platten, die du beim Einsortieren nicht findest, lassen sich zurückstellen. Sie stehen neben „Platte hinzufügen“, bis sie wieder auftauchen."

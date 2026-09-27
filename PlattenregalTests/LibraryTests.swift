@@ -343,6 +343,34 @@ extension AllTests {
             try service.sortAlphabetically(shelves[0])
             #expect(service.ordered(shelves[0]).map(\.id) == [d.id, k.id, z.id])
         }
+        @Test func sortCheckMovesFewestRecordsInTargetOrder() throws {
+            let (container, shelves, service) = try fixture(); _ = container
+            let a = try add(service, shelves[0], "Air")
+            let c = try add(service, shelves[0], "Cure")
+            let b = try add(service, shelves[0], "Björk")
+            let d = try add(service, shelves[0], "Daft Punk")
+            let steps = ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title)
+            // One record out of place: the rest already runs A, B, D.
+            #expect(steps.count == 1)
+            #expect(steps.first?.copy.id == c.id)
+            #expect(steps.first?.position == 2)
+            #expect(steps.first?.before?.id == b.id)
+            #expect(steps.first?.after?.id == d.id)
+            _ = a
+            try service.sortAlphabetically(shelves[0], by: .title)
+            #expect(ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title).isEmpty)
+        }
+        @Test func sortCheckByYearWithinArtist() throws {
+            let (container, shelves, service) = try fixture(); _ = container
+            let newer = try add(service, shelves[0], "Kraftwerk", "Autobahn")
+            newer.release?.year = 1990
+            let older = try add(service, shelves[0], "Kraftwerk", "Computerwelt")
+            older.release?.year = 1981
+            #expect(ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title).isEmpty)
+            #expect(ShelfSortCheck.steps(service.ordered(shelves[0]), by: .year).count == 1)
+            try service.sortAlphabetically(shelves[0], by: .year)
+            #expect(service.ordered(shelves[0]).map(\.id) == [older.id, newer.id])
+        }
         @Test func alphabetNavigationNormalizesArtistsAndGroupsNonLetters() {
             #expect(SortingService.alphabetNavigationSymbols.first == "#")
             #expect(SortingService.alphabetNavigationSymbols.count == 27)
