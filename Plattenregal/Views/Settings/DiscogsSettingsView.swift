@@ -196,8 +196,8 @@ struct DiscogsSettingsView: View {
                 .help(date?.formatted(date: .abbreviated, time: .shortened) ?? "")
             }
         }
-        .padding(StatisticsLayout.tilePadding)
+        // No tile surface: on the white card it was invisible and only
+        // indented the icon against the card's title and buttons.
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.opacity(0.6), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
     }
 }
