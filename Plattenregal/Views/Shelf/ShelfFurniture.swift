@@ -434,9 +434,6 @@ struct ShelfFurniture<Menu: View>: View {
     @Namespace private var plate
     /// The compartment whose menu is open, and where it was right-clicked.
     @State private var menuFor: (id: UUID, anchor: UnitPoint)?
-    /// Written on every pointer move; only `HoverLight` reads it, so moving the
-    /// pointer never rebuilds the compartments.
-    @State private var light = HoverLight.Spot()
 
     static var wellRadius: CGFloat { ShelfFurnitureMetrics.wellRadius }
     static var gap: CGFloat { ShelfFurnitureMetrics.gap }
@@ -488,36 +485,7 @@ struct ShelfFurniture<Menu: View>: View {
             }
         }
         .padding(Self.gap)
-        .overlay { HoverLight(spot: light).clipShape(.rect(cornerRadius: Self.wellRadius + Self.gap)) }
-        .onContinuousHover { phase in
-            switch phase {
-            case .active(let point): light.point = point; light.visible = true
-            case .ended: light.visible = false
-            }
-        }
         .appGlassSurface(cornerRadius: Self.wellRadius + Self.gap)
-    }
-}
-
-/// A soft glow following the pointer over the glass body — about one
-/// compartment wide, so it marks where the pointer is, not a whole region.
-private struct HoverLight: View {
-    @Observable final class Spot {
-        var point: CGPoint = .zero
-        var visible = false
-    }
-    let spot: Spot
-    private static let color = Color.adaptive(NSColor.white.withAlphaComponent(0.3), NSColor.white.withAlphaComponent(0.07))
-
-    var body: some View {
-        Circle()
-            .fill(RadialGradient(colors: [Self.color, .clear], center: .center, startRadius: 0, endRadius: 70))
-            .frame(width: 140, height: 140)
-            .position(spot.point)
-            .opacity(spot.visible ? 1 : 0)
-            .animation(AppStyle.standardAnimation, value: spot.visible)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .allowsHitTesting(false)
     }
 }
 
@@ -533,6 +501,15 @@ private struct ShelfWell: View {
         shape
             .fill(Self.fill.shadow(.inner(color: Self.shade, radius: 2.5, y: 1.5)))
             .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, Self.rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
+    }
+}
+
+/// The compartment under the pointer: its well lit a little from within.
+private struct HoveredWell: View {
+    private static let light = Color.adaptive(NSColor.white.withAlphaComponent(0.4), NSColor.white.withAlphaComponent(0.06))
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius).fill(Self.light)
     }
 }
 
@@ -582,6 +559,7 @@ private struct ShelfCompartment: View {
     let plate: Namespace.ID
     var selected = false
     var dimmed = false
+    @State private var hovering = false
 
     /// Follows the options popover's switch immediately (see `ShelfLockPreview`).
     private var isReserved: Bool { lockPreview.isLocked(shelf) }
@@ -595,12 +573,16 @@ private struct ShelfCompartment: View {
                     // Always in the tree and faded via opacity: the most reliable way to
                     // animate it, independent of how the change arrives.
                     FrostedWell().opacity(isReserved ? 1 : 0)
+                    // Under the pointer the well brightens a little — this one only.
+                    HoveredWell().opacity(hovering && !selected ? 1 : 0)
                     if selected {
                         RaisedPlate().matchedGeometryEffect(id: "plate", in: plate)
                     }
                 }
             }
             .contentShape(Rectangle())
+            .onHover { hovering = $0 }
+            .animation(AppStyle.quickAnimation, value: hovering)
             .opacity(dimmed ? 0.3 : 1)
             .animation(AppStyle.standardAnimation, value: dimmed)
             // Frost and label crossfade when the shelf is (un)locked.
