@@ -734,6 +734,54 @@ private struct CoverGridMotion: ViewModifier {
     }
 }
 
+/// The app's activity ring: the same accent ring as the pull-to-refresh
+/// indicator. `progress` fills it; `nil` lets a short arc spin (a still
+/// arc with "Bewegung reduzieren").
+struct ActivityRing: View {
+    var progress: Double?
+    var size: CGFloat = 16
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ZStack {
+            Circle().stroke(Color.primary.opacity(0.1), lineWidth: 2.5)
+            if let progress {
+                arc(to: max(0.02, min(1, progress)))
+                    .animation(.smooth(duration: 0.35), value: progress)
+            } else if reduceMotion {
+                arc(to: 0.3)
+            } else {
+                TimelineView(.animation) { context in
+                    arc(to: 0.3)
+                        .rotationEffect(.degrees(context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1) * 360))
+                }
+            }
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+
+    private func arc(to end: Double) -> some View {
+        Circle().trim(from: 0, to: end)
+            .stroke(AppStyle.accent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+            .rotationEffect(.degrees(-90))
+    }
+}
+
+extension View {
+    /// A floating status at the top of a page (sync, value refresh): a
+    /// Liquid Glass capsule sliding in from where the pull ring was.
+    func activityPillChrome() -> some View {
+        padding(.horizontal, 14).padding(.vertical, 8)
+            // Tinted with the window color: still glass, but covers underneath
+            // don't run through the text.
+            .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .capsule)
+            // Lifts it off bright covers underneath.
+            .shadow(color: .black.opacity(0.15), radius: 10, y: 3)
+            .padding(.top, 12)
+    }
+}
+
 /// Pull-to-refresh for a ScrollView: pulling the page down past its top edge
 /// fills a small ring; a full ring runs `action`. Works with the trackpad's
 /// rubber band (fires as soon as the ring is full) and, when `allowsMouseDrag`

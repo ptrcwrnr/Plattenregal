@@ -123,6 +123,7 @@ struct StatisticsView: View {
             }
             .pullToRefresh(disabled: refreshBlocked, action: refresh)
             .overlay(alignment: .top) { activityPill }
+            .animation(.spring(duration: 0.45, bounce: 0.2), value: model.busy || model.calculating)
         }
         .background { AmbientBackdrop(covers: ambientCovers) }
         // Loading starts eagerly at app launch (see RootView) so this page is
@@ -200,14 +201,14 @@ struct StatisticsView: View {
     @ViewBuilder private var activityPill: some View {
         if model.busy || model.calculating {
             HStack(spacing: AppStyle.itemSpacing) {
-                ProgressView().controlSize(.small)
-                Text(model.busy ? "Sammlungswert wird aktualisiert …" : "Wird berechnet …")
-                    .font(.callout).foregroundStyle(.secondary)
+                ActivityRing()
+                Text(model.busy ? "Sammlungswert wird aktualisiert" : "Wird berechnet")
+                    .font(.callout)
+                    .contentTransition(.interpolate)
             }
-            .padding(.horizontal, 14).padding(.vertical, 8)
-            .appGlassSurface(cornerRadius: 20)
-            .padding(.top, 12)
-            .transition(AppStyle.funnelTransition())
+            .activityPillChrome()
+            .animation(.smooth(duration: 0.45), value: model.busy)
+            .transition(.scale(scale: 0.6, anchor: .top).combined(with: .opacity))
             .allowsHitTesting(false)
         }
     }

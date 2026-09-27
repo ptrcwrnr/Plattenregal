@@ -125,6 +125,108 @@ private struct ErrorInfoButton: View {
     }
 }
 
+/// The sync as a floating Liquid Glass capsule at the top of the page, right
+/// where the pull-to-refresh ring filled up: the ring spins while Discogs is
+/// read, fills with the tracklist count, turns into a checkmark with the
+/// summary and slides away. Every change in between is animated.
+struct DiscogsSyncPill: View {
+    @State private var sync = DiscogsSyncService.shared
+
+    private enum Phase: Equatable { case loading, tracklists, done, failed, note }
+    private var phase: Phase {
+        if sync.busy { return .loading }
+        if sync.isRunning { return .tracklists }
+        if sync.error != nil { return .failed }
+        if sync.summary != nil || sync.status == "Synchronisierung abgeschlossen" { return .done }
+        return .note
+    }
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            if sync.hasStatus {
+                pill
+                    .transition(.scale(scale: 0.6, anchor: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.45, bounce: 0.2), value: sync.hasStatus)
+    }
+
+    private var pill: some View {
+        HStack(spacing: AppStyle.itemSpacing) {
+            icon
+                .transition(.scale(scale: 0.4).combined(with: .opacity))
+                .id(phase == .loading || phase == .tracklists ? Phase.loading : phase)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.callout)
+                    .lineLimit(1)
+                    .contentTransition(.interpolate)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.caption).foregroundStyle(.secondary)
+                        .monospacedDigit().lineLimit(1)
+                        .contentTransition(.numericText())
+                        .transition(.opacity.combined(with: .offset(y: -4)))
+                }
+            }
+            if sync.isRunning {
+                CancelIconButton(help: "Synchronisierung abbrechen") { sync.cancel() }
+                    .transition(.opacity)
+            } else if let error = sync.error {
+                ErrorInfoButton(title: sync.status, message: error) { sync.dismissStatus() }
+                    .transition(.opacity)
+            } else if phase == .note {
+                CancelIconButton(help: "Ausblenden") { sync.dismissStatus() }
+                    .transition(.opacity)
+            }
+        }
+        .activityPillChrome()
+        .animation(.smooth(duration: 0.45), value: phase)
+        .animation(.smooth(duration: 0.45), value: title)
+        .animation(.smooth(duration: 0.35), value: subtitle)
+    }
+
+    @ViewBuilder private var icon: some View {
+        switch phase {
+        case .loading:
+            ActivityRing()
+        case .tracklists:
+            ActivityRing(progress: sync.tracklistProgress.map { Double($0.done) / Double(max(1, $0.total)) })
+        case .done:
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(AppStyle.accent)
+                .symbolEffect(.bounce, value: phase)
+        case .failed:
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(AppStyle.warningColor)
+        case .note:
+            Image(systemName: "info.circle.fill")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var title: String {
+        switch phase {
+        case .loading: sync.status.isEmpty ? "Synchronisierung läuft" : sync.status
+        case .tracklists: "Tracklisten werden geladen"
+        case .done: "Synchronisiert"
+        case .failed: sync.status.isEmpty ? "Synchronisierung nicht möglich" : sync.status
+        case .note: sync.status.isEmpty ? "Hinweis" : sync.status
+        }
+    }
+
+    private var subtitle: String? {
+        switch phase {
+        case .tracklists:
+            return sync.tracklistProgress.map { "\($0.done) von \($0.total)" }
+        case .done:
+            return sync.summary
+        default:
+            return nil
+        }
+    }
+}
+
 /// The small "x" used to cancel a running sync.
 private struct CancelIconButton: View {
     let help: String
@@ -219,14 +321,7 @@ struct WantlistView: View {
             ) { pages.current = .collection }
             .padding(.horizontal, pageMargin)
             .searchBarSlot(shown: showsSearchBar, collapsedSpacing: AppStyle.sectionSpacing)
-            if sync.hasStatus {
-                DiscogsSyncStatusView()
-                    .font(.callout)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, pageMargin)
-                    .transition(AppStyle.funnelTransition())
-            }
+            Group {
             if !loaded {
                 Color.clear
             } else if sortedEntries.isEmpty {
@@ -262,11 +357,14 @@ struct WantlistView: View {
                     if order == .alphabetical { alphabetNavigation }
                 }
             }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            // Sync progress floats where the pull-to-refresh ring was.
+            .overlay(alignment: .top) { DiscogsSyncPill() }
         }
         .padding(.top, AppStyle.pagePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.release?.coverURL }.prefix(3))) }
-        .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: query)
         .settingsOpener($settingsTab)

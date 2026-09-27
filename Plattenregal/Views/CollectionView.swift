@@ -231,14 +231,6 @@ struct CollectionView: View {
                     .transition(AppStyle.funnelTransition())
             }
             Color.clear.frame(height: showsSearchBar || showsControls || DemoMode.isActive ? AppStyle.sectionSpacing : AppStyle.pagePadding)
-            if sync.hasStatus {
-                DiscogsSyncStatusView()
-                    .font(.callout)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, AppStyle.pagePadding + 4).padding(.bottom, AppStyle.rowSpacing)
-                    .transition(AppStyle.funnelTransition())
-            }
             Group {
             if !loaded {
                 Color.clear
@@ -395,10 +387,11 @@ struct CollectionView: View {
             }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Sync progress floats where the pull-to-refresh ring was.
+            .overlay(alignment: .top) { if analyticsFilter == nil { DiscogsSyncPill() } }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         // The sync status line slides in/out and the content below follows smoothly.
-        .animation(AppStyle.standardAnimation, value: sync.hasStatus)
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .animation(AppStyle.standardAnimation, value: showsControls)
         .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
