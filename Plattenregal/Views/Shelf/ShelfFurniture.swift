@@ -415,8 +415,8 @@ private struct MissingCopyRow: View {
 /// The KALLAX as one piece of furniture: a single Liquid Glass body with the
 /// compartments set into it as shallow wells, so the rack is the one distinct
 /// shape on the page. The selected compartment rises out of its well as a
-/// raised plate that glides from compartment to compartment; the pointer
-/// casts a soft light across the glass.
+/// raised plate, fading in within its own compartment (no gliding across
+/// the rack); the compartment under the pointer brightens a little.
 struct ShelfFurniture<Menu: View>: View {
     let shelves: [Shelf]
     let rows: Int
@@ -431,7 +431,6 @@ struct ShelfFurniture<Menu: View>: View {
     let select: (Shelf) -> Void
     @ViewBuilder let menu: (Shelf) -> Menu
 
-    @Namespace private var plate
     /// The compartment whose menu is open, and where it was right-clicked.
     @State private var menuFor: (id: UUID, anchor: UnitPoint)?
 
@@ -461,7 +460,6 @@ struct ShelfFurniture<Menu: View>: View {
                                     stats: stats(shelf),
                                     rangeLabel: rangeLabel(shelf),
                                     lockPreview: lockPreview,
-                                    plate: plate,
                                     selected: selectedID == shelf.id,
                                     dimmed: litIDs.map { !$0.contains(shelf.id) } ?? false
                                 )
@@ -556,7 +554,6 @@ private struct ShelfCompartment: View {
     let stats: ShelfStatistics
     let rangeLabel: String?
     let lockPreview: ShelfLockPreview
-    let plate: Namespace.ID
     var selected = false
     var dimmed = false
     @State private var hovering = false
@@ -575,9 +572,12 @@ private struct ShelfCompartment: View {
                     FrostedWell().opacity(isReserved ? 1 : 0)
                     // Under the pointer the well brightens a little — this one only.
                     HoveredWell().opacity(hovering && !selected ? 1 : 0)
-                    if selected {
-                        RaisedPlate().matchedGeometryEffect(id: "plate", in: plate)
-                    }
+                    // Rises in place: fades and grows within this compartment
+                    // instead of gliding over from the previous one.
+                    RaisedPlate()
+                        .scaleEffect(selected ? 1 : 0.94)
+                        .opacity(selected ? 1 : 0)
+                        .animation(AppStyle.standardAnimation, value: selected)
                 }
             }
             .contentShape(Rectangle())
