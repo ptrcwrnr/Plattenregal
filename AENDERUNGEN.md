@@ -1,3 +1,9 @@
+# Randfälle und Logik: zweite Runde · 27.09.2026
+
+- **Rückfragen in der Demo versprachen eine Sicherung**, die es dort absichtlich nie gibt („Die aktuelle Belegung wird vorher gesichert“) – vor „Wiederherstellen“ und „Standorte zurücksetzen“. In der Demo entfällt der Satz jetzt, wie schon in der Erfolgsmeldung danach.
+- **„Standorte zurücksetzen“ verschwieg „Vermisst“**: Die Markierungen werden dabei aufgehoben und kommen mit einer Sicherung nicht zurück (sie sind nicht Teil davon). Die Rückfrage sagt das jetzt.
+- **Geprüft ohne Befund**: Übernahme der Discogs-Daten (Interpreten mit Namensvarianten, Jahr 0, leere Cover, Datumsformate), Statistik-Berechnung (unplausible Jahre, Platten ohne Datum, „Various“, Zusammenführen alter Einträge), Einlesen der Geldbeträge (Tausender- und Dezimaltrenner, Währungssymbole), CSV (Formeln entschärft, BOM, Anführungszeichen) und PDF (Seitenumbruch, Fach-Überschriften), Reihenfolgen „Zufällig“ und „Neueste zuerst“, Protokoll (Rotation, Absturz-Block, Instanzwechsel), App-Start (Demo, zweite Instanz, Datenbankfehler), Export-, Daten- und Sicherungs-Einstellungen, Neuladen einzelner Releases. 176 Tests, 0 Fehler.
+
 # Randfälle, Logik und toter Code: ganze App geprüft · 27.09.2026
 
 - **Sync stürzte bei doppelten Einträgen in der Datenbank ab**: Ordner und Wantlist wurden über `Dictionary(uniqueKeysWithValues:)` nachgeschlagen, das bei einem doppelten Schlüssel die App beendet. Discogs-Antworten mit Doppelten lehnt der Client schon ab; ein Doppel, das bereits in der Datenbank steht, führt jetzt nicht mehr zum Absturz – der erste Eintrag wird aktualisiert. Test: `duplicatesAlreadyInTheStoreDoNotStopTheSync`.

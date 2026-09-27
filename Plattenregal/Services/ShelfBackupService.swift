@@ -106,7 +106,9 @@ struct ShelfRestorePreview {
             lines.append("Mehr als die Hälfte der Platten aus der Sicherung fehlt. Ist die Collection noch nicht vollständig synchronisiert, brich ab und synchronisiere zuerst.")
         }
         if otherAccount, let owner = backup.owner { lines.append("Achtung: Die Sicherung gehört zum Discogs-Konto „\(owner)“.") }
-        lines.append("Die aktuelle Belegung wird ersetzt. Sie wird vorher automatisch gesichert.")
+        // The demo never writes backups (see `ShelfAutoBackup.isAppStore`).
+        lines.append(DemoMode.isActive ? "Die aktuelle Belegung wird ersetzt."
+                     : "Die aktuelle Belegung wird ersetzt. Sie wird vorher automatisch gesichert.")
         return lines.joined(separator: "\n")
     }
 }
