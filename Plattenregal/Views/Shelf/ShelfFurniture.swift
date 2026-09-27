@@ -499,19 +499,20 @@ struct ShelfFurniture<Menu: View>: View {
     }
 }
 
-/// A soft glow following the pointer over the glass body.
+/// A soft glow following the pointer over the glass body — about one
+/// compartment wide, so it marks where the pointer is, not a whole region.
 private struct HoverLight: View {
     @Observable final class Spot {
         var point: CGPoint = .zero
         var visible = false
     }
     let spot: Spot
-    private static let color = Color.adaptive(NSColor.white.withAlphaComponent(0.45), NSColor.white.withAlphaComponent(0.09))
+    private static let color = Color.adaptive(NSColor.white.withAlphaComponent(0.3), NSColor.white.withAlphaComponent(0.07))
 
     var body: some View {
         Circle()
-            .fill(RadialGradient(colors: [Self.color, .clear], center: .center, startRadius: 0, endRadius: 130))
-            .frame(width: 260, height: 260)
+            .fill(RadialGradient(colors: [Self.color, .clear], center: .center, startRadius: 0, endRadius: 70))
+            .frame(width: 140, height: 140)
             .position(spot.point)
             .opacity(spot.visible ? 1 : 0)
             .animation(AppStyle.standardAnimation, value: spot.visible)
