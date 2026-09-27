@@ -33,6 +33,10 @@ extension AllTests {
         @Test func releaseValuesAreTidied() {
             #expect(CollectionExportService.catalogNumber("ASOT018, ASOT018") == "ASOT018")
             #expect(CollectionExportService.catalogNumber("AQL 010, AQL 010 X") == "AQL 010, AQL 010 X")
+            #expect(CollectionExportService.catalogNumber("none, 1725773, none") == "1725773")
+            #expect(CollectionExportService.catalogNumber("None") == "")
+            #expect(CollectionExportService.catalogNumber("") == "")
+            #expect(CollectionExportService.listedOnce("Dance Division, Epic, Epic") == "Dance Division, Epic")
             #expect(CollectionExportService.format("1 · Vinyl · 12\" · 45 RPM") == "Vinyl · 12\" · 45 RPM")
             #expect(CollectionExportService.format("2 · Vinyl · LP, 1 · CD · Album") == "2 · Vinyl · LP, CD · Album")
             #expect(CollectionExportService.format("Vinyl, LP, Album") == "Vinyl, LP, Album")
@@ -46,6 +50,9 @@ extension AllTests {
                 .table(ExportOptions(source: .collection, order: .shelf, groups: [.location]))
             #expect(Array(table.columns.suffix(3)) == [ExportColumn.cabinet, ExportColumn.shelf, ExportColumn.position])
             #expect(!table.columns.contains("Genres"))
+            // The PDF's Fach column names the compartment; without one a dash, not the long status.
+            #expect(table.rows.first?.place == "\(shelves[0].sortOrder)")
+            #expect(ExportColumnGroup.copy.hint(for: .wantlist) == "Hinzufügedatum")
         }
 
         @Test func countMatchesTheExportedRows() throws {

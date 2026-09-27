@@ -18,6 +18,9 @@ struct ExportSettingsView: View {
     @AppStorage(ScheduledExport.intervalKey) private var autoInterval = ExportInterval.weekly
     @State private var scheduled = ScheduledExport.shared
     @State private var document: ExportDocument?
+    /// The settings the file was built with: switching format or data while a
+    /// large PDF is drawn must not save it as CSV or under the wrong name.
+    @State private var exported: ExportSettings?
     @State private var exporting = false
     /// A large PDF takes a moment to draw; a second click would draw it twice.
     @State private var preparing = false
@@ -60,7 +63,7 @@ struct ExportSettingsView: View {
                     let available = ExportColumnGroup.allCases.filter { $0.applies(to: source) }
                     ForEach(Array(available.enumerated()), id: \.element) { index, group in
                         if index > 0 { Divider() }
-                        SettingsRow(title: group.title, hint: group.hint) {
+                        SettingsRow(title: group.title, hint: group.hint(for: source)) {
                             Toggle(group.title, isOn: binding(for: group)).labelsHidden().toggleStyle(.switch)
                         }
                     }
@@ -90,18 +93,20 @@ struct ExportSettingsView: View {
         .animation(AppStyle.standardAnimation, value: format)
         .onChange(of: source) { status = nil }
         .onChange(of: format) { status = nil }
-        .fileExporter(isPresented: $exporting, document: document, contentType: format.contentType,
+        .fileExporter(isPresented: $exporting, document: document, contentType: (exported ?? settings).format.contentType,
                       defaultFilename: defaultFilename) { result in
+            let done = exported ?? settings
             switch result {
             case .success(let url):
                 status = ("Gespeichert als „\(url.lastPathComponent)“.", false)
-                AppLog.info("Export", "\(format.title)-Export gespeichert (\(source.title), \(url.lastPathComponent))")
+                AppLog.info("Export", "\(done.format.title)-Export gespeichert (\(done.source.title), \(url.lastPathComponent))")
             case .failure(let error) where error.isUserCancellation:
                 break
             case .failure(let error):
                 status = (FileTransferError.writeFailed(error).reportedMessage(), true)
             }
             document = nil
+            exported = nil
         }
     }
 
@@ -112,7 +117,7 @@ struct ExportSettingsView: View {
     }
 
     private var defaultFilename: String {
-        "Plattenregal \(source.title) \(ExportDate.day(.now))\(DemoMode.fileSuffix)"
+        "Plattenregal \((exported ?? settings).source.title) \(ExportDate.day(.now))\(DemoMode.fileSuffix)"
     }
 
     private func export() {
@@ -120,10 +125,12 @@ struct ExportSettingsView: View {
         preparing = true
         Task {
             defer { preparing = false }
+            let settings = settings
             do {
                 let job = try settings.prepare(context: context, labelStyle: labelStyle)
                 document = ExportDocument(data: try await job.renderedInBackground())
-                AppLog.info("Export", "\(format.title)-Export erstellt: \(source.title), \(AppStyle.records(job.rows))")
+                exported = settings
+                AppLog.info("Export", "\(settings.format.title)-Export erstellt: \(settings.source.title), \(AppStyle.records(job.rows))")
                 exporting = true
             } catch {
                 status = (FileTransferError.exportFailed(error).reportedMessage(), true)

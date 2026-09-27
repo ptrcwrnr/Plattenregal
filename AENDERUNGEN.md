@@ -5,6 +5,13 @@
 - **Format** ohne „1 ·“ bei Einzelplatten („Vinyl · 12" · 45 RPM“); ab zwei Stück bleibt die Anzahl stehen.
 - **Katalognummer** ohne Doppelungen: Haben zwei Labels eines Release dieselbe Nummer, steht sie nur einmal da („ASOT018“ statt „ASOT018, ASOT018“).
 - Rein numerische Katalognummern („012“, „2003“) behandeln Numbers und Excel weiterhin als Zahl (rechtsbündig, führende Null weg) – das lässt sich in einer CSV nicht sauber verhindern.
+- **Export geprüft**, dabei korrigiert:
+  - Discogs' Platzhalter **„none“** fällt aus der Katalognummer („none, 1725773, none“ → „1725773“, „none“ → leer).
+  - **Doppelte Labels** stehen nur einmal da („Positiva, Positiva“ → „Positiva“).
+  - **PDF alphabetisch**: Die Fach-Spalte nennt bei mehreren Regalen auch das Regal („KALLAX · 3“), Platten ohne Fach zeigen „–“ statt eines abgeschnittenen Texts.
+  - Wird Format oder Daten umgestellt, während ein großes PDF noch entsteht, speichert der Dialog die Datei trotzdem mit dem richtigen Typ und Namen.
+  - Wantlist: Der Hinweis bei „Exemplar“ lautet „Hinzufügedatum“ – einen Discogs-Ordner hat die Wantlist nicht.
+  - Ohne Befund: CSV-Maskierung (Anführungszeichen, Zeilenumbrüche, führende Leerzeichen), Formel-Schutz, BOM und CRLF, Zählung = exportierte Zeilen, automatischer Export (kein Überschreiben mit leerer Liste, nicht während des Syncs, nicht in der Demo, nicht erreichbarer Ordner, atomisches Schreiben, Uhr in der Zukunft).
 - Tests: `releaseValuesAreTidied`, `locationIsOffByDefaultAndCompact`. 178 Tests, 0 Fehler.
 
 # Regalgrößen ohne Maße, 1 × 1 dazu · 27.09.2026

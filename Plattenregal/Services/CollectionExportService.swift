@@ -72,6 +72,9 @@ enum ExportColumnGroup: String, CaseIterable, Identifiable {
         case .tracklist: "Alle Titel in einer Spalte"
         }
     }
+    func hint(for source: ExportSource) -> String {
+        self == .copy && source == .wantlist ? "Hinzufügedatum" : hint
+    }
     /// The wantlist has no shelf places.
     func applies(to source: ExportSource) -> Bool { source == .collection || self != .location }
 }
@@ -88,7 +91,8 @@ struct ExportOptions {
 /// What an export contains, independent of the file format. `section` is the
 /// shelf a row belongs to when exporting in shelf order (the PDF's headings).
 nonisolated struct ExportTable: Sendable {
-    struct Row: Sendable { var section: String?; var values: [String] }
+    /// `place` is a short "Regal · Fach" for the PDF's column, "–" without one.
+    struct Row: Sendable { var section: String?; var values: [String]; var place: String? = nil }
     var columns: [String]
     var rows: [Row]
     func column(_ name: String) -> Int? { columns.firstIndex(of: name) }
@@ -173,7 +177,8 @@ struct CollectionExportService {
             if groups.contains(.discogs) { values += Self.discogsValues(copy.release) }
             if groups.contains(.tracklist) { values.append(Self.tracklist(copy.release)) }
             let section = options.order == .shelf ? copy.shelf.map { sectionTitle($0, labels: labels) } ?? "Ohne Fach" : nil
-            return ExportTable.Row(section: section, values: values)
+            let place = groups.contains(.location) ? copy.shelf.map { labels.prefix(for: $0) + "\($0.sortOrder)" } ?? "–" : nil
+            return ExportTable.Row(section: section, values: values, place: place)
         }
         return ExportTable(columns: columns, rows: rows)
     }
@@ -234,14 +239,22 @@ struct CollectionExportService {
     private static func releaseValues(_ release: Release?) -> [String] {
         guard let release else { return Array(repeating: "", count: releaseColumns.count) }
         return [release.displayArtist, release.displayTitle, release.year.map(String.init) ?? "",
-                release.displayLabel, catalogNumber(release.catalogNumber), format(release.format), release.country,
+                listedOnce(release.displayLabel), catalogNumber(release.catalogNumber), format(release.format), release.country,
                 release.styles.joined(separator: ", ")]
     }
 
     /// Two labels of one release often share the number ("ASOT018, ASOT018"); listed once.
+    /// Discogs writes "none" for a release without one.
     static func catalogNumber(_ raw: String) -> String {
+        listedOnce(raw) { $0.caseInsensitiveCompare("none") != .orderedSame }
+    }
+
+    /// "Positiva, Positiva" (one label with two numbers) → "Positiva".
+    static func listedOnce(_ list: String, keeping keep: (String) -> Bool = { _ in true }) -> String {
         var seen = Set<String>()
-        return raw.components(separatedBy: ", ").filter { seen.insert($0).inserted }.joined(separator: ", ")
+        return list.components(separatedBy: ", ")
+            .filter { !$0.isEmpty && keep($0) && seen.insert($0).inserted }
+            .joined(separator: ", ")
     }
 
     /// Discogs names the quantity first ("1 · Vinyl · 12\""); a single disc goes without it.
@@ -331,7 +344,7 @@ nonisolated enum PDFListWriter {
     private static let layout: [(name: String, width: CGFloat)] = [
         (ExportColumn.position, 0.05), (ExportColumn.artist, 0.22), (ExportColumn.title, 0.27),
         (ExportColumn.year, 0.05), (ExportColumn.label, 0.15), (ExportColumn.catalogNumber, 0.11),
-        (ExportColumn.format, 0.09), (ExportColumn.shelf, 0.06),
+        (ExportColumn.format, 0.09), (ExportColumn.shelf, 0.08),
     ]
 
     static func data(for table: ExportTable, title: String, subtitle: String) throws -> Data {
@@ -415,7 +428,8 @@ nonisolated enum PDFListWriter {
             }
             stripe.toggle()
             for cell in cells {
-                draw(row.values[cell.index], in: CGRect(x: cell.x, y: y, width: cell.width, height: rowHeight), font: .systemFont(ofSize: 8.5))
+                let value = cell.name == ExportColumn.shelf ? row.place ?? row.values[cell.index] : row.values[cell.index]
+                draw(value, in: CGRect(x: cell.x, y: y, width: cell.width, height: rowHeight), font: .systemFont(ofSize: 8.5))
             }
             y += rowHeight
         }
