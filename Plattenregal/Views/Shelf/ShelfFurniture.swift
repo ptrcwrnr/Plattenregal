@@ -262,6 +262,8 @@ struct MissingCopiesColumn: View {
     let labels: ShelfLabels
     let show: (RecordCopy) -> Void
     let found: (RecordCopy) -> Void
+    /// Folds the column away (see `ShelfAssignmentView`).
+    var collapse: (() -> Void)?
 
     private struct Group: Identifiable {
         let id: String
@@ -289,10 +291,15 @@ struct MissingCopiesColumn: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Vermisst").font(AppStyle.dialogTitle)
-                    Spacer()
                     Text(copies.count == 1 ? "1 Platte" : "\(copies.count) Platten")
                         .font(.callout).foregroundStyle(.secondary).monospacedDigit()
                         .contentTransition(.numericText())
+                    Spacer()
+                    if let collapse {
+                        IconButton(systemImage: "chevron.right", help: "Vermisst einklappen", action: collapse)
+                            .foregroundStyle(.secondary)
+                            .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
+                    }
                 }
                 Text("Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach.")
                     .font(.caption).foregroundStyle(.secondary)

@@ -220,7 +220,7 @@ private struct AmbientCover: View {
 }
 
 /// A panel over the page instead of a sheet: no close button – a click
-/// beside it or Esc closes it. The page behind dims a little.
+/// beside it or Esc closes it.
 struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
     @Binding var item: Item?
     var onDismiss: (() -> Void)?
@@ -231,9 +231,10 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
             .overlay {
                 ZStack {
                     if let shown = item {
-                        Color.black.opacity(0.12)
-                            // Under the toolbar as well: no hard edge where the page ends.
-                            .ignoresSafeArea()
+                        // No dimming: the toolbar is drawn by the window and would
+                        // stay bright above it, a hard edge. A shadow sets the
+                        // panel off instead; the clear layer only catches clicks.
+                        Color.clear
                             .contentShape(Rectangle())
                             .onTapGesture { item = nil }
                             .transition(.opacity)
@@ -243,6 +244,7 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                             // doesn't run through the text.
                             .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)),
                                          in: .rect(cornerRadius: AppStyle.panelRadius))
+                            .shadow(color: .black.opacity(0.18), radius: 30, y: 10)
                             .background {
                                 // Esc: a key equivalent, so it works wherever the focus is.
                                 Button("Schließen") { item = nil }

@@ -593,28 +593,17 @@ struct KallaxView: View {
             Spacer(minLength: AppStyle.itemSpacing)
             HStack(spacing: AppStyle.tightSpacing) {
                 ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
-                    let missing = missingCopies.count
-                    // A glass button of its own instead of a bare "+"; records
-                    // marked "Vermisst" are counted in it, the panel lists them.
+                    // A glass button of its own instead of a bare "+"; the
+                    // panel also lists the records marked "Vermisst".
                     Button { startAssignment(shown) } label: {
-                        HStack(spacing: 6) {
-                            Label("Hinzufügen", systemImage: "plus")
-                                .foregroundStyle(AppStyle.accent)
-                            if missing > 0 && !locked {
-                                Text("· \(missing) vermisst")
-                                    .foregroundStyle(AppStyle.errorColor)
-                                    .monospacedDigit()
-                                    .contentTransition(.numericText())
-                                    .transition(.opacity)
-                            }
-                        }
-                        .font(.callout)
-                        .lineLimit(1)
-                        .fixedSize()
+                        Label("Hinzufügen", systemImage: "plus")
+                            .foregroundStyle(AppStyle.accent)
+                            .font(.callout)
+                            .lineLimit(1)
+                            .fixedSize()
                     }
                     .appGlassButton()
-                    .help(missing > 0 ? "Platte hinzufügen · \(missing) beim Einsortieren vermisst" : "Platte hinzufügen")
-                    .animation(AppStyle.quickAnimation, value: missing)
+                    .help("Platte hinzufügen")
                     .disabled(locked)
                 }
             }

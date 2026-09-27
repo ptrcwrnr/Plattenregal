@@ -23,7 +23,7 @@ final class ShelfAssignmentSession: Identifiable {
     private(set) var loaded = false
     private(set) var addedCount = 0
     private(set) var lastAdded: RecordCopy?
-    /// Candidates marked "Vermisst": they stay in the list, paused.
+    /// Candidates marked "Vermisst": the view lists them in their own column.
     private(set) var missing: Set<UUID> = []
     /// For candidates that belong in another shelf alphabetically: its name,
     /// shown in their row ("gehört in „K – Ma“").
@@ -160,11 +160,14 @@ struct ShelfAssignmentView: View {
     var showMissing: (RecordCopy) -> Void = { _ in }
     var found: (RecordCopy) -> Void = { _ in }
     @Environment(\.modelContext) private var context
+    /// The "Vermisst" column folded away; remembered for the next opening.
+    @AppStorage("missingColumnCollapsed") private var missingCollapsed = false
 
     static let listWidth: CGFloat = 460
     static let missingWidth: CGFloat = 380
     /// The column only while something is marked: without, the panel stays narrow.
-    private var showsMissing: Bool { missingEnabled && !missingCopies.isEmpty }
+    private var hasMissing: Bool { missingEnabled && !missingCopies.isEmpty }
+    private var showsMissing: Bool { hasMissing && !missingCollapsed }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -172,7 +175,8 @@ struct ShelfAssignmentView: View {
                 .frame(width: Self.listWidth)
             if showsMissing {
                 Divider().padding(.vertical, AppStyle.pagePadding)
-                MissingCopiesColumn(copies: missingCopies, labels: labels, show: showMissing, found: found)
+                MissingCopiesColumn(copies: missingCopies, labels: labels, show: showMissing, found: found,
+                                    collapse: { missingCollapsed = true })
                     .frame(width: Self.missingWidth)
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
             }
@@ -183,10 +187,32 @@ struct ShelfAssignmentView: View {
     }
 
     private var addColumn: some View {
-        let items = session.visible
+        // Records marked "Vermisst" are listed in their own column, not here.
+        let items = missingEnabled ? session.visible.filter { !session.missing.contains($0.id) } : session.visible
         return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                Text("Platte hinzufügen").font(AppStyle.dialogTitle)
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Platte hinzufügen").font(AppStyle.dialogTitle)
+                    Spacer()
+                    // Folded away: the count, and the way to unfold it again.
+                    if hasMissing && missingCollapsed {
+                        Button { missingCollapsed = false } label: {
+                            HStack(spacing: 4) {
+                                Text("\(missingCopies.count) vermisst").monospacedDigit()
+                                Image(systemName: "chevron.left").font(.caption.weight(.semibold))
+                            }
+                            .font(.callout)
+                            .foregroundStyle(AppStyle.errorColor)
+                            .lineLimit(1)
+                            .fixedSize()
+                        }
+                        .appGlassButton()
+                        .help("Vermisst-Liste aufklappen")
+                        .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
+                        .transition(.opacity)
+                    }
+                }
+                .animation(AppStyle.standardAnimation, value: showsMissing)
                 targetCard
                 AppSearchField(placeholder: "Platten ohne Fach durchsuchen", text: $session.query)
                 if let error = session.error {
@@ -195,6 +221,8 @@ struct ShelfAssignmentView: View {
                 }
                 listCaption(count: items.count)
                     .padding(.top, AppStyle.tightSpacing)
+                    // Nothing listed: the empty state below says it.
+                    .opacity(items.isEmpty ? 0 : 1)
             }
             .padding(.horizontal, AppStyle.pagePadding)
             .padding(.top, AppStyle.pagePadding)
@@ -208,11 +236,16 @@ struct ShelfAssignmentView: View {
                     session.add(copy, in: context)
                 }
                 if session.loaded && items.isEmpty {
-                    AppEmptyState(
-                        session.query.isEmpty ? "Alles einsortiert" : "Keine Treffer",
-                        systemImage: session.query.isEmpty ? "checkmark.circle" : "magnifyingglass",
-                        description: Text(session.query.isEmpty ? "Jede Platte der Sammlung liegt bereits in einem Fach." : "Versuche einen anderen Suchbegriff.")
-                    )
+                    if !session.query.isEmpty {
+                        AppEmptyState("Keine Treffer", systemImage: "magnifyingglass",
+                                      description: Text("Versuche einen anderen Suchbegriff."))
+                    } else if pausedCount > 0 {
+                        AppEmptyState("Nur noch vermisste Platten", systemImage: "checkmark.circle",
+                                      description: Text("Alle übrigen Platten ohne Fach stehen unter „Vermisst“."))
+                    } else {
+                        AppEmptyState("Alles einsortiert", systemImage: "checkmark.circle",
+                                      description: Text("Jede Platte der Sammlung liegt bereits in einem Fach."))
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -280,16 +313,16 @@ struct ShelfAssignmentView: View {
     private func listCaption(count: Int) -> some View {
         HStack(spacing: 0) {
             Text("\(AppStyle.records(count)) ohne Fach").foregroundStyle(.secondary)
-            if missingEnabled && pausedCount > 0 {
-                Text(" · \(pausedCount) vermisst").foregroundStyle(AppStyle.errorColor)
-            }
         }
         .font(.caption)
         .monospacedDigit()
         .lineLimit(1)
     }
 
-    private var pausedCount: Int { session.candidates.filter { session.missing.contains($0.id) }.count }
+    private var pausedCount: Int {
+        guard missingEnabled else { return 0 }
+        return session.candidates.filter { session.missing.contains($0.id) }.count
+    }
 }
 
 /// Shows the session's table. SwiftUI may create and drop this wrapper as
