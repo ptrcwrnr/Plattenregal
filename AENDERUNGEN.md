@@ -10,7 +10,7 @@ Geprüft mit Tests und einem Probe-Export einer Kopie der echten Sammlung (842 P
 - **Ordner im Papierkorb**: Ein Lesezeichen folgt seinem Ordner in den Papierkorb – der automatische Export schrieb dann unbemerkt dorthin. Ein Ordner im Papierkorb gilt jetzt als nicht erreichbar (Hinweis in den Einstellungen); Sicherungen fallen dann wie bei einem gelöschten Ordner auf den Ordner der App zurück.
 - **Knopf während des Erstellens**: „Wird erstellt …“ statt eines stumm ausgegrauten „Als PDF exportieren …“.
 - **Ohne Befund**: Jede Zeile hat so viele Werte wie Spalten (auch Wantlist mit allen Spalten, Platten ohne Release-Daten), PDF über viele Seiten mit „(Fortsetzung)“ und leerer Liste, Formel-Schutz („@dam“ bleibt Text), Kopfzeile, Umlaute, Datumsformat.
-- Bekannte Grenze der CSV: Reine Ziffern-Katalognummern verlieren in Numbers/Excel führende Nullen; Mehrfach-Exemplare desselben Release erscheinen als gleiche Zeilen (unterscheidbar nur über Ordner und Datum).
+- Bekannte Grenze der CSV: Reine Ziffern-Katalognummern verlieren in Numbers/Excel führende Nullen; Mehrere Exemplare desselben Release erscheinen als mehrere Zeilen, die oft völlig gleich aussehen (z. B. „Connected Vol. 3“ dreimal).
 - Neue Tests: `wantlistHasNoPlacesAndMatchingRows`, `pdfSpansPagesAndHandlesEmptyLists`, `trashedFolderCountsAsGone`. 182 Tests, 0 Fehler.
 
 # CSV-Export aufgeräumt · 27.09.2026
