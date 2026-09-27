@@ -227,32 +227,38 @@ struct KallaxView: View {
                     AppBanner(message: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her.",
                               kind: .info, actionTitle: "Belegung wiederherstellen …", action: { settingsTab = .backup })
                 }
-                header
-                    // The search results float over the rack below.
-                    .zIndex(1)
-                if activeCabinets.count > 1 { cabinetSwitcher }
-                ShelfFurniture(
-                    shelves: shownCabinet.map { cabinet in shelves.filter { $0.cabinet?.id == cabinet.id } } ?? shelves,
-                    rows: shownCabinet?.rows ?? ShelfGeometry.rows,
-                    columns: shownCabinet?.columns ?? ShelfGeometry.columns,
-                    stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
-                    rangeLabel: { rangeLabels[$0.id] },
-                    palette: palette,
-                    selectedID: detailShelf?.id,
-                    litIDs: lit,
-                    lockPreview: lockPreview,
-                    select: selectShelf,
-                    menu: shelfMenu(for:)
-                )
-                // A compact overview with roughly KALLAX-like proportions, so the
-                // compartment area below (strip + table) gets most of the height.
-                .frame(height: ShelfFurnitureMetrics.height(rows: shownCabinet?.rows ?? ShelfGeometry.rows))
-                .frame(maxWidth: furnitureWidth(geometry.size.width), alignment: .leading)
-                // Another cabinet slides in from the side it lies on.
-                .id(shownCabinet?.id)
-                .transition(AppStyle.reduceMotion ? .opacity : .push(from: cabinetEdge))
-                shelfDetail
-                    .frame(maxHeight: .infinity, alignment: .top)
+                // The header brings its own spacing below, so a collapsed
+                // header leaves no gap (see `header`).
+                VStack(alignment: .leading, spacing: 0) {
+                    header
+                        // The search results float over the rack below.
+                        .zIndex(1)
+                    VStack(alignment: .leading, spacing: 28) {
+                        if activeCabinets.count > 1 { cabinetSwitcher }
+                        ShelfFurniture(
+                            shelves: shownCabinet.map { cabinet in shelves.filter { $0.cabinet?.id == cabinet.id } } ?? shelves,
+                            rows: shownCabinet?.rows ?? ShelfGeometry.rows,
+                            columns: shownCabinet?.columns ?? ShelfGeometry.columns,
+                            stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
+                            rangeLabel: { rangeLabels[$0.id] },
+                            palette: palette,
+                            selectedID: detailShelf?.id,
+                            litIDs: lit,
+                            lockPreview: lockPreview,
+                            select: selectShelf,
+                            menu: shelfMenu(for:)
+                        )
+                        // A compact overview with roughly KALLAX-like proportions, so the
+                        // compartment area below (strip + table) gets most of the height.
+                        .frame(height: ShelfFurnitureMetrics.height(rows: shownCabinet?.rows ?? ShelfGeometry.rows))
+                        .frame(maxWidth: furnitureWidth(geometry.size.width), alignment: .leading)
+                        // Another cabinet slides in from the side it lies on.
+                        .id(shownCabinet?.id)
+                        .transition(AppStyle.reduceMotion ? .opacity : .push(from: cabinetEdge))
+                        shelfDetail
+                            .frame(maxHeight: .infinity, alignment: .top)
+                    }
+                }
             }
             .padding(.horizontal, AppStyle.pagePadding + 4)
             .padding(.top, AppStyle.pagePadding)
@@ -469,8 +475,9 @@ struct KallaxView: View {
             .onGeometryChange(for: CGFloat.self, of: \.size.width) { statusWidth = $0 }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        // 28: the page's stack spacing (see `body`).
-        .searchBarSlot(shown: showsSearchBar || hasStatus, collapsedSpacing: 28)
+        // 28: the page's stack spacing (see `body`), collapsed along with the bar.
+        .padding(.bottom, 28)
+        .searchBarSlot(shown: showsSearchBar || hasStatus)
     }
 
     @ViewBuilder private var shelfDetail: some View {

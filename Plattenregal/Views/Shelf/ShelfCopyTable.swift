@@ -375,19 +375,26 @@ private struct RowIconButton: View {
 }
 
 /// Icon columns (untitled: cover, row actions) don't need dividers in the
-/// table header. SwiftUI offers no switch for that, so this swaps in a header
-/// view that leaves out the divider on either side of such a column.
-private struct QuietIconColumnHeaders: NSViewRepresentable {
+/// table header, and neither does the end of the last column. SwiftUI offers
+/// no switch for that, so this swaps in a header view that leaves those out.
+/// Used by every table in the app, so their headers look the same.
+struct QuietIconColumnHeaders: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { Anchor() }
     func updateNSView(_ view: NSView, context: Context) { (view as? Anchor)?.install() }
 
     final class Anchor: NSView {
         override func viewDidMoveToWindow() { install() }
 
-        func install() {
-            DispatchQueue.main.async { [weak self] in
-                guard let table = self?.nearbyTable(), let header = table.headerView, !(header is Header) else { return }
-                table.headerView = Header(frame: header.frame)
+        /// The table may not exist yet when this is placed (e.g. a window
+        /// opened in the background); then it looks again a few times.
+        func install(attempt: Int = 0) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + (attempt == 0 ? 0 : 0.2)) { [weak self] in
+                guard let self, self.window != nil else { return }
+                guard let table = self.nearbyTable(), let header = table.headerView else {
+                    if attempt < 10 { self.install(attempt: attempt + 1) }
+                    return
+                }
+                if !(header is Header) { table.headerView = Header(frame: header.frame) }
             }
         }
     }
@@ -428,7 +435,8 @@ private struct QuietIconColumnHeaders: NSViewRepresentable {
             guard let table = tableView else { return super.draw(dirtyRect) }
             let columns = table.tableColumns
             // Each header cell draws its divider on its right edge: skip it on
-            // an icon column and on the column just before one.
+            // an icon column, on the column just before one and on the last
+            // column, where there is nothing left to separate.
             let clip = NSBezierPath(rect: bounds)
             clip.windingRule = .evenOdd
             // Keep the line along the header's bottom edge intact.
@@ -442,7 +450,8 @@ private struct QuietIconColumnHeaders: NSViewRepresentable {
             for index in columns.indices {
                 let isIcon = columns[index].title.isEmpty
                 let beforeIcon = index + 1 < columns.count && columns[index + 1].title.isEmpty
-                guard isIcon || beforeIcon else { continue }
+                let isLast = index == columns.count - 1
+                guard isIcon || beforeIcon || isLast else { continue }
                 let edge = headerRect(ofColumn: index).maxX
                 clip.appendRect(NSRect(x: edge - 2, y: y, width: 3, height: height))
             }

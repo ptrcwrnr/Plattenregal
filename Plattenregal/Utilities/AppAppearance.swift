@@ -386,15 +386,17 @@ struct SearchReveal: ViewModifier {
 /// its glass and text field were being set up in that very frame and the
 /// insert transition skipped ahead. Mounted from the start, revealing it is
 /// a plain animation of a view that already exists.
+///
+/// Collapsed it is 0 high, but a stack still puts its spacing on both sides:
+/// give it no stack spacing and pad the content instead, so the padding
+/// collapses with it (a negative padding can't take the spacing back).
 private struct SearchBarSlot: ViewModifier {
     let shown: Bool
-    let collapsedSpacing: CGFloat
     func body(content: Content) -> some View {
         content
             .opacity(shown ? 1 : 0)
             .offset(y: shown || AppStyle.reduceMotion ? 0 : -AppStyle.searchBarHeight)
             .frame(height: shown ? nil : 0, alignment: .bottom)
-            .padding(.bottom, shown ? 0 : -collapsedSpacing)
             .allowsHitTesting(shown)
             // Not reachable with Tab while hidden.
             .disabled(!shown)
@@ -424,10 +426,9 @@ extension View {
     }
 
     /// Keeps a search bar (or a row holding one) mounted while hidden; see
-    /// `SearchBarSlot`. `collapsedSpacing`: the stack spacing to take back
-    /// while collapsed, so a hidden bar leaves no gap.
-    func searchBarSlot(shown: Bool, collapsedSpacing: CGFloat = 0) -> some View {
-        modifier(SearchBarSlot(shown: shown, collapsedSpacing: collapsedSpacing))
+    /// `SearchBarSlot`.
+    func searchBarSlot(shown: Bool) -> some View {
+        modifier(SearchBarSlot(shown: shown))
     }
 
     /// See `SearchReveal`. Show the search while `isPresented || !query.isEmpty`.
@@ -476,11 +477,6 @@ struct AppSheetHeader: View {
     }
 }
 
-/// A "cover + details + trailing action" result card: the shared shape behind
-/// every Discogs/wantlist result row, so they read as one component instead of
-/// independently duplicated hover/glass/layout code. `trailing` receives the
-/// current hover state (e.g. to fade an affordance icon in/out).
-
 /// Inline status/error/warning banner. One visual language for anything that
 /// needs the user's attention inline, instead of ad hoc colored text per view.
 struct AppBanner: View {
@@ -498,7 +494,7 @@ struct AppBanner: View {
             case .info: "info.circle"
             case .success: "checkmark.circle"
             case .warning: "exclamationmark.triangle"
-            case .error: "exclamationmark.triangle"
+            case .error: "exclamationmark.octagon"
             }
         }
     }

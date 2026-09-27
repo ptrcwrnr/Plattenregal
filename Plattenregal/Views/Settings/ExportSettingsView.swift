@@ -153,11 +153,11 @@ struct ExportSettingsView: View {
                                 ? "Der gewählte Ordner ist nicht mehr erreichbar (verschoben, gelöscht oder Laufwerk getrennt). Bitte neu wählen."
                                 : "Noch kein Ordner gewählt – ohne Ordner wird nichts exportiert.")) {
                     HStack(spacing: AppStyle.itemSpacing) {
+                        // Worded like "Im Finder zeigen" under Sicherung and Daten.
                         if folder != nil {
-                            IconButton(systemImage: "folder", help: "Im Finder zeigen") {
+                            GhostButton(title: "Im Finder zeigen") {
                                 try? ScheduledExport.folder.withAccess { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
                             }
-                            .foregroundStyle(.secondary)
                         }
                         SecondaryButton(title: folder == nil ? "Wählen …" : "Ändern …") { chooseExportFolder() }
                     }

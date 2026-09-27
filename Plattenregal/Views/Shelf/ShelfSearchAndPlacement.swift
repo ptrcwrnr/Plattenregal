@@ -210,7 +210,8 @@ struct ShelfPositionStrip: View {
                             if let slot = selectedSlot, missingSlots.contains(slot) { MissingBadge() }
                         }
                     } else {
-                        Text("\(AppStyle.records(stats.count)) · von links nach rechts"
+                        // The count is in the header right above.
+                        Text("Von links nach rechts"
                              + (missingSlots.isEmpty ? "" : " · \(missingSlots.count) vermisst"))
                     }
                 }
@@ -347,10 +348,13 @@ struct PlacementCard: View {
                 if let spot = placement.spot {
                     Text(location(spot))
                         .font(.callout)
-                    Text(neighbours(spot))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                    // An empty shelf has no neighbours: no empty line then.
+                    if spot.before != nil || spot.after != nil {
+                        Text(neighbours(spot))
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
                     ForEach(Array(placement.spots.enumerated()), id: \.element.id) { index, other in
                         if index != placement.chosen {
                             Button { choose(index) } label: {

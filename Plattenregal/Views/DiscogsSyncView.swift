@@ -284,11 +284,14 @@ struct WantlistView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
+        // Spacing as in the collection (see CollectionView), so both pages
+        // start their covers at the same height.
+        VStack(alignment: .leading, spacing: 0) {
             if DemoMode.isActive {
                 DemoBanner()
                     .padding(.horizontal, pageMargin)
                     .padding(.trailing, alphabetGutter)
+                    .padding(.top, AppStyle.pagePadding)
             }
             OverviewSearchControl(
                 placeholder: "Wantlist durchsuchen",
@@ -298,7 +301,9 @@ struct WantlistView: View {
                 otherSection: .collection
             ) { pages.current = .collection }
             .padding(.horizontal, pageMargin)
-            .searchBarSlot(shown: showsSearchBar, collapsedSpacing: AppStyle.sectionSpacing)
+            .padding(.top, DemoMode.isActive ? AppStyle.rowSpacing : AppStyle.pagePadding)
+            .searchBarSlot(shown: showsSearchBar)
+            Color.clear.frame(height: showsSearchBar || DemoMode.isActive ? AppStyle.sectionSpacing : AppStyle.pagePadding)
             Group {
             if !loaded {
                 Color.clear
@@ -340,7 +345,6 @@ struct WantlistView: View {
             // Sync progress floats where the pull-to-refresh ring was.
             .overlay(alignment: .top) { DiscogsSyncPill() }
         }
-        .padding(.top, AppStyle.pagePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.release?.coverURL }.prefix(3))) }
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
@@ -441,7 +445,6 @@ struct WantlistView: View {
                                                 .transition(.opacity)
                                         }
                                     }
-
                                     .animation(AppStyle.quickAnimation, value: appliedQuery.isEmpty)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(entry.release?.displayArtist ?? "Unbekannter Interpret")
@@ -475,7 +478,7 @@ struct WantlistView: View {
                 }
                 .coverGridMotion(width: width, columnCount: columnCount)
                 .scrollTargetLayout()
-                .padding(.vertical, AppStyle.rowSpacing)
+                .padding(.vertical, CoverGrid.spacing)
                 .padding(.horizontal, pageMargin)
                 .padding(.trailing, alphabetGutter)
             }
@@ -529,6 +532,7 @@ struct WantlistView: View {
             .width(24)
         }
         .tableStyle(.inset)
+        .background(QuietIconColumnHeaders())
         .alternatingRowBackgrounds(.disabled)
         .scrollContentBackground(.hidden)
         .scrollPosition(id: $scrollPosition, anchor: .top)

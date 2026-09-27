@@ -343,6 +343,7 @@ struct CollectionView: View {
                             }.width(min: 34, ideal: 40, max: 52)
                         }
                         .tableStyle(.inset)
+                        .background(QuietIconColumnHeaders())
                         .alternatingRowBackgrounds(.disabled)
                         .scrollContentBackground(.hidden)
                         .padding(.horizontal, AppStyle.pagePadding + 4)
