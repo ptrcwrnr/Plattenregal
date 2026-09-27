@@ -383,8 +383,7 @@ struct PlacementCard: View {
             }
         }
         .padding(AppStyle.cardPadding)
-        .background(AppStyle.selectedBackground, in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
-        .overlay(RoundedRectangle(cornerRadius: AppStyle.cardRadius).strokeBorder(AppStyle.selectedBorder.opacity(0.35)))
+        .accentGlassCard()
     }
 
     /// As chosen in the settings; shelves are never named by their internal number.

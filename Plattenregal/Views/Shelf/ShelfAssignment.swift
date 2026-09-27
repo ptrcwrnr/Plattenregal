@@ -219,7 +219,7 @@ struct ShelfAssignmentView: View {
         }
         .padding(.horizontal, AppStyle.cardPadding)
         .padding(.vertical, AppStyle.rowSpacing)
-        .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+        .accentGlassCard()
         .animation(AppStyle.standardAnimation, value: session.addedCount)
         .animation(AppStyle.quickAnimation, value: session.hoveredID)
     }

@@ -69,7 +69,7 @@ struct RecordDetailView: View {
           }
         }
         .padding(AppStyle.cardPadding + 4)
-        .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+        .accentGlassCard()
     }
 
     /// Excluding takes the copy out of its shelf; including puts it back among

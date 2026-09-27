@@ -410,6 +410,12 @@ extension View {
         buttonStyle(.glass).buttonBorderShape(.capsule).tint(nil)
     }
 
+    /// A card that says "this is where things happen" (location, placement,
+    /// target shelf): glass with a faint accent tint.
+    func accentGlassCard() -> some View {
+        glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+    }
+
     /// The Liquid Glass capsule every search bar sits in.
     func searchBarChrome() -> some View {
         padding(.horizontal, 12)
