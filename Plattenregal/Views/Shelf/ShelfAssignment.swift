@@ -134,7 +134,7 @@ final class ShelfAssignmentSession: Identifiable {
 }
 
 /// "+" in the compartment header: pick records that don't have a shelf yet.
-/// Built like the record detail card: a glass sheet closed by its red light,
+/// Built like the record detail card: a glass panel over the page, closed by a click beside it or Esc,
 /// the target compartment on a tinted glass card, the shared search bar and
 /// compact rows with glass buttons. All state is in the session.
 struct ShelfAssignmentView: View {
@@ -146,14 +146,10 @@ struct ShelfAssignmentView: View {
     /// A record that belongs in another shelf: close and show its place there.
     let findPlace: (RecordCopy) -> Void
     @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         let items = session.visible
         VStack(alignment: .leading, spacing: 0) {
-            // Where a window has its traffic lights; closing is "Fertig".
-            SheetCloseLight { dismiss() }
-                .padding(.horizontal, 16).padding(.top, 14)
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                 Text("Platte hinzufügen").font(AppStyle.dialogTitle)
                 targetCard
@@ -166,7 +162,7 @@ struct ShelfAssignmentView: View {
                     .padding(.top, AppStyle.tightSpacing)
             }
             .padding(.horizontal, AppStyle.pagePadding)
-            .padding(.top, AppStyle.itemSpacing)
+            .padding(.top, AppStyle.pagePadding)
             ZStack {
                 ShelfAssignmentTable(controller: session.table, items: items, missing: session.missing,
                                      belongsElsewhere: session.belongsElsewhere,
@@ -186,8 +182,6 @@ struct ShelfAssignmentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(width: 460, height: 640)
-        .appGlassSurface(cornerRadius: 0)
-        .presentationBackground(.clear)
         .animation(AppStyle.standardAnimation, value: session.error)
         .onAppear { session.load(context, owner: owner, labels: labels) }
     }

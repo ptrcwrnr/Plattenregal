@@ -18,13 +18,13 @@ struct CollectionView: View {
     // statistics drill-down sheet.
     private let pages: PageSelection<Destination>?
     // The search shared with the wantlist (see `LibrarySearch`); nil in the
-    // statistics sheet, which has no search. Objects, read directly: this page is
+    // statistics panel, which has no search. Objects, read directly: this page is
     // built once (see `PageStack`), and a binding handed in would keep the
     // value it had then.
     private let search: LibrarySearch?
     @State private var localQuery = ""
     @FocusState private var searchFocused: Bool
-    /// The search bar ⌘F reveals; the statistics sheet has none.
+    /// The search bar ⌘F reveals; the statistics panel has none.
     private var showsSearchBar: Bool {
         guard let search else { return false }
         return search.isPresented || !search.query.isEmpty
@@ -512,12 +512,16 @@ struct CollectionView: View {
     }
 
     /// In the window the page has no header bar: page switch, grid/list and
-    /// search are in the toolbar. The statistics sheet has no toolbar, so
-    /// there it keeps the layout switch — but no search: it is only for looking.
+    /// search are in the toolbar. The statistics panel has no toolbar, so
+    /// there its title sits beside the layout switch — but no search: it is
+    /// only for looking.
     private var showsControls: Bool { pages == nil }
 
     private func collectionControls(items: [RecordCopy]) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
+            if let analyticsFilter {
+                Text(analyticsFilter.name).font(AppStyle.dialogTitle).lineLimit(1)
+            }
             Spacer(minLength: AppStyle.rowSpacing)
             OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))
         }

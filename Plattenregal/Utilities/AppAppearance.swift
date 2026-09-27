@@ -8,6 +8,8 @@ import ObjectiveC
 enum AppStyle {
     // MARK: Spacing
     static let pagePadding: CGFloat = 24
+    /// Corners of a panel over the page (see `AppPanelModifier`).
+    static let panelRadius: CGFloat = 20
     /// Height of every header-bar control, matching the segmented pickers.
     static let controlHeight: CGFloat = 26
     /// Search bars (Liquid Glass capsule, see `searchBarChrome`).
@@ -217,31 +219,55 @@ private struct AmbientCover: View {
     }
 }
 
-/// Closes a sheet the way the window closes: a red light in the top left
-/// corner like the window's own, showing its × on hover. Esc closes too.
-struct SheetCloseLight: View {
-    let action: () -> Void
-    @State private var hovering = false
+/// A panel over the page instead of a sheet: no close button – a click
+/// beside it or Esc closes it. The page behind dims a little.
+struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
+    @Binding var item: Item?
+    var onDismiss: (() -> Void)?
+    @ViewBuilder let panel: (Item) -> Panel
 
-    var body: some View {
-        Button(action: action) {
-            Circle()
-                .fill(Color(red: 1, green: 0.37, blue: 0.34))
-                .overlay(Circle().strokeBorder(Color.black.opacity(0.12), lineWidth: 0.5))
-                .overlay {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 7, weight: .heavy))
-                        .foregroundStyle(Color(red: 0.5, green: 0.05, blue: 0.03))
-                        .opacity(hovering ? 1 : 0)
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                ZStack {
+                    if let shown = item {
+                        Color.black.opacity(0.12)
+                            .contentShape(Rectangle())
+                            .onTapGesture { item = nil }
+                            .transition(.opacity)
+                        panel(shown)
+                            .clipShape(RoundedRectangle(cornerRadius: AppStyle.panelRadius))
+                            // Tinted with the window color: the page behind
+                            // doesn't run through the text.
+                            .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)),
+                                         in: .rect(cornerRadius: AppStyle.panelRadius))
+                            .background {
+                                // Esc: a key equivalent, so it works wherever the focus is.
+                                Button("Schließen") { item = nil }
+                                    .keyboardShortcut(.cancelAction)
+                                    .hidden()
+                            }
+                            .padding(AppStyle.pagePadding)
+                            .transition(.scale(scale: 0.96).combined(with: .opacity))
+                            .id(shown.id)
+                    }
                 }
-                .frame(width: 14, height: 14)
-                .contentShape(Circle().inset(by: -4))
-        }
-        .buttonStyle(.plain)
-        .keyboardShortcut(.cancelAction)
-        .onHover { hovering = $0 }
-        .help("Schließen")
-        .accessibilityLabel("Schließen")
+                .animation(AppStyle.standardAnimation, value: item?.id)
+            }
+            .onChange(of: item?.id) { old, new in
+                if old != nil && new == nil { onDismiss?() }
+            }
+    }
+}
+
+extension View {
+    /// See `AppPanelModifier`. `onDismiss` runs whenever the panel closes.
+    func appPanel<Item: Identifiable, Panel: View>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Panel
+    ) -> some View {
+        modifier(AppPanelModifier(item: item, onDismiss: onDismiss, panel: content))
     }
 }
 
@@ -472,23 +498,6 @@ struct AppBadge: View {
         .padding(.horizontal, AppStyle.itemSpacing + 2)
         .padding(.vertical, AppStyle.tightSpacing)
         .background(prominent ? AppStyle.selectedBackground : AppStyle.hoverBackground.opacity(1.2), in: Capsule())
-    }
-}
-
-/// Top of a sheet: the red light where a window has its traffic lights
-/// (closes it, as does Esc), the title beside it.
-struct AppSheetHeader: View {
-    let title: String
-    let onClose: () -> Void
-    var body: some View {
-        HStack(spacing: AppStyle.rowSpacing) {
-            SheetCloseLight(action: onClose)
-            Text(title).font(AppStyle.dialogTitle).lineLimit(1)
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 14)
-        .padding(.bottom, AppStyle.itemSpacing)
     }
 }
 

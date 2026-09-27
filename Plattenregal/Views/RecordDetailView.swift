@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct RecordDetailView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query private var exclusions: [OptimizationExclusion]
     @Query private var shelves: [Shelf]
@@ -13,23 +12,17 @@ struct RecordDetailView: View {
     @State private var error: String?
     var body: some View {
         VStack(spacing: 0) {
-            // Where a window has its traffic lights.
-            SheetCloseLight { dismiss() }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16).padding(.top, 14)
-            // Without the tracklist everything fits; the sheet is as tall as its content.
+            // Without the tracklist everything fits; the panel is as tall as its content.
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 if let r = copy.release {
                     ReleaseHeaderView(release: r, removedFromDiscogs: !copy.discogsActive)
                 }
                 locationCard
                 if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
-            }.padding(.horizontal, AppStyle.pagePadding).padding(.bottom, AppStyle.pagePadding).padding(.top, AppStyle.itemSpacing)
+            }.padding(.horizontal, AppStyle.pagePadding).padding(.vertical, AppStyle.pagePadding)
             .animation(AppStyle.standardAnimation, value: error)
         }.frame(width: 800)
         .fixedSize(horizontal: false, vertical: true)
-        .appGlassSurface(cornerRadius: 0)
-        .presentationBackground(.clear)
     }
 
     private var excluded: Bool { exclusions.contains { $0.copyID == copy.id } }
@@ -75,7 +68,7 @@ struct RecordDetailView: View {
     /// Excluding takes the copy out of its shelf; including puts it back among
     /// the records waiting to be sorted in.
     private func setExcluded(_ value: Bool) {
-        // Removed while the sheet was open ("Alles zurücksetzen" in the settings window).
+        // Removed while the panel was open ("Alles zurücksetzen" in the settings window).
         guard !copy.isDeleted, copy.modelContext != nil else {
             error = LibraryError.missingRelease.errorDescription; return
         }

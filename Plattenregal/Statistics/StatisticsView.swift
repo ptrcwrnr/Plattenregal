@@ -164,16 +164,11 @@ struct StatisticsView: View {
             // The Discogs account is gone as well.
             Task { await model.initialLoad(container: context.container) }
         }
-        .sheet(item: $filter) { group in
-            VStack(spacing: 0) {
-                AppSheetHeader(title: group.name, onClose: { filter = nil })
-                CollectionView(showShelf: { copy in filter = nil; showShelf(copy) }, analyticsFilter: group)
-            }
-            .frame(minWidth: 850, minHeight: 650)
-            .appGlassSurface(cornerRadius: 0)
-            .presentationBackground(.clear)
+        .appPanel(item: $filter) { group in
+            CollectionView(showShelf: { copy in filter = nil; showShelf(copy) }, analyticsFilter: group)
+                .frame(maxWidth: 1100, maxHeight: 820)
         }
-        .sheet(item: $opened) { copy in RecordDetailView(copy: copy) { opened = nil; showShelf(copy) } }
+        .appPanel(item: $opened) { copy in RecordDetailView(copy: copy) { opened = nil; showShelf(copy) } }
     }
 
     /// Behind the page: the covers of the latest additions.

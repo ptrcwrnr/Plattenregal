@@ -298,7 +298,7 @@ struct KallaxView: View {
         // "Alles zurücksetzen" deleted every record: nothing here may keep
         // pointing at one – reading a deleted model crashes.
         .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in forgetCopies() }
-        .sheet(item: $assignment, onDismiss: {
+        .appPanel(item: $assignment, onDismiss: {
             // The shelf behind the sheet follows the additions only now, so
             // nothing rebuilds the sheet while records are being added.
             if let copy = closingAssignment?.lastAdded { focusCopy = copy }
