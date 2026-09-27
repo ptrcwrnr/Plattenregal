@@ -112,6 +112,22 @@ struct HistoryLineChart: View {
     let points: [HistoryPoint]
     let currency: String?
     @State private var selectedDate: Date?
+    /// The chart's width: a half-width chart gets fewer dates on its axis,
+    /// so they never run into each other.
+    @State private var width: CGFloat = 0
+    private var dateLabelCount: Int { max(2, min(5, Int(width / 130))) }
+    /// Months between two date labels, so no more than `dateLabelCount` fit
+    /// the span; `nil` (automatic) for spans too short to count in months.
+    /// A hint like `desiredCount` alone is not enough: Swift Charts keeps
+    /// quarterly labels even on a half-width chart, where they collide.
+    private var monthStep: Int? {
+        guard let first = points.map(\.date).min(), let last = points.map(\.date).max(),
+              let months = Calendar.current.dateComponents([.month], from: first, to: last).month, months >= 3 else { return nil }
+        return [1, 2, 3, 4, 6, 12, 24, 60].first { months / $0 < dateLabelCount } ?? 120
+    }
+    private var dateMarks: AxisMarkValues {
+        monthStep.map { .stride(by: .month, count: $0) } ?? .automatic(desiredCount: dateLabelCount)
+    }
     private var selected: HistoryPoint? {
         guard let selectedDate else { return nil }
         return points.min { abs($0.date.timeIntervalSince(selectedDate)) < abs($1.date.timeIntervalSince(selectedDate)) }
@@ -142,15 +158,22 @@ struct HistoryLineChart: View {
                 }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? "Exemplare")
                     .chartYScale(domain: .automatic(includesZero: false))
                     .chartXAxis {
-                        AxisMarks(values: .automatic(desiredCount: 5)) { value in
+                        AxisMarks(values: dateMarks) { value in
                             AxisGridLine()
                             AxisTick()
                             // The last date ends at the plot's right edge instead of
                             // reaching past it into the value axis.
-                            AxisValueLabel(anchor: value.index == value.count - 1 ? .topTrailing : nil)
+                            if monthStep != nil {
+                                // Month and year, like the automatic labels of a long span.
+                                AxisValueLabel(format: .dateTime.month(.abbreviated).year(),
+                                               anchor: value.index == value.count - 1 ? .topTrailing : nil)
+                            } else {
+                                AxisValueLabel(anchor: value.index == value.count - 1 ? .topTrailing : nil)
+                            }
                         }
                     }
                     .frame(height: 180)
+                    .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
                     .chartOverlay { proxy in GeometryReader { geometry in
                         Rectangle().fill(.clear).contentShape(Rectangle()).onContinuousHover { phase in
                             switch phase {

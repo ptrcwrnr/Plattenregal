@@ -334,8 +334,11 @@ extension View {
 struct PrimaryButton: View {
     let title: String
     var action: () -> Void
+    @Environment(\.isEnabled) private var isEnabled
     var body: some View {
-        Button(action: action) { Text(title).foregroundStyle(AppStyle.accent) }
+        // Disabled: no accent, so it dims like every other button instead of
+        // looking clickable.
+        Button(action: action) { Text(title).foregroundStyle(isEnabled ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.tertiary)) }
             .appGlassButton()
     }
 }

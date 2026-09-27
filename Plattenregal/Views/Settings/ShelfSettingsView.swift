@@ -428,8 +428,10 @@ private struct CabinetEditor: View {
                 SettingsRow(title: "Regal löschen", hint: cabinet.recordCount > 0
                             ? "Nur leere Regale lassen sich löschen."
                             : "Das Regal ist leer und kann entfernt werden.") {
+                    // Red only while it can be used: a set color would hide the
+                    // dimmed look of a disabled button.
                     GhostButton(title: "Löschen …") { confirmingDelete = true }
-                        .foregroundStyle(AppStyle.errorColor)
+                        .foregroundStyle(cabinet.recordCount > 0 ? AnyShapeStyle(.tertiary) : AnyShapeStyle(AppStyle.errorColor))
                         .disabled(cabinet.recordCount > 0)
                 }
             }

@@ -1,3 +1,12 @@
+# Collection, Wantlist, Einstellungen, Statistik: Feinschliff · 27.09.2026
+
+- **Listenansicht von Collection und Wantlist** auf derselben abgerundeten Glaskarte wie die Fach-Tabelle im Regal (neuer Baustein `appTableCard`). Vorher stand die Tabelle direkt auf der Seite, mit eckigem weißem Kopfbalken.
+- **Gesperrte Hauptknöpfe sahen klickbar aus**: `PrimaryButton` setzte seine Akzentfarbe fest, so blieb z. B. „Speichern & testen“ und „Alles synchronisieren“ in der Demo blau, obwohl gesperrt. Gesperrt wird er jetzt grau wie alle anderen Knöpfe. Ebenso „Löschen …“ bei einem Regal mit Platten (Einstellungen › Regal): grau statt rot.
+- **Statistik › Sammlungswert im Verlauf**: In den halbbreiten Diagrammen überlappten sich die Datumsbeschriftungen („Apr. 20Juli 2026“). Der Monatsabstand der Beschriftungen richtet sich jetzt nach Breite und Zeitraum, immer mit Monat und Jahr; kurze Zeiträume bleiben automatisch.
+- **Tausenderpunkte** auch bei großen Zahlen in Statistik (Anzahlen in Klangbild, Labels, Diagrammen), Sync-Fortschritt, „N hinzugefügt“, Treffer der anderen Seite und Discogs-Aktualisierung.
+- „Keine Treffer“ in Collection und Wantlist mit demselben Hinweis („… oder ein anderes Label“).
+- In der Demo geprüft: Raster und Liste von Collection und Wantlist, alle Einstellungs-Tabs, Statistik hell und dunkel.
+
 # Regal: Feinschliff bei Optik und Konsistenz · 27.09.2026
 
 - **Tabelle im Fach**: Die mattierte Kopfzeile hatte eckige Ecken und stand oben aus der abgerundeten Glasfläche heraus (im inaktiven Fenster als grauer Balken gut sichtbar). Die Tabelle ist jetzt auf die Rundung der Fläche zugeschnitten, der 4-pt-Streifen über der Kopfzeile entfällt.
