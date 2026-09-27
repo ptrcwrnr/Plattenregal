@@ -381,8 +381,14 @@ struct KallaxView: View {
                 cabinetTab(activeCabinets.first { $0.id == id })
             }
             .accessibilityLabel("Regal")
-            Text(shownCabinet.map { "\($0.sizeText) · \(AppStyle.records($0.recordCount))" } ?? "")
-                .font(.callout).foregroundStyle(.secondary).monospacedDigit()
+            // The record count as a quiet outlined pill, no fill.
+            if let shownCabinet {
+                Text(AppStyle.records(shownCabinet.recordCount))
+                    .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 3)
+                    .overlay(Capsule().strokeBorder(Color.secondary.opacity(0.35), lineWidth: 1))
+            }
             Spacer()
             Button("Vorheriges Regal") { stepCabinet(-1) }
                 .keyboardShortcut(.leftArrow, modifiers: .command)
