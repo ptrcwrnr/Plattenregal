@@ -79,7 +79,7 @@ import OSLog
                         Text("Die Beispielsammlung ließ sich nicht aufbauen. Deine eigene Sammlung ist davon nicht betroffen.")
                         if let startupError { Text("Technische Details: \(startupError)").font(.caption).foregroundStyle(.secondary) }
                     } actions: {
-                        Button("Demo beenden") { DemoMode.end() }
+                        Button("Demo beenden") { DemoMode.end() }.appGlassButton()
                     }.padding().frame(width: 650, height: 320)
                 } else if openElsewhere {
                     ContentUnavailableView {
@@ -87,7 +87,7 @@ import OSLog
                     } description: {
                         Text(StorageError.alreadyOpen.errorDescription ?? "")
                     } actions: {
-                        Button("Beenden") { NSApp.terminate(nil) }
+                        Button("Beenden") { NSApp.terminate(nil) }.appGlassButton()
                     }.padding().frame(width: 650, height: 320)
                 } else {
                 ContentUnavailableView {
@@ -100,7 +100,7 @@ import OSLog
                 } actions: {
                     // What happened at launch is in the protocol – that file helps whoever looks into it.
                     if let log = AppLog.fileURL {
-                        Button("Protokoll im Finder zeigen") { NSWorkspace.shared.activateFileViewerSelecting([log]) }
+                        Button("Protokoll im Finder zeigen") { NSWorkspace.shared.activateFileViewerSelecting([log]) }.appGlassButton()
                     }
                 }.padding().frame(width: 650, height: 360)
                 }

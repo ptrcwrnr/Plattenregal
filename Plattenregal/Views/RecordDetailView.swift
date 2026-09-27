@@ -61,16 +61,12 @@ struct RecordDetailView: View {
             }
           }
           Divider()
-          Toggle(isOn: Binding(get: { excluded }, set: setExcluded)) {
-              VStack(alignment: .leading, spacing: 2) {
-                  Text("Nicht im Regal")
-                  Text(excluded
-                       ? "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen."
-                       : "Fach und Position vergibst du in der Rubrik Regal.")
-                      .font(.caption).foregroundStyle(.secondary)
-              }
+          SettingsRow(title: "Nicht im Regal", hint: excluded
+                      ? "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen."
+                      : "Fach und Position vergibst du in der Rubrik Regal.") {
+              Toggle("Nicht im Regal", isOn: Binding(get: { excluded }, set: setExcluded))
+                  .labelsHidden().toggleStyle(.switch)
           }
-          .toggleStyle(.switch)
         }
         .padding(AppStyle.cardPadding + 4)
         .glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
@@ -91,19 +87,51 @@ struct ReleaseHeaderView: View {
     let release: Release
     let removedFromDiscogs: Bool
     var body: some View {
+        // Same language as the "Zufallsfund" on the statistics page: small
+        // captions over their values, styles as badges.
         HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
             CoverView(url: release.coverURL, size: 220)
-            VStack(alignment: .leading, spacing: 10) {
-                Text(release.displayArtist).font(.title2).foregroundStyle(.secondary)
-                Text(release.displayTitle).font(AppStyle.pageTitle).textSelection(.enabled)
-                Text([release.year.map(String.init), release.country.isEmpty ? nil : release.country, release.format].compactMap { $0 }.joined(separator: " · "))
-                Text(release.displayLabel).font(.headline)
-                Text(release.catalogNumber).foregroundStyle(.secondary)
-                Text(release.genres.joined(separator: " · "))
-                Text(release.styles.joined(separator: " · ")).foregroundStyle(.secondary)
-                if removedFromDiscogs { Text("Nicht mehr in der Discogs-Collection").foregroundStyle(.secondary) }
-                if let url = release.sourceURL { Link("Auf Discogs öffnen ↗", destination: url) }
+                .shadow(color: .black.opacity(0.2), radius: 14, y: 6)
+            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing - 4) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(release.displayArtist).font(.title2).foregroundStyle(.secondary).lineLimit(2)
+                    Text(release.displayTitle).font(AppStyle.pageTitle).lineLimit(3)
+                }
+                .textSelection(.enabled)
+                Grid(alignment: .leading, horizontalSpacing: AppStyle.sectionSpacing, verticalSpacing: 12) {
+                    GridRow {
+                        detail("Jahr", release.year.map(String.init))
+                        detail("Land", release.country)
+                        detail("Format", release.format)
+                    }
+                    GridRow {
+                        detail("Label", release.displayLabel)
+                        detail("Katalognummer", release.catalogNumber)
+                        detail("Genre", release.genres.joined(separator: " · "))
+                    }
+                }
+                if !release.styles.isEmpty || removedFromDiscogs {
+                    HStack(spacing: 6) {
+                        ForEach(release.styles.prefix(5), id: \.self) { AppBadge(title: $0) }
+                        if removedFromDiscogs { AppBadge(title: "Nicht mehr in der Discogs-Collection", systemImage: "exclamationmark.circle") }
+                    }
+                }
+                if let url = release.sourceURL {
+                    Link(destination: url) {
+                        Label("Auf Discogs öffnen", systemImage: "arrow.up.forward")
+                    }
+                    .appGlassButton()
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    @ViewBuilder private func detail(_ title: String, _ value: String?) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title).font(.caption).foregroundStyle(.secondary)
+            Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(.callout.weight(.medium)).lineLimit(2)
+                .textSelection(.enabled)
         }
     }
 }
@@ -141,9 +169,9 @@ struct RecordPopover: View {
                         .font(AppStyle.sectionTitle).lineLimit(3)
                         .fixedSize(horizontal: false, vertical: true)
                     Grid(alignment: .leading, horizontalSpacing: AppStyle.itemSpacing, verticalSpacing: 3) {
-                        GridRow { label("Label:"); Text(release.map { $0.label.isEmpty ? "–" : $0.displayLabel } ?? "–").lineLimit(2) }
-                        GridRow { label("Jahr:"); Text(release?.year.map(String.init) ?? "–").monospacedDigit() }
-                        GridRow { label("Style:"); Text(release.map { $0.primaryStyle.isEmpty ? "–" : $0.primaryStyle } ?? "–").lineLimit(1) }
+                        GridRow { label("Label"); Text(release.map { $0.label.isEmpty ? "–" : $0.displayLabel } ?? "–").lineLimit(2) }
+                        GridRow { label("Jahr"); Text(release?.year.map(String.init) ?? "–").monospacedDigit() }
+                        GridRow { label("Style"); Text(release.map { $0.primaryStyle.isEmpty ? "–" : $0.primaryStyle } ?? "–").lineLimit(1) }
                     }
                     .font(.callout)
                     .padding(.top, AppStyle.tightSpacing)
