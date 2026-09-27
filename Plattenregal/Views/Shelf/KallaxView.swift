@@ -20,6 +20,7 @@ struct KallaxView: View {
     @Query private var allCopies: [RecordCopy]
     @Query private var exclusions: [OptimizationExclusion]
     @Query private var missingMarks: [MissingCopyMark]
+    @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     @Query private var accounts: [DiscogsAccount]
     /// The compartment selected in the rack.
     @State private var highlight: UUID?
@@ -67,7 +68,7 @@ struct KallaxView: View {
     @FocusState private var searchFocused: Bool
     /// Whether ⌘F has revealed the search bar (see `SearchReveal`).
     @State private var searchPresented = false
-    /// Width of "Vermisst" and the sold-records note beside the search bar.
+    /// Width of the sold-records note beside the search bar.
     @State private var statusWidth: CGFloat = 0
     private var showsSearchBar: Bool { searchPresented || !searchQuery.isEmpty }
 
@@ -127,7 +128,9 @@ struct KallaxView: View {
         return allCopies.filter { ($0.shelf?.isInUse ?? false) && $0.leftCurrentCollection(owner: owner) }
     }
 
-    private var missingIDs: Set<UUID> { Set(missingMarks.map(\.copyID)) }
+    /// Empty while "Vermisst" is off in the settings: no marks shown anywhere
+    /// on this page (they are kept, and return when it is switched on again).
+    private var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
 
     /// Records marked "Vermisst": those still standing in a shelf in
     /// use (shelf order) and those waiting to be sorted in (by artist) – the
@@ -304,12 +307,21 @@ struct KallaxView: View {
             if let copy = closingAssignment?.lastAdded { focusCopy = copy }
             closingAssignment = nil
         }) { session in
-            ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id], labels: rangeLabels) { copy in
-                // Its own shelf instead: no record to pick up here afterwards.
-                closingAssignment = nil
-                assignment = nil
-                startPlacement(copy)
-            }
+            ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id], labels: rangeLabels,
+                                findPlace: { copy in
+                                    // Its own shelf instead: no record to pick up here afterwards.
+                                    closingAssignment = nil
+                                    assignment = nil
+                                    startPlacement(copy)
+                                },
+                                missingCopies: missingCopies,
+                                missingEnabled: missingEnabled,
+                                showMissing: { copy in
+                                    closingAssignment = nil
+                                    assignment = nil
+                                    showMissing(copy)
+                                },
+                                found: { setMissing($0, false) })
         }
         .confirmationDialog(
             soldToRemove == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldToRemove) Platten ohne Collection aus dem Regal nehmen?",
@@ -442,10 +454,9 @@ struct KallaxView: View {
     /// collapsed when neither is there, so the rack moves up. Always
     /// mounted, see `searchBarSlot`.
     @ViewBuilder private var header: some View {
-        // Both walk the whole collection: once per body, not per use.
-        let missing = missingCopies
+        // Walks the whole collection: once per body, not per use.
         let sold = soldInShelves.count
-        let hasStatus = !missing.isEmpty || sold > 0
+        let hasStatus = sold > 0
         // The bar centered under the page switch in the toolbar, the status
         // on the right; the bar keeps clear of the status on both sides,
         // so it stays centered without running into it.
@@ -465,10 +476,6 @@ struct KallaxView: View {
             .padding(.horizontal, statusWidth > 0 ? statusWidth + AppStyle.rowSpacing : 0)
             .searchBarSlot(shown: showsSearchBar)
             HStack(spacing: AppStyle.rowSpacing) {
-                if !missing.isEmpty {
-                    MissingCopiesControl(copies: missing, labels: rangeLabels, show: showMissing,
-                                         found: { setMissing($0, false) })
-                }
                 if sold > 0 {
                     ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
                         .frame(height: AppStyle.controlHeight)
@@ -586,9 +593,26 @@ struct KallaxView: View {
             Spacer(minLength: AppStyle.itemSpacing)
             HStack(spacing: AppStyle.tightSpacing) {
                 ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
-                    IconButton(systemImage: "plus", help: "Platte hinzufügen") {
-                        startAssignment(shown)
+                    let missing = missingCopies.count
+                    // A glass button of its own instead of a bare "+"; records
+                    // marked "Vermisst" are counted in it, the panel lists them.
+                    Button { startAssignment(shown) } label: {
+                        HStack(spacing: 6) {
+                            Label("Hinzufügen", systemImage: "plus")
+                                .foregroundStyle(AppStyle.accent)
+                            if missing > 0 && !locked {
+                                Text("· \(missing) vermisst")
+                                    .foregroundStyle(AppStyle.errorColor)
+                                    .monospacedDigit()
+                                    .contentTransition(.numericText())
+                                    .transition(.opacity)
+                            }
+                        }
+                        .font(.callout)
                     }
+                    .appGlassButton()
+                    .help(missing > 0 ? "Platte hinzufügen · \(missing) beim Einsortieren vermisst" : "Platte hinzufügen")
+                    .animation(AppStyle.quickAnimation, value: missing)
                     .disabled(locked)
                 }
             }

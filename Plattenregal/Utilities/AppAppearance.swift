@@ -232,6 +232,8 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                 ZStack {
                     if let shown = item {
                         Color.black.opacity(0.12)
+                            // Under the toolbar as well: no hard edge where the page ends.
+                            .ignoresSafeArea()
                             .contentShape(Rectangle())
                             .onTapGesture { item = nil }
                             .transition(.opacity)

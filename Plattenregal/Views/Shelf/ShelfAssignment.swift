@@ -121,6 +121,12 @@ final class ShelfAssignmentSession: Identifiable {
         } catch { self.error = error.reportedMessage() }
     }
 
+    /// Marks changed elsewhere (e.g. "Wieder gefunden" in the "Vermisst"
+    /// column): the paused rows follow.
+    func syncMissing(_ ids: Set<UUID>) {
+        if ids != missing { missing = ids }
+    }
+
     /// Pause button: not found while sorting in, or found again.
     func toggleMissing(_ copy: RecordCopy, in context: ModelContext) {
         guard !isGone(copy) else { candidates.removeAll { $0.id == copy.id }; return }
@@ -133,7 +139,8 @@ final class ShelfAssignmentSession: Identifiable {
     }
 }
 
-/// "+" in the compartment header: pick records that don't have a shelf yet.
+/// "+" in the compartment header: pick records that don't have a shelf yet;
+/// beside them, while any are marked, the "Vermisst" list.
 /// Built like the record detail card: a glass panel over the page, closed by a click beside it or Esc,
 /// the target compartment on a tinted glass card, the shared search bar and
 /// compact rows with glass buttons. All state is in the session.
@@ -145,11 +152,39 @@ struct ShelfAssignmentView: View {
     let labels: ShelfLabels
     /// A record that belongs in another shelf: close and show its place there.
     let findPlace: (RecordCopy) -> Void
+    /// Records marked "Vermisst" in the whole rack (see `KallaxView.missingCopies`).
+    var missingCopies: [RecordCopy] = []
+    /// Off in the settings: no pause buttons and no "Vermisst" column.
+    var missingEnabled = true
+    /// From the "Vermisst" column: close and show the record in its shelf.
+    var showMissing: (RecordCopy) -> Void = { _ in }
+    var found: (RecordCopy) -> Void = { _ in }
     @Environment(\.modelContext) private var context
 
+    static let listWidth: CGFloat = 460
+    static let missingWidth: CGFloat = 380
+    /// The column only while something is marked: without, the panel stays narrow.
+    private var showsMissing: Bool { missingEnabled && !missingCopies.isEmpty }
+
     var body: some View {
+        HStack(spacing: 0) {
+            addColumn
+                .frame(width: Self.listWidth)
+            if showsMissing {
+                Divider().padding(.vertical, AppStyle.pagePadding)
+                MissingCopiesColumn(copies: missingCopies, labels: labels, show: showMissing, found: found)
+                    .frame(width: Self.missingWidth)
+                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+            }
+        }
+        .frame(height: 640)
+        .animation(AppStyle.standardAnimation, value: showsMissing)
+        .onChange(of: Set(missingCopies.map(\.id))) { _, ids in session.syncMissing(ids) }
+    }
+
+    private var addColumn: some View {
         let items = session.visible
-        VStack(alignment: .leading, spacing: 0) {
+        return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                 Text("Platte hinzufügen").font(AppStyle.dialogTitle)
                 targetCard
@@ -164,7 +199,8 @@ struct ShelfAssignmentView: View {
             .padding(.horizontal, AppStyle.pagePadding)
             .padding(.top, AppStyle.pagePadding)
             ZStack {
-                ShelfAssignmentTable(controller: session.table, items: items, missing: session.missing,
+                ShelfAssignmentTable(controller: session.table, items: items, missing: missingEnabled ? session.missing : [],
+                                     missingEnabled: missingEnabled,
                                      belongsElsewhere: session.belongsElsewhere,
                                      toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
                                      hover: { [session] copy, hovering in session.hover(copy, hovering) },
@@ -181,7 +217,6 @@ struct ShelfAssignmentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 460, height: 640)
         .animation(AppStyle.standardAnimation, value: session.error)
         .onAppear { session.load(context, owner: owner, labels: labels) }
     }
@@ -245,7 +280,7 @@ struct ShelfAssignmentView: View {
     private func listCaption(count: Int) -> some View {
         HStack(spacing: 0) {
             Text("\(AppStyle.records(count)) ohne Fach").foregroundStyle(.secondary)
-            if pausedCount > 0 {
+            if missingEnabled && pausedCount > 0 {
                 Text(" · \(pausedCount) vermisst").foregroundStyle(AppStyle.errorColor)
             }
         }
@@ -264,6 +299,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
     let controller: ShelfAssignmentTableController
     let items: [RecordCopy]
     let missing: Set<UUID>
+    let missingEnabled: Bool
     let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
     let hover: (RecordCopy, Bool) -> Void
@@ -292,6 +328,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
         controller.hover = hover
         controller.findPlace = findPlace
         controller.belongsElsewhere = belongsElsewhere
+        controller.setMissingEnabled(missingEnabled)
         controller.setMissing(missing)
         controller.apply(items)
     }
@@ -307,6 +344,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     private let table = NSTableView()
     private var items: [RecordCopy] = []
     private var missing: Set<UUID> = []
+    private var missingEnabled = true
     /// Fixed for a session (see `ShelfAssignmentSession.load`).
     fileprivate var belongsElsewhere: [UUID: String] = [:]
     fileprivate var add: (RecordCopy) -> Void = { _ in }
@@ -339,6 +377,13 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
         scrollView.scrollerStyle = .overlay
         scrollView.automaticallyAdjustsContentInsets = false
         scrollView.contentInsets = NSEdgeInsets(top: AppStyle.tightSpacing, left: 0, bottom: AppStyle.tightSpacing, right: 0)
+    }
+
+    /// The setting changed while open: every row loses or gains its pause button.
+    func setMissingEnabled(_ enabled: Bool) {
+        guard enabled != missingEnabled else { return }
+        missingEnabled = enabled
+        table.reloadData()
     }
 
     /// Redraws only the rows whose "Vermisst" state changed.
@@ -382,7 +427,8 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let copy = items[row]
-        let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id), belongsIn: belongsElsewhere[copy.id],
+        let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id), missingEnabled: missingEnabled,
+                                         belongsIn: belongsElsewhere[copy.id],
                                          toggleMissing: { [weak self] in self?.toggleMissing(copy) },
                                          hover: { [weak self] in self?.hover(copy, $0) },
                                          findPlace: { [weak self] in self?.findPlace(copy) }) { [weak self] in self?.add(copy) }
@@ -410,6 +456,8 @@ private struct ShelfAssignmentRow: View {
     let copy: RecordCopy
     /// Marked "Vermisst": shown paused, still addable once it turns up.
     let missing: Bool
+    /// Off in the settings: no pause button.
+    let missingEnabled: Bool
     /// The shelf it fits alphabetically, when that isn't this one.
     let belongsIn: String?
     let toggleMissing: () -> Void
@@ -441,10 +489,12 @@ private struct ShelfAssignmentRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .help("\(artist) – \(title)")
             Spacer(minLength: AppStyle.itemSpacing)
-            RowGlassButton(systemImage: missing ? "pause.fill" : "pause",
-                           color: missing ? AppStyle.errorColor : .secondary, action: toggleMissing)
-                .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
-                .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als vermisst markieren")
+            if missingEnabled {
+                RowGlassButton(systemImage: missing ? "pause.fill" : "pause",
+                               color: missing ? AppStyle.errorColor : .secondary, action: toggleMissing)
+                    .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
+                    .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als vermisst markieren")
+            }
             if let belongsIn {
                 RowGlassButton(systemImage: "arrow.turn.up.right", color: .secondary, action: findPlace)
                     .help("Zu „\(belongsIn)“ wechseln und dort einsortieren")

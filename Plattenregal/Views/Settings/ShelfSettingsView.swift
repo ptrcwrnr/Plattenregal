@@ -9,6 +9,7 @@ struct ShelfSettingsView: View {
     @Query(sort: \Shelf.number) private var shelves: [Shelf]
     @Query(sort: \Cabinet.sortOrder) private var cabinets: [Cabinet]
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     @State private var cabinetID: UUID?
     /// The compartment whose menu is open (a click on its tile).
     @State private var menuID: UUID?
@@ -117,6 +118,17 @@ struct ShelfSettingsView: View {
                     }
                     SettingsNote("Klicke auf ein Fach, um es zu sperren oder zu entsperren – z. B. für Deko oder andere Dinge. Gesperrte Fächer werden beim Einsortieren übersprungen.")
                     if let shelfError { AppBanner(message: shelfError, kind: .error).transition(AppStyle.funnelTransition()) }
+                }
+            }
+
+            SettingsCard(title: "Einsortieren",
+                         subtitle: "Was beim Hinzufügen von Platten ins Fach hilft.") {
+                SettingsRow(title: "Vermisst-Liste",
+                            hint: missingEnabled
+                            ? "Platten, die du beim Einsortieren nicht findest, lassen sich zurückstellen. Sie stehen neben „Platte hinzufügen“, bis sie wieder auftauchen."
+                            : "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest.") {
+                    Toggle("Vermisst-Liste", isOn: $missingEnabled)
+                        .labelsHidden().toggleStyle(.switch)
                 }
             }
 

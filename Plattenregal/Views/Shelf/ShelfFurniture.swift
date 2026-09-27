@@ -253,42 +253,11 @@ struct MissingBadge: View {
     }
 }
 
-/// Status next to the search field: records marked "Vermisst" while
-/// sorting. The popover lists them by shelf; a row shows the record in its
-/// shelf, the check mark marks it found again.
-struct MissingCopiesControl: View {
-    let copies: [RecordCopy]
-    let labels: ShelfLabels
-    let show: (RecordCopy) -> Void
-    let found: (RecordCopy) -> Void
-    @State private var isPresented = false
-
-    var body: some View {
-        Button { isPresented.toggle() } label: {
-            // A glass capsule like the search bar beside it.
-            Text("Vermisst").lineLimit(1)
-            .padding(.horizontal, 14)
-            .frame(height: AppStyle.searchBarHeight)
-            .foregroundStyle(.secondary)
-            .contentShape(Capsule())
-            .glassEffect(.regular.interactive(), in: .capsule)
-        }
-        .buttonStyle(.plain)
-        .fixedSize()
-        .font(.callout)
-        .help("Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach")
-        .accessibilityLabel("\(copies.count) vermisst")
-        .popover(isPresented: $isPresented, arrowEdge: .bottom) {
-            MissingCopiesPopover(copies: copies, labels: labels,
-                                 show: { isPresented = false; show($0) },
-                                 found: found)
-        }
-    }
-}
-
-/// The list behind "Vermisst": grouped by shelf (in shelf order), records
-/// without a shelf last, each with its cover to look for at the shelf.
-private struct MissingCopiesPopover: View {
+/// The "Vermisst" column beside "Platte hinzufügen": grouped by shelf (in
+/// shelf order), records without a shelf last, each with its cover to look
+/// for at the shelf. A row shows the record in its shelf, the check mark
+/// marks it found again.
+struct MissingCopiesColumn: View {
     let copies: [RecordCopy]
     let labels: ShelfLabels
     let show: (RecordCopy) -> Void
@@ -319,7 +288,7 @@ private struct MissingCopiesPopover: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text("Vermisst").font(.headline)
+                    Text("Vermisst").font(AppStyle.dialogTitle)
                     Spacer()
                     Text(copies.count == 1 ? "1 Platte" : "\(copies.count) Platten")
                         .font(.callout).foregroundStyle(.secondary).monospacedDigit()
@@ -329,17 +298,13 @@ private struct MissingCopiesPopover: View {
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.horizontal, AppStyle.cardPadding)
-            .padding(.top, 14)
-            .padding(.bottom, 10)
-            Divider()
-            ViewThatFits(in: .vertical) {
-                list
-                ScrollView { list }.scrollIndicators(.automatic)
-            }
-            .frame(maxHeight: 420)
+            .padding(.horizontal, AppStyle.pagePadding)
+            .padding(.top, AppStyle.pagePadding)
+            .padding(.bottom, AppStyle.rowSpacing)
+            ScrollView { list }
+                .scrollIndicators(.automatic)
+                .frame(maxHeight: .infinity)
         }
-        .frame(width: 330)
     }
 
     private var list: some View {
@@ -360,7 +325,8 @@ private struct MissingCopiesPopover: View {
                 }
             }
         }
-        .padding(8)
+        .padding(.horizontal, AppStyle.pagePadding - 8)
+        .padding(.bottom, 8)
     }
 }
 

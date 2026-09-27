@@ -105,6 +105,10 @@ enum DisplaySettings {
     static let wantlistOrderKey = "wantlistOrder"
     static let coverSizeKey = "coverSize"
     static let statisticsOrderKey = "statisticsSectionOrder"
+    /// "Vermisst" on the shelf page: marking records not found while sorting
+    /// in, and the list of them beside "Platte hinzufügen". Off hides it all;
+    /// the marks themselves are kept.
+    static let missingListKey = "missingListEnabled"
 
     static let defaultCoverSize = 155.0
     static let coverSizeRange = 120.0...220.0

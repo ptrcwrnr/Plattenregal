@@ -51,6 +51,7 @@ struct ShelfCopyTable: View {
     let unplace: (RecordCopy) -> Void
     let delete: (RecordCopy) -> Void
     let setMissing: (RecordCopy, Bool) -> Void
+    @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
 
     @State private var items: [ShelfCopyItem] = []
     @State private var sortOrder = [KeyPathComparator(\ShelfCopyItem.position)]
@@ -108,7 +109,9 @@ struct ShelfCopyTable: View {
         Button("Exemplar bearbeiten …") { quickEditID = copy.id }
         Button("Platz im Regal zeigen") { find(copy) }
         Divider()
-        if missing.contains(copy.id) {
+        if !missingEnabled {
+            // Off in the settings: no marking.
+        } else if missing.contains(copy.id) {
             Button("Wieder gefunden") { setMissing(copy, false) }
         } else {
             Button("Als vermisst markieren") { setMissing(copy, true) }
