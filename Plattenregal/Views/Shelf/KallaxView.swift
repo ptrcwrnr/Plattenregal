@@ -381,12 +381,13 @@ struct KallaxView: View {
                 cabinetTab(activeCabinets.first { $0.id == id })
             }
             .accessibilityLabel("Regal")
-            // The record count as a quiet outlined pill, no fill.
+            // The record count as a quiet outlined pill, no fill; as tall as
+            // the tabs beside it (see `GlassSegmentedPicker`).
             if let shownCabinet {
                 Text(AppStyle.records(shownCabinet.recordCount))
-                    .font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 3)
+                    .foregroundStyle(.secondary).monospacedDigit()
+                    .padding(.horizontal, 15)
+                    .frame(height: 30)
                     .overlay(Capsule().strokeBorder(Color.secondary.opacity(0.35), lineWidth: 1))
             }
             Spacer()
