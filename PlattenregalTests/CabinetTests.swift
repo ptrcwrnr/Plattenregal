@@ -257,11 +257,12 @@ extension AllTests {
             }
         }
 
-        @Test func kallaxPresetsCarryTheBoxMeasures() {
-            #expect(KallaxPreset.all.count == 11)
-            #expect(KallaxPreset.matching(columns: 2, rows: 4)?.title == "2 × 4 · 77 × 147 cm")
-            #expect(KallaxPreset.matching(columns: 4, rows: 3)?.title == "4 × 3 · 147 × 112 cm")
-            #expect(KallaxPreset.matching(columns: 5, rows: 5)?.title == "5 × 5 · 182 × 182 cm")
+        @Test func kallaxPresetsShowOnlyTheLayout() {
+            #expect(KallaxPreset.all.count == 12)
+            #expect(KallaxPreset.matching(columns: 1, rows: 1)?.title == "1 × 1")
+            #expect(KallaxPreset.matching(columns: 1, rows: 1)?.orientation == nil)
+            #expect(KallaxPreset.matching(columns: 2, rows: 4)?.title == "2 × 4")
+            #expect(KallaxPreset.matching(columns: 4, rows: 3)?.title == "4 × 3")
             #expect(KallaxPreset.matching(columns: 1, rows: 4)?.orientation == "hochkant")
             #expect(KallaxPreset.matching(columns: 4, rows: 1)?.orientation == "quer")
             #expect(KallaxPreset.matching(columns: 3, rows: 3) == nil)

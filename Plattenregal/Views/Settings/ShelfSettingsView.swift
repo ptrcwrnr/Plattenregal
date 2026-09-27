@@ -327,7 +327,7 @@ private struct CabinetCreator: View {
                 CabinetNameField(placeholder: suggestedName, text: $name) { add() }
             }
             Divider()
-            SettingsRow(title: "Größe", hint: "Spalten × Reihen, wie auf dem IKEA-Etikett: Breite × Höhe.") {
+            SettingsRow(title: "Größe", hint: "Spalten × Reihen.") {
                 CabinetSizePicker(columns: $columns, rows: $rows)
             }
             HStack(spacing: AppStyle.itemSpacing) {
@@ -400,7 +400,7 @@ private struct CabinetEditor: View {
             Divider()
             SettingsRow(title: "Größe", hint: sizeChanged
                         ? "Die Fächer behalten ihre Reihenfolge von links oben. Fallen Fächer weg, müssen sie leer sein – gesperrte verlieren dabei Sperre und Namen."
-                        : "Spalten × Reihen · Breite × Höhe") {
+                        : "Spalten × Reihen") {
                 CabinetSizePicker(columns: $columns, rows: $rows)
             }
             if sizeChanged {

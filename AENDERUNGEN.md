@@ -1,3 +1,7 @@
+# Regalgrößen ohne Maße, 1 × 1 dazu · 27.09.2026
+
+- **Einstellungen › Regal › Größe**: Die Auswahl zeigt nur noch die Aufteilung („2 × 4 (hochkant)“), ohne Zentimeter. Neu ist **1 × 1**. „Eigene Größe …“ bleibt. Ein Regal mit 1 Spalte und 1 Reihe (z. B. EKET) steht jetzt automatisch auf „1 × 1“. Der Hinweis unter „Größe“ lautet nur noch „Spalten × Reihen“.
+
 # Über Plattenregal als kleine Karte, Doku geprüft · 27.09.2026
 
 - **„Über Plattenregal“** (App-Menü) öffnet statt des System-Fensters eine kleine, kompakte Karte (260 pt breit): App-Symbol, Name, „Version 1.0 (092026)“ – zum Kopieren auswählbar, für Fehlermeldungen – und „© 2026 Patrice Werner“. Eigenes Fenster ohne Titelleiste, feste Größe, nicht minimierbar, erscheint mittig und wird nach einem Neustart nicht wiederhergestellt (`Views/AboutView.swift`).

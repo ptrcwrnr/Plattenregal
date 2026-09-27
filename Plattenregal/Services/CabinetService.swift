@@ -1,9 +1,7 @@
 import Foundation
 import SwiftData
 
-/// The KALLAX sizes IKEA sells, as columns × rows. Each compartment adds
-/// 35 cm to the outer measure (plus 7 cm for the frame), so every variant
-/// is listed with the size printed on the box. The narrow and wide ones
+/// The KALLAX sizes IKEA sells, as columns × rows. The narrow and wide ones
 /// stand upright or on their side.
 nonisolated struct KallaxPreset: Identifiable, Hashable {
     let columns: Int
@@ -11,15 +9,15 @@ nonisolated struct KallaxPreset: Identifiable, Hashable {
     var id: String { "\(columns)x\(rows)" }
     var count: Int { columns * rows }
 
-    static func centimeters(_ cells: Int) -> Int { cells * 35 + 7 }
-    /// "2 × 4 · 77 × 147 cm" – columns first, like IKEA's width × height.
-    var title: String { "\(columns) × \(rows) · \(Self.centimeters(columns)) × \(Self.centimeters(rows)) cm" }
+    /// "2 × 4" – columns first, like IKEA's width × height.
+    var title: String { "\(columns) × \(rows)" }
     var orientation: String? {
         if columns == rows { return nil }
         return columns < rows ? "hochkant" : "quer"
     }
 
     static let all: [KallaxPreset] = [
+        .init(columns: 1, rows: 1),
         .init(columns: 1, rows: 2), .init(columns: 2, rows: 1),
         .init(columns: 2, rows: 2),
         .init(columns: 1, rows: 4), .init(columns: 4, rows: 1),
