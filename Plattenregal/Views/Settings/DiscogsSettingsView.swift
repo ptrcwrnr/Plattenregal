@@ -37,15 +37,10 @@ struct DiscogsSettingsView: View {
         SettingsPage {
             SettingsCard(title: "Konto",
                          subtitle: DemoMode.isActive ? "Im Demo-Modus ist Discogs ausgeschaltet – Token und Synchronisierung sind gesperrt, dein gespeicherter Token wird nicht gelesen." : accountStatus) {
-                SecureField("Persönlicher API-Token", text: $model.token)
-                    .focused($tokenFocused)
+                GlassTextField(placeholder: "Persönlicher API-Token", text: $model.token, secure: true,
+                               onSubmit: { if canTest { model.startTest() } }, focus: $tokenFocused)
                     // Without a token (first start) the field is where to begin.
                     .onAppear { if !model.hasStoredToken && !DemoMode.isActive { tokenFocused = true } }
-                    .textFieldStyle(.plain)
-                    .padding(.horizontal, 10)
-                    .frame(height: AppStyle.controlHeight)
-                    .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
-                    .onSubmit { if canTest { model.startTest() } }
                     // The tested token replaces the field when the test ends.
                     .disabled(model.busy || DemoMode.isActive)
                 HStack(spacing: AppStyle.itemSpacing) {

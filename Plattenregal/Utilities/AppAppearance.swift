@@ -309,6 +309,27 @@ struct AppSearchField: View {
     }
 }
 
+/// A text field in the same Liquid Glass capsule as the search bars, for
+/// names and the like – no gray box, no magnifying glass.
+struct GlassTextField: View {
+    let placeholder: String
+    @Binding var text: String
+    var secure = false
+    var onSubmit: (() -> Void)?
+    var focus: FocusState<Bool>.Binding?
+    var body: some View {
+        focusable(field.textFieldStyle(.plain))
+            .onSubmit { onSubmit?() }
+            .searchBarChrome()
+    }
+    @ViewBuilder private var field: some View {
+        if secure { SecureField(placeholder, text: $text) } else { TextField(placeholder, text: $text) }
+    }
+    @ViewBuilder private func focusable(_ field: some View) -> some View {
+        if let focus { field.focused(focus) } else { field }
+    }
+}
+
 /// ⌘F presses (and the search button in the toolbar), counted. One object
 /// for the window, handed to every page (see `PageStack`); the page shown
 /// answers each request by revealing its search (see `SearchReveal`).

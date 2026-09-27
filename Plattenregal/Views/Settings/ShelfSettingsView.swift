@@ -301,6 +301,7 @@ private struct CabinetCreator: View {
             SettingsRow(title: "Name") {
                 CabinetNameField(placeholder: suggestedName, text: $name) { add() }
             }
+            Divider()
             SettingsRow(title: "Größe", hint: "Spalten × Reihen, wie auf dem IKEA-Etikett: Breite × Höhe.") {
                 CabinetSizePicker(columns: $columns, rows: $rows)
             }
@@ -361,15 +362,17 @@ private struct CabinetEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            SettingsRow(title: "Name") {
+            SettingsRow(title: "Name", hint: "Auch per Rechtsklick auf den Reiter der Regalseite.") {
                 CabinetNameField(placeholder: "Name", text: $name, submit: commitName)
             }
+            Divider()
             SettingsRow(title: "Aktiv", hint: activeHint) {
                 Toggle("Aktiv", isOn: Binding(get: { cabinet.isActive },
                                               set: { on in report { try service.setActive(cabinet, on) } }))
                     .labelsHidden().toggleStyle(.switch)
                     .disabled(isOnlyActive)
             }
+            Divider()
             SettingsRow(title: "Größe", hint: sizeChanged
                         ? "Die Fächer behalten ihre Reihenfolge von links oben. Fallen Fächer weg, müssen sie leer sein – gesperrte verlieren dabei Sperre und Namen."
                         : "Spalten × Reihen · Breite × Höhe") {
@@ -385,22 +388,26 @@ private struct CabinetEditor: View {
                 }
                 .transition(AppStyle.funnelTransition())
             }
-            HStack(spacing: AppStyle.itemSpacing) {
-                if !isOnly {
-                    IconButton(systemImage: "arrow.left", help: "Nach vorne schieben") { report { try service.move(cabinet, by: -1) } }
-                        .disabled(isFirst)
-                    IconButton(systemImage: "arrow.right", help: "Nach hinten schieben") { report { try service.move(cabinet, by: 1) } }
-                        .disabled(isLast)
+            if !isOnly {
+                Divider()
+                SettingsRow(title: "Reihenfolge", hint: "Position unter den Reitern der Regalseite.") {
+                    HStack(spacing: AppStyle.tightSpacing) {
+                        IconButton(systemImage: "arrow.left", help: "Nach vorne schieben") { report { try service.move(cabinet, by: -1) } }
+                            .disabled(isFirst)
+                        IconButton(systemImage: "arrow.right", help: "Nach hinten schieben") { report { try service.move(cabinet, by: 1) } }
+                            .disabled(isLast)
+                    }
+                    .foregroundStyle(.secondary)
                 }
-                Spacer()
-                if !isOnly {
-                    GhostButton(title: "Regal löschen …") { confirmingDelete = true }
+                Divider()
+                SettingsRow(title: "Regal löschen", hint: cabinet.recordCount > 0
+                            ? "Nur leere Regale lassen sich löschen."
+                            : "Das Regal ist leer und kann entfernt werden.") {
+                    GhostButton(title: "Löschen …") { confirmingDelete = true }
                         .foregroundStyle(AppStyle.errorColor)
                         .disabled(cabinet.recordCount > 0)
-                        .help(cabinet.recordCount > 0 ? "Nur leere Regale lassen sich löschen." : "")
                 }
             }
-            .foregroundStyle(.secondary)
         }
         .animation(AppStyle.standardAnimation, value: sizeChanged)
         .onChange(of: cabinet.columns) { _, value in columns = value }
@@ -443,12 +450,8 @@ private struct CabinetNameField: View {
     @Binding var text: String
     let submit: () -> Void
     var body: some View {
-        TextField(placeholder, text: $text)
-            .textFieldStyle(.plain)
-            .padding(.horizontal, 10)
-            .frame(width: 220, height: AppStyle.controlHeight)
-            .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
-            .onSubmit(submit)
+        GlassTextField(placeholder: placeholder, text: $text, onSubmit: submit)
+            .frame(width: 220)
     }
 }
 

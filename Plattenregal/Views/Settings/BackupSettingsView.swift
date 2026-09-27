@@ -63,6 +63,7 @@ struct BackupSettingsView: View {
                         .accessibilityLabel("Letzte Stände")
                     .disabled(DemoMode.isActive)
                 }
+                Divider()
                 SettingsRow(title: "Tagesstände behalten", hint: "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.") {
                     GlassMenuPicker(title: "Tagesstände", selection: $keptDays,
                                     current: keptDays == 0 ? "Keine" : "\(keptDays) Tage") {
@@ -77,22 +78,27 @@ struct BackupSettingsView: View {
                                 ? "Der gewählte Ordner ist nicht erreichbar – bis er wieder da ist oder ein anderer gewählt wird, sichert die App in ihren eigenen Ordner."
                                 : "Im Ordner der App. Ein Ordner in iCloud Drive schützt die Belegung auch, wenn der Mac verloren geht.") {
                     HStack(spacing: AppStyle.itemSpacing) {
-                        if ShelfAutoBackup.folder.isSet {
-                            GhostButton(title: "Standard") { changeFolder(to: nil) }
+                        if autoBackup.directory != nil {
+                            GhostButton(title: "Im Finder zeigen", action: showInFinder)
                         }
-                        SecondaryButton(title: "Ändern …") {
-                            if let url = FolderPicker.choose(message: "Ordner für die automatischen Sicherungen der Fach-Belegung") { changeFolder(to: url) }
+                        Group {
+                            if ShelfAutoBackup.folder.isSet {
+                                GhostButton(title: "Standard") { changeFolder(to: nil) }
+                            }
+                            SecondaryButton(title: "Ändern …") {
+                                if let url = FolderPicker.choose(message: "Ordner für die automatischen Sicherungen der Fach-Belegung") { changeFolder(to: url) }
+                            }
                         }
+                        .disabled(DemoMode.isActive)
                     }
                 }
-                .disabled(DemoMode.isActive)
                 if let folderError { AppBanner(message: folderError, kind: .error).transition(AppStyle.funnelTransition()) }
                 if autoEnabled, let failure = autoBackup.lastFailure {
                     AppBanner(message: "Die automatische Sicherung um \(failure.formatted(date: .omitted, time: .shortened)) hat nicht geklappt. Sichere die Belegung zur Sicherheit mit „Sichern unter …“ in eine Datei.", kind: .warning)
                         .transition(AppStyle.funnelTransition())
                 }
+                Divider()
                 if !entries.isEmpty {
-                    Divider()
                     VStack(spacing: 0) {
                         ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                             if index > 0 { Divider() }
@@ -110,19 +116,6 @@ struct BackupSettingsView: View {
                     }
                 } else {
                     SettingsNote("Noch keine automatische Sicherung vorhanden.")
-                }
-                if let directory = autoBackup.directory {
-                    HStack {
-                        GhostButton(title: "Im Finder zeigen") {
-                            if autoBackup.usesCustomFolder {
-                                try? ShelfAutoBackup.folder.withAccess { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
-                            } else {
-                                try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-                                NSWorkspace.shared.activateFileViewerSelecting([directory])
-                            }
-                        }
-                        Spacer()
-                    }
                 }
             }
             .animation(AppStyle.standardAnimation, value: folderError)
@@ -182,6 +175,16 @@ struct BackupSettingsView: View {
             Button("Wiederherstellen", role: .destructive) { if let pendingRestore { restore(pendingRestore.backup) } }
         } message: {
             Text(pendingRestore?.message ?? "")
+        }
+    }
+
+    private func showInFinder() {
+        guard let directory = autoBackup.directory else { return }
+        if autoBackup.usesCustomFolder {
+            try? ShelfAutoBackup.folder.withAccess { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
+        } else {
+            try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            NSWorkspace.shared.activateFileViewerSelecting([directory])
         }
     }
 
