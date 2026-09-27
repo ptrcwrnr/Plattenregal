@@ -241,7 +241,7 @@ struct CollectionView: View {
                 // Hits filtered away; an empty collection still gets the sync prompt below.
                 if !base.isEmpty {
                     AppEmptyState("Keine Treffer", systemImage: "magnifyingglass",
-                        description: Text("Versuche einen anderen Titel, Interpreten oder ein Label."))
+                        description: Text("Versuche einen anderen Titel, Interpreten oder ein anderes Label."))
                 } else if analyticsFilter != nil {
                     AppEmptyState("Keine Schallplatten", systemImage: "opticaldisc",
                         description: Text("In dieser Auswahl ist nichts mehr in der Collection."))
@@ -349,6 +349,7 @@ struct CollectionView: View {
                         .background(QuietIconColumnHeaders())
                         .alternatingRowBackgrounds(.disabled)
                         .scrollContentBackground(.hidden)
+                        .appTableCard()
                         .padding(.horizontal, AppStyle.pagePadding + 4)
                         .padding(.trailing, alphabetGutter)
                         // The app's own menu and, on double-click, the quick look – as in the grid.
@@ -689,7 +690,7 @@ struct OverviewSearchControl: View {
                 Color.clear.frame(width: 0).overlay(alignment: .leading) {
                     if showsOtherSection {
                         Button(action: openOtherSection) {
-                            Text("\(otherCount) in der \(otherSection.rawValue)")
+                            Text("\(otherCount.formatted()) in der \(otherSection.rawValue)")
                                 .monospacedDigit()
                                 .lineLimit(1)
                                 .padding(.horizontal, 14)

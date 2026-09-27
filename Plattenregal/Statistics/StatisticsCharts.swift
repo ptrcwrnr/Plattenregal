@@ -32,7 +32,7 @@ struct HoverBarChart: View {
             if let bar = bars.first(where: { $0.id == hovered }) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(bar.label).font(.callout.weight(.semibold))
-                    Text(unit == "Platten" ? AppStyle.records(bar.count) : "\(bar.count) \(unit)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                    Text(unit == "Platten" ? AppStyle.records(bar.count) : "\(bar.count.formatted()) \(unit)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
             } else {
                 Text(select == nil ? "Maus über die Balken bewegen, um Werte zu sehen." : "Maus über die Balken bewegen, um Werte zu sehen; ein Klick öffnet die Platten.")
@@ -282,7 +282,7 @@ struct GroupStatisticsList: View {
                     HStack(spacing: 6) {
                         Text(group.name).lineLimit(1)
                         Spacer(minLength: 4)
-                        Text("\(group.count)").monospacedDigit()
+                        Text(group.count.formatted()).monospacedDigit()
                         Text(group.percentage(of: total)).monospacedDigit().foregroundStyle(.secondary)
                             .frame(minWidth: 36, alignment: .trailing)
                     }

@@ -372,7 +372,7 @@ struct SoundDonut: View {
         } else {
             VStack(spacing: 2) {
                 // All of them, including those under "Weitere".
-                Text("\(groups.count)")
+                Text(groups.count.formatted())
                     .font(.system(.title, design: .rounded, weight: .bold))
                 Text(dimension.rawValue).font(.callout).foregroundStyle(.secondary)
             }
@@ -391,7 +391,7 @@ struct SoundDonut: View {
                         Capsule().fill(slice.color.opacity(0.5))
                             .frame(width: 70 * CGFloat(slice.group.count) / maximum, height: 4)
                             .frame(width: 70, alignment: .leading)
-                        Text("\(slice.group.count)").monospacedDigit().frame(minWidth: 36, alignment: .trailing)
+                        Text(slice.group.count.formatted()).monospacedDigit().frame(minWidth: 36, alignment: .trailing)
                         Text(slice.group.percentage(of: statistics.totalItems)).monospacedDigit().foregroundStyle(.secondary)
                             .frame(minWidth: 40, alignment: .trailing)
                     }
@@ -649,7 +649,7 @@ struct LabelBoard: View {
                         Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("\(group.count)").font(.system(.title3, design: .rounded, weight: .semibold)).monospacedDigit()
+                        Text(group.count.formatted()).font(.system(.title3, design: .rounded, weight: .semibold)).monospacedDigit()
                         Text("\(group.count == 1 ? "Platte" : "Platten") · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
                     }
                     GeometryReader { geo in

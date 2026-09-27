@@ -117,6 +117,14 @@ private struct AppAppearanceModifier: ViewModifier {
 }
 
 extension View {
+    /// A table on its glass card, the same on every page (collection,
+    /// wantlist, shelf). Clipped to the card's corners: the header's frosted
+    /// band would otherwise stick out square at the top.
+    func appTableCard() -> some View {
+        clipShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius + 4))
+            .appGlassSurface(cornerRadius: AppStyle.cardRadius + 4)
+    }
+
     func appGlassSurface(cornerRadius: CGFloat) -> some View {
         glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
     }

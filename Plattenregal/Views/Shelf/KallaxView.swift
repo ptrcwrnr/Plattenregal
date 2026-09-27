@@ -535,10 +535,7 @@ struct KallaxView: View {
                         delete: { pendingDelete = $0 },
                         setMissing: setMissing
                     )
-                    // Clipped to the card's corners: the header's frosted band
-                    // would otherwise stick out square at the top.
-                    .clipShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius + 4))
-                    .appGlassSurface(cornerRadius: AppStyle.cardRadius + 4)
+                    .appTableCard()
                     .modifier(FadeInOnChange(value: shown.id))
                 }
             }

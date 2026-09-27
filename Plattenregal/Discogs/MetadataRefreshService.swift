@@ -30,8 +30,8 @@ import SwiftData
         // One message for the whole selection, saying how much went through.
         if failed > 0, let reason {
             error = total == 1 ? reason
-                : failed == total ? "Keine der \(total) Platten konnte aktualisiert werden. " + reason
-                : "\(failed) von \(total) Platten konnten nicht aktualisiert werden, die übrigen schon. " + reason
+                : failed == total ? "Keine der \(total.formatted()) Platten konnte aktualisiert werden. " + reason
+                : "\(failed.formatted()) von \(total.formatted()) Platten konnten nicht aktualisiert werden, die übrigen schon. " + reason
         }
     }
 }

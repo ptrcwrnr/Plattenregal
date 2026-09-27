@@ -196,7 +196,7 @@ struct DiscogsSyncPill: View {
     private var subtitle: String? {
         switch phase {
         case .tracklists:
-            return sync.tracklistProgress.map { "\($0.done) von \($0.total)" }
+            return sync.tracklistProgress.map { "\($0.done.formatted()) von \($0.total.formatted())" }
         case .done:
             return sync.summary
         default:
@@ -334,6 +334,7 @@ struct WantlistView: View {
                         grid(visibleEntries)
                     } else {
                         table(visibleEntries)
+                            .appTableCard()
                             .padding(.horizontal, pageMargin)
                             .padding(.trailing, alphabetGutter)
                     }

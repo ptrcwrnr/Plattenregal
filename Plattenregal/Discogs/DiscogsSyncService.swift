@@ -29,7 +29,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     var wantsAdded = 0, wantsRemoved = 0
     var foldersChanged = 0
     // Only additions are reported; updates, removals and folder changes stay silent.
-    private static func added(_ count: Int) -> String { count == 0 ? "Nichts hinzugefügt" : "\(count) hinzugefügt" }
+    private static func added(_ count: Int) -> String { count == 0 ? "Nichts hinzugefügt" : "\(count.formatted()) hinzugefügt" }
     /// Both areas at once need their names to be told apart.
     var description: String { "Collection: \(Self.added(collectionAdded))\nWantlist: \(Self.added(wantsAdded))" }
     func description(for scope: DiscogsSyncScope) -> String {
