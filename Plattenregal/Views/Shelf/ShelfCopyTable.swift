@@ -434,31 +434,43 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
         override func draw(_ dirtyRect: NSRect) {
             guard let table = tableView else { return super.draw(dirtyRect) }
             let columns = table.tableColumns
-            // Each header cell draws its divider on its right edge: skip it on
-            // an icon column, on the column just before one and on the last
-            // column, where there is nothing left to separate.
-            let clip = NSBezierPath(rect: bounds)
-            clip.windingRule = .evenOdd
             // Keep the line along the header's bottom edge intact.
             let height = bounds.height - 2
             let y = isFlipped ? bounds.minY : bounds.maxY - height
-            // The inset style's empty lead-in before the first column gets a
-            // divider of its own – there is nothing to separate there.
-            if !columns.isEmpty {
-                clip.appendRect(NSRect(x: bounds.minX, y: y, width: headerRect(ofColumn: 0).minX - bounds.minX + 1, height: height))
-            }
+            // Each header cell draws its divider on its right edge: skip it on
+            // an icon column, on the column just before one and on the last
+            // column, where there is nothing left to separate. The inset
+            // style's empty lead-in before the first column gets a divider of
+            // its own at the first column's left edge – nothing to separate there either.
+            var edges: [CGFloat] = columns.isEmpty ? [] : [headerRect(ofColumn: 0).minX]
             for index in columns.indices {
                 let isIcon = columns[index].title.isEmpty
                 let beforeIcon = index + 1 < columns.count && columns[index + 1].title.isEmpty
                 let isLast = index == columns.count - 1
                 guard isIcon || beforeIcon || isLast else { continue }
-                let edge = headerRect(ofColumn: index).maxX
-                clip.appendRect(NSRect(x: edge - 2, y: y, width: 3, height: height))
+                edges.append(headerRect(ofColumn: index).maxX)
             }
+            let gaps = edges.map { NSRect(x: $0 - 2, y: y, width: 3, height: height) }
+            let clip = NSBezierPath(rect: bounds)
+            clip.windingRule = .evenOdd
+            gaps.forEach(clip.appendRect)
             NSGraphicsContext.saveGraphicsState()
             clip.addClip()
             super.draw(dirtyRect)
             NSGraphicsContext.restoreGraphicsState()
+            // Left empty, a gap would show as a light slit where the header has
+            // a background of its own (gray in an inactive window). Fill it
+            // with what lies just right of it: plain header background.
+            let shift: CGFloat = 4
+            for gap in gaps {
+                NSGraphicsContext.saveGraphicsState()
+                NSBezierPath(rect: gap).addClip()
+                let transform = NSAffineTransform()
+                transform.translateX(by: -shift, yBy: 0)
+                transform.concat()
+                super.draw(gap.offsetBy(dx: shift, dy: 0))
+                NSGraphicsContext.restoreGraphicsState()
+            }
         }
     }
 }
