@@ -138,13 +138,6 @@ struct HistoryLineChart: View {
                     }
                     if let selected {
                         RuleMark(x: .value("Datum", selected.date)).foregroundStyle(.secondary.opacity(0.4))
-                            .annotation(position: .top, spacing: 2, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
-                                VStack(spacing: 0) {
-                                    Text(formatted(selected.value)).font(.caption.weight(.semibold)).monospacedDigit()
-                                    Text(selected.date.formatted(date: .abbreviated, time: .omitted)).font(.caption2).foregroundStyle(.secondary)
-                                }
-                                .chartTooltipChrome()
-                            }
                     }
                 }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? "Exemplare")
                     .chartYScale(domain: .automatic(includesZero: false))
@@ -159,8 +152,19 @@ struct HistoryLineChart: View {
                             }
                         }
                     }}
-                Text("Maus über die Kurve bewegen, um Werte zu sehen.").font(.caption).foregroundStyle(.tertiary)
-                    .opacity(selected == nil ? 1 : 0)
+                // The value under the pointer, read out below the chart instead
+                // of a box wandering along inside it.
+                Group {
+                    if let selected {
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text(formatted(selected.value)).font(.callout.weight(.semibold)).monospacedDigit()
+                            Text(selected.date.formatted(date: .abbreviated, time: .omitted)).font(.caption).foregroundStyle(.secondary)
+                        }
+                    } else {
+                        Text("Maus über die Kurve bewegen, um Werte zu sehen.").font(.caption).foregroundStyle(.tertiary)
+                    }
+                }
+                .frame(height: 18, alignment: .leading)
             }
         }
     }

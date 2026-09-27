@@ -4,7 +4,8 @@ import Charts
 
 // MARK: - Bars
 
-/// Bar chart that explains each bar on hover and optionally opens it on click.
+/// Bar chart that explains each bar on hover (in a line below it) and
+/// optionally opens it on click.
 struct HoverBarChart: View {
     struct Bar: Identifiable {
         let id: String
@@ -19,23 +20,37 @@ struct HoverBarChart: View {
     @State private var hovered: String?
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            chart
+            readout
+        }
+    }
+
+    /// The hovered bar, read out below the chart instead of a box inside it.
+    private var readout: some View {
+        Group {
+            if let bar = bars.first(where: { $0.id == hovered }) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(bar.label).font(.callout.weight(.semibold))
+                    Text(unit == "Platten" ? AppStyle.records(bar.count) : "\(bar.count) \(unit)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                }
+            } else {
+                Text(select == nil ? "Maus über die Balken bewegen, um Werte zu sehen." : "Maus über die Balken bewegen, um Werte zu sehen; ein Klick öffnet die Platten.")
+                    .font(.caption).foregroundStyle(.tertiary)
+            }
+        }
+        .frame(height: 18, alignment: .leading)
+    }
+
+    private var chart: some View {
         let step = max(1, Int((Double(bars.count) / 10).rounded(.up)))
-        Chart(bars) { bar in
+        return Chart(bars) { bar in
             BarMark(x: .value("Zeitraum", bar.id), y: .value(unit, bar.count))
                 .cornerRadius(3)
                 .foregroundStyle(hovered == bar.id
                                  ? AnyShapeStyle(AppStyle.accent)
                                  : AnyShapeStyle(LinearGradient(colors: [AppStyle.accent.opacity(hovered == nil ? 0.85 : 0.35), AppStyle.accent.opacity(hovered == nil ? 0.45 : 0.18)],
                                                                 startPoint: .top, endPoint: .bottom)))
-                .annotation(position: .top, spacing: 4, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
-                    if hovered == bar.id {
-                        VStack(spacing: 0) {
-                            Text(bar.label).font(.caption.weight(.semibold))
-                            Text(unit == "Platten" ? AppStyle.records(bar.count) : "\(bar.count) \(unit)").font(.caption2).foregroundStyle(.secondary)
-                        }
-                        .chartTooltipChrome()
-                    }
-                }
         }
         .chartXAxis {
             AxisMarks { value in

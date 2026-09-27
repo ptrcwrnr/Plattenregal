@@ -829,13 +829,6 @@ struct GlassStepButton: View {
     }
 }
 
-extension View {
-    /// Hover tooltips in charts: a small Liquid Glass tag instead of material.
-    func chartTooltipChrome() -> some View {
-        padding(.horizontal, 8).padding(.vertical, 4)
-            .glassEffect(.regular, in: .rect(cornerRadius: 8))
-    }
-}
 
 /// The app's activity ring: the same accent ring as the pull-to-refresh
 /// indicator. `progress` fills it; `nil` lets a short arc spin (a still
