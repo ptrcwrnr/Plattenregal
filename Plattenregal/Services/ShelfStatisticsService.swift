@@ -52,12 +52,6 @@ struct ShelfStatistics {
     }
 }
 
-/// Automatic shelf labels ("0 – B", "Ce – Di", "R – T", "B") derived from the
-/// contents, never stored. Each occupied shelf spans from the first to the last
-/// artist by the same key the shelves are sorted by (artist, then title, via
-/// `localizedStandardCompare`). Where two neighbouring shelves meet inside the
-/// same letter, both sides get a second letter — never more, so a label stays
-/// a letter range and never turns into an artist name.
 /// What the compartments are called: the letter range of their contents
 /// ("A – Be", the default) or their number in the cabinet ("Fach 3").
 enum ShelfLabelStyle: String, CaseIterable, Identifiable {
@@ -125,6 +119,12 @@ struct ShelfLabels {
     }
 }
 
+/// Automatic shelf labels ("0 – B", "Ce – Di", "R – T", "B") derived from the
+/// contents, never stored. Each occupied shelf spans from the first to the last
+/// artist by the same key the shelves are sorted by (artist, then title, via
+/// `localizedStandardCompare`). Where two neighbouring shelves meet inside the
+/// same letter, both sides get a second letter — never more, so a label stays
+/// a letter range and never turns into an artist name.
 enum ShelfRangeLabels {
     /// `ends`: a shelf's first and last artist, reduced to `letters`; the shelf
     /// page passes the ones it kept for shelves whose records didn't change.

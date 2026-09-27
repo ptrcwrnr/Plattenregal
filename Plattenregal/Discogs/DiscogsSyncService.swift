@@ -367,12 +367,15 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             let copies = try context.fetch(FetchDescriptor<RecordCopy>())
             if let folders = snapshot.folders {
                 let existing = try context.fetch(FetchDescriptor<DiscogsFolder>(predicate: #Predicate { $0.owner == owner }))
-                let indexed = Dictionary(uniqueKeysWithValues: existing.map { ($0.folderID, $0) })
+                // The client rejects duplicates in an answer; one already in
+                // the store must not trap either – the first one is kept up to date.
+                var indexed = Dictionary(existing.map { ($0.folderID, $0) }, uniquingKeysWith: { first, _ in first })
                 let ids = Set(folders.map(\.id))
                 for dto in folders {
                     let folder = indexed[dto.id] ?? DiscogsFolder(owner: owner, id: dto.id, name: dto.name, count: dto.count)
                     if indexed[dto.id] == nil || folder.name != dto.name || folder.count != dto.count { result.foldersChanged += 1 }
                     context.insert(folder); folder.name = dto.name; folder.count = dto.count
+                    indexed[dto.id] = folder
                 }
                 for folder in existing where !ids.contains(folder.folderID) { context.delete(folder); result.foldersChanged += 1 }
                 for copy in copies where copy.discogsOwner == owner {
@@ -389,12 +392,14 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                     let metadataChanged = byRelease[dto.id]?.basicInformation != (try DiscogsEncoding.data(dto.basic_information))
                     let metadata = try release(dto.basic_information)
                     let copy: RecordCopy
+                    let isNew = byInstance[dto.instance_id] == nil
                     if let existing = byInstance[dto.instance_id] { copy = existing }
                     else {
                         copy = RecordCopy(release: metadata, instanceID: dto.instance_id, owner: owner); context.insert(copy)
+                        byInstance[dto.instance_id] = copy
                         result.collectionAdded += 1
                     }
-                    if byInstance[dto.instance_id] != nil && (metadataChanged || copy.discogsFolderID != dto.folder_id || !copy.discogsActive || copy.discogsDateAdded != dto.date_added) { result.collectionUpdated += 1 }
+                    if !isNew && (metadataChanged || copy.discogsFolderID != dto.folder_id || !copy.discogsActive || copy.discogsDateAdded != dto.date_added) { result.collectionUpdated += 1 }
                     copy.release = metadata; copy.discogsOwner = owner; copy.discogsInstanceID = dto.instance_id
                     copy.discogsFolderID = dto.folder_id; copy.discogsDateAdded = dto.date_added
                     copy.discogsActive = true
@@ -412,7 +417,8 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             }
             if let wants = snapshot.wants {
                 let existing = try context.fetch(FetchDescriptor<WantlistEntry>(predicate: #Predicate { $0.owner == owner }))
-                let indexed = Dictionary(uniqueKeysWithValues: existing.map { ($0.releaseID, $0) })
+                // As for the folders: a duplicate already in the store must not trap.
+                var indexed = Dictionary(existing.map { ($0.releaseID, $0) }, uniquingKeysWith: { first, _ in first })
                 let ids = Set(wants.map(\.id))
                 for dto in wants {
                     let metadata = try release(dto.basic_information)
@@ -420,6 +426,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                     if indexed[dto.id] == nil { result.wantsAdded += 1 }
                     context.insert(entry); entry.release = metadata; entry.dateAdded = dto.date_added
                     entry.notes = dto.notes
+                    indexed[dto.id] = entry
                 }
                 for entry in existing where !ids.contains(entry.releaseID) { context.delete(entry); result.wantsRemoved += 1 }
                 // A release that was only wanted (never owned) goes with its last want.

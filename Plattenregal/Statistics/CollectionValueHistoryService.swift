@@ -42,7 +42,9 @@ final class CollectionValueHistoryService {
         let context = ModelContext(container); context.autosaveEnabled = false
         let fingerprint = try await api.credentialFingerprint()
         let accounts = try context.fetch(FetchDescriptor<DiscogsAccount>())
-        guard let account = accounts.first(where: { $0.username == owner && $0.credentialFingerprint == fingerprint }), account.lastCollectionSync != nil else { throw DiscogsError.accountChanged }
+        guard let account = accounts.first(where: { $0.username == owner && $0.credentialFingerprint == fingerprint }) else { throw DiscogsError.accountChanged }
+        // Only the wantlist synced so far: no collection to value yet – not a changed token.
+        guard account.lastCollectionSync != nil else { return }
         func activeCopies() throws -> [RecordCopy] {
             try context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.discogsOwner == owner && $0.discogsActive == true }))
         }

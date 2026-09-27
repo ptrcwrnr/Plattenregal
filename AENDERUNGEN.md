@@ -1,3 +1,11 @@
+# Randfälle, Logik und toter Code: ganze App geprüft · 27.09.2026
+
+- **Sync stürzte bei doppelten Einträgen in der Datenbank ab**: Ordner und Wantlist wurden über `Dictionary(uniqueKeysWithValues:)` nachgeschlagen, das bei einem doppelten Schlüssel die App beendet. Discogs-Antworten mit Doppelten lehnt der Client schon ab; ein Doppel, das bereits in der Datenbank steht, führt jetzt nicht mehr zum Absturz – der erste Eintrag wird aktualisiert. Test: `duplicatesAlreadyInTheStoreDoNotStopTheSync`.
+- **Sammlungswert nach reiner Wantlist-Synchronisierung**: Die Aktualisierung meldete fälschlich „Der Discogs-Token passt nicht mehr zum geladenen Konto“, wenn das Konto noch keine Collection hatte. Jetzt gibt es dann einfach noch nichts zu bewerten, ohne Meldung. Test: `valueRefreshAfterWantlistOnlySyncIsNoError`.
+- Doku-Kommentar der Fach-Beschriftungen stand über dem falschen Typ.
+- **Toter Code**: Per Skript jede Deklaration gegen ihre Verwendungen geprüft (ohne Kommentare, getrennt nach App und Tests), dazu private Member, Zustände und Stil-Konstanten. Kein ungenutzter Code gefunden; was nur Vorschauen und Tests dient (`insert(release:)`, `PreviewData`), steht bereits in `#if DEBUG`.
+- **Geprüft ohne Befund**: Positionen und Transaktionen, Sortierschlüssel (Tabulator trennt Interpret und Titel korrekt), Jahr 0 von Discogs, Fach-Beschriftungen, Regale anlegen/verkleinern/löschen, Sicherung und Wiederherstellung samt Aufbewahrung, Zurücksetzen, Instanz-Sperre, automatischer Export, Discogs-Client (Seitenprüfung, Ratenlimit, Wiederholungen), Cover-Cache, Schlüsselbund und Token-Test, Demo-Abschottung, Ordner-Lesezeichen. 176 Tests, 0 Fehler.
+
 # Collection, Wantlist, Einstellungen, Statistik: zweite Runde · 27.09.2026
 
 - **Statistik-Fenster mit den Platten einer Auswahl** (Klick auf Kachel, Diagramm oder Rangliste): neben dem Titel steht jetzt die Anzahl („Downtempo · 7 Platten“), wie beim Fach im Regal und in der Vermisst-Liste.

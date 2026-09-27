@@ -163,6 +163,29 @@ extension AllTests {
             #expect(wants.count == 1); try #expect(wants.first?.release?.id == copies(c).first?.release?.id)
             #expect(wants.first?.notes == "Want note")
         }
+        @Test func duplicatesAlreadyInTheStoreDoNotStopTheSync() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let context = ModelContext(c)
+            let release = Release(discogsID: 42, artist: "Artist", title: "Album")
+            context.insert(release)
+            for _ in 0..<2 { context.insert(WantlistEntry(owner: "fixture", release: release, releaseID: 42)) }
+            for _ in 0..<2 { context.insert(DiscogsFolder(owner: "fixture", id: 1, name: "Alt", count: 0)) }
+            try context.save()
+            // Used to trap building its lookup tables; now the first of each is updated.
+            try merge(c, wants: [want()], folders: [.init(id: 1, name: "Neu", count: 1)])
+            let folders = try ModelContext(c).fetch(FetchDescriptor<DiscogsFolder>())
+            #expect(folders.contains { $0.name == "Neu" })
+        }
+        @Test func valueRefreshAfterWantlistOnlySyncIsNoError() async throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let account = DiscogsAccount(username: "fixture")
+            account.credentialFingerprint = DiscogsAPIClient.fingerprint(of: "token")
+            account.lastWantlistSync = .now
+            c.mainContext.insert(account); try c.mainContext.save()
+            // No collection synced yet: nothing to value, and not "account changed".
+            try await CollectionValueHistoryService().refresh(owner: "fixture", container: c,
+                api: DiscogsAPIClient(tokenProvider: { "token" }))
+        }
         @Test func wantlistRemovedDeletesUnownedRelease() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, wants: [want(), want(43)]); try merge(c, wants: [want(43)])
