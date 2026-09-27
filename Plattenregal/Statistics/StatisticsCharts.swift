@@ -86,7 +86,10 @@ struct TimeTravel: View {
                 span("Jahre Musikgeschichte", statistics.oldest.flatMap { oldest in statistics.newest.map { $0 - oldest } })
             }
             HoverBarChart(bars: bars, height: 220, select: select)
-            Text("Jahr der konkreten Pressung · \(statistics.missingYear) ohne Jahr · \(statistics.missingStyle) ohne Style")
+            // Gaps only when there are any: "0 ohne Jahr" says nothing.
+            Text((["Jahr der konkreten Pressung"]
+                  + (statistics.missingYear > 0 ? ["\(statistics.missingYear) ohne Jahr"] : [])
+                  + (statistics.missingStyle > 0 ? ["\(statistics.missingStyle) ohne Style"] : [])).joined(separator: " · "))
                 .font(.caption).foregroundStyle(.secondary)
         }
     }

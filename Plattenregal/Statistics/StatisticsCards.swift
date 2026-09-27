@@ -463,20 +463,16 @@ struct ArtistPodium: View {
         var body: some View {
             Button { select(group) } label: {
                 VStack(alignment: .leading, spacing: 8) {
+                    // The rank sits by the name, as on the label tiles: on
+                    // the cover it hid the artwork's own lettering.
                     CoverView(url: cover, size: nil)
-                        .overlay(alignment: .topLeading) {
-                            Text("\(rank)")
-                                .font(.system(.callout, design: .rounded, weight: .bold))
-                                .foregroundStyle(rank == 1 ? .white : .primary)
-                                .frame(width: 28, height: 28)
-                                .background(rank == 1 ? AppStyle.accent : .clear, in: Circle())
-                                .glassEffect(rank == 1 ? .identity : .regular, in: .circle)
-                                .padding(6)
-                        }
                         .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
                         .scaleEffect(hovering ? 1.03 : 1)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text("\(rank)").font(.system(.caption, design: .rounded, weight: .bold)).foregroundStyle(AppStyle.accent)
+                            Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
+                        }
                         Text("\(AppStyle.records(group.count)) · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
                     }
                 }
