@@ -122,6 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // layout is fixed.
         .windowToolbarLabelStyle(fixed: .iconOnly)
         .commands {
+            CommandGroup(replacing: .appInfo) { AboutCommand() }
             CommandGroup(after: .appSettings) {
                 if DemoMode.isActive {
                     Button("Demo beenden") { DemoMode.end() }
@@ -131,6 +132,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
+        Window("Über Plattenregal", id: AboutView.windowID) {
+            AboutView().appAppearance().windowMinimizeBehavior(.disabled)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+        .restorationBehavior(.disabled)
+        .defaultPosition(.center)
+        // Not a document: no entry in the Fenster menu.
+        .commandsRemoved()
         Settings {
             if let container {
                 AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)

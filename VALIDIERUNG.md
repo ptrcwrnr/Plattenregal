@@ -1,4 +1,32 @@
-# Aktueller Stand · 27.09.2026 (Fenster ohne Ampel, Vermisst-Spalte, Sortierung prüfen)
+# Aktueller Stand · 27.09.2026 (Über-Karte, ein Hauptfenster, Randfälle)
+
+Stand nach der kleinen Karte „Über Plattenregal“, dem einzelnen Hauptfenster und zwei Prüfrunden auf Randfälle und Logik (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Gesamte Testsuite: **176 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die CoreData-Meldungen „Migration was completed by another client“ stammen aus den Migrationstests und sind keine Fehler.
+
+| Testdatei | Tests | Schwerpunkt |
+|---|---|---|
+| `LibraryTests.swift` | 51 | Positionen, Sortierung, Sortierprüfung, Suche, Speicherung, Fehlermeldungen, Absturz-Auswertung, Discogs-Mapping, Demo-Sammlung |
+| `DiscogsSyncTests.swift` | 36 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration, Doppelte in der Datenbank, Sammlungswert nach reiner Wantlist-Synchronisierung |
+| `StatisticsTests.swift` | 29 | Auswertungen, Wertverlauf, Migrationen, Zurücksetzen |
+| `SettingsTests.swift` | 17 | Discogs-Token, Reihenfolge der Statistik, Reihenfolge von Collection und Wantlist, Eingabequellen-Blase |
+| `CabinetTests.swift` | 15 | Mehrere Regale, Größenänderung, Zurücksetzen, Einzelinstanz-Sperre |
+| `BackupTests.swift` | 13 | Sichern, Wiederherstellen, Aufbewahrung, Dateinamen |
+| `ExportTests.swift` | 8 | CSV (Maskierung, BOM, Formel-Schutz), Reihenfolge, Spalten, PDF |
+| `ScenarioTests.swift` | 7 | Abläufe gegen die echten Services: ohne Netz, Bremse, gelöschte Fächer, „Platte hinzufügen“, 10.000 Platten |
+
+- Neu seit dem vorigen Stand: `DiscogsSyncTests.duplicatesAlreadyInTheStoreDoNotStopTheSync`, `DiscogsSyncTests.valueRefreshAfterWantlistOnlySyncIsNoError`.
+- **Laufende App** (Debug-Build, Demo): „Über Plattenregal“ aus dem App-Menü öffnet die Karte (260 × 237 pt, mittig) mit Symbol, Name, „Version 1.0 (092026)“ und „© 2026 Patrice Werner“.
+- **Fehlermeldungen und Protokoll** per Code-Durchsicht geprüft: alle Fehlertypen mit verständlichem deutschen Text, Startzeile und Absturz-Block mit Version.
+
+## Nicht geprüft (dieser Durchgang)
+
+- Über-Karte nur im hellen Modus angesehen.
+- Kein Release-Build, keine Codesign-Prüfung, kein Abgleich mit Discogs für diesen Stand.
+
+# Vorheriger Stand · 27.09.2026 (Fenster ohne Ampel, Vermisst-Spalte, Sortierung prüfen)
 
 Stand nach den Glasfenstern über der Seite, der Vermisst-Spalte in „Platte hinzufügen“, dem Plus im Fach, „Sortierung prüfen“ mit wählbarer Reihenfolge bei gleichem Interpreten und drei Prüfrunden auf Robustheit (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 

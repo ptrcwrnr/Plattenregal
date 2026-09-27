@@ -1,3 +1,9 @@
+# Über Plattenregal als kleine Karte, Doku geprüft · 27.09.2026
+
+- **„Über Plattenregal“** (App-Menü) öffnet statt des System-Fensters eine kleine, kompakte Karte (260 pt breit): App-Symbol, Name, „Version 1.0 (092026)“ – zum Kopieren auswählbar, für Fehlermeldungen – und „© 2026 Patrice Werner“. Eigenes Fenster ohne Titelleiste, feste Größe, nicht minimierbar, erscheint mittig und wird nach einem Neustart nicht wiederhergestellt (`Views/AboutView.swift`).
+- **README**: ein Hauptfenster, App läuft nach dem Schließen weiter, Über-Karte; beim Melden eines Fehlers Protokoll und Version mitgeben. **STATISTIK.md**: Anzahl im Titel des Auswahlfensters, kein Hinweis beim Sammlungswert nach reiner Wantlist-Synchronisierung, 29 Statistik-Tests. **VALIDIERUNG.md** auf den aktuellen Stand gebracht.
+- **Fehlermeldungen und Protokoll geprüft ohne Befund**: Alle Texte der App-Fehler (Discogs, Regal, Positionen, Sicherung, Dateien, Zurücksetzen, Schlüsselbund, zweite Instanz) sind deutsch, sagen was passiert ist und was zu tun ist; Codes nur dort, wo sie beim Nachschlagen helfen (HTTP, Schlüsselbund). Protokoll: Startzeile mit Version und Ladeadresse, Absturz-Block mit Signal, Uhrzeit, Version und Aufrufliste, Hinweis auf unerwartetes Ende, Rotation ab 2 MB samt Umstellen des Absturz-Deskriptors. Nur ein veraltetes Beispiel („Version 1.0 (7)“) im Code-Kommentar korrigiert.
+
 # Nur noch ein Hauptfenster · 27.09.2026
 
 - **⌘N öffnet kein zweites Hauptfenster mehr**: Statt `WindowGroup` eine einzelne `Window`-Szene. Ein zweites Fenster lud und berechnete jede Seite ein weiteres Mal (Statistik, Suchindex, Regal). Das Menü „Ablage“ fällt damit weg – es enthielt nur „Neues Fenster“.

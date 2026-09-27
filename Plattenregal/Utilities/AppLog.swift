@@ -228,7 +228,7 @@ nonisolated enum AppLog {
 nonisolated(unsafe) private var crashFD: Int32 = -1
 /// Allocated up front: the handler must not allocate memory.
 nonisolated(unsafe) private var crashFrames: UnsafeMutablePointer<UnsafeMutableRawPointer?>?
-/// " · Version 1.0 (7)", prepared at launch for the same reason.
+/// " · Version 1.0 (092026)", prepared at launch for the same reason.
 nonisolated(unsafe) private var crashVersion: UnsafeMutableBufferPointer<UInt8>?
 
 nonisolated private func crashSignalHandler(_ signal: Int32) {
