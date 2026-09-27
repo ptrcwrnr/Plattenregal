@@ -439,13 +439,15 @@ extension EnvironmentValues {
 /// How a page's search appears: hidden until ⌘F (or the search button in the
 /// toolbar), then it slides in at the top with the cursor in it. It stays while
 /// it holds a query and goes away again once it is empty and loses the focus
-/// (Esc, clicking elsewhere, another page).
+/// (Esc, clicking elsewhere, another page). ⌘F toggles: pressed again while
+/// typing in it, it clears the query and closes the search; shown but not
+/// focused, it puts the cursor back in first.
 struct SearchReveal: ViewModifier {
     @Environment(\.pageVisibility) private var visibility
     @Environment(\.searchRequests) private var searchRequests
     @Binding var isPresented: Bool
     var focus: FocusState<Bool>.Binding
-    let query: String
+    @Binding var query: String
 
     func body(content: Content) -> some View {
         let pageShown = visibility?.isShown ?? true
@@ -453,6 +455,14 @@ struct SearchReveal: ViewModifier {
             .onChange(of: searchRequests?.count ?? 0) {
                 // Every page hears the request; only the visible one answers.
                 guard pageShown else { return }
+                if (isPresented || !query.isEmpty) && focus.wrappedValue {
+                    withAnimation(AppStyle.searchBarAnimation) {
+                        query = ""
+                        isPresented = false
+                    }
+                    focus.wrappedValue = false
+                    return
+                }
                 withAnimation(AppStyle.searchBarAnimation) { isPresented = true }
                 // The field is inserted by this update; focus it once it exists.
                 DispatchQueue.main.async { focus.wrappedValue = true }
@@ -520,7 +530,7 @@ extension View {
     }
 
     /// See `SearchReveal`. Show the search while `isPresented || !query.isEmpty`.
-    func searchReveal(isPresented: Binding<Bool>, focus: FocusState<Bool>.Binding, query: String) -> some View {
+    func searchReveal(isPresented: Binding<Bool>, focus: FocusState<Bool>.Binding, query: Binding<String>) -> some View {
         modifier(SearchReveal(isPresented: isPresented, focus: focus, query: query))
     }
 }

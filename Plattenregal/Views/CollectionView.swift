@@ -397,7 +397,7 @@ struct CollectionView: View {
         // The sync status line slides in/out and the content below follows smoothly.
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .animation(AppStyle.standardAnimation, value: showsControls)
-        .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: query)
+        .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: queryBinding)
         .background { if analyticsFilter == nil { AmbientBackdrop(covers: ambientCovers) } }
         .settingsOpener($settingsTab)
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }

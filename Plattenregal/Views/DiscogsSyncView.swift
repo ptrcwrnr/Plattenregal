@@ -348,7 +348,7 @@ struct WantlistView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.release?.coverURL }.prefix(3))) }
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
-        .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: query)
+        .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: Bindable(search).query)
         .settingsOpener($settingsTab)
         .onChange(of: order) { _, _ in scrollPosition = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }

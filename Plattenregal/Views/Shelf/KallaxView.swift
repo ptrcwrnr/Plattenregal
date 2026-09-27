@@ -283,7 +283,7 @@ struct KallaxView: View {
         }
         .onChange(of: searchQuery) { applySearch() }
         .settingsOpener($settingsTab)
-        .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: searchQuery)
+        .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: $searchQuery)
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         // Another account synced: other records count as in the collection.
         .onChange(of: owner) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }

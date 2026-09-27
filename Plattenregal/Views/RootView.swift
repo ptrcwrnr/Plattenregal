@@ -73,7 +73,7 @@ struct RootView: View {
             .background { AmbientGlow() }
     }
 
-    /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window; ⌘F reveals
+    /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window; ⌘F toggles
     /// the search of the page shown, where it has one.
     private var pageShortcuts: some View {
         Group {

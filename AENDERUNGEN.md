@@ -1,3 +1,7 @@
+# ⌘F schaltet die Suche um · 27.09.2026
+
+- **⌘F ein und aus**: Ein zweites ⌘F (oder die Suche aus dem Menü), während der Cursor in der Suchleiste steht, leert sie und blendet sie aus – in Collection, Wantlist und Regal. Ist die Leiste noch da (mit Text), aber nicht im Fokus, holt ⌘F zuerst den Cursor zurück. `SearchReveal` bekommt den Suchtext dafür als Binding.
+
 # Drei Prüfrunden, Fehlermeldungen und Protokoll · 27.09.2026
 
 - **Esc schloss die Glasfenster nie**: Die Seiten sind eigene SwiftUI-Wurzeln (`PageStack`), dort erreicht ein `.cancelAction`-Kürzel die Taste nicht. Jetzt fängt eine eigene Abfrage (`PanelEscapeMonitor`) Esc ab – nur für das Fenster, in dem das Panel liegt (nicht aus dem Einstellungsfenster heraus), nur bei sichtbarer Seite und nicht, solange ein Popover oder eine Rückfrage davorliegt. In der App geprüft.
