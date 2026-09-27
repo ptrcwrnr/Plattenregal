@@ -1,3 +1,7 @@
+# „Reihenfolge übernehmen“ schließt das Fenster · 27.09.2026
+
+- **Erster Klick danach ging ins Leere**: Nach „Reihenfolge übernehmen“ blieb „Sortierung prüfen“ offen (mit „Alles in Ordnung“). Ein offenes Glasfenster fängt Klicks daneben ab, um sich zu schließen – der erste Klick auf ein anderes Fach schloss also nur das Fenster. Jetzt schließt es sich nach dem erfolgreichen Speichern selbst, der nächste Klick erreicht sofort das Fach. Scheitert das Speichern, bleibt es mit der Fehlermeldung offen.
+
 # Schmale Regale bündig mit dem Fachbereich · 27.09.2026
 
 - **Regale mit weniger als vier Spalten** (1 × 1, 2 × 2 …) waren auf höchstens 300 pt pro Spalte begrenzt, Fach-Titel („Y–Z“), Rückenleiste und Tabelle darunter liefen aber über die volle Breite. Das Regal nimmt jetzt immer die ganze Breite ein und schließt links und rechts bündig mit dem Bereich darunter ab – wie beim 4 × 3.

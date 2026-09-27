@@ -644,6 +644,10 @@ struct ShelfSortCheckRequest: Identifiable {
 struct ShelfSortCheckView: View {
     let shelf: Shelf
     let rangeLabel: String?
+    /// Closes the panel once the new order is saved: left open, it would
+    /// only say "Alles in Ordnung", and the next click on the shelf page
+    /// would merely close it instead of reaching a compartment.
+    let close: () -> Void
     @Environment(\.modelContext) private var context
     @AppStorage(ShelfSecondaryOrder.key) private var savedOrder = ShelfSecondaryOrder.title
     @State private var order = ShelfSecondaryOrder.current
@@ -777,6 +781,7 @@ struct ShelfSortCheckView: View {
             savedOrder = order
             done = []
             error = nil
+            close()
         } catch { self.error = error.reportedMessage() }
     }
 }

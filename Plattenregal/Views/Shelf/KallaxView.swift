@@ -326,7 +326,7 @@ struct KallaxView: View {
                                 found: { setMissing($0, false) })
         }
         .appPanel(item: $sortCheck) { request in
-            ShelfSortCheckView(shelf: request.shelf, rangeLabel: rangeLabels[request.shelf.id])
+            ShelfSortCheckView(shelf: request.shelf, rangeLabel: rangeLabels[request.shelf.id], close: { sortCheck = nil })
         }
         .confirmationDialog(
             soldToRemove == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldToRemove) Platten ohne Collection aus dem Regal nehmen?",
