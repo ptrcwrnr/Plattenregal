@@ -448,8 +448,9 @@ struct WantlistView: View {
                                     }
                                     .animation(AppStyle.quickAnimation, value: appliedQuery.isEmpty)
                                 VStack(alignment: .leading, spacing: 1) {
+                                    // As under the covers on the statistics page.
                                     Text(entry.release?.displayArtist ?? "Unbekannter Interpret")
-                                        .font(.callout).lineLimit(1)
+                                        .font(.callout.weight(.medium)).lineLimit(1)
                                     if !appliedQuery.isEmpty, let track = entry.release?.track(matching: appliedQuery) {
                                         MatchedTrackLine(track: track)
                                     } else {

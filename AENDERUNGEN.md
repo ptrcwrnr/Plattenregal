@@ -1,3 +1,10 @@
+# Collection, Wantlist, Einstellungen, Statistik: zweite Runde · 27.09.2026
+
+- **Statistik-Fenster mit den Platten einer Auswahl** (Klick auf Kachel, Diagramm oder Rangliste): neben dem Titel steht jetzt die Anzahl („Downtempo · 7 Platten“), wie beim Fach im Regal und in der Vermisst-Liste.
+- **Wantlist-Raster**: Interpret unter dem Cover halbfett wie in „Zuletzt hinzugefügt“ und „Top-Künstler“ der Statistik.
+- **Detailansicht einer Platte**: Standort in der gemeinsamen Titelschrift, Abstände aus den Stil-Konstanten.
+- Geprüft ohne Befund: Detailansicht und Cover-Popover, Suche mit Markierungen und Treffern der anderen Seite, Rechtsklick-Menü, unterer Teil der Statistik (Klangbild, Top-Künstler, Labels, Zufallsfund, Zeitreise, Neuzugänge, Zuletzt hinzugefügt), Einstellungen im Dunkelmodus, abgesicherte Divisionen und Indexzugriffe.
+
 # Collection, Wantlist, Einstellungen, Statistik: Feinschliff · 27.09.2026
 
 - **Listenansicht von Collection und Wantlist** auf derselben abgerundeten Glaskarte wie die Fach-Tabelle im Regal (neuer Baustein `appTableCard`). Vorher stand die Tabelle direkt auf der Seite, mit eckigem weißem Kopfbalken.

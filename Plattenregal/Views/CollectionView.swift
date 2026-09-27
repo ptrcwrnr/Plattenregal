@@ -525,7 +525,11 @@ struct CollectionView: View {
     private func collectionControls(items: [RecordCopy]) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
             if let analyticsFilter {
-                Text(analyticsFilter.name).font(AppStyle.dialogTitle).lineLimit(1)
+                // Title and count, like the shelf's detail header.
+                HStack(alignment: .firstTextBaseline, spacing: AppStyle.rowSpacing) {
+                    Text(analyticsFilter.name).font(AppStyle.dialogTitle).lineLimit(1)
+                    Text(AppStyle.records(items.count)).font(.callout).foregroundStyle(.secondary).monospacedDigit()
+                }
             }
             Spacer(minLength: AppStyle.rowSpacing)
             OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))

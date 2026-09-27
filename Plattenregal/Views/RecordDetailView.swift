@@ -42,7 +42,7 @@ struct RecordDetailView: View {
                 .foregroundStyle(copy.shelf == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
             VStack(alignment: .leading, spacing: 2) {
                 Text("Standort").font(.callout).foregroundStyle(.secondary)
-                Text(location).font(.title.weight(.semibold)).lineLimit(2)
+                Text(location).font(AppStyle.pageTitle).lineLimit(2)
             }
             Spacer(minLength: AppStyle.rowSpacing)
             if let showShelf {
@@ -91,7 +91,7 @@ struct ReleaseHeaderView: View {
                     Text(release.displayTitle).font(AppStyle.pageTitle).lineLimit(3)
                 }
                 .textSelection(.enabled)
-                Grid(alignment: .leading, horizontalSpacing: AppStyle.sectionSpacing, verticalSpacing: 12) {
+                Grid(alignment: .leading, horizontalSpacing: AppStyle.sectionSpacing, verticalSpacing: AppStyle.rowSpacing) {
                     GridRow {
                         detail("Jahr", release.year.map(String.init))
                         detail("Land", release.country)
