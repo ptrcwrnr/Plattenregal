@@ -1,3 +1,7 @@
+# Schmale Regale bündig mit dem Fachbereich · 27.09.2026
+
+- **Regale mit weniger als vier Spalten** (1 × 1, 2 × 2 …) waren auf höchstens 300 pt pro Spalte begrenzt, Fach-Titel („Y–Z“), Rückenleiste und Tabelle darunter liefen aber über die volle Breite. Das Regal nimmt jetzt immer die ganze Breite ein und schließt links und rechts bündig mit dem Bereich darunter ab – wie beim 4 × 3.
+
 # Kein Aufblitzen mehr beim ersten ⌘F · 27.09.2026
 
 - **Ursache gefunden**: Der Kasten war das AutoFill-Fenster von macOS für zugestellte Einmal-Codes (Nachrichten, Mail). Textfelder ohne Inhaltstyp gelten als „nicht gekennzeichnet“; beim ersten Fokus nach dem Start ruft AppKit dafür `displayOTPAutoFill…` auf und blendet das leere Vorschlagsfenster (312 × 237 pt) für einen Frame ein. Belegt mit 120-fps-Aufnahme, Fensterliste (Plattenregal, Ebene 101) und Aufrufkette (`NSAutoFillHeuristicController _showPasswordAutoFillIfNecessaryForView:` → `SPSafariPlatformSupport`).

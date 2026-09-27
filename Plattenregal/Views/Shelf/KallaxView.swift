@@ -255,8 +255,8 @@ struct KallaxView: View {
                         )
                         // A compact overview with roughly KALLAX-like proportions, so the
                         // compartment area below (strip + table) gets most of the height.
+                        // Always the full width, flush with the compartment area below.
                         .frame(height: ShelfFurnitureMetrics.height(rows: shownCabinet?.rows ?? ShelfGeometry.rows))
-                        .frame(maxWidth: furnitureWidth(geometry.size.width), alignment: .leading)
                         // Another cabinet slides in from the side it lies on.
                         .id(shownCabinet?.id)
                         .transition(AppStyle.reduceMotion ? .opacity : .push(from: cabinetEdge))
@@ -358,15 +358,6 @@ struct KallaxView: View {
     /// Records are there, but none stands in a shelf yet.
     private var nothingPlaced: Bool {
         !DemoMode.isActive && !allCopies.isEmpty && !allCopies.contains { $0.shelf != nil }
-    }
-
-    /// Narrow cabinets (1 × 4, 2 × 2 …) keep roughly square compartments
-    /// instead of stretching across the whole page.
-    private func furnitureWidth(_ available: CGFloat) -> CGFloat {
-        let columns = shownCabinet?.columns ?? ShelfGeometry.columns
-        // Four columns and more use the whole width, like the KALLAX always did.
-        guard columns < 4 else { return available }
-        return min(available, max(CGFloat(columns) * 300, 380))
     }
 
     /// One tab per active cabinet; ⌘← / ⌘→ step through them.
