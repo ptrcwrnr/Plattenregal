@@ -30,6 +30,10 @@ struct KallaxView: View {
     @State private var placement: Placement?
     /// "Namen ändern …" from a locked compartment's menu.
     @State private var showsNameEditor = false
+    /// Cabinet tab whose right-click menu is open, and where.
+    @State private var cabinetMenu: (id: UUID, anchor: UnitPoint)?
+    /// Cabinet tab whose name popover is open ("Regal umbenennen …").
+    @State private var renamingCabinet: UUID?
     @State private var lockPreview = ShelfLockPreview()
     /// The open "Platte hinzufügen" sheet. A new session per opening, so a
     /// reopened sheet always starts from fresh data.
@@ -364,9 +368,10 @@ struct KallaxView: View {
                 selection: Binding(get: { shownCabinet?.id }, set: { id in
                     if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
                 }),
-                options: activeCabinets.map { Optional($0.id) }
+                options: activeCabinets.map { Optional($0.id) },
+                secondaryClick: { id, point in if let id { cabinetMenu = (id, point) } }
             ) { id in
-                Text(activeCabinets.first { $0.id == id }?.name ?? "")
+                cabinetTab(activeCabinets.first { $0.id == id })
             }
             .accessibilityLabel("Regal")
             Text(shownCabinet.map { "\($0.sizeText) · \(AppStyle.records($0.recordCount))" } ?? "")
@@ -381,6 +386,31 @@ struct KallaxView: View {
         }
         .padding(.bottom, -14)
         .help("Zwischen den Regalen wechseln: ⌘← / ⌘→")
+    }
+
+    /// A tab's name, carrying its right-click menu and the name popover –
+    /// each on its own layer, two popovers on one view get in each other's way.
+    @ViewBuilder private func cabinetTab(_ cabinet: Cabinet?) -> some View {
+        if let cabinet {
+            Text(cabinet.name)
+                .popover(isPresented: Binding(
+                    get: { cabinetMenu?.id == cabinet.id },
+                    set: { if !$0, cabinetMenu?.id == cabinet.id { cabinetMenu = nil } }
+                ), attachmentAnchor: .point(cabinetMenu?.anchor ?? .center), arrowEdge: .bottom) {
+                    AppMenu(dismiss: { cabinetMenu = nil }) {
+                        Button("Regal anzeigen") { show(cabinet) }
+                        Button("Regal umbenennen …") { renamingCabinet = cabinet.id }
+                    }
+                }
+                .background {
+                    Color.clear.popover(isPresented: Binding(
+                        get: { renamingCabinet == cabinet.id },
+                        set: { if !$0, renamingCabinet == cabinet.id { renamingCabinet = nil } }
+                    ), arrowEdge: .bottom) {
+                        CabinetNamePopover(cabinet: cabinet).id(cabinet.id)
+                    }
+                }
+        }
     }
 
     private func stepCabinet(_ offset: Int) {

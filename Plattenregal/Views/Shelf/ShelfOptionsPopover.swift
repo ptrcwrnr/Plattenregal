@@ -77,3 +77,43 @@ struct ShelfNamePopover: View {
         catch { self.error = error.reportedMessage(); return false }
     }
 }
+
+/// "Regal umbenennen …" in a cabinet tab's right-click menu. Saved on
+/// Return and when the popover closes; an empty field keeps the old name.
+struct CabinetNamePopover: View {
+    let cabinet: Cabinet
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @State private var name: String
+    @State private var error: String?
+    @FocusState private var focused: Bool
+
+    init(cabinet: Cabinet) {
+        self.cabinet = cabinet
+        _name = State(initialValue: cabinet.name)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+            Text("Name des Regals").font(.callout.weight(.medium))
+            AppSearchField(placeholder: "z. B. Wohnzimmer", text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
+            Text(error ?? "Erscheint auf der Regalseite und in den Einstellungen.")
+                .font(.caption)
+                .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(AppStyle.cardPadding)
+        .frame(width: 280)
+        .onAppear { focused = true }
+        .onDisappear { _ = save() }
+    }
+
+    @discardableResult private func save() -> Bool {
+        // Removed meanwhile (deleted or backup restored in the settings).
+        guard !cabinet.isDeleted, cabinet.modelContext != nil else { return true }
+        let newName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !newName.isEmpty, newName != cabinet.name else { return true }
+        do { try CabinetService(context: context).rename(cabinet, to: newName); error = nil; return true }
+        catch { self.error = error.reportedMessage(); return false }
+    }
+}

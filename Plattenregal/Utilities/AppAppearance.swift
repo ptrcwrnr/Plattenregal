@@ -574,6 +574,8 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     let options: [Value]
     var glass = true
     var small = false
+    /// Right-click on an option, with the click position (see `onSecondaryClick`).
+    var secondaryClick: ((Value, UnitPoint) -> Void)? = nil
     @ViewBuilder let label: (Value) -> Label
 
     var body: some View {
@@ -591,6 +593,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
+                .modifier(OptionalSecondaryClick(action: secondaryClick.map { click in { click(option, $0) } }))
             }
         }
         .font(small ? .callout : .body)
@@ -601,6 +604,13 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
         } else {
             row
         }
+    }
+}
+
+private struct OptionalSecondaryClick: ViewModifier {
+    let action: ((UnitPoint) -> Void)?
+    func body(content: Content) -> some View {
+        if let action { content.onSecondaryClick(perform: action) } else { content }
     }
 }
 
