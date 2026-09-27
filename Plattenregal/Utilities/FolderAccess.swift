@@ -11,10 +11,13 @@ nonisolated struct FolderAccess: Sendable {
 
     /// Resolves the bookmark; `nil` when none is set or the folder is gone.
     /// A stale bookmark (folder moved or renamed) is renewed on the way.
+    /// A bookmark follows its folder into the trash: that counts as gone, or
+    /// exports and backups would keep landing there unnoticed.
     var url: URL? {
         guard let data = AppDefaults.store.data(forKey: key) else { return nil }
         var stale = false
-        guard let url = try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale)
+        guard let url = try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale),
+              !Self.isInTrash(url)
         else { return nil }
         if stale {
             // A new security-scoped bookmark needs the folder open, or it fails silently.
@@ -44,6 +47,11 @@ nonisolated struct FolderAccess: Sendable {
         let access = url.startAccessingSecurityScopedResource()
         defer { if access { url.stopAccessingSecurityScopedResource() } }
         return try body(url)
+    }
+
+    /// The home trash ("~/.Trash") or an external drive's (".Trashes/501").
+    static func isInTrash(_ url: URL) -> Bool {
+        !Set(url.standardizedFileURL.pathComponents).isDisjoint(with: [".Trash", ".Trashes"])
     }
 
     /// "iCloud Drive › Plattenregal" rather than the path inside the container.

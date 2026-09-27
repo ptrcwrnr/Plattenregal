@@ -191,9 +191,8 @@ struct CollectionExportService {
         if groups.contains(.discogs) { columns += [ExportColumn.releaseID, ExportColumn.masterID, ExportColumn.link] }
         if groups.contains(.tracklist) { columns.append(ExportColumn.tracklist) }
 
-        let keys = Dictionary(entries.map { ($0.key, Self.sortKey($0.release)) }, uniquingKeysWith: { first, _ in first })
-        let sorted = entries.sorted { (keys[$0.key] ?? "").localizedStandardCompare(keys[$1.key] ?? "") == .orderedAscending }
-        let rows = sorted.map { entry in
+        // Same order as the wantlist page.
+        let rows = WantlistPresentation.sorted(entries).map { entry in
             var values = Self.releaseValues(entry.release)
             if groups.contains(.copy) {
                 values.append(Self.date(entry.dateAdded))
@@ -208,7 +207,8 @@ struct CollectionExportService {
     /// Shelf order walks cabinet by cabinet, the compartments in reading order and each one front to
     /// back; records without a place follow alphabetically.
     private func ordered(_ copies: [RecordCopy], by order: ExportOrder) -> [RecordCopy] {
-        let alphabetical = SortingService.sorted(copies)
+        // Same order as the collection page (alphabet index sections, then artist and title).
+        let alphabetical = SortingService.sortedByAlphabetSection(copies)
         guard order == .shelf else { return alphabetical }
         // Sort keys read once per record, not per comparison (`Shelf.physicalOrder`
         // plus the position; shelf numbers are unique).
@@ -249,22 +249,29 @@ struct CollectionExportService {
         listedOnce(raw) { $0.caseInsensitiveCompare("none") != .orderedSame }
     }
 
-    /// "Positiva, Positiva" (one label with two numbers) → "Positiva".
+    /// "Positiva, Positiva" (one label with two numbers) → "Positiva"; "DOS 202, dos 202" → "DOS 202".
     static func listedOnce(_ list: String, keeping keep: (String) -> Bool = { _ in true }) -> String {
         var seen = Set<String>()
         return list.components(separatedBy: ", ")
-            .filter { !$0.isEmpty && keep($0) && seen.insert($0).inserted }
+            .filter { !$0.isEmpty && keep($0) && seen.insert($0.lowercased()).inserted }
             .joined(separator: ", ")
     }
 
-    /// Discogs names the quantity first ("1 · Vinyl · 12\""); a single disc goes without it.
+    /// Discogs names the quantity first ("1 · Vinyl · 12\""): a single disc goes without it,
+    /// more read as a count ("2 × Vinyl · LP").
     static func format(_ raw: String) -> String {
-        raw.components(separatedBy: ", ").map { $0.hasPrefix("1 · ") ? String($0.dropFirst(4)) : $0 }.joined(separator: ", ")
+        raw.components(separatedBy: ", ").map { part in
+            guard let dot = part.range(of: " · "), let quantity = Int(part[..<dot.lowerBound]) else { return part }
+            let rest = part[dot.upperBound...]
+            return quantity == 1 ? String(rest) : "\(quantity) × \(rest)"
+        }
+        .joined(separator: ", ")
     }
 
     private static func discogsValues(_ release: Release?) -> [String] {
         guard let release else { return ["", "", ""] }
-        return ["\(release.discogsID)", release.masterID.map(String.init) ?? "", release.sourceURL?.absoluteString ?? ""]
+        // Discogs sends master ID 0 for a release without a master.
+        return ["\(release.discogsID)", release.masterID.flatMap { $0 > 0 ? String($0) : nil } ?? "", release.sourceURL?.absoluteString ?? ""]
     }
 
     private static func tracklist(_ release: Release?) -> String {
@@ -279,11 +286,6 @@ struct CollectionExportService {
     /// day, as the app shows it – the ISO style alone would use UTC.
     private static func date(_ raw: String?) -> String {
         DiscogsDate.parse(raw).map { ExportDate.day($0) } ?? ""
-    }
-
-    private static func sortKey(_ release: Release?) -> String {
-        guard let release else { return "" }
-        return release.displayArtist + "\t" + release.displayTitle
     }
 }
 
@@ -342,9 +344,9 @@ nonisolated enum PDFListWriter {
 
     /// Columns and their share of the line width; only those present in the table are drawn.
     private static let layout: [(name: String, width: CGFloat)] = [
-        (ExportColumn.position, 0.05), (ExportColumn.artist, 0.22), (ExportColumn.title, 0.27),
-        (ExportColumn.year, 0.05), (ExportColumn.label, 0.15), (ExportColumn.catalogNumber, 0.11),
-        (ExportColumn.format, 0.09), (ExportColumn.shelf, 0.08),
+        (ExportColumn.position, 0.05), (ExportColumn.artist, 0.21), (ExportColumn.title, 0.23),
+        (ExportColumn.year, 0.04), (ExportColumn.label, 0.15), (ExportColumn.catalogNumber, 0.11),
+        (ExportColumn.format, 0.15), (ExportColumn.shelf, 0.08),
     ]
 
     static func data(for table: ExportTable, title: String, subtitle: String) throws -> Data {

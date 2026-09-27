@@ -1,3 +1,18 @@
+# Export gründlich geprüft · 27.09.2026
+
+Geprüft mit Tests und einem Probe-Export einer Kopie der echten Sammlung (842 Platten, 868 Wünsche; CSV und PDF, beide Reihenfolgen). Korrigiert:
+
+- **Reihenfolge wie in der App**: „Alphabetisch“ folgt jetzt genau der Collection-Seite (Abschnitte des Alphabet-Index, z. B. „Þeyr“ hinter Z), die Wantlist der Wantlist-Seite. Vorher sortierte der Export leicht anders.
+- **Master-ID „0“** (139 Platten): Discogs meldet so „kein Master“ – die Zelle bleibt jetzt leer.
+- **Doppelte Katalognummern und Labels in anderer Schreibweise** („DOS 202, dos 202“, „Dos 237, DOS 237“) stehen nur einmal da.
+- **Mehrfachformate** lesen sich als Anzahl: „2 × Vinyl · LP“ statt „2 · Vinyl · LP“; „1 · Box Set“ wird zu „Box Set“.
+- **PDF**: Die Format-Spalte war so schmal, dass fast jede Angabe abgeschnitten wurde; sie ist breiter, der Titel etwas schmaler. Der Hinweis zum PDF nennt bei der Collection auch das Fach.
+- **Ordner im Papierkorb**: Ein Lesezeichen folgt seinem Ordner in den Papierkorb – der automatische Export schrieb dann unbemerkt dorthin. Ein Ordner im Papierkorb gilt jetzt als nicht erreichbar (Hinweis in den Einstellungen); Sicherungen fallen dann wie bei einem gelöschten Ordner auf den Ordner der App zurück.
+- **Knopf während des Erstellens**: „Wird erstellt …“ statt eines stumm ausgegrauten „Als PDF exportieren …“.
+- **Ohne Befund**: Jede Zeile hat so viele Werte wie Spalten (auch Wantlist mit allen Spalten, Platten ohne Release-Daten), PDF über viele Seiten mit „(Fortsetzung)“ und leerer Liste, Formel-Schutz („@dam“ bleibt Text), Kopfzeile, Umlaute, Datumsformat.
+- Bekannte Grenze der CSV: Reine Ziffern-Katalognummern verlieren in Numbers/Excel führende Nullen; Mehrfach-Exemplare desselben Release erscheinen als gleiche Zeilen (unterscheidbar nur über Ordner und Datum).
+- Neue Tests: `wantlistHasNoPlacesAndMatchingRows`, `pdfSpansPagesAndHandlesEmptyLists`, `trashedFolderCountsAsGone`. 182 Tests, 0 Fehler.
+
 # CSV-Export aufgeräumt · 27.09.2026
 
 - **Standort im Regal** ist beim Export standardmäßig aus und hat nur noch drei Spalten: **Regal, Fach, Position**. Reihe, Spalte und Beschriftung fallen weg (Reihe/Spalte stecken schon im Fach, die Beschriftung ist App-intern). Platten ohne Fach tragen in „Fach“ „Noch keinem Fach zugeordnet“ bzw. „Nicht im Regal“. Wer den Standort schon eingeschaltet hatte, behält ihn; das PDF zeigt ihn weiterhin immer.

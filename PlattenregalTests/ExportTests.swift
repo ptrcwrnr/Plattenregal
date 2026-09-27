@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 import Testing
 import SwiftData
@@ -37,8 +38,11 @@ extension AllTests {
             #expect(CollectionExportService.catalogNumber("None") == "")
             #expect(CollectionExportService.catalogNumber("") == "")
             #expect(CollectionExportService.listedOnce("Dance Division, Epic, Epic") == "Dance Division, Epic")
+            #expect(CollectionExportService.catalogNumber("DOS 202, dos 202") == "DOS 202")
             #expect(CollectionExportService.format("1 · Vinyl · 12\" · 45 RPM") == "Vinyl · 12\" · 45 RPM")
-            #expect(CollectionExportService.format("2 · Vinyl · LP, 1 · CD · Album") == "2 · Vinyl · LP, CD · Album")
+            #expect(CollectionExportService.format("2 · Vinyl · LP, 1 · CD · Album") == "2 × Vinyl · LP, CD · Album")
+            #expect(CollectionExportService.format("5 · Vinyl · 12\" · Album, 1 · Box Set") == "5 × Vinyl · 12\" · Album, Box Set")
+            #expect(CollectionExportService.format("") == "")
             #expect(CollectionExportService.format("Vinyl, LP, Album") == "Vinyl, LP, Album")
         }
 
@@ -53,6 +57,44 @@ extension AllTests {
             // The PDF's Fach column names the compartment; without one a dash, not the long status.
             #expect(table.rows.first?.place == "\(shelves[0].sortOrder)")
             #expect(ExportColumnGroup.copy.hint(for: .wantlist) == "Hinzufügedatum")
+        }
+
+        @Test func wantlistHasNoPlacesAndMatchingRows() throws {
+            let (container, _, _) = try fixture()
+            let context = container.mainContext
+            for (id, artist) in [(1, "Zappa"), (2, "ABBA"), (3, "Þeyr")] {
+                let release = Release(artist: artist, title: "T")
+                release.discogsID = id
+                context.insert(release)
+                context.insert(WantlistEntry(owner: "me", release: release, releaseID: id))
+            }
+            try context.save()
+            let table = try CollectionExportService(context: context)
+                .table(ExportOptions(source: .wantlist, groups: Set(ExportColumnGroup.allCases)))
+            #expect(table.column(ExportColumn.shelf) == nil && table.column(ExportColumn.folder) == nil)
+            #expect(table.rows.allSatisfy { $0.values.count == table.columns.count && $0.section == nil })
+            // Like the wantlist page: "Þeyr" after Z, as in the alphabet index.
+            let artist = try #require(table.column(ExportColumn.artist))
+            #expect(table.rows.map { $0.values[artist] } == WantlistPresentation.sorted(try context.fetch(FetchDescriptor<WantlistEntry>())).map { $0.release?.displayArtist ?? "" })
+        }
+
+        @Test func pdfSpansPagesAndHandlesEmptyLists() throws {
+            let rows = (0..<200).map { index in
+                ExportTable.Row(section: "Fach \(index / 70 + 1)",
+                                values: [String(repeating: "Sehr langer Interpret ", count: 10), "Titel \(index)", "\(index + 1)"])
+            }
+            let table = ExportTable(columns: [ExportColumn.artist, ExportColumn.title, ExportColumn.position], rows: rows)
+            let data = try PDFListWriter.data(for: table, title: "Test", subtitle: "")
+            let document = try #require(CGPDFDocument(CGDataProvider(data: data as CFData)!))
+            #expect(document.numberOfPages > 3)
+            let empty = try PDFListWriter.data(for: ExportTable(columns: [ExportColumn.artist], rows: []), title: "Leer", subtitle: "")
+            #expect(CGPDFDocument(CGDataProvider(data: empty as CFData)!)?.numberOfPages == 1)
+        }
+
+        @Test func trashedFolderCountsAsGone() {
+            #expect(FolderAccess.isInTrash(URL(fileURLWithPath: "/Users/x/.Trash/Export")))
+            #expect(FolderAccess.isInTrash(URL(fileURLWithPath: "/Volumes/Stick/.Trashes/501/Export")))
+            #expect(!FolderAccess.isInTrash(URL(fileURLWithPath: "/Users/x/Library/Mobile Documents/com~apple~CloudDocs/Export")))
         }
 
         @Test func countMatchesTheExportedRows() throws {
@@ -105,6 +147,7 @@ extension AllTests {
         @Test func columnGroupsAreOptional() throws {
             let (container, shelves, service) = try fixture()
             let release = Release(artist: "Moby (2)", title: "Play")
+            release.masterID = 0
             release.tracks = [Track(position: "A1", title: "Honey", duration: "3:27")]
             try service.insert(release: release, shelf: shelves[0])
 
@@ -124,6 +167,8 @@ extension AllTests {
             #expect(full.columns.allSatisfy { !["Zustand Platte", "Zustand Hülle", "Notizen", "Bewertung"].contains($0) })
             let link = try #require(full.column(ExportColumn.link))
             #expect(full.rows.first?.values[link] == "https://www.discogs.com/release/\(release.discogsID)")
+            // Master ID 0 means "no master" at Discogs.
+            #expect(full.rows.first?.values[try #require(full.column(ExportColumn.masterID))] == "")
         }
 
         @Test func pdfIsProduced() throws {

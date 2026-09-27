@@ -43,7 +43,9 @@ struct ExportSettingsView: View {
                 SettingsRow(title: "Format",
                             hint: format == .csv
                                 ? "Für Numbers, Excel oder Google Sheets – mit den unten gewählten Spalten."
-                                : "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer und Format.") {
+                                : source == .collection
+                                    ? "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer, Format und Fach."
+                                    : "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer und Format.") {
                     segmented($format, ExportFormat.allCases) { $0.title }
                 }
                 if source == .collection {
@@ -78,7 +80,7 @@ struct ExportSettingsView: View {
             SettingsCard(title: "Datei") {
                 SettingsRow(title: AppStyle.records(total),
                             hint: sync.isRunning ? "Nach der laufenden Synchronisierung ist der Export vollständig." : nil) {
-                    PrimaryButton(title: "Als \(format.title) exportieren …", action: export)
+                    PrimaryButton(title: preparing ? "Wird erstellt …" : "Als \(format.title) exportieren …", action: export)
                         .disabled(total == 0 || preparing)
                 }
                 if let status {
