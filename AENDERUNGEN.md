@@ -1,3 +1,8 @@
+# Kein Aufblitzen mehr beim ersten ⌘F · 27.09.2026
+
+- **Ursache gefunden**: Der Kasten war das AutoFill-Fenster von macOS für zugestellte Einmal-Codes (Nachrichten, Mail). Textfelder ohne Inhaltstyp gelten als „nicht gekennzeichnet“; beim ersten Fokus nach dem Start ruft AppKit dafür `displayOTPAutoFill…` auf und blendet das leere Vorschlagsfenster (312 × 237 pt) für einen Frame ein. Belegt mit 120-fps-Aufnahme, Fensterliste (Plattenregal, Ebene 101) und Aufrufkette (`NSAutoFillHeuristicController _showPasswordAutoFillIfNecessaryForView:` → `SPSafariPlatformSupport`).
+- **Behoben** mit öffentlicher API: `noTextAutoFill()` gibt Suchfeldern, Glas-Textfeldern und dem Positionsfeld einen eigenen Inhaltstyp, den AutoFill nicht kennt. Gemessen: ohne Korrektur in 4 von 5 Starts ausgelöst, mit Korrektur in 0 von 8 (Collection, Wantlist, Regal). Das Token-Feld (SecureField) bleibt unverändert.
+
 # ⌘F schaltet die Suche um · 27.09.2026
 
 - **⌘F ein und aus**: Ein zweites ⌘F (oder die Suche aus dem Menü), während der Cursor in der Suchleiste steht, leert sie und blendet sie aus – in Collection, Wantlist und Regal. Ist die Leiste noch da (mit Text), aber nicht im Fokus, holt ⌘F zuerst den Cursor zurück. `SearchReveal` bekommt den Suchtext dafür als Binding.

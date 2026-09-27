@@ -36,6 +36,7 @@ struct ShelfSearchField: View {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
             TextField("Platte im Regal suchen …", text: $text)
                 .textFieldStyle(.plain)
+                .noTextAutoFill()
                 .focused(focused)
                 // Esc clears the query; with an empty field it gives up the
                 // focus, which hides the search bar again (see `SearchReveal`).

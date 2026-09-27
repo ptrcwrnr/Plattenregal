@@ -290,6 +290,7 @@ private struct ShelfCopyQuickEditor: View {
                         .disabled(position <= 1)
                         TextField("Position", value: $position, format: .number)
                             .labelsHidden()
+                            .noTextAutoFill()
                             .textFieldStyle(.plain)
                             .multilineTextAlignment(.center)
                             .monospacedDigit()

@@ -371,7 +371,7 @@ struct AppSearchField: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            focusable(TextField(placeholder, text: $text).textFieldStyle(.plain))
+            focusable(TextField(placeholder, text: $text).textFieldStyle(.plain).noTextAutoFill())
                 .onSubmit { onSubmit?() }
                 // Esc clears the query; with an empty field it gives up the
                 // focus (which hides a revealed search bar) or, without one,
@@ -411,7 +411,7 @@ struct GlassTextField: View {
             .searchBarChrome()
     }
     @ViewBuilder private var field: some View {
-        if secure { SecureField(placeholder, text: $text) } else { TextField(placeholder, text: $text) }
+        if secure { SecureField(placeholder, text: $text) } else { TextField(placeholder, text: $text).noTextAutoFill() }
     }
     @ViewBuilder private func focusable(_ field: some View) -> some View {
         if let focus { field.focused(focus) } else { field }
@@ -527,6 +527,16 @@ extension View {
     /// `SearchBarSlot`.
     func searchBarSlot(shown: Bool) -> some View {
         modifier(SearchBarSlot(shown: shown))
+    }
+
+    /// Marks a text field as not an AutoFill target. Without a content type
+    /// macOS treats a field as "unannotated" and, the first time one gets the
+    /// focus after launch, prepares its offer of received one-time codes
+    /// (Messages, Mail): its suggestion window flashed up empty under the
+    /// search bar on the first ⌘F. A type of our own that AutoFill doesn't
+    /// know keeps it out; typing, spelling and the rest are unaffected.
+    func noTextAutoFill() -> some View {
+        textContentType(NSTextContentType(rawValue: "de.private.Plattenregal.noAutoFill"))
     }
 
     /// See `SearchReveal`. Show the search while `isPresented || !query.isEmpty`.
