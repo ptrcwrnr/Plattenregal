@@ -55,7 +55,8 @@ struct RootView: View {
     }
 
     /// No sidebar: the pages sit in a switch in the middle of the toolbar,
-    /// grid/list and search on the right, all in the toolbar's Liquid Glass.
+    /// grid/list on the right, all in the toolbar's Liquid Glass. Search has
+    /// no button: ⌘F reveals it.
     /// The settings are where a Mac app has them: Plattenregal menu and ⌘,.
     private var library: some View {
         pages
@@ -66,20 +67,23 @@ struct RootView: View {
             .toolbar(removing: .title)
             .toolbar {
                 ToolbarItem(placement: .principal) { PagePicker(selection: destination) }
-                ToolbarItemGroup(placement: .primaryAction) {
-                    LayoutSwitch(selection: destination)
-                    SearchButton(selection: destination) { searchRequests.request() }
-                }
+                ToolbarItem(placement: .primaryAction) { LayoutSwitch(selection: destination) }
             }
             .background(pageShortcuts)
             .background { AmbientGlow() }
     }
 
-    /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window.
+    /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window; ⌘F reveals
+    /// the search of the page shown, where it has one.
     private var pageShortcuts: some View {
-        ForEach(Destination.allCases) { page in
-            Button(page.rawValue) { destination.current = page }
-                .keyboardShortcut(page.shortcut, modifiers: .command)
+        Group {
+            ForEach(Destination.allCases) { page in
+                Button(page.rawValue) { destination.current = page }
+                    .keyboardShortcut(page.shortcut, modifiers: .command)
+            }
+            Button("Suchen") { searchRequests.request() }
+                .keyboardShortcut("f", modifiers: .command)
+                .disabled(!destination.current.hasSearch)
         }
         .opacity(0).frame(width: 0, height: 0)
         .accessibilityHidden(true)
@@ -132,19 +136,6 @@ private struct LayoutSwitch: View {
         case .collection: OverviewLayoutPicker(selection: $collectionLayout.animation(AppStyle.fadeAnimation), glass: false)
         case .wantlist: OverviewLayoutPicker(selection: $wantlistLayout.animation(AppStyle.fadeAnimation), glass: false)
         case .shelf, .statistics: EmptyView()
-        }
-    }
-}
-
-/// ⌘F: reveals the search of the page shown; absent where there is none.
-private struct SearchButton: View {
-    let selection: PageSelection<Destination>
-    let action: () -> Void
-    var body: some View {
-        if selection.current.hasSearch {
-            Button(action: action) { Label("Suchen", systemImage: "magnifyingglass") }
-                .keyboardShortcut("f", modifiers: .command)
-                .help("Suchen (⌘F)")
         }
     }
 }

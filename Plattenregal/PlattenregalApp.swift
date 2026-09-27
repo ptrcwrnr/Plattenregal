@@ -107,6 +107,9 @@ import OSLog
             }
         }
         .defaultSize(width: 1300, height: 850)
+        // No right-click menu on the toolbar ("Symbol und Text" …): its
+        // layout is fixed.
+        .windowToolbarLabelStyle(fixed: .iconOnly)
         .commands {
             CommandGroup(after: .appSettings) {
                 if DemoMode.isActive {
