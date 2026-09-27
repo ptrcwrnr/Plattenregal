@@ -17,14 +17,14 @@ struct CollectionView: View {
     // The window's page switch, to jump to the wantlist's hits; nil in the
     // statistics drill-down sheet.
     private let pages: PageSelection<Destination>?
-    // The search shared with the wantlist (see `LibrarySearch`); the
-    // statistics sheet keeps its own. Objects, read directly: this page is
+    // The search shared with the wantlist (see `LibrarySearch`); nil in the
+    // statistics sheet, which has no search. Objects, read directly: this page is
     // built once (see `PageStack`), and a binding handed in would keep the
     // value it had then.
     private let search: LibrarySearch?
     @State private var localQuery = ""
     @FocusState private var searchFocused: Bool
-    /// The search bar ⌘F reveals; the statistics sheet shows its field always.
+    /// The search bar ⌘F reveals; the statistics sheet has none.
     private var showsSearchBar: Bool {
         guard let search else { return false }
         return search.isPresented || !search.query.isEmpty
@@ -513,19 +513,13 @@ struct CollectionView: View {
 
     /// In the window the page has no header bar: page switch, grid/list and
     /// search are in the toolbar. The statistics sheet has no toolbar, so
-    /// there it keeps search and layout.
+    /// there it keeps the layout switch — but no search: it is only for looking.
     private var showsControls: Bool { pages == nil }
 
     private func collectionControls(items: [RecordCopy]) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            if pages == nil {
-                AppSearchField(placeholder: "Collection durchsuchen", text: queryBinding)
-                    .frame(maxWidth: 380)
-            }
             Spacer(minLength: AppStyle.rowSpacing)
-            if pages == nil {
-                OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))
-            }
+            OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))
         }
         .frame(height: AppStyle.searchBarHeight)
     }
