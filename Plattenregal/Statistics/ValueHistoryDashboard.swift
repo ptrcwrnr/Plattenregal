@@ -141,7 +141,15 @@ struct HistoryLineChart: View {
                     }
                 }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? "Exemplare")
                     .chartYScale(domain: .automatic(includesZero: false))
-                    .chartXAxis { AxisMarks(values: .automatic(desiredCount: 5)) }
+                    .chartXAxis {
+                        AxisMarks(values: .automatic(desiredCount: 5)) { value in
+                            AxisGridLine()
+                            AxisTick()
+                            // The last date ends at the plot's right edge instead of
+                            // reaching past it into the value axis.
+                            AxisValueLabel(anchor: value.index == value.count - 1 ? .topTrailing : nil)
+                        }
+                    }
                     .frame(height: 180)
                     .chartOverlay { proxy in GeometryReader { geometry in
                         Rectangle().fill(.clear).contentShape(Rectangle()).onContinuousHover { phase in
