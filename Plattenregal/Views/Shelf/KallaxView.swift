@@ -249,6 +249,7 @@ struct KallaxView: View {
                             litIDs: lit,
                             lockPreview: lockPreview,
                             select: selectShelf,
+                            add: { shelf in selectShelf(shelf); startAssignment(shelf) },
                             menu: shelfMenu(for:)
                         )
                         // A compact overview with roughly KALLAX-like proportions, so the
@@ -566,7 +567,7 @@ struct KallaxView: View {
 
     private func detailHeader(for shown: Shelf, stats: ShelfStatistics) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: AppStyle.rowSpacing) {
-            // Title, indicator and the plus button follow the options switch via
+            // Title and indicator follow the options switch via
             // `ShelfLockReader`, so they change together with the hatching.
             ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                 Text(locked ? (shown.name.isEmpty ? "Gesperrtes Fach" : shown.name) : (rangeLabels[shown.id] ?? "Leeres Fach"))
@@ -590,25 +591,8 @@ struct KallaxView: View {
             .font(.callout)
             .foregroundStyle(.secondary)
             .lineLimit(1)
-            Spacer(minLength: AppStyle.itemSpacing)
-            HStack(spacing: AppStyle.tightSpacing) {
-                ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
-                    // A glass button of its own instead of a bare "+"; the
-                    // panel also lists the records marked "Vermisst".
-                    Button { startAssignment(shown) } label: {
-                        Label("Hinzufügen", systemImage: "plus")
-                            .foregroundStyle(AppStyle.accent)
-                            .font(.callout)
-                            .lineLimit(1)
-                            .fixedSize()
-                    }
-                    .appGlassButton()
-                    .help("Platte hinzufügen")
-                    .disabled(locked)
-                }
-            }
-            .foregroundStyle(.secondary)
-            .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
+            // Adding records: the "+" in the compartment itself.
+            Spacer(minLength: 0)
         }
     }
 

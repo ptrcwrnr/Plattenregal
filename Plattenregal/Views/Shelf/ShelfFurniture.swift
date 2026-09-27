@@ -402,10 +402,14 @@ struct ShelfFurniture<Menu: View>: View {
     let litIDs: Set<UUID>?
     let lockPreview: ShelfLockPreview
     let select: (Shelf) -> Void
+    /// The "+" in a compartment: add records to it ("Platte hinzufügen").
+    let add: (Shelf) -> Void
     @ViewBuilder let menu: (Shelf) -> Menu
 
     /// The compartment whose menu is open, and where it was right-clicked.
     @State private var menuFor: (id: UUID, anchor: UnitPoint)?
+    /// The compartment under the pointer: it brightens and shows its "+".
+    @State private var hoveredID: UUID?
 
     static var wellRadius: CGFloat { ShelfFurnitureMetrics.wellRadius }
     static var gap: CGFloat { ShelfFurnitureMetrics.gap }
@@ -434,11 +438,25 @@ struct ShelfFurniture<Menu: View>: View {
                                     rangeLabel: rangeLabel(shelf),
                                     lockPreview: lockPreview,
                                     selected: selectedID == shelf.id,
+                                    hovered: hoveredID == shelf.id,
                                     dimmed: litIDs.map { !$0.contains(shelf.id) } ?? false
                                 )
                             }
                             .buttonStyle(.plain)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            // Beside the compartment's button, not inside it: a button
+                            // in a button's label wouldn't get the click.
+                            // Where the count stands, which gives way to it.
+                            .overlay(alignment: .topTrailing) {
+                                CompartmentAddButton(shelf: shelf, lockPreview: lockPreview,
+                                                     shown: hoveredID == shelf.id || selectedID == shelf.id) { add(shelf) }
+                                    .padding(.top, 5)
+                                    .padding(.trailing, 7)
+                            }
+                            .onHover { inside in
+                                if inside { hoveredID = shelf.id } else if hoveredID == shelf.id { hoveredID = nil }
+                            }
+                            .animation(AppStyle.quickAnimation, value: hoveredID == shelf.id)
                             // The app's own menu, as in the collection.
                             .onSecondaryClick { point in menuFor = (shelf.id, point) }
                             .popover(isPresented: Binding(
@@ -472,6 +490,36 @@ private struct ShelfWell: View {
         shape
             .fill(Self.fill.shadow(.inner(color: Self.shade, radius: 2.5, y: 1.5)))
             .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, Self.rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
+    }
+}
+
+/// The small "+" in a compartment's corner: on the one under the pointer
+/// and on the selected one, never on a locked one.
+private struct CompartmentAddButton: View {
+    let shelf: Shelf
+    let lockPreview: ShelfLockPreview
+    let shown: Bool
+    let action: () -> Void
+
+    var body: some View {
+        ShelfLockReader(shelf: shelf, preview: lockPreview) { locked in
+            let visible = shown && !locked
+            Button(action: action) {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(AppStyle.accent)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Circle())
+                    .glassEffect(.regular.interactive(), in: .circle)
+            }
+            .buttonStyle(.plain)
+            .help("Platte hinzufügen")
+            .accessibilityLabel("Platte hinzufügen")
+            .opacity(visible ? 1 : 0)
+            .scaleEffect(visible ? 1 : 0.8)
+            .allowsHitTesting(visible)
+            .accessibilityHidden(!visible)
+        }
     }
 }
 
@@ -528,8 +576,8 @@ private struct ShelfCompartment: View {
     let rangeLabel: String?
     let lockPreview: ShelfLockPreview
     var selected = false
+    var hovered = false
     var dimmed = false
-    @State private var hovering = false
 
     /// Follows the options popover's switch immediately (see `ShelfLockPreview`).
     private var isReserved: Bool { lockPreview.isLocked(shelf) }
@@ -544,7 +592,7 @@ private struct ShelfCompartment: View {
                     // animate it, independent of how the change arrives.
                     FrostedWell().opacity(isReserved ? 1 : 0)
                     // Under the pointer the well brightens a little — this one only.
-                    HoveredWell().opacity(hovering && !selected ? 1 : 0)
+                    HoveredWell().opacity(hovered && !selected ? 1 : 0)
                     // Rises in place: fades and grows within this compartment
                     // instead of gliding over from the previous one.
                     RaisedPlate()
@@ -554,8 +602,6 @@ private struct ShelfCompartment: View {
                 }
             }
             .contentShape(Rectangle())
-            .onHover { hovering = $0 }
-            .animation(AppStyle.quickAnimation, value: hovering)
             .opacity(dimmed ? 0.3 : 1)
             .animation(AppStyle.standardAnimation, value: dimmed)
             // Frost and label crossfade when the shelf is (un)locked.
@@ -587,6 +633,8 @@ private struct ShelfCompartment: View {
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .fixedSize()
+                    // The "+" takes its place (see `CompartmentAddButton`).
+                    .opacity(hovered || selected ? 0 : 1)
             }
             .padding(.horizontal, 12)
             .padding(.top, 9)
