@@ -130,8 +130,14 @@ extension AllTests {
             let backupService = ShelfBackupService(context: container.mainContext)
             let backup = try backupService.makeBackup()
             #expect(try backupService.preview(backup).unchanged)
+            #expect(try !backupService.preview(backup).changesCabinets)
             try service.configure(shelves[1], name: "", isReserved: true)
             #expect(try !backupService.preview(backup).unchanged)
+            // A differently sized cabinet in the file is announced.
+            var resized = backup
+            resized.cabinets?[0].columns += 1
+            let preview = try backupService.preview(resized)
+            #expect(preview.changesCabinets && preview.message.contains("Auch die Regale"))
         }
 
         @Test func emptyLayoutIsRecognised() throws {

@@ -25,6 +25,9 @@ struct BackupSettingsView: View {
     @State private var importing = false
     @State private var pendingRestore: ShelfRestorePreview?
     @State private var status: (message: String, failed: Bool)?
+    /// A smaller retention that would delete files, waiting for confirmation.
+    /// Stored only once confirmed: a backup written meanwhile must not prune with it.
+    @State private var pendingRetention: (count: Int, days: Int, removed: Int)?
 
     var body: some View {
         SettingsPage {
@@ -62,13 +65,13 @@ struct BackupSettingsView: View {
                 }
                 Divider()
                 SettingsRow(title: "Letzte Stände behalten") {
-                    GlassSegmentedPicker(selection: $keptCount, options: ShelfAutoBackup.keptCountOptions) { Text("\($0)") }
+                    GlassSegmentedPicker(selection: retention(\.count), options: ShelfAutoBackup.keptCountOptions) { Text("\($0)") }
                         .accessibilityLabel("Letzte Stände")
                     .disabled(DemoMode.isActive)
                 }
                 Divider()
                 SettingsRow(title: "Tagesstände behalten", hint: "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.") {
-                    GlassMenuPicker(title: "Tagesstände", selection: $keptDays,
+                    GlassMenuPicker(title: "Tagesstände", selection: retention(\.days),
                                     current: keptDays == 0 ? "Keine" : "\(keptDays) Tage") {
                         ForEach(ShelfAutoBackup.keptDaysOptions, id: \.self) { Text($0 == 0 ? "Keine" : "\($0) Tage").tag($0) }
                     }
@@ -121,16 +124,16 @@ struct BackupSettingsView: View {
                 }
             }
             .animation(AppStyle.standardAnimation, value: folderError)
+            .confirmationDialog(pendingRetention.map { $0.removed == 1 ? "1 ältere Sicherung löschen?" : "\($0.removed) ältere Sicherungen löschen?" } ?? "",
+                                isPresented: Binding(get: { pendingRetention != nil }, set: { if !$0 { pendingRetention = nil } })) {
+                Button("Löschen", role: .destructive) {
+                    if let pendingRetention { applyRetention(count: pendingRetention.count, days: pendingRetention.days) }
+                }
+            } message: {
+                Text("Mit der neuen Einstellung bleiben weniger Sicherungen erhalten. Die überzähligen werden sofort gelöscht und lassen sich nicht zurückholen.")
+            }
         }
         .onAppear(perform: reload)
-        .onChange(of: keptCount) { _, value in
-            AppLog.info("Sicherung", "Aufbewahrung: letzte \(value) Stände")
-            autoBackup.applyRetention()
-        }
-        .onChange(of: keptDays) { _, value in
-            AppLog.info("Sicherung", "Aufbewahrung: Tagesstände der letzten \(value) Tage")
-            autoBackup.applyRetention()
-        }
         // Re-read after shelf changes (each one leads to a backup) and syncs.
         .onChange(of: autoBackup.version) { reload() }
         .onChange(of: changes.libraryVersion) { reload() }
@@ -178,6 +181,28 @@ struct BackupSettingsView: View {
         } message: {
             Text(pendingRestore?.message ?? "")
         }
+    }
+
+    private struct Retention { var count: Int; var days: Int }
+
+    /// Picker binding: a change that would delete backups asks first.
+    private func retention(_ part: WritableKeyPath<Retention, Int>) -> Binding<Int> {
+        Binding {
+            Retention(count: keptCount, days: keptDays)[keyPath: part]
+        } set: { value in
+            var next = Retention(count: keptCount, days: keptDays)
+            next[keyPath: part] = value
+            let removed = autoBackup.filesRemoved(keptCount: max(1, next.count), keptDays: max(0, next.days))
+            if removed > 0 { pendingRetention = (next.count, next.days, removed) }
+            else { applyRetention(count: next.count, days: next.days) }
+        }
+    }
+
+    private func applyRetention(count: Int, days: Int) {
+        guard count != keptCount || days != keptDays else { return }
+        keptCount = count; keptDays = days
+        AppLog.info("Sicherung", "Aufbewahrung: letzte \(count) Stände, Tagesstände der letzten \(days) Tage")
+        autoBackup.applyRetention()
     }
 
     private func showInFinder() {

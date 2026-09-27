@@ -108,6 +108,8 @@ struct ShelfRestorePreview {
     let otherAccount: Bool
     /// The shelf already looks exactly like this.
     var unchanged = false
+    /// The backup's cabinets (count, size, names) differ from today's; a restore rebuilds them.
+    var changesCabinets = false
 
     var message: String {
         if unchanged { return "Die Belegung entspricht bereits dieser Sicherung – es würde sich nichts ändern." }
@@ -117,6 +119,7 @@ struct ShelfRestorePreview {
         if missing > placed {
             lines.append("Mehr als die Hälfte der Platten aus der Sicherung fehlt. Ist die Collection noch nicht vollständig synchronisiert, brich ab und synchronisiere zuerst.")
         }
+        if changesCabinets { lines.append("Auch die Regale werden auf den Stand der Sicherung gebracht – Anzahl, Größe und Namen.") }
         if otherAccount, let owner = backup.owner { lines.append("Achtung: Die Sicherung gehört zum Discogs-Konto „\(owner)“.") }
         // The demo never writes backups (see `ShelfAutoBackup.isAppStore`).
         lines.append(DemoMode.isActive ? "Die aktuelle Belegung wird ersetzt."
@@ -185,6 +188,7 @@ struct ShelfBackupService {
         let copies = try context.fetch(FetchDescriptor<RecordCopy>())
         let known = Set(copies.map(\.discogsInstanceID))
         let placeable = backup.applicablePlacements
+        let current = try? makeBackup()
         let covered = Set(placeable.map(\.instanceID)).union(backup.notInShelf)
         // Nothing would get its place back, but every current place would be
         // cleared – typically restoring before the first sync after data loss.
@@ -197,7 +201,13 @@ struct ShelfBackupService {
             missing: placeable.filter { !known.contains($0.instanceID) }.count,
             unplaced: copies.filter { $0.isInCurrentCollection(owner: owner) && !covered.contains($0.discogsInstanceID) }.count,
             otherAccount: backup.owner != nil && owner != nil && backup.owner != owner,
-            unchanged: (try? makeBackup())?.hasSameLayout(as: backup) == true)
+            unchanged: current?.hasSameLayout(as: backup) == true,
+            changesCabinets: backup.cabinets?.isEmpty == false && current.map { Self.cabinetShape($0) != Self.cabinetShape(backup) } == true)
+    }
+
+    /// What `rebuild` restores of the cabinets – not which compartment number sits where.
+    private static func cabinetShape(_ backup: ShelfBackup) -> [String] {
+        (backup.cabinets ?? []).map { "\($0.name)|\($0.columns)|\($0.rows)|\($0.isActive)" }
     }
 
     /// Replaces the whole layout in one transaction: shelf locks and names,
@@ -383,6 +393,12 @@ extension ShelfBackupService {
         AppLog.info("Sicherung", "Speicherort der automatischen Sicherung: \(url.map(FolderAccess.displayName) ?? "Standard")")
         prune()
         version += 1
+    }
+
+    /// How many existing files a retention of `keptCount`/`keptDays` would delete.
+    func filesRemoved(keptCount: Int, keptDays: Int) -> Int {
+        let all = Self.ownFiles()
+        return all.count - Set(Self.retained(all.map(\.date), keptCount: keptCount, keptDays: keptDays)).count
     }
 
     /// Applies a changed retention right away.

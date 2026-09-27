@@ -1,3 +1,17 @@
+# Sicherung gründlich geprüft · 28.09.2026
+
+Geprüft mit Tests und an den echten Sicherungsdateien (7 Stände, alle wirklich verschieden, Aufbewahrung 5 + Tagesstände korrekt). Korrigiert:
+
+- **Aufbewahrung verkleinern fragt nach**: Weniger „Letzte Stände“ oder „Tagesstände“ löschten überzählige Sicherungen sofort und endgültig – auch wenn man sich nur verklickt hatte. Jetzt erst die Rückfrage „3 ältere Sicherungen löschen?“; gespeichert wird die Einstellung erst nach „Löschen“, damit eine gerade laufende Sicherung nicht schon mit ihr aufräumt.
+- **Dateinamen mit Zeitzone** („Belegung 2026-09-27 23-50-00 +0200.json“): Die neueste Sicherung und die Aufbewahrung richten sich nach der Zeit im Namen. Ohne Zeitzone kam bei der Zeitumstellung im Herbst (2–3 Uhr doppelt) oder nach einer Reise eine neuere Sicherung hinter ältere – dann konnte eine Änderung als „schon gesichert“ gelten. Alte Namen werden weiter erkannt.
+- **Wiederherstellen sagt, wenn sich die Regale ändern**: Die Sicherung bringt auch Anzahl, Größe und Namen der Regale zurück; der Dialog weist jetzt darauf hin, wenn sie sich seitdem geändert haben.
+- **Gleiche Belegung**: Entspricht eine Sicherung schon dem aktuellen Stand, gibt es statt der Rückfrage nur den Hinweis, dass sich nichts ändern würde.
+- **Vorschau = Ergebnis** bei handbearbeiteten Dateien: Ein Regal mit mehr Fächern als sein Raster fasst, oder eine leere Regalliste, führten dazu, dass die Vorschau andere Platten zählte, als dann einsortiert wurden.
+- **Liste flüssiger**: Die Sicherungsliste las bei jeder Änderung und jedem Sync alle Dateien neu (bei großen Sammlungen und iCloud spürbar). Jetzt nur noch neue oder geänderte; eine unlesbare Datei wird einmal protokolliert statt bei jedem Neuladen.
+- **Speicherort** (Sicherung und automatischer Export): Das Ordner-Lesezeichen wird beim Öffnen der Seite aufgelöst statt bei jedem Neuzeichnen – ein getrenntes Netzlaufwerk bremst die Seite nicht mehr aus.
+- **Ohne Befund**: Sicherheitskopie vor jedem Wiederherstellen und Zurücksetzen (ohne sie wird nichts ersetzt), erneute Prüfung direkt vor dem Anwenden, Sperre während des Syncs, Sichern beim Beenden, leere Belegung nie automatisch gesichert, fremde Dateien im Ordner werden weder gelistet noch gelöscht, zu große/neuere/fremde Dateien werden abgelehnt, Ordnerwechsel kopiert erst alle Sicherungen und bleibt sonst beim alten, Demo schreibt nie in echte Ordner, jede Regal- und Belegungsänderung löst eine Sicherung aus.
+- Neue Tests: `previewAndRestoreAgreeOnTheCompartments`, `restoringTheCurrentLayoutNeedsNoConfirmation`, Zeitzonen-Fälle in `fileNamesCarryTheirTimeInOrder`. 183 Tests, 0 Fehler.
+
 # Export gründlich geprüft · 27.09.2026
 
 Geprüft mit Tests und einem Probe-Export einer Kopie der echten Sammlung (842 Platten, 868 Wünsche; CSV und PDF, beide Reihenfolgen). Korrigiert:
