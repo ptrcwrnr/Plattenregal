@@ -375,6 +375,7 @@ struct KallaxView: View {
                     if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
                 }),
                 options: activeCabinets.map { Optional($0.id) },
+                separators: true,
                 secondaryClick: { id, point in if let id { cabinetMenu = (id, point) } }
             ) { id in
                 cabinetTab(activeCabinets.first { $0.id == id })
@@ -407,6 +408,8 @@ struct KallaxView: View {
                         Button("Regal anzeigen") { show(cabinet) }
                         Button("Regal umbenennen …") { renamingCabinet = cabinet.id }
                     }
+                    // Not the tab's accent or gray: popovers inherit it.
+                    .foregroundStyle(.primary)
                 }
                 .background {
                     Color.clear.popover(isPresented: Binding(
@@ -414,6 +417,7 @@ struct KallaxView: View {
                         set: { if !$0, renamingCabinet == cabinet.id { renamingCabinet = nil } }
                     ), arrowEdge: .bottom) {
                         CabinetNamePopover(cabinet: cabinet).id(cabinet.id)
+                            .foregroundStyle(.primary)
                     }
                 }
         }

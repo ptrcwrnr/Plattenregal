@@ -597,6 +597,8 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     let options: [Value]
     var glass = true
     var small = false
+    /// A faint line between neighbouring options (e.g. the cabinet tabs).
+    var separators = false
     /// Right-click on an option, with the click position (see `onSecondaryClick`).
     var secondaryClick: ((Value, UnitPoint) -> Void)? = nil
     @ViewBuilder let label: (Value) -> Label
@@ -605,6 +607,11 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
         let row = HStack(spacing: 0) {
             ForEach(options, id: \.self) { option in
                 let selected = option == selection
+                if separators && option != options.first {
+                    Rectangle()
+                        .fill(Color.primary.opacity(0.12))
+                        .frame(width: 1, height: small ? 12 : 14)
+                }
                 Button { selection = option } label: {
                     label(option)
                         // Color only: a heavier weight would widen the label
