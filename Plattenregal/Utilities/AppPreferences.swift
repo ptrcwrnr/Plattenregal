@@ -109,6 +109,8 @@ enum DisplaySettings {
     /// in, and the list of them beside "Platte hinzufügen". Off hides it all;
     /// the marks themselves are kept.
     static let missingListKey = "missingListEnabled"
+    /// The "Vermisst" column beside "Platte hinzufügen" folded away.
+    static let missingColumnCollapsedKey = "missingColumnCollapsed"
 
     static let defaultCoverSize = 155.0
     static let coverSizeRange = 120.0...220.0

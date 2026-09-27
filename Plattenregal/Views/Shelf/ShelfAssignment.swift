@@ -160,7 +160,7 @@ struct ShelfAssignmentView: View {
     var found: (RecordCopy) -> Void = { _ in }
     @Environment(\.modelContext) private var context
     /// The "Vermisst" column folded away; remembered for the next opening.
-    @AppStorage("missingColumnCollapsed") private var missingCollapsed = false
+    @AppStorage(DisplaySettings.missingColumnCollapsedKey) private var missingCollapsed = false
 
     static let listWidth: CGFloat = 460
     static let missingWidth: CGFloat = 380
@@ -654,7 +654,8 @@ struct ShelfSortCheckView: View {
     private var gone: Bool { shelf.isDeleted || shelf.modelContext == nil }
 
     var body: some View {
-        let copies = gone ? [] : PositionService.inShelfOrder(shelf.copies)
+        // A sync may be removing records meanwhile: never read a deleted one.
+        let copies = gone ? [] : PositionService.inShelfOrder(shelf.copies.filter { !$0.isDeleted && $0.modelContext != nil })
         let steps = ShelfSortCheck.steps(copies, by: order)
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             VStack(alignment: .leading, spacing: 2) {
