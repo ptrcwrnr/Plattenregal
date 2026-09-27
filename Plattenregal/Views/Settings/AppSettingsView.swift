@@ -115,7 +115,7 @@ struct SettingsCard<Content: View>: View {
         .padding(AppStyle.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
         // The same glass cards as the statistics page.
-        .appGlassSurface(cornerRadius: AppStyle.controlRadius)
+        .appCardSurface()
     }
 }
 

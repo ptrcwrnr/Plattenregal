@@ -119,6 +119,13 @@ extension View {
         glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
     }
 
+    /// The large cards of the statistics and the settings: glass tinted
+    /// toward the window color, so a card sets itself off the page softly
+    /// instead of with a hard edge.
+    func appCardSurface(cornerRadius: CGFloat = AppStyle.controlRadius) -> some View {
+        glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)), in: .rect(cornerRadius: cornerRadius))
+    }
+
     /// Standard hover feedback (subtle background tint) shared by every interactive
     /// card/row in the app, so hover always looks and animates the same way.
     func appHoverable(_ hovering: Bool, cornerRadius: CGFloat = AppStyle.cardRadius) -> some View {

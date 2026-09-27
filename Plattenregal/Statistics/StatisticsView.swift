@@ -353,7 +353,7 @@ private struct StatisticsMovableArea<Content: View>: View {
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: AppStyle.controlRadius))
-        .appGlassSurface(cornerRadius: AppStyle.controlRadius)
+        .appCardSurface()
         // The glass brings its own edge; a frame only marks the drop target.
         .overlay {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
