@@ -204,6 +204,7 @@ struct CollectionView: View {
 
     var body: some View {
         let visibleIDs = items.map(\.id)
+        let searchTopPadding = DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding
         VStack(spacing: 0) {
             // Not in the drill-down sheets of the statistics: only on the page itself.
             if DemoMode.isActive && analyticsFilter == nil {
@@ -221,8 +222,8 @@ struct CollectionView: View {
                     otherSection: .wantlist
                 ) { pages.current = .wantlist }
                 .padding(.horizontal, AppStyle.pagePadding + 4)
-                .padding(.top, DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
-                .searchBarSlot(shown: showsSearchBar)
+                .padding(.top, searchTopPadding)
+                .searchBarSlot(shown: showsSearchBar, topPadding: searchTopPadding)
             }
             if showsControls {
                 collectionControls(items: items)

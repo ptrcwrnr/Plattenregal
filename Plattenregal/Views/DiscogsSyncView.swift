@@ -302,7 +302,7 @@ struct WantlistView: View {
             ) { pages.current = .collection }
             .padding(.horizontal, pageMargin)
             .padding(.top, DemoMode.isActive ? AppStyle.rowSpacing : AppStyle.pagePadding)
-            .searchBarSlot(shown: showsSearchBar)
+            .searchBarSlot(shown: showsSearchBar, topPadding: DemoMode.isActive ? AppStyle.rowSpacing : AppStyle.pagePadding)
             Color.clear.frame(height: showsSearchBar || DemoMode.isActive ? AppStyle.sectionSpacing : AppStyle.pagePadding)
             Group {
             if !loaded {

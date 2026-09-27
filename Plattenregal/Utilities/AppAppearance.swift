@@ -490,22 +490,41 @@ struct SearchReveal: ViewModifier {
 /// collapses with it (a negative padding can't take the spacing back).
 private struct SearchBarSlot: ViewModifier {
     let shown: Bool
+    /// Space inside the slot above the bar (its top padding): the fade
+    /// described below ends where the bar begins.
+    let topPadding: CGFloat
+    /// Height of that fade; no more than the page padding, so it stays
+    /// below the toolbar.
+    private let fade: CGFloat = AppStyle.pagePadding
     func body(content: Content) -> some View {
         content
             .opacity(shown ? 1 : 0)
             .offset(y: shown || AppStyle.reduceMotion ? 0 : -AppStyle.searchBarHeight)
             .frame(height: shown ? nil : 0, alignment: .bottom)
-            // Cut off at the slot's top edge, so sliding up it vanishes under
-            // the page's edge instead of running into the page switch in the
-            // toolbar. Open to the sides and below for the glass and the
-            // results list hanging under the shelf search.
+            // Faded out softly above the bar, so sliding up it melts away
+            // before the page's edge instead of running into the page switch
+            // in the toolbar. Open to the sides and below for the glass and
+            // the results list hanging under the shelf search.
             .mask(alignment: .top) {
-                Rectangle().padding(.horizontal, -100).padding(.bottom, -2000)
+                VStack(spacing: 0) {
+                    LinearGradient(stops: Self.fadeStops, startPoint: .top, endPoint: .bottom)
+                        .frame(height: fade)
+                    Rectangle()
+                }
+                .padding(.top, topPadding - fade)
+                .padding(.horizontal, -100)
+                .padding(.bottom, -2000)
             }
             .allowsHitTesting(shown)
             // Not reachable with Tab while hidden.
             .disabled(!shown)
             .accessibilityHidden(!shown)
+    }
+
+    /// Smoothstep from clear to opaque: no visible start or end of the fade.
+    private static let fadeStops: [Gradient.Stop] = (0...8).map {
+        let t = Double($0) / 8
+        return .init(color: .black.opacity(t * t * (3 - 2 * t)), location: t)
     }
 }
 
@@ -532,8 +551,9 @@ extension View {
 
     /// Keeps a search bar (or a row holding one) mounted while hidden; see
     /// `SearchBarSlot`.
-    func searchBarSlot(shown: Bool) -> some View {
-        modifier(SearchBarSlot(shown: shown))
+    /// `topPadding`: the padding above the bar inside the slot.
+    func searchBarSlot(shown: Bool, topPadding: CGFloat = 0) -> some View {
+        modifier(SearchBarSlot(shown: shown, topPadding: topPadding))
     }
 
     /// Marks a text field as not an AutoFill target. Without a content type
