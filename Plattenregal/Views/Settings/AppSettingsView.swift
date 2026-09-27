@@ -290,7 +290,7 @@ struct AppearanceSettingsView: View {
     }
 }
 
-/// One round color choice; `rainbow` for "Wie macOS", `off` for "Aus".
+/// One round color choice; `rainbow` for "Wie macOS", `off` (a white ball) for "Aus".
 private struct ColorSwatch: View {
     let title: String
     let color: Color
@@ -305,11 +305,7 @@ private struct ColorSwatch: View {
                 if rainbow {
                     Circle().fill(AngularGradient(colors: [.red, .orange, .yellow, .green, .blue, .purple, .red], center: .center))
                 } else if off {
-                    Path { path in
-                        path.move(to: CGPoint(x: 15, y: 3))
-                        path.addLine(to: CGPoint(x: 3, y: 15))
-                    }
-                    .stroke(Color.secondary, lineWidth: 1.5)
+                    Circle().fill(.white)
                 } else {
                     Circle().fill(color)
                 }
@@ -322,7 +318,7 @@ private struct ColorSwatch: View {
             .frame(width: 18, height: 18)
             .overlay(Circle().strokeBorder(Color.primary.opacity(0.15)))
             .padding(3)
-            .overlay(Circle().strokeBorder(selected ? color : .clear, lineWidth: 2))
+            .overlay(Circle().strokeBorder(selected ? (off ? Color.secondary : color) : .clear, lineWidth: 2))
             .contentShape(Circle())
         }
         .buttonStyle(.plain)
