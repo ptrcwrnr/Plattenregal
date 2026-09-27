@@ -1,3 +1,12 @@
+# CSV-Export aufgeräumt · 27.09.2026
+
+- **Standort im Regal** ist beim Export standardmäßig aus und hat nur noch drei Spalten: **Regal, Fach, Position**. Reihe, Spalte und Beschriftung fallen weg (Reihe/Spalte stecken schon im Fach, die Beschriftung ist App-intern). Platten ohne Fach tragen in „Fach“ „Noch keinem Fach zugeordnet“ bzw. „Nicht im Regal“. Wer den Standort schon eingeschaltet hatte, behält ihn; das PDF zeigt ihn weiterhin immer.
+- **Genres** entfallen (bei elektronischen Sammlungen fast überall „Electronic“), **Stile** bleiben.
+- **Format** ohne „1 ·“ bei Einzelplatten („Vinyl · 12" · 45 RPM“); ab zwei Stück bleibt die Anzahl stehen.
+- **Katalognummer** ohne Doppelungen: Haben zwei Labels eines Release dieselbe Nummer, steht sie nur einmal da („ASOT018“ statt „ASOT018, ASOT018“).
+- Rein numerische Katalognummern („012“, „2003“) behandeln Numbers und Excel weiterhin als Zahl (rechtsbündig, führende Null weg) – das lässt sich in einer CSV nicht sauber verhindern.
+- Tests: `releaseValuesAreTidied`, `locationIsOffByDefaultAndCompact`. 178 Tests, 0 Fehler.
+
 # Regalgrößen ohne Maße, 1 × 1 dazu · 27.09.2026
 
 - **Einstellungen › Regal › Größe**: Die Auswahl zeigt nur noch die Aufteilung („2 × 4 (hochkant)“), ohne Zentimeter. Neu ist **1 × 1**. „Eigene Größe …“ bleibt. Ein Regal mit 1 Spalte und 1 Reihe (z. B. EKET) steht jetzt automatisch auf „1 × 1“. Der Hinweis unter „Größe“ lautet nur noch „Spalten × Reihen“.

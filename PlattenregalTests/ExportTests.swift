@@ -30,6 +30,24 @@ extension AllTests {
             #expect(CSVWriter.escape("Moby", delimiter: ";") == "Moby")
         }
 
+        @Test func releaseValuesAreTidied() {
+            #expect(CollectionExportService.catalogNumber("ASOT018, ASOT018") == "ASOT018")
+            #expect(CollectionExportService.catalogNumber("AQL 010, AQL 010 X") == "AQL 010, AQL 010 X")
+            #expect(CollectionExportService.format("1 · Vinyl · 12\" · 45 RPM") == "Vinyl · 12\" · 45 RPM")
+            #expect(CollectionExportService.format("2 · Vinyl · LP, 1 · CD · Album") == "2 · Vinyl · LP, CD · Album")
+            #expect(CollectionExportService.format("Vinyl, LP, Album") == "Vinyl, LP, Album")
+        }
+
+        @Test func locationIsOffByDefaultAndCompact() throws {
+            #expect(ExportOptions().groups.isEmpty && ExportSettings().groups.isEmpty)
+            let (container, shelves, service) = try fixture()
+            try service.insert(release: Release(artist: "A", title: "1"), shelf: shelves[0], owner: "me")
+            let table = try CollectionExportService(context: container.mainContext)
+                .table(ExportOptions(source: .collection, order: .shelf, groups: [.location]))
+            #expect(Array(table.columns.suffix(3)) == [ExportColumn.cabinet, ExportColumn.shelf, ExportColumn.position])
+            #expect(!table.columns.contains("Genres"))
+        }
+
         @Test func countMatchesTheExportedRows() throws {
             let (container, shelves, service) = try fixture()
             try service.insert(release: Release(artist: "A", title: "1"), shelf: shelves[0], owner: "me")
@@ -71,7 +89,7 @@ extension AllTests {
             let shelf = try #require(table.column(ExportColumn.shelf))
             let position = try #require(table.column(ExportColumn.position))
             #expect(table.rows.map { $0.values[artist] } == ["Alpha", "Amber", "Beta", "Abba", "Zappa"])
-            #expect(table.rows.map { $0.values[shelf] } == ["1", "1", "2", "", ""])
+            #expect(table.rows.map { $0.values[shelf] } == ["1", "1", "2", "Noch keinem Fach zugeordnet", "Noch keinem Fach zugeordnet"])
             #expect(table.rows.map { $0.values[position] } == ["1", "2", "1", "", ""])
             #expect(table.rows.last?.section == "Ohne Fach")
             #expect(table.rows.first?.section?.hasPrefix("Fach 1") == true)

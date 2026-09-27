@@ -66,7 +66,7 @@ enum ExportColumnGroup: String, CaseIterable, Identifiable {
     }
     var hint: String {
         switch self {
-        case .location: "Regal, Fach, Reihe, Spalte, Beschriftung und Position"
+        case .location: "Regal, Fach und Position"
         case .copy: "Discogs-Ordner und Hinzufügedatum"
         case .discogs: "Release-ID, Master-ID und Link"
         case .tracklist: "Alle Titel in einer Spalte"
@@ -79,7 +79,7 @@ enum ExportColumnGroup: String, CaseIterable, Identifiable {
 struct ExportOptions {
     var source: ExportSource = .collection
     var order: ExportOrder = .shelf
-    var groups: Set<ExportColumnGroup> = [.location]
+    var groups: Set<ExportColumnGroup> = []
     var delimiter: ExportDelimiter = .semicolon
 }
 
@@ -97,8 +97,8 @@ nonisolated struct ExportTable: Sendable {
 nonisolated enum ExportColumn {
     static let artist = "Interpret", title = "Titel", year = "Jahr", label = "Label"
     static let catalogNumber = "Katalognummer", format = "Format", country = "Land"
-    static let genres = "Genres", styles = "Stile"
-    static let cabinet = "Regal", shelf = "Fach", row = "Reihe", column = "Spalte", shelfLabel = "Beschriftung", position = "Position"
+    static let styles = "Stile"
+    static let cabinet = "Regal", shelf = "Fach", position = "Position"
     static let folder = "Ordner", added = "Hinzugefügt"
     static let releaseID = "Release-ID", masterID = "Master-ID", link = "Discogs-Link"
     static let tracklist = "Tracklist"
@@ -108,7 +108,7 @@ nonisolated enum ExportColumn {
 /// and copies as the collection page) or of that account's wantlist.
 struct CollectionExportService {
     let context: ModelContext
-    /// How the "Beschriftung" column names the compartments.
+    /// How the PDF's shelf headings name the compartments.
     var labelStyle: ShelfLabelStyle = .range
 
     func table(_ options: ExportOptions) throws -> ExportTable {
@@ -148,7 +148,7 @@ struct CollectionExportService {
 
         var columns = Self.releaseColumns
         if groups.contains(.location) {
-            columns += [ExportColumn.cabinet, ExportColumn.shelf, ExportColumn.row, ExportColumn.column, ExportColumn.shelfLabel, ExportColumn.position]
+            columns += [ExportColumn.cabinet, ExportColumn.shelf, ExportColumn.position]
         }
         if groups.contains(.copy) {
             columns += [ExportColumn.folder, ExportColumn.added]
@@ -160,11 +160,10 @@ struct CollectionExportService {
             var values = Self.releaseValues(copy.release)
             if groups.contains(.location) {
                 if let shelf = copy.shelf {
-                    values += [shelf.cabinet?.name ?? "", "\(shelf.sortOrder)", "\(shelf.row)", "\(shelf.column)",
-                               shelfLabel(shelf, labels: labels),
-                               shelf.isReserved ? "" : "\(copy.positionInShelf)"]
+                    values += [shelf.cabinet?.name ?? "", "\(shelf.sortOrder)", shelf.isReserved ? "" : "\(copy.positionInShelf)"]
                 } else {
-                    values += ["", "", "", "", ShelfRangeLabels.location(of: copy, labels: labels, excluded: excluded.contains(copy.id)), ""]
+                    // "Nicht im Regal" or "Noch keinem Fach zugeordnet" instead of an empty place.
+                    values += ["", ShelfRangeLabels.location(of: copy, labels: labels, excluded: excluded.contains(copy.id)), ""]
                 }
             }
             if groups.contains(.copy) {
@@ -230,13 +229,24 @@ struct CollectionExportService {
 
     private static let releaseColumns = [ExportColumn.artist, ExportColumn.title, ExportColumn.year, ExportColumn.label,
                                          ExportColumn.catalogNumber, ExportColumn.format, ExportColumn.country,
-                                         ExportColumn.genres, ExportColumn.styles]
+                                         ExportColumn.styles]
 
     private static func releaseValues(_ release: Release?) -> [String] {
         guard let release else { return Array(repeating: "", count: releaseColumns.count) }
         return [release.displayArtist, release.displayTitle, release.year.map(String.init) ?? "",
-                release.displayLabel, release.catalogNumber, release.format, release.country,
-                release.genres.joined(separator: ", "), release.styles.joined(separator: ", ")]
+                release.displayLabel, catalogNumber(release.catalogNumber), format(release.format), release.country,
+                release.styles.joined(separator: ", ")]
+    }
+
+    /// Two labels of one release often share the number ("ASOT018, ASOT018"); listed once.
+    static func catalogNumber(_ raw: String) -> String {
+        var seen = Set<String>()
+        return raw.components(separatedBy: ", ").filter { seen.insert($0).inserted }.joined(separator: ", ")
+    }
+
+    /// Discogs names the quantity first ("1 · Vinyl · 12\""); a single disc goes without it.
+    static func format(_ raw: String) -> String {
+        raw.components(separatedBy: ", ").map { $0.hasPrefix("1 · ") ? String($0.dropFirst(4)) : $0 }.joined(separator: ", ")
     }
 
     private static func discogsValues(_ release: Release?) -> [String] {

@@ -11,7 +11,7 @@ struct ExportSettings {
     var source = ExportSource.collection
     var order = ExportOrder.shelf
     var delimiter = ExportDelimiter.semicolon
-    var groups: Set<ExportColumnGroup> = [.location]
+    var groups: Set<ExportColumnGroup> = []
 
     static var stored: ExportSettings {
         let defaults = AppDefaults.store

@@ -12,7 +12,7 @@ struct ExportSettingsView: View {
     @AppStorage(ExportSettings.sourceKey) private var source = ExportSource.collection
     @AppStorage(ExportSettings.orderKey) private var order = ExportOrder.shelf
     @AppStorage(ExportSettings.delimiterKey) private var delimiter = ExportDelimiter.semicolon
-    @AppStorage(ExportSettings.groupsKey) private var storedGroups = ExportColumnGroup.location.rawValue
+    @AppStorage(ExportSettings.groupsKey) private var storedGroups = ""
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @AppStorage(ScheduledExport.enabledKey) private var autoEnabled = false
     @AppStorage(ScheduledExport.intervalKey) private var autoInterval = ExportInterval.weekly
@@ -56,7 +56,7 @@ struct ExportSettingsView: View {
 
             if format == .csv {
                 SettingsCard(title: "Spalten",
-                             subtitle: "Interpret, Titel, Jahr, Label, Katalognummer, Format, Land, Genres und Stile sind immer enthalten.") {
+                             subtitle: "Interpret, Titel, Jahr, Label, Katalognummer, Format, Land und Stile sind immer enthalten.") {
                     let available = ExportColumnGroup.allCases.filter { $0.applies(to: source) }
                     ForEach(Array(available.enumerated()), id: \.element) { index, group in
                         if index > 0 { Divider() }
