@@ -21,7 +21,10 @@ import SwiftData
             do {
                 let dto = try await DiscogsAPIClient.shared.release(id: id)
                 guard !release.isDeleted else { continue }
-                try PositionService(context: context).save { dto.apply(to: release) }
+                // Not through `PositionService.save`: no place in the shelf
+                // changes, so no layout backup. Labels follow `libraryDidChange` below.
+                do { dto.apply(to: release); try context.save() }
+                catch { context.rollback(); throw error }
             } catch is CancellationError { return }
             catch { failed += 1; reason = error.reportedMessage() }
         }

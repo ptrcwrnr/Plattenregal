@@ -1,6 +1,7 @@
 # Aufgeräumt nach der technischen Prüfung · 04.10.2026
 
 - **Tracklist im Popover**: Wird beim Klick auf ein Cover eine fehlende Tracklist nachgeladen, speichert die App sie jetzt direkt. Vorher lief das über den Speicherweg für Regal-Änderungen, der jedes Mal eine automatische Sicherung der Belegung anstieß und die Fach-Beschriftungen neu berechnete, obwohl sich am Regal nichts geändert hatte.
+- **„Discogs-Daten aktualisieren“** speichert ebenso direkt: keine automatische Sicherung der Belegung mehr, wenn sich nur Release-Daten ändern. Die Fach-Beschriftungen folgen weiterhin, weil sich Interpret oder Titel ändern können.
 - **Ungenutzter Code entfernt**: `DiscogsAPIClient.testToken()` (der Verbindungstest nutzt `quickTest`) und `Release.isFresh` (nur noch in einem Test geprüft; der Test prüft jetzt, dass `fetchedAt` gesetzt wird). Am Datenbankschema ändert sich nichts.
 
 183 Tests, 0 Fehler.
