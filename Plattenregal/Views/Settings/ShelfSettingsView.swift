@@ -340,6 +340,7 @@ private struct CabinetCreator: View {
                 PrimaryButton(title: String(localized: "Regal anlegen"), action: add).keyboardShortcut(.defaultAction)
             }
         }
+        .preference(key: SettingsEscapeKey.self, value: true)
     }
 
     private func add() {

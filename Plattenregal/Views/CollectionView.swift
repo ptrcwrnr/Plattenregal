@@ -167,10 +167,17 @@ struct CollectionView: View {
             filtered = base.filter { index.matches($0.id, words) }
         }
         let grouped = CollectionCoverGroup.make(from: filtered)
+        let searchEnded = searching && words.isEmpty
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
             items = filtered
             coverGroups = grouped
             searching = !words.isEmpty
+        }
+        // Back where the page was before the search – also when it was
+        // cleared while this page was hidden.
+        if searchEnded {
+            scrollPosition = scrollBeforeSearch ?? filtered.first?.id
+            scrollBeforeSearch = nil
         }
         normalizeGridScrollPosition(in: grouped)
         alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
@@ -470,16 +477,13 @@ struct CollectionView: View {
     }
 
     /// The search ends: fade the hits out, show the whole list where it was
-    /// before the search, fade it in. Typing again meanwhile cancels this and
-    /// brings the results back at once.
+    /// before the search (see `applyQuery`), fade it in. Typing again
+    /// meanwhile cancels this and brings the results back at once.
     private func leaveSearch() async {
         withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
         try? await Task.sleep(for: .milliseconds(100))
         if !Task.isCancelled {
             applyQuery()
-            scrollPosition = scrollBeforeSearch ?? items.first?.id
-            normalizeGridScrollPosition(in: coverGroups)
-            scrollBeforeSearch = nil
             // One layout pass for the jump, still invisible.
             try? await Task.sleep(for: .milliseconds(30))
         }

@@ -63,6 +63,8 @@ struct AppSettingsView: View {
     }()
     @State private var request = SettingsRequest.shared
     @Environment(\.dismiss) private var dismiss
+    /// A form in the page has its own "Abbrechen" on Esc (see `SettingsEscapeKey`).
+    @State private var escapeTaken = false
 
     var body: some View {
         // The same Liquid Glass switch as the main window, instead of tabs.
@@ -85,11 +87,12 @@ struct AppSettingsView: View {
         .background { WindowButtonsHidden() }
         .background {
             Group {
-                Button { dismiss() } label: { EmptyView() }.keyboardShortcut(.cancelAction)
+                Button { dismiss() } label: { EmptyView() }.keyboardShortcut(.cancelAction).disabled(escapeTaken)
                 Button { dismiss() } label: { EmptyView() }.keyboardShortcut("w")
             }
             .opacity(0).accessibilityHidden(true)
         }
+        .onPreferenceChange(SettingsEscapeKey.self) { escapeTaken = $0 }
         // The chosen ambient color, as in the main window.
         .background { AmbientGlow() }
         // Asked for from the main window while this one is already open.
@@ -105,6 +108,13 @@ struct AppSettingsView: View {
             }
         }
     }
+}
+
+/// True while a form in the settings answers Esc itself ("Abbrechen" of a
+/// new shelf): then Esc cancels that form instead of closing the window.
+struct SettingsEscapeKey: PreferenceKey {
+    static let defaultValue = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) { value = value || nextValue() }
 }
 
 /// Hides close, minimize and zoom of the window this view sits in.

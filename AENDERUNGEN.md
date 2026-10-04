@@ -1,7 +1,7 @@
 # Suche verlassen · 04.10.2026
 
-- **Einstellungsfenster**: ohne Fensterknöpfe, nur die Bereichsleiste mittig in der Titelzeile; Esc und ⌘W schließen es. 760 × 510 pt, keine Trennlinie mehr unter der Leiste. „Demo starten“ im Fenster ohne Auslassungspunkte (im Menü bleiben sie, dort folgt eine Rückfrage).
-- **Suche in Collection und Wantlist verlassen**: Wird die Suche geleert (Esc, ⌘F, Löschknopf), wartet die Liste nicht mehr 0,12 s wie beim Tippen, und die Cover gleiten nicht mehr zurück. Die Treffer blenden in 0,1 s aus, die ganze Liste steht wieder an der Stelle, an der sie vor der Suche war, und blendet in 0,22 s ein – getaktet wie der Rubrikwechsel. Beim Tippen gleiten die Treffer weiter an ihren Platz.
+- **Einstellungsfenster**: ohne Fensterknöpfe, nur die Bereichsleiste mittig in der Titelzeile; Esc und ⌘W schließen es; solange „Neues Regal“ offen ist, bricht Esc nur dieses Formular ab. 760 × 510 pt, keine Trennlinie mehr unter der Leiste. „Demo starten“ im Fenster ohne Auslassungspunkte (im Menü bleiben sie, dort folgt eine Rückfrage).
+- **Suche in Collection und Wantlist verlassen**: Wird die Suche geleert (Esc, ⌘F, Löschknopf), wartet die Liste nicht mehr 0,12 s wie beim Tippen, und die Cover gleiten nicht mehr zurück. Die Treffer blenden in 0,1 s aus, die ganze Liste steht wieder an der Stelle, an der sie vor der Suche war, und blendet in 0,22 s ein – getaktet wie der Rubrikwechsel. Wird die Suche auf der anderen Seite geleert (beide teilen sie), steht auch diese Seite beim nächsten Öffnen wieder an der alten Stelle. Beim Tippen gleiten die Treffer weiter an ihren Platz.
 
 # Rubrikwechsel mit Richtung · 04.10.2026
 

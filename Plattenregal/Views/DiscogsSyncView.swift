@@ -388,15 +388,13 @@ struct WantlistView: View {
         .trackPageActivity(activity) { active in if active && queryPending { applyQuery() } }
     }
 
-    /// The search ends: hits out, the whole list back where it was, in again
-    /// (see CollectionView).
+    /// The search ends: hits out, the whole list back where it was (see
+    /// `applyQuery`), in again – as in the collection.
     private func leaveSearch() async {
         withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
         try? await Task.sleep(for: .milliseconds(100))
         if !Task.isCancelled {
             applyQuery()
-            scrollPosition = scrollBeforeSearch ?? visibleEntries.first?.persistentModelID
-            scrollBeforeSearch = nil
             try? await Task.sleep(for: .milliseconds(30))
         }
         withAnimation(AppStyle.searchExitFadeIn) { resultsHidden = false }
@@ -436,9 +434,15 @@ struct WantlistView: View {
             let collection = LibrarySearchIndexes.shared.collection(copies)
             collectionMatches = Set(activeCopies.filter { collection.matches($0.id, words) }.map(\.group)).count
         }
+        let searchEnded = !appliedQuery.isEmpty && words.isEmpty
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
             visibleEntries = visible
             appliedQuery = words.isEmpty ? "" : query
+        }
+        // Back where the page was before the search (see CollectionView).
+        if searchEnded {
+            scrollPosition = scrollBeforeSearch ?? visible.first?.persistentModelID
+            scrollBeforeSearch = nil
         }
         // Only the alphabetical order has the index at the edge.
         alphabetIndex = order != .alphabetical ? [:] : visible.reduce(into: [:]) { result, entry in
