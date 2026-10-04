@@ -28,6 +28,15 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     var collectionAdded = 0, collectionUpdated = 0, collectionRemoved = 0
     var wantsAdded = 0, wantsRemoved = 0
     var foldersChanged = 0
+    /// Changes the counts above don't show: wantlist notes and dates, release
+    /// data that came with the wantlist, folders cleared on copies, another
+    /// account becoming the current one.
+    var otherChanges = false
+    /// Whether the store holds anything new for the pages. A sync that only
+    /// confirmed what was there lets them keep what they derived from it.
+    var hasChanges: Bool {
+        collectionAdded + collectionUpdated + collectionRemoved + wantsAdded + wantsRemoved + foldersChanged > 0 || otherChanges
+    }
     // Only additions are reported; updates, removals and folder changes stay silent.
     private static func added(_ count: Int) -> String { count == 0 ? String(localized: "Nichts hinzugefügt") : String(localized: "\(count.formatted()) hinzugefügt") }
     /// Both areas at once need their names to be told apart.
@@ -134,7 +143,9 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             summary = result.description(for: scope)
             AppLog.info("Sync", "Gespeichert (\(scope.logName), Konto \(snapshot.username)): \(summary ?? "–")")
             rejectedFingerprint = nil
-            LibraryChanges.shared.syncDidCommit()
+            // Nothing new: the pages keep their sorted lists, indexes and labels.
+            if result.hasChanges { LibraryChanges.shared.syncDidCommit() }
+            else { AppLog.info("Sync", "Keine Änderungen, Seiten bleiben unverändert") }
             if scope == .collection || scope == .all || scope == .folder(0) {
                 status = String(localized: "Sammlungswert wird aktualisiert")
                 do {
@@ -360,6 +371,8 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         do {
             let owner = snapshot.username
             let accounts = try context.fetch(FetchDescriptor<DiscogsAccount>())
+            let previousCurrent = DiscogsAccount.current(in: accounts)?.username
+            let isNewAccount = !accounts.contains { $0.username == owner }
             let account = accounts.first { $0.username == owner } ?? DiscogsAccount(username: owner)
             context.insert(account)
             let releases = try context.fetch(FetchDescriptor<Release>())
@@ -385,7 +398,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 }
                 for folder in existing where !ids.contains(folder.folderID) { context.delete(folder); result.foldersChanged += 1 }
                 for copy in copies where copy.discogsOwner == owner {
-                    if let id = copy.discogsFolderID, !ids.contains(id) { copy.discogsFolderID = nil }
+                    if let id = copy.discogsFolderID, !ids.contains(id) { copy.discogsFolderID = nil; result.otherChanges = true }
                 }
             }
             if let collection = snapshot.collection {
@@ -413,7 +426,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 }
                 for copy in owned where copy.discogsActive && !ids.contains(copy.discogsInstanceID) {
                     if case .folder(let id) = snapshot.scope, id != 0 {
-                        if copy.discogsFolderID == id { copy.discogsFolderID = nil }
+                        if copy.discogsFolderID == id { copy.discogsFolderID = nil; result.otherChanges = true }
                     } else {
                         copy.discogsActive = false; copy.discogsFolderID = nil
                         result.collectionRemoved += 1
@@ -427,9 +440,12 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 var indexed = Dictionary(existing.map { ($0.releaseID, $0) }, uniquingKeysWith: { first, _ in first })
                 let ids = Set(wants.map(\.id))
                 for dto in wants {
+                    let metadataChanged = byRelease[dto.id]?.basicInformation != (try DiscogsEncoding.data(dto.basic_information))
                     let metadata = try release(dto.basic_information)
                     let entry = indexed[dto.id] ?? WantlistEntry(owner: owner, release: metadata, releaseID: dto.id)
                     if indexed[dto.id] == nil { result.wantsAdded += 1 }
+                    else if metadataChanged || entry.release?.persistentModelID != metadata.persistentModelID
+                                || entry.dateAdded != dto.date_added || entry.notes != dto.notes { result.otherChanges = true }
                     context.insert(entry); entry.release = metadata; entry.dateAdded = dto.date_added
                     entry.notes = dto.notes
                     indexed[dto.id] = entry
@@ -440,11 +456,16 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                     .filter { !$0.isDeleted }.compactMap { $0.release?.persistentModelID })
                 for release in byRelease.values where release.copies.isEmpty && !wanted.contains(release.persistentModelID) {
                     context.delete(release)
+                    result.otherChanges = true
                 }
                 account.lastWantlistSync = now
             }
             account.userID = snapshot.userID; account.credentialFingerprint = snapshot.fingerprint
             if snapshot.scope == .all { account.lastFullSync = now }
+            // The first sync of an account, or another one becoming the current one.
+            if isNewAccount || DiscogsAccount.current(in: accounts + (isNewAccount ? [account] : []))?.username != previousCurrent {
+                result.otherChanges = true
+            }
             try Task.checkCancellation()
             try context.save()
             return result

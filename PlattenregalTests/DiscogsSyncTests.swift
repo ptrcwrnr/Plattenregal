@@ -39,6 +39,30 @@ extension AllTests {
             #expect(try copies(c).count == 2000)
             #expect(repeated.collectionAdded == 0); #expect(repeated.collectionUpdated == 0)
         }
+        /// A sync that only confirms the store lets the pages keep what they derived.
+        @Test func unchangedSyncReportsNoChanges() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let folders = [DiscogsFolderDTO(id: 1, name: "Alles", count: 1)]
+            #expect(try merge(c, collection: [entry()], wants: [want(43)], folders: folders).hasChanges)
+            #expect(try !merge(c, collection: [entry()], wants: [want(43)], folders: folders).hasChanges)
+        }
+        @Test func wantlistDetailsCountAsChanges() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            try merge(c, wants: [want(43)])
+            let noted = DiscogsWantDTO(id: 43, date_added: "2026-09-20T08:00:00+02:00", notes: "Neue Notiz", basic_information: basic(43))
+            #expect(try merge(c, wants: [noted]).hasChanges)
+            let renamed = DiscogsWantDTO(id: 43, date_added: "2026-09-20T08:00:00+02:00", notes: "Neue Notiz", basic_information: basic(43, title: "Neu"))
+            #expect(try merge(c, wants: [renamed]).hasChanges)
+            #expect(try !merge(c, wants: [renamed]).hasChanges)
+        }
+        @Test func anotherAccountCountsAsChange() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            try merge(c, collection: [entry()], owner: "erstes")
+            try merge(c, collection: [entry()], owner: "zweites")
+            #expect(try !merge(c, collection: [entry()], owner: "zweites").hasChanges)
+            // Back to the first one, whose records are all there already.
+            #expect(try merge(c, collection: [entry()], owner: "erstes").hasChanges)
+        }
         @Test func cancelledMergeDoesNotWrite() async throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry()])
