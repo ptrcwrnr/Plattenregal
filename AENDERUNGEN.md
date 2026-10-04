@@ -1,3 +1,8 @@
+# Suche verlassen · 04.10.2026
+
+- **Einstellungsfenster**: ohne Fensterknöpfe, nur die Bereichsleiste mittig in der Titelzeile; Esc und ⌘W schließen es. 760 × 510 pt, keine Trennlinie mehr unter der Leiste. „Demo starten“ im Fenster ohne Auslassungspunkte (im Menü bleiben sie, dort folgt eine Rückfrage).
+- **Suche in Collection und Wantlist verlassen**: Wird die Suche geleert (Esc, ⌘F, Löschknopf), wartet die Liste nicht mehr 0,12 s wie beim Tippen, und die Cover gleiten nicht mehr zurück. Die Treffer blenden in 0,1 s aus, die ganze Liste steht wieder an der Stelle, an der sie vor der Suche war, und blendet in 0,22 s ein – getaktet wie der Rubrikwechsel. Beim Tippen gleiten die Treffer weiter an ihren Platz.
+
 # Rubrikwechsel mit Richtung · 04.10.2026
 
 - **Wechsel zwischen den Rubriken**: Statt der Überblendung (0,2 s) blendet die Seite jetzt durch: Die alte verschwindet in 0,1 s an Ort und Stelle, danach blendet die neue ein und schiebt sich dabei ein Stück (18 pt) in Richtung des Umschalters herein – nach rechts von rechts, nach links von links. Die beiden Seiten liegen nie gleichzeitig sichtbar übereinander (beim Überblenden mit Schub lagen sonst die Cover der einen Seite in den Lücken der anderen); dazwischen sieht man kurz nur Fensterhintergrund und Ambient-Schein. Der Schub ist eine kritisch gedämpfte Feder (~0,3 s) wie überall in der App, rein Core Animation, ohne Neuzeichnen der Seiten. Mit „Bewegung reduzieren“ bleibt nur das Ein- und Ausblenden.

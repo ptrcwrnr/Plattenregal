@@ -20,6 +20,11 @@ enum AppStyle {
     /// goes; the page below follows with the same curve. Only a fade with
     /// "Bewegung reduzieren".
     static var searchBarAnimation: Animation { reduceMotion ? fadeAnimation : .smooth(duration: 0.35) }
+    /// Leaving a search: the hits fade out quickly, then the whole list fades
+    /// in where it was before the search – timed like a page switch (see
+    /// `PageStackView.show`). Gliding hundreds of covers back in looked busy.
+    static var searchExitFadeOut: Animation { .easeIn(duration: 0.1) }
+    static var searchExitFadeIn: Animation { .easeOut(duration: 0.22) }
     static let cardPadding: CGFloat = 16
     static let sectionSpacing: CGFloat = 20
     static let rowSpacing: CGFloat = 12

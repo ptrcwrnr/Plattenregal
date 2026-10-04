@@ -264,6 +264,10 @@ struct WantlistView: View {
     @State private var visibleEntries: [WantlistEntry] = []
     @State private var alphabetIndex: [String: PersistentIdentifier] = [:]
     @State private var scrollPosition: PersistentIdentifier?
+    /// Where the page was scrolled when the search began (see `leaveSearch`).
+    @State private var scrollBeforeSearch: PersistentIdentifier?
+    /// The results, faded out while leaving a search.
+    @State private var resultsHidden = false
     @State private var hasToken = true
     @State private var settingsTab: AppSettingsView.Tab?
     /// The entry whose menu is open, and where it was right-clicked.
@@ -343,6 +347,7 @@ struct WantlistView: View {
             }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .opacity(resultsHidden ? 0 : 1)
             // Sync progress floats where the pull-to-refresh ring was.
             .overlay(alignment: .top) { DiscogsSyncPill() }
         }
@@ -369,13 +374,32 @@ struct WantlistView: View {
         }
         // New tracks are found by a running search (the index follows them).
         .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
+        .onChange(of: query) { old, new in
+            if old.isEmpty && !new.isEmpty && appliedQuery.isEmpty { scrollBeforeSearch = scrollPosition }
+        }
         .task(id: query) {
             guard activity.isActive else { queryPending = true; return }
+            // Cleared: no debounce, as in the collection.
+            if query.isEmpty && !appliedQuery.isEmpty { await leaveSearch(); return }
             try? await Task.sleep(for: .milliseconds(120))
             guard !Task.isCancelled else { return }
             applyQuery(animated: true)
         }
         .trackPageActivity(activity) { active in if active && queryPending { applyQuery() } }
+    }
+
+    /// The search ends: hits out, the whole list back where it was, in again
+    /// (see CollectionView).
+    private func leaveSearch() async {
+        withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
+        try? await Task.sleep(for: .milliseconds(100))
+        if !Task.isCancelled {
+            applyQuery()
+            scrollPosition = scrollBeforeSearch ?? visibleEntries.first?.persistentModelID
+            scrollBeforeSearch = nil
+            try? await Task.sleep(for: .milliseconds(30))
+        }
+        withAnimation(AppStyle.searchExitFadeIn) { resultsHidden = false }
     }
 
     /// Only the current account, as in the collection (see CollectionView).

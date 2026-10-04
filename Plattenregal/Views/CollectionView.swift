@@ -122,6 +122,11 @@ struct CollectionView: View {
     /// Whether the visible items are a search result — the placement badges
     /// follow this, not the raw field (whitespace, debounce).
     @State private var searching = false
+    /// Where the page was scrolled when the search began, to go back there
+    /// when it ends (see `leaveSearch`).
+    @State private var scrollBeforeSearch: UUID?
+    /// The results, faded out while leaving a search.
+    @State private var resultsHidden = false
 
     /// `animated`: records glide to their new place (search or section).
     /// Data refreshes (e.g. a Discogs sync) and the list layout update
@@ -400,6 +405,7 @@ struct CollectionView: View {
             }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .opacity(resultsHidden ? 0 : 1)
             // Sync progress floats where the pull-to-refresh ring was.
             .overlay(alignment: .top) { if analyticsFilter == nil { DiscogsSyncPill() } }
         }
@@ -445,8 +451,14 @@ struct CollectionView: View {
         .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
         // Debounced, and only for the visible section — the hidden ones
         // share the query but catch up when they're shown again.
+        .onChange(of: query) { old, new in
+            if old.isEmpty && !new.isEmpty && !searching { scrollBeforeSearch = scrollPosition }
+        }
         .task(id: query) {
             guard activity.isActive else { queryPending = true; return }
+            // Cleared: no debounce, the list comes back together with the
+            // search bar going away.
+            if query.isEmpty && searching { await leaveSearch(); return }
             try? await Task.sleep(for: .milliseconds(120))
             guard !Task.isCancelled else { return }
             applyQuery(animated: true)
@@ -455,6 +467,23 @@ struct CollectionView: View {
             if active && labelsPending { refreshLabels() }
             if active && queryPending { applyQuery() }
         }
+    }
+
+    /// The search ends: fade the hits out, show the whole list where it was
+    /// before the search, fade it in. Typing again meanwhile cancels this and
+    /// brings the results back at once.
+    private func leaveSearch() async {
+        withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
+        try? await Task.sleep(for: .milliseconds(100))
+        if !Task.isCancelled {
+            applyQuery()
+            scrollPosition = scrollBeforeSearch ?? items.first?.id
+            normalizeGridScrollPosition(in: coverGroups)
+            scrollBeforeSearch = nil
+            // One layout pass for the jump, still invisible.
+            try? await Task.sleep(for: .milliseconds(30))
+        }
+        withAnimation(AppStyle.searchExitFadeIn) { resultsHidden = false }
     }
 
     private var showsAlphabetIndex: Bool { order == .alphabetical }
