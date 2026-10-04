@@ -99,41 +99,47 @@ struct SearchIndex<ID: Hashable> {
     }
 }
 
-/// The search texts of the current collection and wantlist, folded once
-/// and shared by both pages: each searches its own list and counts the
-/// other's hits, so each index used to be built twice. Built on the first
-/// search after a change, not with every change – the tracklist download
-/// reports every few seconds, mostly while nobody searches.
+/// The search texts of all records and wantlist entries, folded once and
+/// shared by collection and wantlist: each page searches its own list and
+/// counts the other's hits, so each index used to be built twice. Built on
+/// the first search after a change, not with every change – the tracklist
+/// download reports every few seconds, mostly while nobody searches.
+///
+/// Every record is in it, whichever account and whether still in the
+/// collection: the pages only look up the ones they show, so an index never
+/// depends on which records count as current right now.
 final class LibrarySearchIndexes {
     static let shared = LibrarySearchIndexes()
 
-    /// What an index was built from. The counts are of all records and
-    /// entries (what the pages' queries hold), so a page doesn't have to
-    /// filter them just to ask; changes beyond adding and removing come
-    /// with `LibraryChanges`.
-    private struct Key: Equatable { let library: Int; let tracks: Int; let owner: String?; let count: Int }
+    /// What an index was built from: the counts of all records and entries
+    /// (what the pages' queries hold), the reported changes, and the pages'
+    /// own data rebuilds (`invalidate`).
+    private struct Key: Equatable { let generation: Int; let library: Int; let tracks: Int; let count: Int }
+    private var generation = 0
     private var collection: (key: Key, index: SearchIndex<UUID>)?
     private var wantlist: (key: Key, index: SearchIndex<PersistentIdentifier>)?
 
-    private func key(owner: String?, count: Int) -> Key {
-        Key(library: LibraryChanges.shared.libraryVersion, tracks: LibraryChanges.shared.tracksVersion, owner: owner, count: count)
+    /// A page rebuilt from changed data: the next search builds afresh.
+    func invalidate() { generation += 1 }
+
+    private func key(count: Int) -> Key {
+        Key(generation: generation, library: LibraryChanges.shared.libraryVersion, tracks: LibraryChanges.shared.tracksVersion, count: count)
     }
 
-    /// `copies`: the current collection (see `RecordCopy.isInCurrentCollection`),
-    /// only read when the index has to be built.
-    func collection(owner: String?, allCopies count: Int, copies: () -> [RecordCopy]) -> SearchIndex<UUID> {
-        let key = key(owner: owner, count: count)
+    /// `copies`: every record, only read when the index has to be built.
+    func collection(_ copies: [RecordCopy]) -> SearchIndex<UUID> {
+        let key = key(count: copies.count)
         if let collection, collection.key == key { return collection.index }
-        let index = SearchIndex(copies(), id: \.id, text: SortingService.searchText)
+        let index = SearchIndex(copies, id: \.id, text: SortingService.searchText)
         collection = (key, index)
         return index
     }
 
-    /// `entries`: the current account's wantlist.
-    func wantlist(owner: String?, allEntries count: Int, entries: () -> [WantlistEntry]) -> SearchIndex<PersistentIdentifier> {
-        let key = key(owner: owner, count: count)
+    /// `entries`: every wantlist entry.
+    func wantlist(_ entries: [WantlistEntry]) -> SearchIndex<PersistentIdentifier> {
+        let key = key(count: entries.count)
         if let wantlist, wantlist.key == key { return wantlist.index }
-        let index = SearchIndex(entries(), id: \.persistentModelID, text: WantlistPresentation.searchText)
+        let index = SearchIndex(entries, id: \.persistentModelID, text: WantlistPresentation.searchText)
         wantlist = (key, index)
         return index
     }

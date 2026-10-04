@@ -158,7 +158,7 @@ struct CollectionView: View {
         let words = SearchIndex<UUID>.words(query)
         let filtered: [RecordCopy]
         if words.isEmpty { filtered = base } else {
-            let index = collectionIndex()
+            let index = LibrarySearchIndexes.shared.collection(copies)
             filtered = base.filter { index.matches($0.id, words) }
         }
         let grouped = CollectionCoverGroup.make(from: filtered)
@@ -170,21 +170,11 @@ struct CollectionView: View {
         normalizeGridScrollPosition(in: grouped)
         alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
         if pages == nil || words.isEmpty { wantlistMatches = 0 } else {
-            let index = LibrarySearchIndexes.shared.wantlist(owner: owner, allEntries: wantlistEntries.count) { currentWantlist }
+            let index = LibrarySearchIndexes.shared.wantlist(wantlistEntries)
             wantlistMatches = currentWantlist.reduce(0) { $0 + (index.matches($1.persistentModelID, words) ? 1 : 0) }
         }
     }
 
-    private var owner: String? { DiscogsAccount.current(in: accounts)?.username }
-
-    /// The whole current collection, also for the statistics' selections:
-    /// they look up only their own records in it.
-    private func collectionIndex() -> SearchIndex<UUID> {
-        let owner = owner
-        return LibrarySearchIndexes.shared.collection(owner: owner, allCopies: copies.count) {
-            copies.filter { $0.isInCurrentCollection(owner: owner) }
-        }
-    }
 
     private func normalizeGridScrollPosition(in groups: [CollectionCoverGroup]) {
         guard layout == .grid, let scrollPosition,
@@ -447,6 +437,7 @@ struct CollectionView: View {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
+            LibrarySearchIndexes.shared.invalidate()
             rebuildWantedReleaseIDs()
             rebuildBase()
         }

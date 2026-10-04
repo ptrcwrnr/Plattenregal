@@ -29,7 +29,7 @@ extension AllTests {
             LibraryChanges.shared.libraryDidChange()
             func index() throws -> SearchIndex<UUID> {
                 let copies = try context.fetch(FetchDescriptor<RecordCopy>())
-                return LibrarySearchIndexes.shared.collection(owner: nil, allCopies: copies.count) { copies }
+                return LibrarySearchIndexes.shared.collection(copies)
             }
             #expect(try index().matches(first.id, ["moby"]))
             #expect(try !index().matches(first.id, ["porcelain"]))
@@ -38,6 +38,28 @@ extension AllTests {
             #expect(try index().matches(first.id, ["porcelain"]))
             let second = try service.insert(release: Release(artist: "Air", title: "Moon Safari"), shelf: nil)
             #expect(try index().matches(second.id, ["safari"]))
+            // Changed without any report (e.g. read before the page saw it): a page rebuild catches up.
+            second.release?.label = "Source"
+            #expect(try !index().matches(second.id, ["source"]))
+            LibrarySearchIndexes.shared.invalidate()
+            #expect(try index().matches(second.id, ["source"]))
+        }
+        /// Kept ends give the same labels as computing everything afresh, also after moves.
+        @Test func cachedShelfLabelsMatchFullComputation() throws {
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            let context = container.mainContext
+            let shelves = try context.fetch(FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\.number)]))
+            let service = PositionService(context: context)
+            for (index, artist) in ["Air", "Bjork", "Cher", "Daft Punk"].enumerated() {
+                try service.insert(release: Release(artist: artist, title: "X"), shelf: shelves[index / 2], position: index % 2 + 1)
+            }
+            let cache = ShelfLabelsCache()
+            #expect(cache.labels(for: shelves, style: .range).labels == ShelfRangeLabels.compute(for: shelves, style: .range).labels)
+            let cher = try #require(shelves[1].copies.first { $0.release?.artist == "Cher" })
+            try service.move(cher, to: shelves[0], position: 3)
+            let moved = cache.labels(for: shelves, style: .range).labels
+            #expect(moved == ShelfRangeLabels.compute(for: shelves, style: .range).labels)
+            #expect(moved[shelves[1].id] == "D")
         }
         @Test func shelfGeometry() throws {
             let (container, shelves, _) = try fixture(); _ = container

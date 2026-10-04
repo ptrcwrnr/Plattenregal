@@ -363,6 +363,7 @@ struct WantlistView: View {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
+            LibrarySearchIndexes.shared.invalidate()
             rebuildCollection()
             rebuild()
         }
@@ -406,13 +407,9 @@ struct WantlistView: View {
             visible = sortedEntries
             collectionMatches = 0
         } else {
-            let owner = owner
-            let indexes = LibrarySearchIndexes.shared
-            let index = indexes.wantlist(owner: owner, allEntries: entries.count) { sortedEntries }
+            let index = LibrarySearchIndexes.shared.wantlist(entries)
             visible = sortedEntries.filter { index.matches($0.persistentModelID, words) }
-            let collection = indexes.collection(owner: owner, allCopies: copies.count) {
-                copies.filter { $0.isInCurrentCollection(owner: owner) }
-            }
+            let collection = LibrarySearchIndexes.shared.collection(copies)
             collectionMatches = Set(activeCopies.filter { collection.matches($0.id, words) }.map(\.group)).count
         }
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
