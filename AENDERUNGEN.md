@@ -1,3 +1,7 @@
+# Prüfung der App · 04.10.2026
+
+Abgleich mit Discogs (Seitenprüfung, Wiederholungen, Kontowechsel), Positionen und Einsortieren, Sicherung und Wiederherstellen, Zurücksetzen, Export (CSV-Formelschutz, PDF-Umbruch), Start und Datenbank-Sperre, Demo sowie die heutigen Änderungen an Suche und Einstellungsfenster auf Randfälle durchgesehen. Kein Fehler gefunden; alle Listenzugriffe sind abgesichert. Nur ein veralteter Kommentar beim Wantlist-Export ist berichtigt. 190 Tests, 0 Fehler.
+
 # Suche verlassen · 04.10.2026
 
 - **Einstellungsfenster**: ohne Fensterknöpfe, nur die Bereichsleiste mittig in der Titelzeile; Esc und ⌘W schließen es; solange „Neues Regal“ offen ist, bricht Esc nur dieses Formular ab. 760 × 510 pt, keine Trennlinie mehr unter der Leiste. „Demo starten“ im Fenster ohne Auslassungspunkte (im Menü bleiben sie, dort folgt eine Rückfrage).

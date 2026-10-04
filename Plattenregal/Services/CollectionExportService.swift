@@ -194,7 +194,8 @@ struct CollectionExportService {
         if groups.contains(.discogs) { columns += [ExportColumn.releaseID, ExportColumn.masterID, ExportColumn.link] }
         if groups.contains(.tracklist) { columns.append(ExportColumn.tracklist) }
 
-        // Same order as the wantlist page.
+        // Alphabetical, as the wantlist page in that order (random and
+        // "Neueste zuerst" mean nothing in a list to keep).
         let rows = WantlistPresentation.sorted(entries).map { entry in
             var values = Self.releaseValues(entry.release)
             if groups.contains(.copy) {
