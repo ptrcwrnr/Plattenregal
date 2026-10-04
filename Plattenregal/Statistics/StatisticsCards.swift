@@ -506,8 +506,11 @@ struct RandomRecordCard: View {
     let open: (RecordCopy) -> Void
     let showShelf: (RecordCopy) -> Void
     @Environment(\.statisticsColumns) private var columns
-    @State private var shelfLabels = ShelfLabels()
     @State private var labelsCache = ShelfLabelsCache()
+    /// Where the pick stands, read from the app's own records: the page's
+    /// copies come from a reload, and sorting in doesn't reload the page.
+    @State private var placement: (location: String, inShelf: Bool)?
+    @Environment(\.modelContext) private var context
     @State private var width: CGFloat = 0
     /// Stored by ID and looked up in the current `copies`: each reload hands
     /// in new objects, and an old one must not stay on screen.
@@ -547,10 +550,12 @@ struct RandomRecordCard: View {
         .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { width = $0 }
         // Whenever the pick is gone (first load, or a sync removed it) and
         // there is something to pick — not only when the count changes.
-        .task(id: [version, labelStyle.hashValue]) {
+        // Places change without a reload of the page (see `StatisticsView.affectsStatistics`).
+        .task(id: [version, labelStyle.hashValue, LibraryChanges.shared.placementsVersion, LibraryChanges.shared.shelvesVersion]) {
             if pick == nil { pickID = copies.randomElement()?.id }
-            shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
+            updatePlacement()
         }
+        .onChange(of: pickID) { updatePlacement() }
     }
 
     private func details(_ pick: RecordCopy, _ release: Release) -> some View {
@@ -569,8 +574,7 @@ struct RandomRecordCard: View {
                 detail(String(localized: "Land"), release.country)
                 detail(String(localized: "Format"), release.format)
                 detail(String(localized: "Tracks"), release.tracks.isEmpty ? nil : "\(release.tracks.count)")
-                detail(String(localized: "Fach"), ShelfRangeLabels.location(of: pick, labels: shelfLabels,
-                                                         excluded: exclusions.contains { $0.copyID == pick.id }))
+                detail(String(localized: "Fach"), placement?.location)
             }
             if !release.styles.isEmpty {
                 HStack(spacing: 6) { ForEach(release.styles.prefix(4), id: \.self) { AppBadge(title: $0) } }
@@ -584,7 +588,7 @@ struct RandomRecordCard: View {
                 .appGlassButton()
                 .keyboardShortcut("r", modifiers: [.command, .shift])
                 .help("Neue Platte ziehen (⇧⌘R)")
-                SecondaryButton(title: pick.shelf == nil ? String(localized: "Platz im Regal finden") : String(localized: "Im Regal zeigen")) { showShelf(pick) }
+                SecondaryButton(title: placement?.inShelf != true ? String(localized: "Platz im Regal finden") : String(localized: "Im Regal zeigen")) { showShelf(pick) }
                 SecondaryButton(title: String(localized: "Details")) { open(pick) }
             }
             .controlSize(.large)
@@ -597,6 +601,15 @@ struct RandomRecordCard: View {
             Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(.callout.weight(.medium)).lineLimit(1)
         }
         .help(value ?? "")
+    }
+
+    private func updatePlacement() {
+        guard let id = pickID,
+              let copy = try? context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.id == id })).first
+        else { placement = nil; return }
+        let labels = labelsCache.labels(for: shelves, style: labelStyle)
+        placement = (ShelfRangeLabels.location(of: copy, labels: labels, excluded: exclusions.contains { $0.copyID == id }),
+                     copy.shelf != nil)
     }
 
     private func reroll() {

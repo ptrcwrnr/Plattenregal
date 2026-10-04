@@ -16,6 +16,31 @@ extension AllTests {
             let copy = RecordCopy(release: release, instanceID: instance, owner: "fixture"); copy.discogsDateAdded = date
             return copy
         }
+        /// Sorting in and marks don't reload the page; new records and changed releases do.
+        @Test func onlyRelevantSavesReloadStatistics() throws {
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            let context = container.mainContext
+            // Posted synchronously from `save()` on this thread.
+            nonisolated final class Last: @unchecked Sendable { var value: Notification? }
+            let saved = Last()
+            let observer = NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: context, queue: nil) { saved.value = $0 }
+            defer { NotificationCenter.default.removeObserver(observer) }
+            let shelves = try context.fetch(FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\.number)]))
+            let service = PositionService(context: context)
+            let first = try service.insert(release: Release(artist: "A", title: "Eins"), shelf: shelves[0])
+            #expect(StatisticsView.affectsStatistics(try #require(saved.value)))
+            let second = try service.insert(release: Release(artist: "B", title: "Zwei"), shelf: shelves[0], position: 2)
+            saved.value = nil
+            try service.move(second, to: shelves[1], position: 1)
+            #expect(!StatisticsView.affectsStatistics(try #require(saved.value)))
+            saved.value = nil
+            try service.setMissing([first], true)
+            #expect(!StatisticsView.affectsStatistics(try #require(saved.value)))
+            saved.value = nil
+            first.release?.title = "Neu"
+            try context.save()
+            #expect(StatisticsView.affectsStatistics(try #require(saved.value)))
+        }
         @Test func implausibleYearsCountAsUnknown() {
             #expect(AnalyticsItem.plausibleYear(1997) == 1997)
             #expect(AnalyticsItem.plausibleYear(1877) == 1877)

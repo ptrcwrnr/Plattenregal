@@ -133,7 +133,10 @@ struct StatisticsView: View {
         // Once more when the tracklist download after it is through (countries).
         .onChange(of: DiscogsSyncService.shared.busy) { _, busy in if !busy { reloadAfterSync() } }
         .onChange(of: DiscogsSyncService.shared.isRunning) { _, running in if !running { reloadAfterSync() } }
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { notification in
+            // Sorting in, moving and marks change nothing counted here; the
+            // random pick follows places on its own (see `RandomRecordCard`).
+            guard Self.affectsStatistics(notification) else { return }
             // During a sync and its tracklist download the store saves every few
             // seconds; recomputing everything each time would only stutter.
             // The sync's end reloads once (above).
@@ -174,6 +177,23 @@ struct StatisticsView: View {
     /// Behind the page: the covers of the latest additions.
     private var ambientCovers: [String] {
         Array(model.statistics.recentlyAdded.lazy.compactMap { model.copiesByID[$0]?.release?.coverURL }.prefix(3))
+    }
+
+    /// Whether a save touched what the page counts: releases, the value
+    /// history, accounts, or records added or removed. Changes to records
+    /// alone are places and marks – a sync's changes to them reload at its end.
+    /// Without the details every save counts.
+    static func affectsStatistics(_ notification: Notification) -> Bool {
+        func identifiers(_ key: ModelContext.NotificationKey) -> [PersistentIdentifier]? {
+            notification.userInfo?[key.rawValue] as? [PersistentIdentifier]
+        }
+        guard let inserted = identifiers(.insertedIdentifiers), let updated = identifiers(.updatedIdentifiers),
+              let deleted = identifiers(.deletedIdentifiers) else { return true }
+        let counted: Set<String> = [Schema.entityName(for: Release.self), Schema.entityName(for: CollectionValueSnapshot.self),
+                                    Schema.entityName(for: DiscogsAccount.self)]
+        let records = Schema.entityName(for: RecordCopy.self)
+        return (inserted + deleted).contains { counted.contains($0.entityName) || $0.entityName == records }
+            || updated.contains { counted.contains($0.entityName) }
     }
 
     private var refreshBlocked: Bool { model.busy || DiscogsSyncService.shared.busy }
