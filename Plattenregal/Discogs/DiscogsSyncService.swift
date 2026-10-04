@@ -8,10 +8,10 @@ nonisolated enum DiscogsSyncScope: Equatable, Sendable {
     /// For the protocol (`AppLog`).
     var logName: String {
         switch self {
-        case .collection: String(localized: "Collection")
-        case .wantlist: String(localized: "Wantlist")
-        case .all: String(localized: "Alles")
-        case .folder(let id): String(localized: "Ordner \(String(id))")
+        case .collection: "Collection"
+        case .wantlist: "Wantlist"
+        case .all: "Alles"
+        case .folder(let id): "Ordner \(id)"
         }
     }
 }

@@ -25,7 +25,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": " (shelf “%@”%@)"
+            "value": " (compartment “%@”%@)"
           }
         }
       }
@@ -180,16 +180,6 @@
         }
       }
     },
-    "%@ aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ from the backup are no longer in the collection and will be skipped."
-          }
-        }
-      }
-    },
     "%@ gehört in „%@“ – Pfeil führt dorthin": {
       "localizations": {
         "de": {
@@ -264,16 +254,6 @@
         }
       }
     },
-    "%@ kommen in der Sicherung nicht vor und stehen danach ohne Fach.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ are not in the backup and will have no compartment afterwards."
-          }
-        }
-      }
-    },
     "%@ konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.": {
       "localizations": {
         "en": {
@@ -311,7 +291,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ without information%@"
+            "value": "%@ with no data%@"
           }
         }
       }
@@ -387,16 +367,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ of %lld"
-          }
-        }
-      }
-    },
-    "%@ werden wieder einsortiert.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ will be placed back."
           }
         }
       }
@@ -669,6 +639,86 @@
         }
       }
     },
+    "%lld Platten aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 Platte aus der Sicherung ist nicht mehr in der Sammlung und wird übersprungen."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Platten aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 record from the backup is no longer in the collection and will be skipped."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld records from the backup are no longer in the collection and will be skipped."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Platten kommen in der Sicherung nicht vor und stehen danach ohne Fach.": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 Platte kommt in der Sicherung nicht vor und steht danach ohne Fach."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Platten kommen in der Sicherung nicht vor und stehen danach ohne Fach."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 record is not in the backup and will have no compartment afterwards."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld records are not in the backup and will have no compartment afterwards."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld Platten ohne Collection aus dem Regal nehmen?": {
       "localizations": {
         "en": {
@@ -689,6 +739,46 @@
         }
       }
     },
+    "%lld Platten werden wieder einsortiert.": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 Platte wird wieder einsortiert."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Platten werden wieder einsortiert."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 record will be placed back."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld records will be placed back."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld Regale": {
       "localizations": {
         "en": {
@@ -701,10 +791,40 @@
     },
     "%lld Reihen": {
       "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 Reihe"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Reihen"
+                }
+              }
+            }
+          }
+        },
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld rows"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 row"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld rows"
+                }
+              }
+            }
           }
         }
       }
@@ -721,10 +841,40 @@
     },
     "%lld Spalten": {
       "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 Spalte"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Spalten"
+                }
+              }
+            }
+          }
+        },
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld columns"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 column"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld columns"
+                }
+              }
+            }
           }
         }
       }
@@ -741,16 +891,32 @@
     },
     "%lld Treffer in der %@ anzeigen": {
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$lld Treffer in der %2$@ anzeigen"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show %lld results in the %@"
+            "value": "Show %#@results@ in the %2$@"
+          },
+          "substitutions": {
+            "results": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg result"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg results"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -889,10 +1055,40 @@
     },
     "%lld weitere Treffer – Suche genauer eingrenzen": {
       "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 weiterer Treffer – Suche genauer eingrenzen"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld weitere Treffer – Suche genauer eingrenzen"
+                }
+              }
+            }
+          }
+        },
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld more results – narrow down the search"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 more result – narrow down the search"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more results – narrow down the search"
+                }
+              }
+            }
           }
         }
       }
@@ -1095,7 +1291,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Active – space deactivates it"
+            "value": "Active – press Space to deactivate"
           }
         }
       }
@@ -1695,7 +1891,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Basis"
+            "value": "Baseline"
           }
         }
       }
@@ -1905,7 +2101,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Labels"
+            "value": "Labeling"
           }
         }
       }
@@ -2461,7 +2657,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The last state of a day – so a day with many changes doesn't push out all older backups."
+            "value": "The last version of each day – so a day with many changes doesn't push out all older backups."
           }
         }
       }
@@ -3417,7 +3613,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The last %lld states are kept, plus the last state of each day of the past %lld days."
+            "value": "The last %lld versions are kept, plus the last version of each day for the past %lld days."
           }
         }
       }
@@ -3427,7 +3623,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The last %lld states are kept."
+            "value": "The last %lld versions are kept."
           }
         }
       }
@@ -4029,7 +4225,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stands here"
+            "value": "Located here"
           }
         }
       }
@@ -4329,7 +4525,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inactive – space activates it"
+            "value": "Inactive – press Space to activate"
           }
         }
       }
@@ -4389,7 +4585,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Year of the actual pressing"
+            "value": "Year of this specific pressing"
           }
         }
       }
@@ -4745,7 +4941,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Recent states"
+            "value": "Recent versions"
           }
         }
       }
@@ -4755,7 +4951,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Keep recent states"
+            "value": "Keep recent versions"
           }
         }
       }
@@ -4925,7 +5121,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Use ← / → to switch between shelves, space to activate or deactivate."
+            "value": "Use ← / → to switch between shelves and Space to activate or deactivate."
           }
         }
       }
@@ -5388,10 +5584,40 @@
     },
     "Noch nicht alle Tracklisten geladen – %lld fehlen und werden später automatisch nachgeholt. ": {
       "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Noch nicht alle Tracklisten geladen – 1 fehlt und wird später automatisch nachgeholt. "
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Noch nicht alle Tracklisten geladen – %lld fehlen und werden später automatisch nachgeholt. "
+                }
+              }
+            }
+          }
+        },
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not all tracklists loaded yet – %lld are missing and will be fetched automatically later. "
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Not all tracklists loaded yet – 1 is missing and will be fetched automatically later. "
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Not all tracklists loaded yet – %lld are missing and will be fetched automatically later. "
+                }
+              }
+            }
           }
         }
       }
@@ -5576,16 +5802,6 @@
         }
       }
     },
-    "Ordner %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Folder %@"
-          }
-        }
-      }
-    },
     "Ordner für den automatischen Export": {
       "localizations": {
         "en": {
@@ -5697,7 +5913,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search record on shelf …"
+            "value": "Search for a record on the shelf …"
           }
         }
       }
@@ -5889,7 +6105,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plattenregal is running a second time"
+            "value": "Plattenregal is already running"
           }
         }
       }
@@ -5929,7 +6145,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rank %lld"
+            "value": "Position %lld"
           }
         }
       }
@@ -6265,7 +6481,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Record: %@"
+            "value": "Peak: %@"
           }
         }
       }
@@ -6485,7 +6701,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Since at least 1 year"
+            "value": "Over 1+ year"
           }
         }
       }
@@ -6495,7 +6711,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Since at least 30 days"
+            "value": "Over 30+ days"
           }
         }
       }
@@ -6505,7 +6721,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Since at least 6 months"
+            "value": "Over 6+ months"
           }
         }
       }
@@ -6861,7 +7077,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Strongest decade"
+            "value": "Top decade"
           }
         }
       }
@@ -6981,7 +7197,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Daily states"
+            "value": "Daily versions"
           }
         }
       }
@@ -6991,7 +7207,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Keep daily states"
+            "value": "Keep daily versions"
           }
         }
       }
@@ -7523,7 +7739,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Value development"
+            "value": "Value trend"
           }
         }
       }
@@ -7933,7 +8149,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Last %@"
+            "value": "Last exported %@"
           }
         }
       }
@@ -7979,7 +8195,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Last “%@” %@"
+            "value": "Last added: “%@” %@"
           }
         }
       }

@@ -1,3 +1,14 @@
+# Englische Übersetzung geprüft · 04.10.2026
+
+Alle rund 800 Texte im String-Katalog gegengelesen und mit dem Code abgeglichen (jeder Text im Code hat einen Eintrag, kein Eintrag ist verwaist). Korrigiert:
+
+- **Falsche Wörter**: „Platz 3“ in der Umstell-Liste hieß „Rank 3“ statt „Position 3“, „Rekord“ in der Neuzugangs-Statistik „Record“ (in einer Platten-App missverständlich, jetzt „Peak“), „Fach“ einmal „shelf“ statt „compartment“, „Beschriftung“ der Fächer „Labels“ (wie Plattenlabels, jetzt „Labeling“), „Seit mindestens 30 Tagen“ war kein Englisch („Over 30+ days“).
+- **Sicherungen**: „Stände“ heißen jetzt „versions“ statt „states“ („Keep recent versions“, „Daily versions“).
+- **Feinschliff**: „Last exported …“ statt „Last …“ beim automatischen Export, „Value trend“, „Top decade“, „Space“-Taste ausgeschrieben, „Plattenregal is already running“ u. a.
+- **Einzahl/Mehrzahl** (auch im Deutschen): „1 Spalte“/„1 Reihe“ statt „1 Spalten“/„1 Reihen“ beim Regal-Anlegen, „1 Platte wird wieder einsortiert“ im Wiederherstellen-Dialog, „1 weiterer Treffer“, „1 fehlt“ bei den Tracklisten, „Show 1 result“.
+- **Protokoll wieder deutsch**: Die Sync-Bereiche („Collection“, „Alles“, „Ordner 123“) wurden im Protokoll übersetzt, obwohl es deutsch bleiben soll.
+- **Code**: Das Balkendiagramm verglich seinen Einheitentext mit dem übersetzten Wort „Platten“, um die Mehrzahl zu wählen – die nie genutzte Einheit ist entfernt. 183 Tests, 0 Fehler.
+
 # Tastenkürzel · 04.10.2026
 
 - **Neue Kürzel**: ⌥⌘R synchronisiert alles mit Discogs, ⌘. bricht eine laufende Synchronisierung ab. Auf Collection und Wantlist: ⌥⌘1 / ⌥⌘2 für Raster und Liste, ⌘+ / ⌘− für größere oder kleinere Cover (auch ⌘= für US-Tastaturen), ⌘0 für die Standardgröße.

@@ -113,9 +113,9 @@ struct ShelfRestorePreview {
 
     var message: String {
         if unchanged { return String(localized: "Die Belegung entspricht bereits dieser Sicherung – es würde sich nichts ändern.") }
-        var lines = [String(localized: "\(AppStyle.records(placed)) werden wieder einsortiert.")]
-        if unplaced > 0 { lines.append(String(localized: "\(AppStyle.records(unplaced)) kommen in der Sicherung nicht vor und stehen danach ohne Fach.")) }
-        if missing > 0 { lines.append(String(localized: "\(AppStyle.records(missing)) aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.")) }
+        var lines = [String(localized: "\(placed) Platten werden wieder einsortiert.")]
+        if unplaced > 0 { lines.append(String(localized: "\(unplaced) Platten kommen in der Sicherung nicht vor und stehen danach ohne Fach.")) }
+        if missing > 0 { lines.append(String(localized: "\(missing) Platten aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.")) }
         if missing > placed {
             lines.append(String(localized: "Mehr als die Hälfte der Platten aus der Sicherung fehlt. Ist die Collection noch nicht vollständig synchronisiert, brich ab und synchronisiere zuerst."))
         }

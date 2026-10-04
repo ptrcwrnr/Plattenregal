@@ -15,7 +15,6 @@ struct HoverBarChart: View {
     }
     let bars: [Bar]
     var height: CGFloat = 200
-    var unit = String(localized: "Platten")
     var select: ((StatisticGroup) -> Void)?
     @State private var hovered: String?
 
@@ -32,7 +31,7 @@ struct HoverBarChart: View {
             if let bar = bars.first(where: { $0.id == hovered }) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(bar.label).font(.callout.weight(.semibold))
-                    Text(unit == String(localized: "Platten") ? AppStyle.records(bar.count) : "\(bar.count.formatted()) \(unit)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                    Text(AppStyle.records(bar.count)).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
             } else {
                 Text(select == nil ? String(localized: "Maus über die Balken bewegen, um Werte zu sehen.") : String(localized: "Maus über die Balken bewegen, um Werte zu sehen; ein Klick öffnet die Platten."))
@@ -46,7 +45,7 @@ struct HoverBarChart: View {
     private var chart: some View {
         let step = max(1, Int((Double(bars.count) / 10).rounded(.up)))
         return Chart(bars) { bar in
-            BarMark(x: .value("Zeitraum", bar.id), y: .value(unit, bar.count))
+            BarMark(x: .value("Zeitraum", bar.id), y: .value("Platten", bar.count))
                 .cornerRadius(3)
                 .foregroundStyle(hovered == bar.id
                                  ? AnyShapeStyle(AppStyle.accent)
