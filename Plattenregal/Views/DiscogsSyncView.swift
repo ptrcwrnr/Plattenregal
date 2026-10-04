@@ -592,20 +592,22 @@ enum WantlistPresentation {
     /// By alphabet section, artist, title – the order of the alphabet index.
     /// Searching goes through a `SearchIndex` over `searchText`.
     static func sorted(_ entries: [WantlistEntry]) -> [WantlistEntry] {
-        entries.sorted { lhs, rhs in
-            let leftArtist = (lhs.release?.displayArtist ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            let rightArtist = (rhs.release?.displayArtist ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            let leftSection = SortingService.alphabetSection(for: leftArtist)
-            let rightSection = SortingService.alphabetSection(for: rightArtist)
-            if leftSection != rightSection { return leftSection < rightSection }
-            let artistOrder = leftArtist.localizedStandardCompare(rightArtist)
-            if artistOrder != .orderedSame { return artistOrder == .orderedAscending }
-            let leftTitle = lhs.release?.displayTitle ?? ""
-            let rightTitle = rhs.release?.displayTitle ?? ""
-            let titleOrder = leftTitle.localizedStandardCompare(rightTitle)
-            if titleOrder != .orderedSame { return titleOrder == .orderedAscending }
-            return lhs.releaseID < rhs.releaseID
+        // Keys read once per entry, not per comparison: the alphabet section
+        // runs a Unicode transform, and a sort does ~n·log n comparisons.
+        entries.map { entry in
+            let artist = (entry.release?.displayArtist ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            return (entry: entry, section: SortingService.alphabetSection(for: artist), artist: artist,
+                    title: entry.release?.displayTitle ?? "", id: entry.releaseID)
         }
+        .sorted { lhs, rhs in
+            if lhs.section != rhs.section { return lhs.section < rhs.section }
+            let artistOrder = lhs.artist.localizedStandardCompare(rhs.artist)
+            if artistOrder != .orderedSame { return artistOrder == .orderedAscending }
+            let titleOrder = lhs.title.localizedStandardCompare(rhs.title)
+            if titleOrder != .orderedSame { return titleOrder == .orderedAscending }
+            return lhs.id < rhs.id
+        }
+        .map(\.entry)
     }
 
     /// Everything a wantlist search looks at, including the track titles.

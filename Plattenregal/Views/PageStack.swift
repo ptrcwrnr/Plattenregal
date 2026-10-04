@@ -199,8 +199,11 @@ final class PageStackView<Page: Hashable>: NSView {
                 outgoing.animator().alphaValue = 0
             }
         } completionHandler: { [weak self] in
-            guard let self, self.generation == current else { return }
-            outgoing.alphaValue = 0
+            // AppKit calls this on the main thread; the SDK just doesn't say so.
+            MainActor.assumeIsolated {
+                guard let self, self.generation == current else { return }
+                outgoing.alphaValue = 0
+            }
         }
     }
 }

@@ -1,3 +1,12 @@
+# Technische Prüfung · 04.10.2026
+
+Das ganze Projekt auf mögliche Fehler durchgesehen (Sync, Speichern, Sicherungen, Export, Regal, Statistik, Nebenläufigkeit). Die Daten- und Fehlerwege sind gut abgesichert; behoben wurden zwei Stellen:
+
+- **Wantlist-Sortierung**: Der Vergleich las bei jedem Schritt Interpret und Titel neu und rechnete den Buchstaben fürs Alphabet-Register (eine Unicode-Umwandlung) zweimal aus – bei einer großen Wantlist bis zu Sekunden auf dem Hauptthread nach jeder Synchronisierung, jedem Wechsel der Sortierung und bei jedem Export der Wantlist. Die Schlüssel werden jetzt einmal pro Eintrag gebildet; die Reihenfolge bleibt exakt dieselbe.
+- **Compiler-Warnungen**: Das Überblenden zwischen den Rubriken (`PageStack`) griff im Abschluss-Block der Animation ohne Hauptthread-Zusicherung auf die Ansicht zu – drei Swift-6-Warnungen. Der Block läuft jetzt ausdrücklich auf dem Main Actor. Der Build ist warnungsfrei.
+
+183 Tests, 0 Fehler.
+
 # Englisch und Deutsch, zweite Prüfung · 04.10.2026
 
 Alle Texte noch einmal gelesen, dazu die App auf Englisch und Deutsch in der Demo durchgesehen (alle Einstellungsseiten, Regal, Statistik). Korrigiert:
