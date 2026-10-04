@@ -49,10 +49,12 @@ actor CoverCache {
     }
     func image(_ url: URL, maximumPixelSize: Int) async throws -> ImagePayload {
         let key = CacheKey(url: url, maximumPixelSize: maximumPixelSize)
-        entries = entries.filter { $0.value.expires > .now }
         if var entry = entries[key] {
-            entry.lastAccess = .now; entries[key] = entry
-            return entry.payload
+            if entry.expires > .now {
+                entry.lastAccess = .now; entries[key] = entry
+                return entry.payload
+            }
+            entries[key] = nil
         }
         // Demo covers are drawn, never downloaded or written to disk.
         if url.scheme == DemoCover.scheme {
@@ -62,15 +64,12 @@ actor CoverCache {
             return payload
         }
         if let fileURL = fileURL(for: url),
-           let data = try? Data(contentsOf: fileURL),
-           let payload = Self.thumbnail(from: data, maximumPixelSize: maximumPixelSize) {
-            // Marks the file as used, so the cleanup at launch keeps it.
-            try? FileManager.default.setAttributes([.modificationDate: Date.now], ofItemAtPath: fileURL.path)
+           let payload = await Self.thumbnail(fromFile: fileURL, maximumPixelSize: maximumPixelSize) {
             storeInMemory(payload, for: key)
             return payload
         }
         let data = try await downloadData(for: url)
-        guard let payload = Self.thumbnail(from: data, maximumPixelSize: maximumPixelSize) else {
+        guard let payload = await Self.decoded(data, maximumPixelSize: maximumPixelSize) else {
             throw DiscogsError.invalidResponse
         }
         storeInMemory(payload, for: key)
@@ -103,7 +102,25 @@ actor CoverCache {
         return CGImageSourceGetCount(source) > 0 && CGImageSourceGetStatus(source) == .statusComplete
     }
 
-    private static func thumbnail(from data: Data, maximumPixelSize: Int) -> ImagePayload? {
+    /// Reading and decoding run beside the actor, not on it: covers coming
+    /// into view are decoded in parallel instead of one after another.
+    @concurrent nonisolated private static func thumbnail(fromFile fileURL: URL, maximumPixelSize: Int) async -> ImagePayload? {
+        guard let data = try? Data(contentsOf: fileURL),
+              let payload = thumbnail(from: data, maximumPixelSize: maximumPixelSize) else { return nil }
+        // Marks the file as used, so the cleanup at launch keeps it – once a
+        // day is plenty for a cleanup that goes by months.
+        let modified = try? fileURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        if modified.map({ Date.now.timeIntervalSince($0) > 24 * 3600 }) ?? true {
+            try? FileManager.default.setAttributes([.modificationDate: Date.now], ofItemAtPath: fileURL.path)
+        }
+        return payload
+    }
+
+    @concurrent nonisolated private static func decoded(_ data: Data, maximumPixelSize: Int) async -> ImagePayload? {
+        thumbnail(from: data, maximumPixelSize: maximumPixelSize)
+    }
+
+    nonisolated private static func thumbnail(from data: Data, maximumPixelSize: Int) -> ImagePayload? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
@@ -121,7 +138,8 @@ actor CoverCache {
     private static func cost(_ payload: ImagePayload) -> Int { payload.image.bytesPerRow * payload.image.height }
 
     private func storeInMemory(_ payload: ImagePayload, for key: CacheKey) {
-        entries[key] = nil
+        let now = Date.now
+        entries = entries.filter { $0.key != key && $0.value.expires > now }
         var total = entries.values.reduce(0) { $0 + Self.cost($1.payload) } + Self.cost(payload)
         while !entries.isEmpty, entries.count >= 320 || total > Self.memoryLimit,
               let oldest = entries.min(by: { $0.value.lastAccess < $1.value.lastAccess }) {

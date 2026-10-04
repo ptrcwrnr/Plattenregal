@@ -3,7 +3,18 @@ import Foundation
 enum SortingService {
     static let alphabetNavigationSymbols = ["#"] + (65...90).compactMap(UnicodeScalar.init).map(String.init)
 
+    /// By artist name: the transform below costs microseconds, and every sort
+    /// and letter index of collection and wantlist asks for the same names again.
+    private static var sections: [String: String] = [:]
+
     static func alphabetSection(for artist: String) -> String {
+        if let cached = sections[artist] { return cached }
+        let section = computeAlphabetSection(for: artist)
+        sections[artist] = section
+        return section
+    }
+
+    private static func computeAlphabetSection(for artist: String) -> String {
         // Latin-ASCII also maps letters without a decomposable accent
         // ("Øystein" → O, "Æther" → A, "Łona" → L), which plain diacritic
         // folding would leave under "#".
@@ -21,7 +32,8 @@ enum SortingService {
         // Everything the comparison needs is read once per item: a SwiftData
         // property read costs microseconds, and a sort does ~n·log n comparisons
         // (10 000 records: 1.5 s before, most of it reading `id`).
-        let items = copies.map { copy in (copy: copy, key: sortKey(copy), tie: copy.id.uuidString) }
+        let order = ShelfSecondaryOrder.current
+        let items = copies.map { copy in (copy: copy, key: sortKey(copy, by: order), tie: copy.id.uuidString) }
         return items.sorted { a, b in
             let comparison = a.key.localizedStandardCompare(b.key)
             if comparison != .orderedSame { return comparison == .orderedAscending }

@@ -49,6 +49,9 @@ struct KallaxView: View {
     /// Count for the question, taken when it is asked – `soldInShelves` walks
     /// the whole collection and must not run on every rebuild of the page.
     @State private var soldToRemove = 0
+    /// `soldInShelves.count`, taken whenever records, places or the account
+    /// change – not on every click on a spine.
+    @State private var soldCount = 0
     /// The open "Sortierung prüfen".
     @State private var sortCheck: ShelfSortCheckRequest?
     @State private var error: String?
@@ -279,6 +282,7 @@ struct KallaxView: View {
             shelfContent.refresh(allShelves, version: changes.libraryVersion)
             shelfStats = Dictionary(uniqueKeysWithValues: shelves.map { ($0.id, shelfContent.stats(for: $0)) })
             rangeLabels = ShelfRangeLabels.compute(for: allShelves, style: labelStyle, ends: shelfContent.ends)
+            soldCount = soldInShelves.count
             ensureShelfSelected()
             refreshPlacement()
             searchIndexStale = true
@@ -289,7 +293,10 @@ struct KallaxView: View {
         .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: $searchQuery)
         .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         // Another account synced: other records count as in the collection.
-        .onChange(of: owner) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
+        .onChange(of: owner) {
+            soldCount = soldInShelves.count
+            searchIndexStale = true; if !searchQuery.isEmpty { applySearch() }
+        }
         // Metadata and tracklist updates don't show up in `statsSignature`.
         .onChange(of: changes.libraryVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onChange(of: changes.tracksVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
@@ -439,8 +446,7 @@ struct KallaxView: View {
     /// collapsed when neither is there, so the rack moves up. Always
     /// mounted, see `searchBarSlot`.
     @ViewBuilder private var header: some View {
-        // Walks the whole collection: once per body, not per use.
-        let sold = soldInShelves.count
+        let sold = soldCount
         let hasStatus = sold > 0
         // The bar centered under the page switch in the toolbar, the status
         // on the right; the bar keeps clear of the status on both sides,

@@ -89,11 +89,7 @@ struct ShelfLabels {
     func refresh(_ shelves: [Shelf], version: Int) {
         var fresh: [UUID: Entry] = [:]
         for shelf in shelves {
-            var hasher = Hasher()
-            hasher.combine(version)
-            hasher.combine(shelf.isReserved)
-            for copy in shelf.copies { hasher.combine(copy.id); hasher.combine(copy.positionInShelf) }
-            let fingerprint = hasher.finalize()
+            let fingerprint = Self.fingerprint(of: shelf, version: version)
             if let entry = entries[shelf.id], entry.fingerprint == fingerprint { fresh[shelf.id] = entry; continue }
             fresh[shelf.id] = Entry(fingerprint: fingerprint, stats: ShelfStatistics(shelf: shelf), ends: ShelfRangeLabels.ends(of: shelf))
         }
@@ -102,6 +98,40 @@ struct ShelfLabels {
 
     func stats(for shelf: Shelf) -> ShelfStatistics { entries[shelf.id]?.stats ?? ShelfStatistics(shelf: shelf) }
     func ends(of shelf: Shelf) -> ShelfRangeLabels.Ends? { entries[shelf.id].map(\.ends) ?? ShelfRangeLabels.ends(of: shelf) }
+
+    /// Changes whenever the shelf's records, their places or (via
+    /// `version`, `libraryVersion`) their metadata change. Reads only the
+    /// copies, never their releases.
+    static func fingerprint(of shelf: Shelf, version: Int) -> Int {
+        var hasher = Hasher()
+        hasher.combine(version)
+        hasher.combine(shelf.isReserved)
+        for copy in shelf.copies { hasher.combine(copy.id); hasher.combine(copy.positionInShelf) }
+        return hasher.finalize()
+    }
+}
+
+/// Shelf labels for pages other than the shelf page, which only need the
+/// labels, not the statistics of `ShelfContentCache`. Each shelf's
+/// alphabetical ends are kept while its records stay the same: after
+/// sorting in a few records only their shelves are read again, not every
+/// placed record (over a second for 10 000).
+@MainActor final class ShelfLabelsCache {
+    private var ends: [UUID: (fingerprint: Int, ends: ShelfRangeLabels.Ends?)] = [:]
+
+    func labels(for shelves: [Shelf], style: ShelfLabelStyle) -> ShelfLabels {
+        // Numbers don't read any record.
+        guard style == .range else { return ShelfRangeLabels.compute(for: shelves, style: style) }
+        let version = LibraryChanges.shared.libraryVersion
+        var fresh: [UUID: (fingerprint: Int, ends: ShelfRangeLabels.Ends?)] = [:]
+        for shelf in shelves {
+            let fingerprint = ShelfContentCache.fingerprint(of: shelf, version: version)
+            if let entry = ends[shelf.id], entry.fingerprint == fingerprint { fresh[shelf.id] = entry; continue }
+            fresh[shelf.id] = (fingerprint, ShelfRangeLabels.ends(of: shelf))
+        }
+        ends = fresh
+        return ShelfRangeLabels.compute(for: shelves, style: style) { fresh[$0.id]?.ends ?? ShelfRangeLabels.ends(of: $0) }
+    }
 }
 
 /// Labels computed once for a view instead of in every `body`: they read
@@ -156,7 +186,8 @@ enum ShelfRangeLabels {
     static func ends(of shelf: Shelf) -> Ends? {
         guard !shelf.isReserved else { return nil }
         // Only the ends matter: one pass instead of sorting every key.
-        let keys = shelf.copies.map { SortingService.sortKey($0) }
+        let order = ShelfSecondaryOrder.current
+        let keys = shelf.copies.map { SortingService.sortKey($0, by: order) }
         guard let first = keys.min(by: AlphabeticalPlacement.ascending), let last = keys.max(by: AlphabeticalPlacement.ascending) else { return nil }
         return Ends(first: letters(first), last: letters(last))
     }

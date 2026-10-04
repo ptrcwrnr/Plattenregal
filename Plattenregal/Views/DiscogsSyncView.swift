@@ -253,6 +253,11 @@ struct WantlistView: View {
     /// Discogs release IDs in the collection, for the search badge on the covers.
     @State private var ownedReleaseIDs: Set<Int> = []
     @State private var queryPending = false
+    /// Tracklists arrived while nobody searched; the indexes catch up on the
+    /// next search (see CollectionView).
+    @State private var indexesStale = false
+    /// Entries, records, account or metadata changed; one rebuild for all (see CollectionView).
+    @State private var dataRevision = 0
     /// The query the visible entries were filtered with — badges and track
     /// lines follow it, not the raw field, so they match what is shown.
     @State private var appliedQuery = ""
@@ -354,14 +359,21 @@ struct WantlistView: View {
         .onChange(of: order) { _, _ in scrollPosition = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
         .task { rebuildCollectionIndex(); rebuild() }
-        .onChange(of: entries) { _, _ in rebuild() }
-        .onChange(of: copies) { _, _ in rebuildCollectionIndex(); applyQuery() }
-        .onChange(of: accounts) { _, _ in rebuildCollectionIndex(); rebuild() }
+        .onChange(of: entries) { _, _ in dataRevision += 1 }
+        .onChange(of: copies) { _, _ in dataRevision += 1 }
+        .onChange(of: accounts) { _, _ in dataRevision += 1 }
         // See CollectionView: metadata and tracklist changes on the same objects.
-        .onChange(of: changes.libraryVersion) { _, _ in rebuildCollectionIndex(); rebuild() }
-        .onChange(of: changes.tracksVersion) { _, _ in
-            searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
+        .onChange(of: changes.libraryVersion) { _, _ in dataRevision += 1 }
+        .task(id: dataRevision) {
+            guard dataRevision > 0 else { return }
+            try? await Task.sleep(for: .milliseconds(50))
+            guard !Task.isCancelled else { return }
+            indexesStale = false
             rebuildCollectionIndex()
+            rebuild()
+        }
+        .onChange(of: changes.tracksVersion) { _, _ in
+            indexesStale = true
             if !query.isEmpty { applyQuery() }
         }
         .task(id: query) {
@@ -399,6 +411,11 @@ struct WantlistView: View {
     private func applyQuery(animated: Bool = false) {
         queryPending = false
         let words = SearchIndex<UUID>.words(query)
+        if !words.isEmpty && indexesStale {
+            indexesStale = false
+            searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
+            rebuildCollectionIndex()
+        }
         let visible = words.isEmpty ? sortedEntries : sortedEntries.filter { searchIndex.matches($0.persistentModelID, words) }
         collectionMatches = words.isEmpty ? 0
             : Set(activeCopies.filter { collectionIndex.matches($0.id, words) }.map(\.group)).count
@@ -406,7 +423,8 @@ struct WantlistView: View {
             visibleEntries = visible
             appliedQuery = words.isEmpty ? "" : query
         }
-        alphabetIndex = visible.reduce(into: [:]) { result, entry in
+        // Only the alphabetical order has the index at the edge.
+        alphabetIndex = order != .alphabetical ? [:] : visible.reduce(into: [:]) { result, entry in
             let symbol = SortingService.alphabetSection(for: entry.release?.displayArtist ?? "")
             if result[symbol] == nil { result[symbol] = entry.persistentModelID }
         }

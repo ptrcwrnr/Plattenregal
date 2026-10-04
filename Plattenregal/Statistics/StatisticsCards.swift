@@ -507,6 +507,7 @@ struct RandomRecordCard: View {
     let showShelf: (RecordCopy) -> Void
     @Environment(\.statisticsColumns) private var columns
     @State private var shelfLabels = ShelfLabels()
+    @State private var labelsCache = ShelfLabelsCache()
     @State private var width: CGFloat = 0
     /// Stored by ID and looked up in the current `copies`: each reload hands
     /// in new objects, and an old one must not stay on screen.
@@ -548,7 +549,7 @@ struct RandomRecordCard: View {
         // there is something to pick — not only when the count changes.
         .task(id: [version, labelStyle.hashValue]) {
             if pick == nil { pickID = copies.randomElement()?.id }
-            shelfLabels = ShelfRangeLabels.compute(for: shelves, style: labelStyle)
+            shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
         }
     }
 

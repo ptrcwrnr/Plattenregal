@@ -43,9 +43,12 @@ struct PositionService {
     private func renumber(_ copies: [RecordCopy]) {
         for (index, copy) in copies.enumerated() where copy.positionInShelf != index + 1 { copy.positionInShelf = index + 1 }
     }
-    func save(_ action: () throws -> Void) throws {
+    /// `layoutChanged: false` for writes that touch neither places nor
+    /// anything a backup holds ("Vermisst" marks): no backup run, no new labels.
+    func save(layoutChanged: Bool = true, _ action: () throws -> Void) throws {
         do { try action(); try context.save() }
         catch { context.rollback(); throw error }
+        guard layoutChanged else { return }
         ShelfAutoBackup.shared.scheduleBackup(of: context.container)
         LibraryChanges.shared.placementsDidChange()
     }
@@ -147,7 +150,8 @@ struct PositionService {
     /// but weren't found there) or as found again. Only a note for the shelf
     /// page: shelf and position stay untouched. Stored as `MissingCopyMark` rows.
     func setMissing(_ copies: [RecordCopy], _ missing: Bool) throws {
-        do { try save { _ = try markMissing(Set(copies.map(\.id)), missing) } }
+        // Marks aren't part of a backup, and no place changes.
+        do { try save(layoutChanged: false) { _ = try markMissing(Set(copies.map(\.id)), missing) } }
         catch { throw LibraryError.missingMarkNotSaved(found: !missing, error) }
         AppLog.info("Regal", "\(missing ? "Vermisst" : "Wieder gefunden"): \(copies.map(Self.name).joined(separator: ", "))")
     }

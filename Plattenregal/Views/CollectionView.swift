@@ -111,6 +111,13 @@ struct CollectionView: View {
     @State private var wantedReleaseIDs: Set<Int> = []
     /// The query changed while this section was hidden; apply it on return.
     @State private var queryPending = false
+    /// Tracklists arrived while nobody searched: the tracklist download reports
+    /// every few seconds, so the search indexes catch up on the next search
+    /// instead of indexing the whole collection each time.
+    @State private var indexesStale = false
+    /// Records, account, metadata or wantlist changed. A sync reports itself
+    /// and changes the queries a moment apart; one rebuild covers them all.
+    @State private var dataRevision = 0
     /// Records were placed or moved while the page was hidden: its shelf
     /// labels are rebuilt once it shows again (over a second for a very
     /// large collection – not for every record sorted in on the shelf page).
@@ -140,7 +147,7 @@ struct CollectionView: View {
         letters = showsAlphabetIndex
             ? Dictionary(base.map { ($0.id, SortingService.alphabetSection(for: $0.release?.displayArtist ?? "")) }, uniquingKeysWith: { a, _ in a })
             : [:]
-        shelfLabels = ShelfRangeLabels.compute(for: shelves, style: labelStyle)
+        shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
         labelsPending = false
         loaded = true
         applyQuery(animated: animated)
@@ -149,12 +156,17 @@ struct CollectionView: View {
     private func refreshLabels() {
         guard activity.isActive else { labelsPending = true; return }
         labelsPending = false
-        shelfLabels = ShelfRangeLabels.compute(for: shelves, style: labelStyle)
+        shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
     }
 
     private func applyQuery(animated: Bool = false) {
         queryPending = false
         let words = SearchIndex<UUID>.words(query)
+        if !words.isEmpty && indexesStale {
+            indexesStale = false
+            searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
+            rebuildWantlistIndex()
+        }
         let filtered = words.isEmpty ? base : base.filter { searchIndex.matches($0.id, words) }
         let grouped = CollectionCoverGroup.make(from: filtered)
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
@@ -189,6 +201,8 @@ struct CollectionView: View {
 
     // Shelves are named as chosen in the settings, never by their internal number.
     @State private var shelfLabels = ShelfLabels()
+    /// Only shelves whose records changed are read again (see `ShelfLabelsCache`).
+    @State private var labelsCache = ShelfLabelsCache()
     private func placeLabel(for copy: RecordCopy) -> String {
         guard let shelf = copy.shelf else {
             return excludedIDs.contains(copy.id) ? String(localized: "Nicht im Regal") : "–"
@@ -415,19 +429,26 @@ struct CollectionView: View {
         .onChange(of: order) { _, _ in scrollPosition = nil; rebuildBase(animated: true) }
         .onChange(of: secondaryOrder) { _, _ in rebuildBase(animated: true) }
         .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantlistIndex(); rebuildBase() }
-        .onChange(of: copies) { _, _ in rebuildBase() }
-        .onChange(of: labelStyle) { _, style in shelfLabels = ShelfRangeLabels.compute(for: shelves, style: style) }
+        .onChange(of: copies) { _, _ in dataRevision += 1 }
+        .onChange(of: labelStyle) { _, style in shelfLabels = labelsCache.labels(for: shelves, style: style) }
         .onChange(of: changes.shelvesVersion) { _, _ in refreshLabels() }
         .onChange(of: changes.placementsVersion) { _, _ in refreshLabels() }
         .onChange(of: exclusions) { _, exclusions in excludedIDs = Set(exclusions.map(\.copyID)) }
-        .onChange(of: accounts) { _, _ in rebuildWantlistIndex(); rebuildBase() }
-        .onChange(of: wantlistEntries) { _, _ in rebuildWantlistIndex(); applyQuery() }
+        .onChange(of: accounts) { _, _ in dataRevision += 1 }
+        .onChange(of: wantlistEntries) { _, _ in dataRevision += 1 }
         // Changed metadata on existing records and newly loaded tracklists
         // don't change the @Query arrays; the sync service reports them.
-        .onChange(of: changes.libraryVersion) { _, _ in rebuildWantlistIndex(); rebuildBase() }
-        .onChange(of: changes.tracksVersion) { _, _ in
-            searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
+        .onChange(of: changes.libraryVersion) { _, _ in dataRevision += 1 }
+        .task(id: dataRevision) {
+            guard dataRevision > 0 else { return }
+            try? await Task.sleep(for: .milliseconds(50))
+            guard !Task.isCancelled else { return }
+            indexesStale = false
             rebuildWantlistIndex()
+            rebuildBase()
+        }
+        .onChange(of: changes.tracksVersion) { _, _ in
+            indexesStale = true
             if !query.isEmpty { applyQuery() }
         }
         // Debounced, and only for the visible section — the hidden ones

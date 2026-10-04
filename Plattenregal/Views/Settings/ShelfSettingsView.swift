@@ -20,6 +20,7 @@ struct ShelfSettingsView: View {
     @State private var adding = false
     @State private var error: String?
     @State private var labels = ShelfLabels()
+    @State private var labelsCache = ShelfLabelsCache()
     @State private var changes = LibraryChanges.shared
     @FocusState private var stripFocused: Bool
 
@@ -157,7 +158,7 @@ struct ShelfSettingsView: View {
             AppLog.info("Einstellungen", "Vermisst-Liste \(on ? "eingeschaltet" : "ausgeschaltet – Markierungen bleiben gespeichert")")
         }
         .animation(AppStyle.standardAnimation, value: shelfError)
-        .task(id: labelSignature) { labels = ShelfRangeLabels.compute(for: shelves, style: labelStyle) }
+        .task(id: labelSignature) { labels = labelsCache.labels(for: shelves, style: labelStyle) }
     }
 
     /// The cabinets side by side; arrow keys walk through them, space
