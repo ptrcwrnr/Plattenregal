@@ -261,6 +261,10 @@ extension AllTests {
             #expect(StorageError.alreadyOpen.userMessage == StorageError.alreadyOpen.errorDescription)
             #expect(FileTransferError.folderUnavailable.userMessage.contains("nicht erreichbar"))
             #expect(URLError(.timedOut).userMessage.contains("rechtzeitig"))
+            // Reading (statistics, "Platte hinzufügen") never claims a change wasn't saved.
+            #expect(ReadError.wrapping(saveFailure).userMessage.contains("nicht gelesen"))
+            #expect(ReadError.wrapping(DiscogsError.offline).userMessage == DiscogsError.offline.errorDescription)
+            #expect(String(describing: ReadError.wrapping(saveFailure)).contains("134030"))
         }
         /// The demo's sample collection: every page has something to show, and
         /// the layout is consistent (as a sync and the shelf page expect it).

@@ -47,7 +47,7 @@ Die Berechnung läuft im Hintergrund: SwiftData-Objekte werden auf dem Main Acto
 
 ## Aktualisierung und Zurücksetzen
 
-Die Seite liest ihre Platten in einem eigenen Datenbank-Kontext und rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern – solange die Seite verborgen ist, erst beim nächsten Anzeigen. Eine Platte, die von hier aus geöffnet wird, holt die Detailansicht in den Kontext des Hauptfensters, damit Bearbeitungen dort gespeichert werden.
+Die Seite liest ihre Platten in einem eigenen Datenbank-Kontext und rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern, das ihre Zahlen betrifft – neue oder entfernte Platten, geänderte Releases, Sammlungswert, Konten (`StatisticsView.affectsStatistics`). Einsortieren, Verschieben und „Vermisst“ lösen kein Neuladen aus. Solange die Seite verborgen ist, wird erst beim nächsten Anzeigen neu gerechnet. Der Zufallsfund liest seinen Platz im Regal selbst aus dem Kontext des Hauptfensters und folgt Platzänderungen sofort. Lassen sich die gespeicherten Daten nicht lesen, steht oben „Die gespeicherten Daten konnten gerade nicht gelesen werden …“ (Ursache im Protokoll). Eine Platte, die von hier aus geöffnet wird, holt die Detailansicht in den Kontext des Hauptfensters, damit Bearbeitungen dort gespeichert werden.
 
 Ein eigener Kontext erfährt nicht, dass Platten anderswo gelöscht wurden. Nach **Alles zurücksetzen** lässt die Statistik deshalb sofort alle Platten los (`StatisticsViewModel.forget`), schließt offene Detail- und Filterfenster und lädt neu, samt Konto. Vorher konnte das Nachladen von Fach oder Release einer gelöschten Platte die App zum Absturz bringen. Test: `StatisticsTests.statisticsForgetTheirRecordsOnReset`.
 
@@ -63,7 +63,7 @@ Ein eigener Kontext erfährt nicht, dass Platten anderswo gelöscht wurden. Nach
 | `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
-| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen (29 Tests) |
+| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen (30 Tests) |
 
 Das Modell `ReleaseMarketValue` aus der früheren Einzelpreis-Funktion ist seit Schema V15 entfernt; die Migration verwirft seine Zeilen.
 

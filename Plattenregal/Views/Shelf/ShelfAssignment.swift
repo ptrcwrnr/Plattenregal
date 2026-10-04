@@ -89,7 +89,7 @@ final class ShelfAssignmentSession: Identifiable {
             let sorted = ShelfAssignmentPresentation.sortedByArtist(available)
             candidates = sorted.filter { belongsElsewhere[$0.id] == nil } + sorted.filter { belongsElsewhere[$0.id] != nil }
             searchIndex = SearchIndex(available, id: \.id, text: SortingService.searchText)
-        } catch { self.error = error.reportedMessage() }
+        } catch { self.error = ReadError.wrapping(error).reportedMessage() }
     }
 
     /// The list is a snapshot: a record or the shelf may be gone meanwhile

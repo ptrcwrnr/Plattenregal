@@ -282,7 +282,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             copies = try context.fetch(FetchDescriptor<RecordCopy>())
             wants = try context.fetch(FetchDescriptor<WantlistEntry>())
         } catch {
-            if !quiet { self.error = String(localized: "Die Tracklisten konnten nicht geladen werden. ") + error.reportedMessage() }
+            if !quiet { self.error = String(localized: "Die Tracklisten konnten nicht geladen werden. ") + ReadError.wrapping(error).reportedMessage() }
             return false
         }
         let now = Date()

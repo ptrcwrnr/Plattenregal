@@ -1,4 +1,34 @@
-# Aktueller Stand · 27.09.2026 (Über-Karte, ein Hauptfenster, Randfälle)
+# Aktueller Stand · 04.10.2026 (Englisch, Tastenkürzel, technische Prüfung, weniger Rechenarbeit)
+
+Stand nach Englisch als zweiter Sprache, den Tastenkürzeln, der technischen Prüfung und der Durchsicht auf unnötige Rechenarbeit (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Ergebnis
+
+- Gesamte Testsuite: **189 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die Meldungen „Discogs JSON decoding failed“ und die CoreData-Hinweise im Testlauf stammen aus Tests, die ungültige Antworten und Migrationen absichtlich prüfen.
+
+| Testdatei | Tests | Schwerpunkt |
+|---|---|---|
+| `LibraryTests.swift` | 53 | Positionen, Sortierung, Sortierprüfung, Suche (auch die gemeinsamen Suchtexte), Fach-Beschriftungen, Speicherung, Fehlermeldungen, Absturz-Auswertung, Discogs-Mapping, Demo-Sammlung |
+| `DiscogsSyncTests.swift` | 39 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration, Doppelte in der Datenbank, Erkennen eines Abgleichs ohne Änderungen |
+| `StatisticsTests.swift` | 30 | Auswertungen, Wertverlauf, Migrationen, Zurücksetzen, welche Speichervorgänge neu rechnen lassen |
+| `SettingsTests.swift` | 17 | Discogs-Token, Reihenfolge der Statistik, Reihenfolge von Collection und Wantlist, Eingabequellen-Blase |
+| `BackupTests.swift` | 15 | Sichern, Wiederherstellen, Aufbewahrung, Dateinamen mit Zeitzone |
+| `CabinetTests.swift` | 15 | Mehrere Regale, Größenänderung, Zurücksetzen, Einzelinstanz-Sperre |
+| `ExportTests.swift` | 13 | CSV (Maskierung, BOM, Formel-Schutz, Trennzeichen), Reihenfolge, Spalten, PDF |
+| `ScenarioTests.swift` | 7 | Abläufe gegen die echten Services: ohne Netz, Bremse, gelöschte Fächer, „Platte hinzufügen“, 10.000 Platten |
+
+- Neu seit dem vorigen Stand (176): u. a. Export- und Sicherungstests aus den Prüfungen vom 27./28.09. und heute `unchangedSyncReportsNoChanges`, `wantlistDetailsCountAsChanges`, `anotherAccountCountsAsChange`, `onlyRelevantSavesReloadStatistics`, `sharedSearchIndexFollowsChanges`, `cachedShelfLabelsMatchFullComputation`. `errorsReachTheUserInPlainGerman` prüft zusätzlich die Meldung bei Lesefehlern.
+- **Laufende App**: Demo-Build nach jeder Änderungsrunde gestartet, läuft ohne Absturz. Keine Sichtprüfung der Seiten in diesem Durchgang.
+- **Protokoll** der echten App durchgesehen: kein Absturzblock. Einzige Fehlerzeile ist ein Schemafehler beim Öffnen vom 25.09. (Entwicklungsstand, seitdem nicht wieder aufgetreten). Die Warnungen „nicht normal beendet“ gehören zu Testinstanzen, die per Befehl beendet wurden.
+- **Fehlermeldungen** per Code-Durchsicht geprüft: alle Fehlertypen mit verständlichem Text in beiden Sprachen; Lesefehler sagen nicht mehr „nicht gespeichert“.
+
+## Nicht geprüft (dieser Durchgang)
+
+- Kein Abgleich mit Discogs: Ob eine Synchronisierung ohne Änderungen die Seiten tatsächlich in Ruhe lässt und Collection und Wantlist danach nur einmal neu aufbauen, ist mit Tests am Abgleich selbst belegt, nicht in der laufenden App. Die Demo hat kein Discogs.
+- Paralleles Laden der Cover nicht mit echten Cover-Dateien angesehen (die Demo zeichnet ihre Cover).
+- Kein Release-Build, keine Codesign-Prüfung.
+
+# Vorheriger Stand · 27.09.2026 (Über-Karte, ein Hauptfenster, Randfälle)
 
 Stand nach der kleinen Karte „Über Plattenregal“, dem einzelnen Hauptfenster und zwei Prüfrunden auf Randfälle und Logik (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 

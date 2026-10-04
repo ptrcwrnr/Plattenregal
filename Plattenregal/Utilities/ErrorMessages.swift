@@ -13,6 +13,7 @@ extension FileTransferError: UserFacingError {}
 extension CabinetError: UserFacingError {}
 extension ResetError: UserFacingError {}
 extension StorageError: UserFacingError {}
+extension ReadError: UserFacingError {}
 
 extension Error {
     /// What the user reads when something fails: plain German, no error
@@ -88,6 +89,25 @@ nonisolated enum FileTransferError: LocalizedError, CustomStringConvertible {
         case .folderUnavailable: "folderUnavailable"
         case .folderChangeFailed(let error): "folderChangeFailed(\(error))"
         }
+    }
+}
+
+/// Reading the store failed where nothing is saved (statistics, the list of
+/// "Platte hinzufügen"): "couldn't save the change" would be wrong there.
+/// The app's own errors keep their text; the original error goes to the protocol.
+nonisolated enum ReadError: LocalizedError, CustomStringConvertible {
+    case failed(any Error)
+
+    /// `error` itself when it already speaks for itself, otherwise wrapped.
+    static func wrapping(_ error: any Error) -> any Error {
+        error is any UserFacingError || error is CancellationError ? error : ReadError.failed(error)
+    }
+
+    var errorDescription: String? {
+        String(localized: "Die gespeicherten Daten konnten gerade nicht gelesen werden. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
+    }
+    var description: String {
+        switch self { case .failed(let error): "readFailed(\(error))" }
     }
 }
 

@@ -61,7 +61,7 @@ import Observation
             copiesByID = Dictionary(selected.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             history = newHistory
             version += 1
-        } catch { self.error = error.reportedMessage() }
+        } catch { self.error = ReadError.wrapping(error).reportedMessage() }
     }
     func initialLoad(container: ModelContainer) async {
         await resolveOwner(container: container)

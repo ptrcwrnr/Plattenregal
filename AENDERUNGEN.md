@@ -1,3 +1,20 @@
+# Weniger unnötige Rechenarbeit · 04.10.2026
+
+Die App auf Arbeit durchgesehen, die sie umsonst macht – vor allem bei großen Sammlungen spürbar. Am Verhalten und an den Daten ändert sich nichts.
+
+- **Synchronisierung ohne Änderungen** lässt die Seiten in Ruhe: Der Abgleich meldet jetzt, ob sich wirklich etwas geändert hat – auch Wantlist-Notizen und -Daten, Release-Daten aus der Wantlist, geleerte Ordner, entfernte Releases und ein Wechsel des aktuellen Kontos. Nur dann sortieren Collection und Wantlist neu und rechnen Regal-Seite, Fach-Tabelle und Beschriftungen neu. Im Protokoll steht sonst „Keine Änderungen, Seiten bleiben unverändert“.
+- **Statistik** lädt nicht mehr nach jedem Speichern komplett neu, sondern nur, wenn Platten dazukommen oder wegfallen, Releases, Sammlungswert oder Konten sich ändern. Einsortieren, Verschieben und „Vermisst“ ändern keine Zahl dort. Der Zufallsfund liest seinen Platz dafür selbst aus der Hauptdatenbank und folgt Platzänderungen sofort.
+- **Fach-Beschriftungen** („A – Be“) in Collection, Zufallsfund und Regal-Einstellungen lesen nur noch die Fächer neu, deren Platten sich geändert haben (`ShelfLabelsCache`). Vorher las jede Neuberechnung alle Platten im Regal – über eine Sekunde bei 10 000, spürbar beim Wechsel vom Regal zur Collection nach dem Einsortieren.
+- **„Vermisst“ markieren** stößt keine automatische Sicherung und keine neuen Beschriftungen mehr an; beides hängt nicht davon ab (Markierungen stehen nicht in der Sicherung).
+- **Suche**: Collection und Wantlist teilen sich die Suchtexte (`LibrarySearchIndexes`), statt sie je einmal für sich aufzubauen. Gebaut werden sie erst bei der nächsten Suche nach einer Änderung – während die Tracklisten nachladen (alle paar Sekunden eine Meldung) also nicht mehr jedes Mal für die ganze Sammlung. Sie enthalten alle Platten und Einträge, unabhängig von Konto und Collection-Status; die Seiten schlagen nur nach, was sie zeigen.
+- **Neuaufbau nach einer Synchronisierung**: Collection und Wantlist bauten nach einem Abgleich zwei- bis dreimal hintereinander neu auf (Meldung des Abgleichs und geänderte Abfragen kamen kurz nacheinander). Jetzt einmal.
+- **Regal-Seite** zählt die verkauften Platten im Regal nur noch bei Datenänderungen statt bei jedem Klick auf einen Rücken.
+- **Alphabet-Register**: Der Buchstabe eines Interpreten (eine Unicode-Umwandlung) wird einmal pro Name gemerkt; das Register der Wantlist entsteht nur noch bei alphabetischer Reihenfolge.
+- **Cover**: Lesen und Aufbereiten laufen parallel statt nacheinander, der Zwischenspeicher wird nicht mehr bei jedem Abruf neu aufgebaut, und das Änderungsdatum einer Cover-Datei (für das Aufräumen alter Cover) wird höchstens einmal am Tag geschrieben statt bei jedem Lesen.
+- **Fehlermeldung beim Lesen**: Konnte die Statistik oder die Liste von „Platte hinzufügen“ die gespeicherten Daten nicht lesen, hieß es „Die Änderung konnte nicht gespeichert werden“ – obwohl nichts gespeichert wurde. Jetzt: „Die gespeicherten Daten konnten gerade nicht gelesen werden …“ (`ReadError`).
+- **Protokoll nach einem Absturz**: Wurde das Protokoll beim nächsten Start gerade zu `Plattenregal.old.log`, verweist der Hinweis jetzt dorthin statt auf „direkt vor diesem Start“.
+- Neue Tests: `unchangedSyncReportsNoChanges`, `wantlistDetailsCountAsChanges`, `anotherAccountCountsAsChange`, `onlyRelevantSavesReloadStatistics`, `sharedSearchIndexFollowsChanges`, `cachedShelfLabelsMatchFullComputation`; `errorsReachTheUserInPlainGerman` prüft die neue Lesemeldung. 189 Tests, 0 Fehler.
+
 # Aufgeräumt nach der technischen Prüfung · 04.10.2026
 
 - **Tracklist im Popover**: Wird beim Klick auf ein Cover eine fehlende Tracklist nachgeladen, speichert die App sie jetzt direkt. Vorher lief das über den Speicherweg für Regal-Änderungen, der jedes Mal eine automatische Sicherung der Belegung anstieß und die Fach-Beschriftungen neu berechnete, obwohl sich am Regal nichts geändert hatte.

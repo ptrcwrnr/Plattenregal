@@ -61,14 +61,17 @@ nonisolated enum AppLog {
         // Before rotating: the crash block sits at the end of the current file.
         let crash = previousCrash(in: fileURL)
         let old = directory.appendingPathComponent("Plattenregal.old.log")
+        var rotated = false
         if let size = (try? FileManager.default.attributesOfItem(atPath: fileURL.path))?[.size] as? Int, size > Int(rotationSize) {
             try? FileManager.default.removeItem(at: old)
-            try? FileManager.default.moveItem(at: fileURL, to: old)
+            rotated = (try? FileManager.default.moveItem(at: fileURL, to: old)) != nil
         }
         write(.info, "App", "──── Start · Version \(version) · \(details) · Ladeadresse \(loadAddress)")
         if let crash {
             let when = crash.date.map { " am \($0.formatted(date: .numeric, time: .standard))" } ?? ""
-            write(.error, "App", "Die vorige Sitzung ist abgestürzt\(when): \(crash.reason). Der Ablauf steht im Block „ABSTURZ“ direkt vor diesem Start.")
+            // The crash block went along when the file was just rotated.
+            let place = rotated ? "am Ende von Plattenregal.old.log" : "direkt vor diesem Start"
+            write(.error, "App", "Die vorige Sitzung ist abgestürzt\(when): \(crash.reason). Der Ablauf steht im Block „ABSTURZ“ \(place).")
         } else if let previous = markerPID(), !isRunning(previous) {
             write(.warning, "App", "Die vorige Sitzung wurde nicht normal beendet – ohne Absturz-Eintrag, also vermutlich in Xcode gestoppt, zwangsweise beendet oder der Mac ging aus.")
         }
