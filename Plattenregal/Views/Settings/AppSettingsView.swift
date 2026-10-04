@@ -77,7 +77,9 @@ struct AppSettingsView: View {
             case .shortcuts: ShortcutSettingsView()
             }
         }
-        .frame(width: 760, height: 620)
+        // Wide enough that the centered switch with all eight areas stays
+        // clear of the window buttons on every tab.
+        .frame(width: 860, height: 620)
         // The chosen ambient color, as in the main window.
         .background { AmbientGlow() }
         // Asked for from the main window while this one is already open.
@@ -223,7 +225,7 @@ struct GeneralSettingsView: View {
                             SecondaryButton(title: String(localized: "Demo beenden")) { DemoMode.end() }
                         }
                     } else {
-                        SecondaryButton(title: String(localized: "Demo starten …")) { DemoMode.confirmStart() }
+                        SecondaryButton(title: String(localized: "Demo starten")) { DemoMode.confirmStart() }
                     }
                 }
             }
