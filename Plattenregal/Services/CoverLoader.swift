@@ -230,7 +230,7 @@ struct CoverView: View {
             if size == nil, abs(width - measured) > 0.5 { measured = width }
         }
         .accessibilityLabel(failed ? "Cover konnte nicht geladen werden" : "Plattencover")
-        .help(failed ? "Cover konnte nicht geladen werden. Prüfe die Verbindung." : "Plattencover")
+        .help(failed ? String(localized: "Cover konnte nicht geladen werden. Prüfe die Verbindung.") : String(localized: "Plattencover"))
         .task(id: LoadKey(url: url, edge: decodeEdge)) { await load() }
     }
 

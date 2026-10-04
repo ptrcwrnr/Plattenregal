@@ -71,6 +71,7 @@
 		14BC632A098D7F5EC4128E10 /* Plattenregal/Services/ScheduledExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0F32914BC632A098D7F5E /* Plattenregal/Services/ScheduledExportService.swift */; };
 		16F7E9BB4DD4445CF437E9CB /* Plattenregal/Services/ResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8BBCFAB16F7E9BB4DD4445C /* Plattenregal/Services/ResetService.swift */; };
 		A2EB97D6247703AE58EB8E07 /* PlattenregalTests/CabinetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533299BAA2EB97D6247703AE /* PlattenregalTests/CabinetTests.swift */; };
+		A1C0DE00000000000000C0B1 /* Plattenregal/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -128,6 +129,7 @@
 		A1C0DE0000000000000000F1 /* Plattenregal/Views/PageStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/PageStack.swift; sourceTree = "<group>"; };
 		A1C0DE0000000000000000F2 /* Plattenregal/Views/AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/AboutView.swift; sourceTree = "<group>"; };
 		7833C2D45EB971604C106375 /* Plattenregal/Views/Settings/AppSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/AppSettingsView.swift; sourceTree = "<group>"; };
+		A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Plattenregal/Localizable.xcstrings; sourceTree = "<group>"; };
 		843EBC136D87F7E70013A055 /* Plattenregal/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Plattenregal/Assets.xcassets; sourceTree = "<group>"; };
 		8BCD5BC4CDFDF0918087C782 /* Plattenregal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Plattenregal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E3461A0B73A95D2FC582778 /* Plattenregal/Storage/KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Storage/KeychainStore.swift; sourceTree = "<group>"; };
@@ -201,6 +203,7 @@
 			children = (
 				F60635B88B91F3EEFB155C2C /* Plattenregal/PlattenregalApp.swift */,
 				843EBC136D87F7E70013A055 /* Plattenregal/Assets.xcassets */,
+				A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */,
 				03FE26E9D2B275B11B82B9A2 /* Models */,
 				E30B4F4A69D252D1867EE142 /* Views */,
 				E8764D70B53FA9D06CBC14A9 /* Services */,
@@ -400,6 +403,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0B0065E8BEB7875F78F47B57 /* Plattenregal/Assets.xcassets in Resources */,
+				A1C0DE00000000000000C0B1 /* Plattenregal/Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -528,6 +532,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -578,6 +583,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -635,6 +641,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -664,6 +671,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

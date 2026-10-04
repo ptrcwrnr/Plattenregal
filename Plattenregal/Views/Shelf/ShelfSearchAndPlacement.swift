@@ -130,7 +130,7 @@ private struct SearchResultRow: View {
                 }
             }
             Spacer(minLength: 8)
-            Text(placeable ? "Ohne Fach · Platz finden" : ShelfRangeLabels.location(of: copy, labels: labels))
+            Text(placeable ? String(localized: "Ohne Fach · Platz finden") : ShelfRangeLabels.location(of: copy, labels: labels))
                 .font(.caption2.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
@@ -212,8 +212,8 @@ struct ShelfPositionStrip: View {
                         }
                     } else {
                         // The count is in the header right above.
-                        Text("Von links nach rechts"
-                             + (missingSlots.isEmpty ? "" : " · \(missingSlots.count) vermisst"))
+                        Text(String(localized: "Von links nach rechts")
+                             + (missingSlots.isEmpty ? "" : String(localized: " · \(missingSlots.count) vermisst")))
                     }
                 }
                 .lineLimit(1)
@@ -329,7 +329,7 @@ struct PlacementCard: View {
         HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
             CoverView(url: release?.coverURL, size: 52)
             VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                Text("\(placement.found ? "Hier steht" : "Einsortieren"): \(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
+                Text("\(placement.found ? String(localized: "Hier steht") : String(localized: "Einsortieren")): \(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
                     .font(.headline)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -359,7 +359,7 @@ struct PlacementCard: View {
                     ForEach(Array(placement.spots.enumerated()), id: \.element.id) { index, other in
                         if index != placement.chosen {
                             Button { choose(index) } label: {
-                                Text("Passt genauso \(other.position == 1 ? "an den Anfang" : "ans Ende") von „\(name(other.shelf))“ (\(AppStyle.records(other.shelf.copies.count))) – dorthin wechseln")
+                                Text("Passt genauso \(other.position == 1 ? String(localized: "an den Anfang") : String(localized: "ans Ende")) von „\(name(other.shelf))“ (\(AppStyle.records(other.shelf.copies.count))) – dorthin wechseln")
                             }
                             .buttonStyle(.link)
                             .font(.callout)
@@ -380,9 +380,9 @@ struct PlacementCard: View {
             }
             Spacer(minLength: AppStyle.itemSpacing)
             HStack(spacing: AppStyle.itemSpacing) {
-                SecondaryButton(title: "Abbrechen", action: cancel)
+                SecondaryButton(title: String(localized: "Abbrechen"), action: cancel)
                 if placement.spot != nil {
-                    PrimaryButton(title: placement.found ? "Gefunden" : "Hier einsortieren", action: confirm)
+                    PrimaryButton(title: placement.found ? String(localized: "Gefunden") : String(localized: "Hier einsortieren"), action: confirm)
                         .keyboardShortcut(.defaultAction)
                 }
             }
@@ -392,25 +392,25 @@ struct PlacementCard: View {
     }
 
     /// As chosen in the settings; shelves are never named by their internal number.
-    private func name(_ shelf: Shelf) -> String { labels.prefix(for: shelf) + (labels[shelf.id] ?? "Leeres Fach") }
+    private func name(_ shelf: Shelf) -> String { labels.prefix(for: shelf) + (labels[shelf.id] ?? String(localized: "Leeres Fach")) }
 
     private func location(_ spot: AlphabeticalPlacement.Spot) -> String {
         let count = spot.shelf.copies.count
-        let place = spot.position == 1 ? "ganz links" : spot.position > count ? "ganz rechts" : "Position \(spot.position)"
-        return "Fach „\(name(spot.shelf))“ · \(place) · \(AppStyle.records(count)) im Fach"
+        let place = spot.position == 1 ? String(localized: "ganz links") : spot.position > count ? String(localized: "ganz rechts") : String(localized: "Position \(spot.position)")
+        return String(localized: "Fach „\(name(spot.shelf))“ · \(place) · \(AppStyle.records(count)) im Fach")
     }
 
     private func neighbours(_ spot: AlphabeticalPlacement.Spot) -> String {
         func title(_ copy: RecordCopy) -> String {
-            let text = "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“"
-            let note = missing.contains(copy.id) ? " – vermisst" : ""
+            let text = String(localized: "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“")
+            let note = missing.contains(copy.id) ? String(localized: " – vermisst") : ""
             guard let shelf = copy.shelf, shelf.id != spot.shelf.id else { return text + note }
-            return text + " (Fach „\(name(shelf))“\(note))"
+            return text + String(localized: " (Fach „\(name(shelf))“\(note))")
         }
         switch (spot.before, spot.after) {
-        case let (before?, after?): return "Zwischen \(title(before)) und \(title(after))"
-        case let (before?, nil): return "Nach \(title(before))"
-        case let (nil, after?): return "Vor \(title(after))"
+        case let (before?, after?): return String(localized: "Zwischen \(title(before)) und \(title(after))")
+        case let (before?, nil): return String(localized: "Nach \(title(before))")
+        case let (nil, after?): return String(localized: "Vor \(title(after))")
         case (nil, nil): return ""
         }
     }

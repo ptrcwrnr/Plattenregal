@@ -56,7 +56,7 @@ enum AppStyle {
 
     // MARK: Wording
     /// "1 Platte", "12 Platten", "1.234 Platten".
-    static func records(_ count: Int) -> String { count == 1 ? "1 Platte" : "\(count.formatted()) Platten" }
+    static func records(_ count: Int) -> String { count == 1 ? String(localized: "1 Platte") : String(localized: "\(count.formatted()) Platten") }
 
     // MARK: Motion
     // One curve for the whole app: `.smooth`, a critically damped spring — no

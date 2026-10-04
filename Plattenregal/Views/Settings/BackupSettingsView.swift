@@ -31,20 +31,20 @@ struct BackupSettingsView: View {
 
     var body: some View {
         SettingsPage {
-            SettingsCard(title: "Fach-Belegung",
-                         subtitle: "Die Platten selbst kommen jederzeit wieder aus Discogs. Wo sie im Regal stehen, gibt es nur hier – die Sicherung bewahrt genau das.") {
-                SettingsRow(title: "Aktuell", hint: current?.summary ?? "Die aktuelle Belegung ließ sich gerade nicht lesen. Bleibt das so, starte Plattenregal neu.") {
-                    PrimaryButton(title: "Sichern unter …", action: saveToFile)
+            SettingsCard(title: String(localized: "Fach-Belegung"),
+                         subtitle: String(localized: "Die Platten selbst kommen jederzeit wieder aus Discogs. Wo sie im Regal stehen, gibt es nur hier – die Sicherung bewahrt genau das.")) {
+                SettingsRow(title: String(localized: "Aktuell"), hint: current?.summary ?? String(localized: "Die aktuelle Belegung ließ sich gerade nicht lesen. Bleibt das so, starte Plattenregal neu.")) {
+                    PrimaryButton(title: String(localized: "Sichern unter …"), action: saveToFile)
                         .disabled(current == nil)
                 }
                 Divider()
-                SettingsRow(title: "Wiederherstellen",
-                            hint: "Zuerst mit Discogs synchronisieren, damit alle Platten da sind. Zugeordnet wird über die Discogs-Exemplar-ID.") {
-                    SecondaryButton(title: "Aus Datei …") { importing = true }
+                SettingsRow(title: String(localized: "Wiederherstellen"),
+                            hint: String(localized: "Zuerst mit Discogs synchronisieren, damit alle Platten da sind. Zugeordnet wird über die Discogs-Exemplar-ID.")) {
+                    SecondaryButton(title: String(localized: "Aus Datei …")) { importing = true }
                         .disabled(sync.busy)
                 }
                 if sync.busy {
-                    SettingsNote("Während der Synchronisierung lässt sich keine Belegung wiederherstellen.")
+                    SettingsNote(String(localized: "Während der Synchronisierung lässt sich keine Belegung wiederherstellen."))
                 }
                 if let status {
                     AppBanner(message: status.message, kind: status.failed ? .error : .success)
@@ -53,45 +53,45 @@ struct BackupSettingsView: View {
             }
             .animation(AppStyle.standardAnimation, value: status?.message)
 
-            SettingsCard(title: "Automatische Sicherung",
+            SettingsCard(title: String(localized: "Automatische Sicherung"),
                          subtitle: DemoMode.isActive
-                            ? "In der Demo wird nicht automatisch gesichert, und Speicherort und Aufbewahrung lassen sich nicht ändern – so bleiben deine echten Sicherungen unberührt."
-                            : "Ein paar Sekunden nach jeder Änderung am Regal. " + (keptDays > 0
-                            ? "Erhalten bleiben die letzten \(keptCount) Stände und zusätzlich der letzte Stand jedes Tages der vergangenen \(keptDays) Tage."
-                            : "Erhalten bleiben die letzten \(keptCount) Stände.")) {
-                SettingsRow(title: "Automatisch sichern") {
+                            ? String(localized: "In der Demo wird nicht automatisch gesichert, und Speicherort und Aufbewahrung lassen sich nicht ändern – so bleiben deine echten Sicherungen unberührt.")
+                            : String(localized: "Ein paar Sekunden nach jeder Änderung am Regal. ") + (keptDays > 0
+                            ? String(localized: "Erhalten bleiben die letzten \(keptCount) Stände und zusätzlich der letzte Stand jedes Tages der vergangenen \(keptDays) Tage.")
+                            : String(localized: "Erhalten bleiben die letzten \(keptCount) Stände."))) {
+                SettingsRow(title: String(localized: "Automatisch sichern")) {
                     Toggle("Automatisch sichern", isOn: $autoEnabled).labelsHidden().toggleStyle(.switch)
                         .disabled(DemoMode.isActive)
                 }
                 Divider()
-                SettingsRow(title: "Letzte Stände behalten") {
+                SettingsRow(title: String(localized: "Letzte Stände behalten")) {
                     GlassSegmentedPicker(selection: retention(\.count), options: ShelfAutoBackup.keptCountOptions) { Text("\($0)") }
                         .accessibilityLabel("Letzte Stände")
                     .disabled(DemoMode.isActive)
                 }
                 Divider()
-                SettingsRow(title: "Tagesstände behalten", hint: "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.") {
-                    GlassMenuPicker(title: "Tagesstände", selection: retention(\.days),
-                                    current: keptDays == 0 ? "Keine" : "\(keptDays) Tage") {
+                SettingsRow(title: String(localized: "Tagesstände behalten"), hint: String(localized: "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.")) {
+                    GlassMenuPicker(title: String(localized: "Tagesstände"), selection: retention(\.days),
+                                    current: keptDays == 0 ? String(localized: "Keine") : String(localized: "\(keptDays) Tage")) {
                         ForEach(ShelfAutoBackup.keptDaysOptions, id: \.self) { Text($0 == 0 ? "Keine" : "\($0) Tage").tag($0) }
                     }
                     .disabled(DemoMode.isActive)
                 }
                 Divider()
-                SettingsRow(title: "Speicherort", hint: customFolder.map(FolderAccess.displayName)
+                SettingsRow(title: String(localized: "Speicherort"), hint: customFolder.map(FolderAccess.displayName)
                             ?? (ShelfAutoBackup.folder.isSet
-                                ? "Der gewählte Ordner ist nicht erreichbar – bis er wieder da ist oder ein anderer gewählt wird, sichert die App in ihren eigenen Ordner."
-                                : "Im Ordner der App. Ein Ordner in iCloud Drive schützt die Belegung auch, wenn der Mac verloren geht.")) {
+                                ? String(localized: "Der gewählte Ordner ist nicht erreichbar – bis er wieder da ist oder ein anderer gewählt wird, sichert die App in ihren eigenen Ordner.")
+                                : String(localized: "Im Ordner der App. Ein Ordner in iCloud Drive schützt die Belegung auch, wenn der Mac verloren geht."))) {
                     HStack(spacing: AppStyle.itemSpacing) {
                         if customFolder != nil || ShelfAutoBackup.defaultDirectory != nil {
-                            GhostButton(title: "Im Finder zeigen", action: showInFinder)
+                            GhostButton(title: String(localized: "Im Finder zeigen"), action: showInFinder)
                         }
                         Group {
                             if ShelfAutoBackup.folder.isSet {
-                                GhostButton(title: "Standard") { changeFolder(to: nil) }
+                                GhostButton(title: String(localized: "Standard")) { changeFolder(to: nil) }
                             }
-                            SecondaryButton(title: "Ändern …") {
-                                if let url = FolderPicker.choose(message: "Ordner für die automatischen Sicherungen der Fach-Belegung") { changeFolder(to: url) }
+                            SecondaryButton(title: String(localized: "Ändern …")) {
+                                if let url = FolderPicker.choose(message: String(localized: "Ordner für die automatischen Sicherungen der Fach-Belegung")) { changeFolder(to: url) }
                             }
                         }
                         .disabled(DemoMode.isActive)
@@ -99,7 +99,7 @@ struct BackupSettingsView: View {
                 }
                 if let folderError { AppBanner(message: folderError, kind: .error).transition(AppStyle.funnelTransition()) }
                 if autoEnabled, let failure = autoBackup.lastFailure {
-                    AppBanner(message: "Die automatische Sicherung um \(failure.formatted(date: .omitted, time: .shortened)) hat nicht geklappt. Sichere die Belegung zur Sicherheit mit „Sichern unter …“ in eine Datei.", kind: .warning)
+                    AppBanner(message: String(localized: "Die automatische Sicherung um \(failure.formatted(date: .omitted, time: .shortened)) hat nicht geklappt. Sichere die Belegung zur Sicherheit mit „Sichern unter …“ in eine Datei."), kind: .warning)
                         .transition(AppStyle.funnelTransition())
                 }
                 Divider()
@@ -113,18 +113,18 @@ struct BackupSettingsView: View {
                                     Text(entry.backup.summary).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                                 }
                                 Spacer()
-                                GhostButton(title: "Wiederherstellen …") { prepareRestore(entry.backup) }
+                                GhostButton(title: String(localized: "Wiederherstellen …")) { prepareRestore(entry.backup) }
                                     .disabled(sync.busy)
                             }
                             .padding(.vertical, 4)
                         }
                     }
                 } else {
-                    SettingsNote("Noch keine automatische Sicherung vorhanden.")
+                    SettingsNote(String(localized: "Noch keine automatische Sicherung vorhanden."))
                 }
             }
             .animation(AppStyle.standardAnimation, value: folderError)
-            .confirmationDialog(pendingRetention.map { $0.removed == 1 ? "1 ältere Sicherung löschen?" : "\($0.removed) ältere Sicherungen löschen?" } ?? "",
+            .confirmationDialog(pendingRetention.map { $0.removed == 1 ? String(localized: "1 ältere Sicherung löschen?") : String(localized: "\($0.removed) ältere Sicherungen löschen?") } ?? "",
                                 isPresented: Binding(get: { pendingRetention != nil }, set: { if !$0 { pendingRetention = nil } })) {
                 Button("Löschen", role: .destructive) {
                     if let pendingRetention { applyRetention(count: pendingRetention.count, days: pendingRetention.days) }
@@ -145,10 +145,10 @@ struct BackupSettingsView: View {
             if on { autoBackup.scheduleBackup(of: context.container) }
         }
         .fileExporter(isPresented: $saving, document: document, contentType: .json,
-                      defaultFilename: "Plattenregal Belegung \(ExportDate.day(.now))\(DemoMode.fileSuffix)") { result in
+                      defaultFilename: String(localized: "Plattenregal Belegung \(ExportDate.day(.now))\(DemoMode.fileSuffix)")) { result in
             switch result {
             case .success(let url):
-                status = ("Gespeichert als „\(url.lastPathComponent)“.", false)
+                status = (String(localized: "Gespeichert als „\(url.lastPathComponent)“."), false)
                 AppLog.info("Sicherung", "Fach-Belegung als Datei gesichert: \(url.lastPathComponent)")
             case .failure(let error) where error.isUserCancellation:
                 break
@@ -270,7 +270,7 @@ struct BackupSettingsView: View {
         do {
             try service.restore(backup)
             changes.libraryDidChange()
-            status = ("Belegung vom \(backup.createdAt.formatted(date: .abbreviated, time: .shortened)) wiederhergestellt.", false)
+            status = (String(localized: "Belegung vom \(backup.createdAt.formatted(date: .abbreviated, time: .shortened)) wiederhergestellt."), false)
         } catch {
             status = (error.reportedMessage(), true)
         }

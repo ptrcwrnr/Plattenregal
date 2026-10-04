@@ -15,7 +15,7 @@ struct HoverBarChart: View {
     }
     let bars: [Bar]
     var height: CGFloat = 200
-    var unit = "Platten"
+    var unit = String(localized: "Platten")
     var select: ((StatisticGroup) -> Void)?
     @State private var hovered: String?
 
@@ -32,10 +32,10 @@ struct HoverBarChart: View {
             if let bar = bars.first(where: { $0.id == hovered }) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(bar.label).font(.callout.weight(.semibold))
-                    Text(unit == "Platten" ? AppStyle.records(bar.count) : "\(bar.count.formatted()) \(unit)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                    Text(unit == String(localized: "Platten") ? AppStyle.records(bar.count) : "\(bar.count.formatted()) \(unit)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
             } else {
-                Text(select == nil ? "Maus über die Balken bewegen, um Werte zu sehen." : "Maus über die Balken bewegen, um Werte zu sehen; ein Klick öffnet die Platten.")
+                Text(select == nil ? String(localized: "Maus über die Balken bewegen, um Werte zu sehen.") : String(localized: "Maus über die Balken bewegen, um Werte zu sehen; ein Klick öffnet die Platten."))
                     .font(.caption).foregroundStyle(.tertiary)
             }
         }
@@ -97,15 +97,15 @@ struct TimeTravel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: StatisticsLayout.titleSpacing) {
             LazyVGrid(columns: StatisticsLayout.columns(columns), alignment: .leading, spacing: StatisticsLayout.gutter) {
-                span("Ältestes Release", statistics.oldest)
-                span("Neuestes Release", statistics.newest)
-                span("Jahre Musikgeschichte", statistics.oldest.flatMap { oldest in statistics.newest.map { $0 - oldest } })
+                span(String(localized: "Ältestes Release"), statistics.oldest)
+                span(String(localized: "Neuestes Release"), statistics.newest)
+                span(String(localized: "Jahre Musikgeschichte"), statistics.oldest.flatMap { oldest in statistics.newest.map { $0 - oldest } })
             }
             HoverBarChart(bars: bars, height: 220, select: select)
             // Gaps only when there are any: "0 ohne Jahr" says nothing.
-            Text((["Jahr der konkreten Pressung"]
-                  + (statistics.missingYear > 0 ? ["\(statistics.missingYear) ohne Jahr"] : [])
-                  + (statistics.missingStyle > 0 ? ["\(statistics.missingStyle) ohne Style"] : [])).joined(separator: " · "))
+            Text(([String(localized: "Jahr der konkreten Pressung")]
+                  + (statistics.missingYear > 0 ? [String(localized: "\(statistics.missingYear) ohne Jahr")] : [])
+                  + (statistics.missingStyle > 0 ? [String(localized: "\(statistics.missingStyle) ohne Style")] : [])).joined(separator: " · "))
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -123,7 +123,7 @@ struct TimeTravel: View {
         let byKey = Dictionary(source.map { (Int($0.id.prefix(4)) ?? 0, $0) }, uniquingKeysWith: { first, _ in first })
         guard let low = byKey.keys.min(), let high = byKey.keys.max() else { return [] }
         return stride(from: low, through: high, by: byDecade ? 10 : 1).map { key in
-            let label = byDecade ? "\(key)er" : String(key)
+            let label = byDecade ? String(localized: "\(String(key))er") : String(key)
             return .init(id: label, label: label, count: byKey[key]?.count ?? 0, group: byKey[key])
         }
     }
@@ -202,8 +202,8 @@ struct CoverTile: View {
     var showsAddedDate = false
     @State private var hovering = false
     var body: some View {
-        let artist = copy.release?.displayArtist ?? "Unbekannt"
-        let title = copy.release?.displayTitle ?? "Unbekannte Veröffentlichung"
+        let artist = copy.release?.displayArtist ?? String(localized: "Unbekannt")
+        let title = copy.release?.displayTitle ?? String(localized: "Unbekannte Veröffentlichung")
         VStack(alignment: .leading, spacing: 6) {
             CoverView(url: copy.release?.coverURL, size: size)
                 .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
@@ -213,7 +213,7 @@ struct CoverTile: View {
                 Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 if showsAddedDate {
                     let date = DiscogsDate.parse(copy.discogsDateAdded)
-                    Text(date.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "Datum unbekannt")
+                    Text(date.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? String(localized: "Datum unbekannt"))
                         .font(.caption2).foregroundStyle(.tertiary)
                 }
             }

@@ -25,25 +25,25 @@ struct DataSettingsView: View {
         var id: Self { self }
         var question: String {
             switch self {
-            case .locations: "Alle Standorte zurücksetzen?"
-            case .settings: "Alle Einstellungen zurücksetzen?"
-            case .everything: "Wirklich alles zurücksetzen?"
+            case .locations: String(localized: "Alle Standorte zurücksetzen?")
+            case .settings: String(localized: "Alle Einstellungen zurücksetzen?")
+            case .everything: String(localized: "Wirklich alles zurücksetzen?")
             }
         }
         var button: String {
             switch self {
-            case .locations: "Standorte zurücksetzen"
-            case .settings: "Einstellungen zurücksetzen"
-            case .everything: "Alles löschen"
+            case .locations: String(localized: "Standorte zurücksetzen")
+            case .settings: String(localized: "Einstellungen zurücksetzen")
+            case .everything: String(localized: "Alles löschen")
             }
         }
         var message: String {
             switch self {
-            case .locations: "Alle Platten stehen danach ohne Fach, gesperrte Fächer werden freigegeben, „Nicht im Regal“ und „Vermisst“ werden aufgehoben. Die Regale selbst bleiben."
+            case .locations: String(localized: "Alle Platten stehen danach ohne Fach, gesperrte Fächer werden freigegeben, „Nicht im Regal“ und „Vermisst“ werden aufgehoben. Die Regale selbst bleiben.")
                 // "Vermisst" isn't part of a backup, so it doesn't come back with one.
-                + (DemoMode.isActive ? "" : " Die aktuelle Belegung wird vorher gesichert und lässt sich unter „Sicherung“ wiederherstellen – ohne die „Vermisst“-Markierungen.")
-            case .settings: "Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben."
-            case .everything: "Sammlung, Wantlist, Statistik-Verlauf, zusätzliche Regale, Discogs-Konto samt Token, Cover und alle Einstellungen werden gelöscht – wie bei einer neuen Installation. Nur die Sicherungen der Fach-Belegung bleiben samt Speicherort und Aufbewahrung (eine aktuelle wird vorher geschrieben). Das lässt sich nicht rückgängig machen."
+                + (DemoMode.isActive ? "" : String(localized: " Die aktuelle Belegung wird vorher gesichert und lässt sich unter „Sicherung“ wiederherstellen – ohne die „Vermisst“-Markierungen."))
+            case .settings: String(localized: "Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben.")
+            case .everything: String(localized: "Sammlung, Wantlist, Statistik-Verlauf, zusätzliche Regale, Discogs-Konto samt Token, Cover und alle Einstellungen werden gelöscht – wie bei einer neuen Installation. Nur die Sicherungen der Fach-Belegung bleiben samt Speicherort und Aufbewahrung (eine aktuelle wird vorher geschrieben). Das lässt sich nicht rückgängig machen.")
             }
         }
     }
@@ -87,34 +87,34 @@ struct DataSettingsView: View {
 
     var body: some View {
         SettingsPage {
-            SettingsCard(title: "Speicherplatz",
-                         subtitle: sizes.covers == nil ? "Wird berechnet …" : "Die App belegt \(bytes(sizes.total)) auf diesem Mac.") {
-                SettingsRow(title: "Sammlung", hint: DemoMode.isActive
-                            ? "In der Demo liegt die Sammlung nur im Arbeitsspeicher."
-                            : "Platten, Standorte, Wantlist und Statistik-Verlauf.") {
+            SettingsCard(title: String(localized: "Speicherplatz"),
+                         subtitle: sizes.covers == nil ? String(localized: "Wird berechnet …") : String(localized: "Die App belegt \(bytes(sizes.total)) auf diesem Mac.")) {
+                SettingsRow(title: String(localized: "Sammlung"), hint: DemoMode.isActive
+                            ? String(localized: "In der Demo liegt die Sammlung nur im Arbeitsspeicher.")
+                            : String(localized: "Platten, Standorte, Wantlist und Statistik-Verlauf.")) {
                     sizeLabel(sizes.database)
                 }
                 Divider()
-                SettingsRow(title: "Cover-Cache", hint: "Cover werden bei Bedarf neu von Discogs geladen.") {
+                SettingsRow(title: String(localized: "Cover-Cache"), hint: String(localized: "Cover werden bei Bedarf neu von Discogs geladen.")) {
                     HStack(spacing: AppStyle.itemSpacing) {
                         sizeLabel(sizes.covers)
-                        SecondaryButton(title: "Leeren", action: clearCovers)
+                        SecondaryButton(title: String(localized: "Leeren"), action: clearCovers)
                             .disabled(clearingCache || (sizes.covers ?? 0) == 0)
                     }
                 }
                 Divider()
-                SettingsRow(title: "Sicherungen", hint: autoBackup.usesCustomFolder
-                            ? "In \(autoBackup.directory.map(FolderAccess.displayName) ?? "–") – zählt nicht zum Platz der App."
-                            : "Automatische Sicherungen der Fach-Belegung (siehe „Sicherung“).") {
+                SettingsRow(title: String(localized: "Sicherungen"), hint: autoBackup.usesCustomFolder
+                            ? String(localized: "In \(autoBackup.directory.map(FolderAccess.displayName) ?? "–") – zählt nicht zum Platz der App.")
+                            : String(localized: "Automatische Sicherungen der Fach-Belegung (siehe „Sicherung“).")) {
                     sizeLabel(sizes.backups)
                 }
                 Divider()
-                SettingsRow(title: "Protokoll", hint: DemoMode.isActive
-                            ? "Das gemeinsame Protokoll der App – in der Demo lässt es sich nicht leeren."
-                            : "Was die App wann getan hat – hilfreich, wenn etwas nicht klappt.") {
+                SettingsRow(title: String(localized: "Protokoll"), hint: DemoMode.isActive
+                            ? String(localized: "Das gemeinsame Protokoll der App – in der Demo lässt es sich nicht leeren.")
+                            : String(localized: "Was die App wann getan hat – hilfreich, wenn etwas nicht klappt.")) {
                     HStack(spacing: AppStyle.itemSpacing) {
                         sizeLabel(sizes.logs)
-                        SecondaryButton(title: "Leeren") {
+                        SecondaryButton(title: String(localized: "Leeren")) {
                             AppLog.clear()
                             Task { await updateSizes() }
                         }
@@ -125,16 +125,16 @@ struct DataSettingsView: View {
             }
             .animation(AppStyle.standardAnimation, value: storageError)
 
-            SettingsCard(title: "Diagnose") {
-                SettingsRow(title: "Protokoll", hint: "Enthält nie den Discogs-Token.") {
+            SettingsCard(title: String(localized: "Diagnose")) {
+                SettingsRow(title: String(localized: "Protokoll"), hint: String(localized: "Enthält nie den Discogs-Token.")) {
                     HStack(spacing: AppStyle.itemSpacing) {
                         if let directory = AppLog.logDirectory {
-                            GhostButton(title: "Im Finder zeigen") {
+                            GhostButton(title: String(localized: "Im Finder zeigen")) {
                                 let file = AppLog.fileURL.flatMap { FileManager.default.fileExists(atPath: $0.path) ? $0 : nil }
                                 NSWorkspace.shared.activateFileViewerSelecting([file ?? directory])
                             }
                         }
-                        SecondaryButton(title: "Sichern unter …") {
+                        SecondaryButton(title: String(localized: "Sichern unter …")) {
                             logDocument = ExportDocument(data: AppLog.exportData())
                             savingLog = true
                         }
@@ -145,26 +145,26 @@ struct DataSettingsView: View {
                         .transition(AppStyle.funnelTransition())
                 }
                 Divider()
-                SettingsRow(title: "Discogs-Anfragen", hint: rateLimitHint) {
+                SettingsRow(title: String(localized: "Discogs-Anfragen"), hint: rateLimitHint) {
                     Text(rateLimitValue).monospacedDigit().foregroundStyle(.secondary)
                 }
                 if let throttled = rateLimit.lastThrottled, Date.now.timeIntervalSince(throttled) < 600 {
-                    AppBanner(message: "Discogs hat um \(throttled.formatted(date: .omitted, time: .shortened)) gebremst, weil zu viele Anfragen kamen. Plattenregal wartet dann kurz und macht von selbst weiter.", kind: .info)
+                    AppBanner(message: String(localized: "Discogs hat um \(throttled.formatted(date: .omitted, time: .shortened)) gebremst, weil zu viele Anfragen kamen. Plattenregal wartet dann kurz und macht von selbst weiter."), kind: .info)
                 }
             }
             .animation(AppStyle.standardAnimation, value: logStatus?.message)
 
-            SettingsCard(title: "Zurücksetzen",
-                         subtitle: sync.busy ? "Während der Synchronisierung lässt sich nichts zurücksetzen." : nil) {
-                SettingsRow(title: "Standorte", hint: "Alle Platten aus den Fächern nehmen, Sperren aufheben.") {
-                    SecondaryButton(title: "Zurücksetzen …") { pendingReset = .locations }
+            SettingsCard(title: String(localized: "Zurücksetzen"),
+                         subtitle: sync.busy ? String(localized: "Während der Synchronisierung lässt sich nichts zurücksetzen.") : nil) {
+                SettingsRow(title: String(localized: "Standorte"), hint: String(localized: "Alle Platten aus den Fächern nehmen, Sperren aufheben.")) {
+                    SecondaryButton(title: String(localized: "Zurücksetzen …")) { pendingReset = .locations }
                 }
                 Divider()
-                SettingsRow(title: "Einstellungen", hint: "Alle Einstellungen auf Standard, Daten bleiben.") {
-                    SecondaryButton(title: "Zurücksetzen …") { pendingReset = .settings }
+                SettingsRow(title: String(localized: "Einstellungen"), hint: String(localized: "Alle Einstellungen auf Standard, Daten bleiben.")) {
+                    SecondaryButton(title: String(localized: "Zurücksetzen …")) { pendingReset = .settings }
                 }
                 Divider()
-                SettingsRow(title: "Alles", hint: "Wie eine neue Installation. Sicherungen der Belegung bleiben erhalten.") {
+                SettingsRow(title: String(localized: "Alles"), hint: String(localized: "Wie eine neue Installation. Sicherungen der Belegung bleiben erhalten.")) {
                     Button("Alles zurücksetzen …", role: .destructive) { pendingReset = .everything }
                         .appGlassButton()
                 }
@@ -189,9 +189,9 @@ struct DataSettingsView: View {
             }
         }
         .fileExporter(isPresented: $savingLog, document: logDocument, contentType: .plainText,
-                      defaultFilename: "Plattenregal Protokoll \(ExportDate.day(.now)).log") { result in
+                      defaultFilename: String(localized: "Plattenregal Protokoll \(ExportDate.day(.now)).log")) { result in
             switch result {
-            case .success(let url): logStatus = ("Gespeichert als „\(url.lastPathComponent)“.", false)
+            case .success(let url): logStatus = (String(localized: "Gespeichert als „\(url.lastPathComponent)“."), false)
             case .failure(let error) where error.isUserCancellation: break
             case .failure(let error): logStatus = (FileTransferError.writeFailed(error).reportedMessage(), true)
             }
@@ -207,15 +207,15 @@ struct DataSettingsView: View {
 
     private var rateLimitValue: String {
         guard let remaining = rateLimit.remaining else { return "–" }
-        return rateLimit.limit.map { "\(remaining) von \($0) frei" } ?? "\(remaining) frei"
+        return rateLimit.limit.map { String(localized: "\(remaining) von \($0) frei") } ?? String(localized: "\(remaining) frei")
     }
 
     private var rateLimitHint: String {
         guard let last = rateLimit.lastRequest else {
-            return "In dieser Sitzung noch keine Anfrage. Discogs erlaubt mit Token 60 Anfragen pro Minute."
+            return String(localized: "In dieser Sitzung noch keine Anfrage. Discogs erlaubt mit Token 60 Anfragen pro Minute.")
         }
-        let count = rateLimit.requests == 1 ? "1 Anfrage" : "\(rateLimit.requests) Anfragen"
-        return "\(count) in dieser Sitzung, zuletzt \(last.formatted(date: .omitted, time: .standard)). Discogs zählt die Anfragen der letzten Minute."
+        let count = rateLimit.requests == 1 ? String(localized: "1 Anfrage") : String(localized: "\(rateLimit.requests) Anfragen")
+        return String(localized: "\(count) in dieser Sitzung, zuletzt \(last.formatted(date: .omitted, time: .standard)). Discogs zählt die Anfragen der letzten Minute.")
     }
 
     private func sizeLabel(_ value: Int64?) -> some View {
@@ -239,7 +239,7 @@ struct DataSettingsView: View {
         Task {
             let cleared = await CoverCache.shared.clear()
             AppLog.info("Cover", cleared ? "Cover-Cache geleert" : "Cover-Cache nur teilweise geleert")
-            storageError = cleared ? nil : "Einige Cover ließen sich nicht löschen. Bitte versuche es noch einmal."
+            storageError = cleared ? nil : String(localized: "Einige Cover ließen sich nicht löschen. Bitte versuche es noch einmal.")
             await updateSizes()
             clearingCache = false
         }
@@ -253,20 +253,20 @@ struct DataSettingsView: View {
             do {
                 try service.resetLocations()
                 // The demo writes no backups (see `ResetService.safetyBackup`).
-                resetStatus = (DemoMode.isActive ? "Alle Standorte zurückgesetzt."
-                               : "Alle Standorte zurückgesetzt. Die vorherige Belegung liegt unter „Sicherung“.", false)
+                resetStatus = (DemoMode.isActive ? String(localized: "Alle Standorte zurückgesetzt.")
+                               : String(localized: "Alle Standorte zurückgesetzt. Die vorherige Belegung liegt unter „Sicherung“."), false)
             } catch { resetStatus = (error.reportedMessage(), true) }
         case .settings:
             ResetService.resetSettings()
-            resetStatus = ("Alle Einstellungen stehen wieder auf Standard.", false)
+            resetStatus = (String(localized: "Alle Einstellungen stehen wieder auf Standard."), false)
         case .everything:
             resetting = true
             Task {
                 do {
                     try await service.resetEverything()
                     resetStatus = (DemoMode.isActive
-                        ? "Die Beispielsammlung ist geleert. „Demo neu starten“ unter „Allgemein“ holt sie zurück."
-                        : "Alles zurückgesetzt. Trage unter „Discogs“ einen Token ein, um neu zu beginnen.", false)
+                        ? String(localized: "Die Beispielsammlung ist geleert. „Demo neu starten“ unter „Allgemein“ holt sie zurück.")
+                        : String(localized: "Alles zurückgesetzt. Trage unter „Discogs“ einen Token ein, um neu zu beginnen."), false)
                 } catch { resetStatus = (error.reportedMessage(), true) }
                 resetting = false
                 await updateSizes()

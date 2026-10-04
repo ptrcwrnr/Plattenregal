@@ -241,16 +241,16 @@ nonisolated enum ShelfSecondaryOrder: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .title: "Titel"
-        case .year: "Jahr"
-        case .label: "Label"
+        case .title: String(localized: "Titel")
+        case .year: String(localized: "Jahr")
+        case .label: String(localized: "Label")
         }
     }
     var hint: String {
         switch self {
-        case .title: "Die Platten eines Interpreten nach Titel, von A bis Z."
-        case .year: "Die Platten eines Interpreten nach Erscheinungsjahr, die älteste zuerst."
-        case .label: "Die Platten eines Interpreten nach Label und Katalognummer."
+        case .title: String(localized: "Die Platten eines Interpreten nach Titel, von A bis Z.")
+        case .year: String(localized: "Die Platten eines Interpreten nach Erscheinungsjahr, die älteste zuerst.")
+        case .label: String(localized: "Die Platten eines Interpreten nach Label und Katalognummer.")
         }
     }
 

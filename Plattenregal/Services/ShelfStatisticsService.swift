@@ -58,8 +58,8 @@ enum ShelfLabelStyle: String, CaseIterable, Identifiable {
     case range, number
     static let key = "shelfLabelStyle"
     var id: Self { self }
-    var title: String { self == .range ? "Buchstabenbereich" : "Fachnummer" }
-    var example: String { self == .range ? "z. B. „A – Be“, „Ce – Di“" : "z. B. „Fach 1“, „Fach 2“" }
+    var title: String { self == .range ? String(localized: "Buchstabenbereich") : String(localized: "Fachnummer") }
+    var example: String { self == .range ? String(localized: "z. B. „A – Be“, „Ce – Di“") : String(localized: "z. B. „Fach 1“, „Fach 2“") }
 }
 
 /// Labels for a set of shelves, plus where needed the cabinet's name for
@@ -72,7 +72,7 @@ struct ShelfLabels {
     /// "Regal 2 · " or "".
     func prefix(for shelf: Shelf) -> String {
         guard let name = cabinetNames[shelf.id] else { return "" }
-        return shelf.isInUse ? "\(name) · " : "\(name) (inaktiv) · "
+        return shelf.isInUse ? "\(name) · " : String(localized: "\(name) (inaktiv) · ")
     }
 }
 
@@ -220,10 +220,10 @@ enum ShelfRangeLabels {
     /// Where a copy stands, in words: "A – B · Position 12", a reserved
     /// shelf's name, "Nicht im Regal" or "Noch keinem Fach zugeordnet".
     static func location(of copy: RecordCopy, labels: ShelfLabels, excluded: Bool = false) -> String {
-        guard let shelf = copy.shelf else { return excluded ? "Nicht im Regal" : "Noch keinem Fach zugeordnet" }
+        guard let shelf = copy.shelf else { return excluded ? String(localized: "Nicht im Regal") : String(localized: "Noch keinem Fach zugeordnet") }
         let prefix = labels.prefix(for: shelf)
-        if shelf.isReserved { return prefix + (shelf.name.isEmpty ? "Gesperrtes Fach" : shelf.name) }
-        return "\(prefix)\(labels[shelf.id] ?? "Leeres Fach") · Position \(copy.positionInShelf)"
+        if shelf.isReserved { return prefix + (shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name) }
+        return String(localized: "\(prefix)\(labels[shelf.id] ?? String(localized: "Leeres Fach")) · Position \(copy.positionInShelf)")
     }
 
     static func boundaryLabel(_ value: String, depth: Int) -> String {

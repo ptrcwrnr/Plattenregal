@@ -4,6 +4,13 @@ import Charts
 enum HistoryMetric: String, CaseIterable, Identifiable {
     case median = "Median", minimum = "Niedrig", maximum = "Hoch"
     var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .median: String(localized: "Median")
+        case .minimum: String(localized: "Niedrig")
+        case .maximum: String(localized: "Hoch")
+        }
+    }
     func value(_ snapshot: CollectionValueSnapshot) -> Decimal {
         switch self { case .median: snapshot.medianValue; case .minimum: snapshot.minimumValue; case .maximum: snapshot.maximumValue }
     }
@@ -11,6 +18,15 @@ enum HistoryMetric: String, CaseIterable, Identifiable {
 enum HistoryPeriod: String, CaseIterable, Identifiable {
     case month = "1M", quarter = "3M", half = "6M", year = "1J", all = "Alles"
     var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .month: String(localized: "1M", comment: "Zeitraum: ein Monat")
+        case .quarter: String(localized: "3M", comment: "Zeitraum: drei Monate")
+        case .half: String(localized: "6M", comment: "Zeitraum: sechs Monate")
+        case .year: String(localized: "1J", comment: "Zeitraum: ein Jahr")
+        case .all: String(localized: "Alles")
+        }
+    }
     func start(now: Date = .now) -> Date {
         let months: Int
         switch self { case .month: months = 1; case .quarter: months = 3; case .half: months = 6; case .year: months = 12; case .all: return .distantPast }
@@ -41,8 +57,8 @@ struct ValueHistoryDashboard: View {
             if !snapshots.isEmpty {
                 VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                     ViewThatFits(in: .horizontal) {
-                        HStack { subheading("Wertentwicklung"); Spacer(); controls; periods }
-                        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) { subheading("Wertentwicklung"); HStack { controls; periods } }
+                        HStack { subheading(String(localized: "Wertentwicklung")); Spacer(); controls; periods }
+                        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) { subheading(String(localized: "Wertentwicklung")); HStack { controls; periods } }
                     }
                     if visible.isEmpty { Text("Für diesen Zeitraum gibt es noch keine Momentaufnahmen.").font(.callout).foregroundStyle(.secondary) }
                     else {
@@ -53,20 +69,20 @@ struct ValueHistoryDashboard: View {
                 }
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: StatisticsLayout.gutter, alignment: .top), count: 2), alignment: .leading, spacing: 28) {
                     VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                        subheading("Durchschnittlicher Wert pro Platte")
-                        if let average = sameCurrency.last?.averagePerItem { StatFigure(title: "pro Platte", value: money(average)) }
+                        subheading(String(localized: "Durchschnittlicher Wert pro Platte"))
+                        if let average = sameCurrency.last?.averagePerItem { StatFigure(title: String(localized: "pro Platte"), value: money(average)) }
                         HistoryLineChart(points: visible.compactMap { row in row.averagePerItem.map { .init(id: row.id, date: row.date, value: $0) } }, currency: currency)
                         if let current = sameCurrency.last, let currentAverage = current.averagePerItem,
                            let target = Calendar.current.date(byAdding: .month, value: -6, to: current.date),
                            let previous = sameCurrency.last(where: { $0.date <= target }), let oldAverage = previous.averagePerItem {
-                            ChangeLabel(title: "Seit mindestens 6 Monaten", current: currentAverage, previous: oldAverage, currency: currency)
+                            ChangeLabel(title: String(localized: "Seit mindestens 6 Monaten"), current: currentAverage, previous: oldAverage, currency: currency)
                         }
                         Text("Median-Gesamtwert ÷ Anzahl der Platten in der Collection. Kein durchschnittlicher Verkaufspreis einzelner Releases.").font(.caption).foregroundStyle(.tertiary)
                             .help("Die Zusammensetzung der Sammlung beeinflusst diese Kennzahl. Sie beschreibt keine Preisentwicklung eines unveränderten Bestands.")
                     }
                     VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                        subheading("Größe der Sammlung")
-                        if let latest = sameCurrency.last { StatFigure(title: "Exemplare", value: latest.collectionItemCount.formatted()) }
+                        subheading(String(localized: "Größe der Sammlung"))
+                        if let latest = sameCurrency.last { StatFigure(title: String(localized: "Exemplare"), value: latest.collectionItemCount.formatted()) }
                         HistoryLineChart(points: visible.map { .init(id: $0.id, date: $0.date, value: Decimal($0.collectionItemCount)) }, currency: nil)
                         Text("Anzahl der Platten in der Discogs-Collection zum jeweiligen Zeitpunkt.").font(.caption).foregroundStyle(.tertiary)
                     }
@@ -79,28 +95,28 @@ struct ValueHistoryDashboard: View {
     }
     private var controls: some View {
         HStack {
-            GlassSegmentedPicker(selection: $metric, options: HistoryMetric.allCases, small: true) { Text($0.rawValue) }
+            GlassSegmentedPicker(selection: $metric, options: HistoryMetric.allCases, small: true) { Text($0.title) }
                 .accessibilityLabel("Wert")
             if Set(snapshots.map(\.currency)).count > 1 {
-                GlassMenuPicker(title: "Währung", selection: Binding(get: { currency }, set: { selectedCurrency = $0 }), current: currency) {
+                GlassMenuPicker(title: String(localized: "Währung"), selection: Binding(get: { currency }, set: { selectedCurrency = $0 }), current: currency) {
                     ForEach(Array(Set(snapshots.map(\.currency))).sorted(), id: \.self) { Text($0).tag($0) }
                 }
             }
         }
     }
     private var periods: some View {
-        GlassSegmentedPicker(selection: $period, options: HistoryPeriod.allCases, small: true) { Text($0.rawValue) }
+        GlassSegmentedPicker(selection: $period, options: HistoryPeriod.allCases, small: true) { Text($0.title) }
             .accessibilityLabel("Zeitraum")
     }
     @ViewBuilder private var changes: some View {
         if let latest = sameCurrency.last, sameCurrency.count >= 2 {
             LazyVGrid(columns: StatisticsLayout.columns(columns), alignment: .leading, spacing: StatisticsLayout.gutter) {
-                ChangeLabel(title: "Seit letzter Momentaufnahme", current: metric.value(latest), previous: metric.value(sameCurrency[sameCurrency.count - 2]), currency: currency)
+                ChangeLabel(title: String(localized: "Seit letzter Momentaufnahme"), current: metric.value(latest), previous: metric.value(sameCurrency[sameCurrency.count - 2]), currency: currency)
                 if let target = Calendar.current.date(byAdding: .day, value: -30, to: latest.date), let old = sameCurrency.last(where: { $0.date <= target }) {
-                    ChangeLabel(title: "Seit mindestens 30 Tagen", current: metric.value(latest), previous: metric.value(old), currency: currency)
+                    ChangeLabel(title: String(localized: "Seit mindestens 30 Tagen"), current: metric.value(latest), previous: metric.value(old), currency: currency)
                 }
                 if let target = Calendar.current.date(byAdding: .year, value: -1, to: latest.date), let old = sameCurrency.last(where: { $0.date <= target }) {
-                    ChangeLabel(title: "Seit mindestens 1 Jahr", current: metric.value(latest), previous: metric.value(old), currency: currency)
+                    ChangeLabel(title: String(localized: "Seit mindestens 1 Jahr"), current: metric.value(latest), previous: metric.value(old), currency: currency)
                 }
             }
         }
@@ -155,7 +171,7 @@ struct HistoryLineChart: View {
                     if let selected {
                         RuleMark(x: .value("Datum", selected.date)).foregroundStyle(.secondary.opacity(0.4))
                     }
-                }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? "Exemplare")
+                }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? String(localized: "Exemplare"))
                     .chartYScale(domain: .automatic(includesZero: false))
                     .chartXAxis {
                         AxisMarks(values: dateMarks) { value in

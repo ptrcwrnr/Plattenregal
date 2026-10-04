@@ -8,10 +8,10 @@ nonisolated enum DiscogsSyncScope: Equatable, Sendable {
     /// For the protocol (`AppLog`).
     var logName: String {
         switch self {
-        case .collection: "Collection"
-        case .wantlist: "Wantlist"
-        case .all: "Alles"
-        case .folder(let id): "Ordner \(id)"
+        case .collection: String(localized: "Collection")
+        case .wantlist: String(localized: "Wantlist")
+        case .all: String(localized: "Alles")
+        case .folder(let id): String(localized: "Ordner \(String(id))")
         }
     }
 }
@@ -29,9 +29,9 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     var wantsAdded = 0, wantsRemoved = 0
     var foldersChanged = 0
     // Only additions are reported; updates, removals and folder changes stay silent.
-    private static func added(_ count: Int) -> String { count == 0 ? "Nichts hinzugefügt" : "\(count.formatted()) hinzugefügt" }
+    private static func added(_ count: Int) -> String { count == 0 ? String(localized: "Nichts hinzugefügt") : String(localized: "\(count.formatted()) hinzugefügt") }
     /// Both areas at once need their names to be told apart.
-    var description: String { "Collection: \(Self.added(collectionAdded))\nWantlist: \(Self.added(wantsAdded))" }
+    var description: String { String(localized: "Collection: \(Self.added(collectionAdded))\nWantlist: \(Self.added(wantsAdded))") }
     func description(for scope: DiscogsSyncScope) -> String {
         switch scope {
         case .collection, .folder: Self.added(collectionAdded)
@@ -81,10 +81,10 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     /// Success: show "abgeschlossen" briefly, then let the lines go — unless
     /// something else (an error, a new sync) has taken over meanwhile.
     private func finish() {
-        status = "Synchronisierung abgeschlossen"
+        status = String(localized: "Synchronisierung abgeschlossen")
         Task {
             try? await Task.sleep(for: .seconds(5))
-            if !isRunning, error == nil, status == "Synchronisierung abgeschlossen" { dismissStatus() }
+            if !isRunning, error == nil, status == String(localized: "Synchronisierung abgeschlossen") { dismissStatus() }
         }
     }
     private let api: DiscogsAPIClient
@@ -120,25 +120,25 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 // Usually the collection changed on Discogs while it was being
                 // read (a record added, moved, removed). Nothing was saved; one
                 // fresh attempt normally succeeds.
-                status = "Discogs-Daten haben sich geändert – neuer Versuch"
+                status = String(localized: "Discogs-Daten haben sich geändert – neuer Versuch")
                 try await Task.sleep(for: .seconds(2))
                 snapshot = try await fetch(scope, container: container, expectedOwner: expectedOwner)
             }
             try Task.checkCancellation()
             guard try await api.credentialFingerprint() == snapshot.fingerprint else { throw DiscogsError.accountChanged }
-            status = "Änderungen werden gespeichert"
+            status = String(localized: "Änderungen werden gespeichert")
             let result = try await Self.mergeInBackground(snapshot, container: container)
             summary = result.description(for: scope)
             AppLog.info("Sync", "Gespeichert (\(scope.logName), Konto \(snapshot.username)): \(summary ?? "–")")
             rejectedFingerprint = nil
             LibraryChanges.shared.syncDidCommit()
             if scope == .collection || scope == .all || scope == .folder(0) {
-                status = "Sammlungswert wird aktualisiert"
+                status = String(localized: "Sammlungswert wird aktualisiert")
                 do {
                     try await CollectionValueHistoryService.shared.refresh(owner: snapshot.username, container: container, api: api, force: true)
                 } catch {
                     // Collection merge is committed. A valuation failure must not roll it back or claim it failed.
-                    self.error = "Die Sammlung ist aktualisiert, nur der Sammlungswert konnte nicht geladen werden. " + error.reportedMessage()
+                    self.error = String(localized: "Die Sammlung ist aktualisiert, nur der Sammlungswert konnte nicht geladen werden. ") + error.reportedMessage()
                 }
             }
             // "abgeschlossen" only once the tracklists are through as well.
@@ -147,20 +147,20 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         } catch is CancellationError {
             AppLog.info("Sync", "Abgebrochen, nichts gespeichert (\(scope.logName))")
             if cancelledByUser { dismissStatus() }
-            else { status = "Synchronisierung abgebrochen. Keine Änderungen gespeichert." }
+            else { status = String(localized: "Synchronisierung abgebrochen. Keine Änderungen gespeichert.") }
             return false
         }
         catch {
             // A cancelled request can surface as a network error; the "x" wins.
             if cancelledByUser { dismissStatus(); return false }
             // `reportedMessage` puts the technical detail into the protocol.
-            self.error = error.reportedMessage(); status = "Synchronisierung fehlgeschlagen"
+            self.error = error.reportedMessage(); status = String(localized: "Synchronisierung fehlgeschlagen")
             if case DiscogsError.unauthorized = error { rejectedFingerprint = try? await api.credentialFingerprint() }
             return false
         }
     }
     func fetch(_ scope: DiscogsSyncScope, container: ModelContainer, expectedOwner: String? = nil) async throws -> DiscogsSyncSnapshot {
-        status = "Discogs-Konto wird geprüft"
+        status = String(localized: "Discogs-Konto wird geprüft")
         let fingerprint = try await api.credentialFingerprint()
         let context = ModelContext(container)
         let accounts = try context.fetch(FetchDescriptor<DiscogsAccount>())
@@ -172,11 +172,11 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         var snapshot = DiscogsSyncSnapshot(username: username, userID: userID, fingerprint: fingerprint, scope: scope)
         switch scope {
         case .collection, .all, .folder:
-            status = "Discogs-Ordner werden geladen"
+            status = String(localized: "Discogs-Ordner werden geladen")
             snapshot.folders = try await api.folders(username: username)
             let folderID: Int
             if case .folder(let id) = scope { folderID = id } else { folderID = 0 }
-            status = "Collection wird geladen"
+            status = String(localized: "Collection wird geladen")
             snapshot.collection = try await api.collection(username: username, folderID: folderID)
         default: break
         }
@@ -185,7 +185,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             guard collection.allSatisfy({ folderIDs.contains($0.folder_id) }) else { throw DiscogsError.incompletePagination }
         }
         if scope == .wantlist || scope == .all {
-            status = "Wantlist wird geladen"
+            status = String(localized: "Wantlist wird geladen")
             snapshot.wants = try await api.wants(username: username)
         }
         guard try await api.credentialFingerprint() == fingerprint else { throw DiscogsError.accountChanged }
@@ -265,7 +265,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             copies = try context.fetch(FetchDescriptor<RecordCopy>())
             wants = try context.fetch(FetchDescriptor<WantlistEntry>())
         } catch {
-            if !quiet { self.error = "Die Tracklisten konnten nicht geladen werden. " + error.reportedMessage() }
+            if !quiet { self.error = String(localized: "Die Tracklisten konnten nicht geladen werden. ") + error.reportedMessage() }
             return false
         }
         let now = Date()
@@ -299,7 +299,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             do { try context.save(); LibraryChanges.shared.tracksDidChange() }
             catch {
                 context.rollback()
-                if !quiet { self.error = "Einige Tracklisten konnten nicht gespeichert werden. Sie werden beim nächsten Mal erneut geladen." }
+                if !quiet { self.error = String(localized: "Einige Tracklisten konnten nicht gespeichert werden. Sie werden beim nächsten Mal erneut geladen.") }
             }
         }
         for (index, release) in pending.enumerated() {
@@ -329,7 +329,7 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 // sync say so instead of reporting it complete.
                 if !quiet {
                     let missing = pending.count - index
-                    self.error = "Noch nicht alle Tracklisten geladen – \(missing) fehlen und werden später automatisch nachgeholt. "
+                    self.error = String(localized: "Noch nicht alle Tracklisten geladen – \(missing) fehlen und werden später automatisch nachgeholt. ")
                         + error.reportedMessage()
                 }
                 return true

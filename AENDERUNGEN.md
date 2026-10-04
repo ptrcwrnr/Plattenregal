@@ -1,3 +1,13 @@
+# Englisch als zweite Sprache · 04.10.2026
+
+Plattenregal gibt es jetzt auf Deutsch und Englisch.
+
+- **Sprachwahl** unter Einstellungen → Allgemein → „Sprache“: „Wie macOS“, „Deutsch“ oder „English“. Die Wahl gilt nur für Plattenregal und ab dem nächsten Start; ein Knopf „Jetzt neu starten“ erscheint, sobald sie sich von der laufenden unterscheidet. Gespeichert ist sie dort, wo auch macOS sie ablegt (Systemeinstellungen → Sprache & Region → Apps zeigt dieselbe Wahl). „Einstellungen zurücksetzen“ setzt sie auf „Wie macOS“ – außer in der Demo, die die Sprache der echten App nicht ändert.
+- **Übersetzt** ist die ganze Oberfläche: Seiten, Einstellungen, Hinweise, Fehlermeldungen, Dialoge, Menüs, die Demo-Sammlung (Regal- und Ordnernamen) sowie Spaltenköpfe und Texte in CSV und PDF. Rund 800 Texte in einem String-Katalog (`Localizable.xcstrings`), Deutsch ist die Ausgangssprache.
+- **Unverändert deutsch** bleiben das Protokoll (für die Fehlersuche), Dateinamen der automatischen Sicherungen (sonst würden ältere nicht mehr erkannt) und bereits gespeicherte Werte wie Regalnamen.
+- Jahreszahlen und Discogs-IDs erscheinen in übersetzbaren Texten ohne Tausenderpunkt („1990er“, „Release #1234567“).
+- Die Tests laufen immer auf Deutsch (im Schema festgelegt), egal welche Sprache eingestellt ist. 183 Tests, 0 Fehler.
+
 # Sicherung gründlich geprüft · 28.09.2026
 
 Geprüft mit Tests und an den echten Sicherungsdateien (7 Stände, alle wirklich verschieden, Aufbewahrung 5 + Tagesstände korrekt). Korrigiert:

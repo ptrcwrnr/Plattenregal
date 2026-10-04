@@ -11,13 +11,13 @@ enum LibraryError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .orderNotSaved:
-            "Die neue Reihenfolge konnte nicht gespeichert werden – das Fach ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
+            String(localized: "Die neue Reihenfolge konnte nicht gespeichert werden – das Fach ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
         case .missingMarkNotSaved(let found, _):
-            "\(found ? "„Wieder gefunden“" : "„Vermisst“") konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
-        case .reserved: "Dieses Fach ist gesperrt und nimmt keine Platten auf. Per Rechtsklick auf das Fach lässt es sich entsperren."
-        case .invalidPosition: "Diese Position gibt es in dem Fach nicht. Wähle eine Zahl zwischen 1 und der Stelle direkt hinter der letzten Platte."
-        case .missingRelease: "Die Platte oder das Fach gibt es nicht mehr – vielleicht wurde gerade etwas geändert. Bitte versuche es noch einmal."
-        case .reservedNotEmpty: "Ein Fach mit Platten lässt sich nicht sperren. Nimm die Platten zuerst heraus."
+            String(localized: "\(found ? String(localized: "„Wieder gefunden“") : String(localized: "„Vermisst“")) konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
+        case .reserved: String(localized: "Dieses Fach ist gesperrt und nimmt keine Platten auf. Per Rechtsklick auf das Fach lässt es sich entsperren.")
+        case .invalidPosition: String(localized: "Diese Position gibt es in dem Fach nicht. Wähle eine Zahl zwischen 1 und der Stelle direkt hinter der letzten Platte.")
+        case .missingRelease: String(localized: "Die Platte oder das Fach gibt es nicht mehr – vielleicht wurde gerade etwas geändert. Bitte versuche es noch einmal.")
+        case .reservedNotEmpty: String(localized: "Ein Fach mit Platten lässt sich nicht sperren. Nimm die Platten zuerst heraus.")
         }
     }
 }

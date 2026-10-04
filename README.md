@@ -81,9 +81,13 @@ Die Demo ist vollständig von den echten Daten getrennt: Die Sammlung liegt nur 
 
 Läuft Plattenregal noch ein zweites Mal, wird der Wechsel abgelehnt, damit nie zwei Instanzen auf derselben Sammlung arbeiten. Unabhängig davon öffnet eine zweite Instanz (etwa aus Xcode neben der installierten App) die Sammlung gar nicht erst, sondern zeigt „Plattenregal ist bereits geöffnet“ – die Demo braucht die Sperre nicht, deshalb funktioniert der Wechsel, während die alte Instanz noch beendet wird. Der Neustart kann aus der Sandbox keine Startargumente übergeben; die alte Instanz hinterlegt deshalb eine Minute gültige Anfrage in den Einstellungen, die die neue beim Start übernimmt und löscht. Aus Xcode oder dem Terminal startet `--demo` die Demo direkt.
 
+## Sprache
+
+Plattenregal gibt es auf Deutsch (Ausgangssprache) und Englisch. Die Wahl steht unter Einstellungen → Allgemein → „Sprache“ („Wie macOS“, „Deutsch“, „English“) und gilt ab dem nächsten Start; gespeichert wird sie als `AppleLanguages` in der Domäne der App – dieselbe Stelle, die macOS unter Sprache & Region → Apps nutzt. Alle Texte stehen in `Plattenregal/Localizable.xcstrings`. Texte in Swift-Code außerhalb von `Text`, `Button` usw. laufen über `String(localized:)`; Jahreszahlen und IDs werden dabei als `String(...)` eingesetzt, sonst bekämen sie einen Tausenderpunkt. Das Protokoll bleibt deutsch. Die Tests laufen per Schema immer mit `-AppleLanguages (de)`.
+
 ## Fehlermeldungen und Protokoll
 
-Meldungen sind kurz, auf Deutsch und sagen, was passiert ist und was zu tun ist – ohne englische Systemtexte. Die technischen Details landen im Protokoll: Jede angezeigte Fehlermeldung wird dort mit Ursache und Code-Stelle festgehalten, außerdem Starts, Abgleiche, Regal-Änderungen (auch „Vermisst“ und „Wieder gefunden“ mit Plattenname), Sicherungen, Exporte und Zurücksetzen. Der Discogs-Token steht nie darin.
+Meldungen sind kurz, in der eingestellten Sprache und sagen, was passiert ist und was zu tun ist – ohne englische Systemtexte. Die technischen Details landen im Protokoll: Jede angezeigte Fehlermeldung wird dort mit Ursache und Code-Stelle festgehalten, außerdem Starts, Abgleiche, Regal-Änderungen (auch „Vermisst“ und „Wieder gefunden“ mit Plattenname), Sicherungen, Exporte und Zurücksetzen. Der Discogs-Token steht nie darin.
 
 Beispiele: Schlägt das Speichern einer Markierung fehl, heißt es „„Vermisst“ konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal …“; ein Einsortieren in ein gesperrtes Fach erklärt, wo sich die Sperre aufheben lässt. Werden im Einstellungsfenster Regale umgebaut, während „Platte hinzufügen“ oder „Sortierung prüfen“ offen ist, schließt es sich, statt in ein gelöschtes Fach zu schreiben – auch das steht im Protokoll.
 

@@ -78,7 +78,7 @@ import Observation
             verified = nil
             tokenChanged()
             AppLog.info("Token", hasStoredToken ? "Neuer Token im Schlüsselbund gespeichert" : "Token aus dem Schlüsselbund entfernt")
-            status = hasStoredToken ? "Token sicher gespeichert." : "Token entfernt."
+            status = hasStoredToken ? String(localized: "Token sicher gespeichert.") : String(localized: "Token entfernt.")
             failed = false; return true
         } catch { status = error.reportedMessage(); failed = true; return false }
     }
@@ -109,8 +109,8 @@ import Observation
         guard !busy, !candidate.isEmpty else { return nil }
         guard DiscogsAPIClient.isWellFormedToken(candidate) else {
             // Not even sent: the stored token stays untouched.
-            status = "Der Token enthält Leerzeichen, Zeilenumbrüche oder Sonderzeichen. Kopiere ihn noch einmal vollständig von Discogs und füge ihn neu ein."
-                + (hasStoredToken ? " Der bisher gespeicherte Token bleibt erhalten." : "")
+            status = String(localized: "Der Token enthält Leerzeichen, Zeilenumbrüche oder Sonderzeichen. Kopiere ihn noch einmal vollständig von Discogs und füge ihn neu ein.")
+                + (hasStoredToken ? String(localized: " Der bisher gespeicherte Token bleibt erhalten.") : "")
             failed = true; verified = nil
             AppLog.warning("Token", "Eingegebener Token hat ungültige Zeichen, nicht getestet")
             return nil
@@ -126,7 +126,7 @@ import Observation
         do {
             let name = try await testToken(candidate)
             guard !syncStartedMeanwhile(), persist(candidate) else { return }
-            status = "Verbunden als \(name)"; failed = false
+            status = String(localized: "Verbunden als \(name)"); failed = false
             verified = .success(name)
             AppLog.info("Token", "Verbindungstest erfolgreich, Konto \(name)")
             // Discogs accepts it now: an earlier rejection no longer applies.
@@ -150,13 +150,13 @@ import Observation
     private func syncStartedMeanwhile() -> Bool {
         guard isSyncRunning() else { return false }
         AppLog.warning("Token", "Neuer Token nicht gespeichert: während des Tests wurde eine Synchronisierung gestartet")
-        status = "Während einer Synchronisierung lässt sich der Token nicht ändern. Bitte teste ihn danach noch einmal."
+        status = String(localized: "Während einer Synchronisierung lässt sich der Token nicht ändern. Bitte teste ihn danach noch einmal.")
         failed = true
         return true
     }
     /// Discogs turned the typed token down; the stored one stays untouched.
     private func reject(_ error: DiscogsError) {
-        status = error.reportedMessage() + (hasStoredToken ? " Der bisher gespeicherte Token bleibt erhalten." : "")
+        status = error.reportedMessage() + (hasStoredToken ? String(localized: " Der bisher gespeicherte Token bleibt erhalten.") : "")
         failed = true
     }
 }

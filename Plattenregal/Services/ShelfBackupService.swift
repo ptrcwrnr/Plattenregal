@@ -72,13 +72,13 @@ nonisolated struct ShelfBackup: Codable, Equatable, Sendable {
     }
 
     @MainActor var summary: String {
-        if isEmpty { return "Noch keine Platte eingeräumt" }
+        if isEmpty { return String(localized: "Noch keine Platte eingeräumt") }
         let occupied = Set(placements.map(\.shelf)).count
-        var parts = ["\(AppStyle.records(placements.count)) in \(occupied == 1 ? "1 Fach" : "\(occupied) Fächern")"]
+        var parts = [String(localized: "\(AppStyle.records(placements.count)) in \(occupied == 1 ? String(localized: "1 Fach") : String(localized: "\(occupied) Fächern"))")]
         let locked = shelves.filter(\.isReserved).count
-        if locked > 0 { parts.append(locked == 1 ? "1 gesperrtes Fach" : "\(locked) gesperrte Fächer") }
-        if !notInShelf.isEmpty { parts.append("\(notInShelf.count) nicht im Regal") }
-        if let cabinets, cabinets.count > 1 { parts.append("\(cabinets.count) Regale") }
+        if locked > 0 { parts.append(locked == 1 ? String(localized: "1 gesperrtes Fach") : String(localized: "\(locked) gesperrte Fächer")) }
+        if !notInShelf.isEmpty { parts.append(String(localized: "\(notInShelf.count) nicht im Regal")) }
+        if let cabinets, cabinets.count > 1 { parts.append(String(localized: "\(cabinets.count) Regale")) }
         return parts.joined(separator: " · ")
     }
 }
@@ -87,11 +87,11 @@ nonisolated enum ShelfBackupError: LocalizedError {
     case unreadable, newerVersion, syncRunning, tooLarge, noMatchingRecords
     var errorDescription: String? {
         switch self {
-        case .tooLarge: "Diese Datei ist viel zu groß für eine Sicherung der Fach-Belegung. Wähle eine Datei, die Plattenregal erstellt hat."
-        case .noMatchingRecords: "Keine Platte aus dieser Sicherung ist gerade in deiner Sammlung. Synchronisiere zuerst die Collection mit Discogs – oder die Sicherung gehört zu einem anderen Discogs-Konto. Es wurde nichts verändert."
-        case .syncRunning: "Gerade läuft eine Synchronisierung mit Discogs. Warte, bis sie fertig ist, und stelle die Belegung dann wieder her."
-        case .unreadable: "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter …“ oder automatisch erstellt hat."
-        case .newerVersion: "Diese Sicherung stammt aus einer neueren Version von Plattenregal. Aktualisiere die App zuerst und versuche es dann noch einmal."
+        case .tooLarge: String(localized: "Diese Datei ist viel zu groß für eine Sicherung der Fach-Belegung. Wähle eine Datei, die Plattenregal erstellt hat.")
+        case .noMatchingRecords: String(localized: "Keine Platte aus dieser Sicherung ist gerade in deiner Sammlung. Synchronisiere zuerst die Collection mit Discogs – oder die Sicherung gehört zu einem anderen Discogs-Konto. Es wurde nichts verändert.")
+        case .syncRunning: String(localized: "Gerade läuft eine Synchronisierung mit Discogs. Warte, bis sie fertig ist, und stelle die Belegung dann wieder her.")
+        case .unreadable: String(localized: "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter …“ oder automatisch erstellt hat.")
+        case .newerVersion: String(localized: "Diese Sicherung stammt aus einer neueren Version von Plattenregal. Aktualisiere die App zuerst und versuche es dann noch einmal.")
         }
     }
 }
@@ -112,18 +112,18 @@ struct ShelfRestorePreview {
     var changesCabinets = false
 
     var message: String {
-        if unchanged { return "Die Belegung entspricht bereits dieser Sicherung – es würde sich nichts ändern." }
-        var lines = ["\(AppStyle.records(placed)) werden wieder einsortiert."]
-        if unplaced > 0 { lines.append("\(AppStyle.records(unplaced)) kommen in der Sicherung nicht vor und stehen danach ohne Fach.") }
-        if missing > 0 { lines.append("\(AppStyle.records(missing)) aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.") }
+        if unchanged { return String(localized: "Die Belegung entspricht bereits dieser Sicherung – es würde sich nichts ändern.") }
+        var lines = [String(localized: "\(AppStyle.records(placed)) werden wieder einsortiert.")]
+        if unplaced > 0 { lines.append(String(localized: "\(AppStyle.records(unplaced)) kommen in der Sicherung nicht vor und stehen danach ohne Fach.")) }
+        if missing > 0 { lines.append(String(localized: "\(AppStyle.records(missing)) aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.")) }
         if missing > placed {
-            lines.append("Mehr als die Hälfte der Platten aus der Sicherung fehlt. Ist die Collection noch nicht vollständig synchronisiert, brich ab und synchronisiere zuerst.")
+            lines.append(String(localized: "Mehr als die Hälfte der Platten aus der Sicherung fehlt. Ist die Collection noch nicht vollständig synchronisiert, brich ab und synchronisiere zuerst."))
         }
-        if changesCabinets { lines.append("Auch die Regale werden auf den Stand der Sicherung gebracht – Anzahl, Größe und Namen.") }
-        if otherAccount, let owner = backup.owner { lines.append("Achtung: Die Sicherung gehört zum Discogs-Konto „\(owner)“.") }
+        if changesCabinets { lines.append(String(localized: "Auch die Regale werden auf den Stand der Sicherung gebracht – Anzahl, Größe und Namen.")) }
+        if otherAccount, let owner = backup.owner { lines.append(String(localized: "Achtung: Die Sicherung gehört zum Discogs-Konto „\(owner)“.")) }
         // The demo never writes backups (see `ShelfAutoBackup.isAppStore`).
-        lines.append(DemoMode.isActive ? "Die aktuelle Belegung wird ersetzt."
-                     : "Die aktuelle Belegung wird ersetzt. Sie wird vorher automatisch gesichert.")
+        lines.append(DemoMode.isActive ? String(localized: "Die aktuelle Belegung wird ersetzt.")
+                     : String(localized: "Die aktuelle Belegung wird ersetzt. Sie wird vorher automatisch gesichert."))
         return lines.joined(separator: "\n")
     }
 }
@@ -276,7 +276,7 @@ extension ShelfBackupService {
         for (order, setting) in settings.enumerated() {
             let (columns, rows) = setting.size
             let name = setting.name.trimmingCharacters(in: .whitespacesAndNewlines)
-            let cabinet = Cabinet(name: name.isEmpty ? "Regal \(order + 1)" : name, rows: rows, columns: columns, sortOrder: order)
+            let cabinet = Cabinet(name: name.isEmpty ? String(localized: "Regal \(order + 1)") : name, rows: rows, columns: columns, sortOrder: order)
             cabinet.isActive = setting.isActive
             context.insert(cabinet)
             created.append(cabinet)

@@ -22,7 +22,7 @@ extension Shelf {
     /// Shown on the shelf page and used when sorting in: no cabinet yet
     /// (only before `prepareShelves`) counts as in use.
     var isInUse: Bool { cabinet?.isActive ?? true }
-    var numberText: String { "Fach \(sortOrder)" }
+    var numberText: String { String(localized: "Fach \(sortOrder)") }
 
     /// Every shelf in use, cabinet by cabinet, each in reading order.
     static func inUse(_ shelves: [Shelf]) -> [Shelf] {

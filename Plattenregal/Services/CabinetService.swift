@@ -13,7 +13,7 @@ nonisolated struct KallaxPreset: Identifiable, Hashable {
     var title: String { "\(columns) × \(rows)" }
     var orientation: String? {
         if columns == rows { return nil }
-        return columns < rows ? "hochkant" : "quer"
+        return columns < rows ? String(localized: "hochkant") : String(localized: "quer")
     }
 
     static let all: [KallaxPreset] = [
@@ -37,11 +37,11 @@ enum CabinetError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .shelvesNotEmpty(let count):
-            "So klein geht es gerade nicht: In den Fächern, die wegfallen würden, \(count == 1 ? "steht noch 1 Platte" : "stehen noch \(count) Platten"). Nimm sie zuerst heraus oder wähle eine größere Variante."
-        case .lastActive: "Mindestens ein Regal muss aktiv bleiben – sonst gäbe es keinen Platz zum Einsortieren."
-        case .lastCabinet: "Das letzte Regal lässt sich nicht löschen."
-        case .notEmpty: "Nur leere Regale lassen sich löschen. Nimm die Platten zuerst heraus oder deaktiviere das Regal stattdessen."
-        case .invalidSize: "Ein Regal hat 1 bis 6 Reihen und Spalten."
+            String(localized: "So klein geht es gerade nicht: In den Fächern, die wegfallen würden, \(count == 1 ? String(localized: "steht noch 1 Platte") : String(localized: "stehen noch \(count) Platten")). Nimm sie zuerst heraus oder wähle eine größere Variante.")
+        case .lastActive: String(localized: "Mindestens ein Regal muss aktiv bleiben – sonst gäbe es keinen Platz zum Einsortieren.")
+        case .lastCabinet: String(localized: "Das letzte Regal lässt sich nicht löschen.")
+        case .notEmpty: String(localized: "Nur leere Regale lassen sich löschen. Nimm die Platten zuerst heraus oder deaktiviere das Regal stattdessen.")
+        case .invalidSize: String(localized: "Ein Regal hat 1 bis 6 Reihen und Spalten.")
         }
     }
 }
@@ -68,7 +68,7 @@ struct CabinetService {
     /// "Regal 2", "Regal 3" … – the first free one.
     func suggestedName() -> String {
         let names = Set(((try? cabinets()) ?? []).map(\.name))
-        return (2...).lazy.map { "Regal \($0)" }.first { !names.contains($0) }!
+        return (2...).lazy.map { String(localized: "Regal \($0)") }.first { !names.contains($0) }!
     }
 
     @discardableResult func add(name: String, columns: Int, rows: Int) throws -> Cabinet {
@@ -76,7 +76,7 @@ struct CabinetService {
         var result: Cabinet!
         try save {
             let order = (try cabinets().map(\.sortOrder).max() ?? -1) + 1
-            let cabinet = Cabinet(name: cleaned(name, fallback: "Regal \(order + 1)"), rows: rows, columns: columns, sortOrder: order)
+            let cabinet = Cabinet(name: cleaned(name, fallback: String(localized: "Regal \(order + 1)")), rows: rows, columns: columns, sortOrder: order)
             context.insert(cabinet)
             var number = try nextNumber()
             for slot in 1...(rows * columns) {

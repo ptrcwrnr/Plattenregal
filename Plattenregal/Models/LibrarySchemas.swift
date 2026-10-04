@@ -1201,9 +1201,9 @@ enum LibrarySchemaV15: VersionedSchema {
         var isFresh: Bool { fetchedAt.map { Date().timeIntervalSince($0) < 6 * 3600 - 30 } ?? false }
         // Stored names keep Discogs' "(3)" suffix (search and re-sync rely on the
         // raw value); only what is shown drops it.
-        var displayArtist: String { artist.isEmpty ? "Unbekannter Interpret" : DiscogsName.clean(artist) }
+        var displayArtist: String { artist.isEmpty ? String(localized: "Unbekannter Interpret") : DiscogsName.clean(artist) }
         var displayLabel: String { DiscogsName.clean(label) }
-        var displayTitle: String { title.isEmpty ? "Release #\(discogsID)" : title }
+        var displayTitle: String { title.isEmpty ? String(localized: "Release #\(String(discogsID))") : title }
         /// None in the demo: its sample IDs belong to unrelated releases on Discogs.
         var sourceURL: URL? { DemoMode.isActive ? nil : URL(string: "https://www.discogs.com/release/\(discogsID)") }
     }
@@ -1245,7 +1245,7 @@ enum LibrarySchemaV15: VersionedSchema {
             id = UUID(); self.number = number; sortOrder = slot
             row = (slot - 1) / columns + 1; column = (slot - 1) % columns + 1; name = ""
         }
-        var title: String { name.isEmpty ? "Fach \(sortOrder)" : name }
+        var title: String { name.isEmpty ? String(localized: "Fach \(sortOrder)") : name }
     }
 
     @Model final class WantlistEntry {

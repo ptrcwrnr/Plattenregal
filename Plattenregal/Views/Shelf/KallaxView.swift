@@ -231,8 +231,8 @@ struct KallaxView: View {
                 if DemoMode.isActive { DemoBanner() }
                 if nothingPlaced {
                     // Typically right after a new install and the first sync.
-                    AppBanner(message: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her.",
-                              kind: .info, actionTitle: "Belegung wiederherstellen …", action: { settingsTab = .backup })
+                    AppBanner(message: String(localized: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her."),
+                              kind: .info, actionTitle: String(localized: "Belegung wiederherstellen …"), action: { settingsTab = .backup })
                 }
                 // The header brings its own spacing below, so a collapsed
                 // header leaves no gap (see `header`).
@@ -509,10 +509,10 @@ struct KallaxView: View {
                 if shown.isReserved || shown.copies.isEmpty {
                     ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                         if locked {
-                            detailNote("Gesperrtes Fach – nicht für Platten vorgesehen. Per Rechtsklick auf das Fach kannst du es entsperren.")
+                            detailNote(String(localized: "Gesperrtes Fach – nicht für Platten vorgesehen. Per Rechtsklick auf das Fach kannst du es entsperren."))
                         } else {
                             HStack(spacing: AppStyle.itemSpacing) {
-                                detailNote("Noch keine Platten in diesem Fach.")
+                                detailNote(String(localized: "Noch keine Platten in diesem Fach."))
                                 Button("Platte hinzufügen") { startAssignment(shown) }
                                     .buttonStyle(.link)
                             }
@@ -540,7 +540,7 @@ struct KallaxView: View {
                 }
             }
         } else {
-            detailNote("Wähle ein Fach im Regal oder suche oben nach einer Platte.")
+            detailNote(String(localized: "Wähle ein Fach im Regal oder suche oben nach einer Platte."))
         }
     }
 
@@ -553,7 +553,7 @@ struct KallaxView: View {
             // Title and indicator follow the options switch via
             // `ShelfLockReader`, so they change together with the hatching.
             ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
-                Text(locked ? (shown.name.isEmpty ? "Gesperrtes Fach" : shown.name) : (rangeLabels[shown.id] ?? "Leeres Fach"))
+                Text(locked ? (shown.name.isEmpty ? String(localized: "Gesperrtes Fach") : shown.name) : (rangeLabels[shown.id] ?? String(localized: "Leeres Fach")))
                     .contentTransition(.opacity)
             }
             .font(AppStyle.pageTitle)

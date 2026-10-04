@@ -160,7 +160,7 @@ struct ShelfCopyTable: View {
                                 .help("Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht")
                         }
                         if item.sold {
-                            StatusTag(text: "Nicht in der Collection", color: AppStyle.warningColor)
+                            StatusTag(text: String(localized: "Nicht in der Collection"), color: AppStyle.warningColor)
                                 .help("Nicht (mehr) in deiner Discogs-Collection – über den Papierkorb aus dem Fach nehmen")
                         }
                     }
@@ -176,8 +176,8 @@ struct ShelfCopyTable: View {
                 .width(min: 80, ideal: 130)
                 TableColumn("") { item in
                     HStack(spacing: 2) {
-                        RowIconButton(systemImage: "scope", help: "Zeigen, zwischen welchen Platten sie steht") { find(item.copy) }
-                        RowIconButton(systemImage: "trash", help: "Aus Fach entfernen", hoverColor: AppStyle.errorColor) { unplace(item.copy) }
+                        RowIconButton(systemImage: "scope", help: String(localized: "Zeigen, zwischen welchen Platten sie steht")) { find(item.copy) }
+                        RowIconButton(systemImage: "trash", help: String(localized: "Aus Fach entfernen"), hoverColor: AppStyle.errorColor) { unplace(item.copy) }
                     }
                 }
                 .width(46)
@@ -250,7 +250,7 @@ private struct ShelfCopyQuickEditor: View {
     }
 
     private func shelfLabel(_ shelf: Shelf) -> String {
-        rangeLabels.prefix(for: shelf) + (rangeLabels[shelf.id] ?? "Leeres Fach (Reihe \(shelf.row), Spalte \(shelf.column))")
+        rangeLabels.prefix(for: shelf) + (rangeLabels[shelf.id] ?? String(localized: "Leeres Fach (Reihe \(shelf.row), Spalte \(shelf.column))"))
     }
 
     var body: some View {
@@ -261,16 +261,16 @@ private struct ShelfCopyQuickEditor: View {
             }
             .textSelection(.enabled)
             Divider()
-            SettingsRow(title: "Nicht im Regal", hint: notInShelf
-                        ? "Die Platte verlässt ihr Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen."
+            SettingsRow(title: String(localized: "Nicht im Regal"), hint: notInShelf
+                        ? String(localized: "Die Platte verlässt ihr Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen.")
                         : nil) {
                 Toggle("Nicht im Regal", isOn: $notInShelf.animation(AppStyle.quickAnimation))
                     .labelsHidden().toggleStyle(.switch)
             }
             Divider()
             Group {
-                SettingsRow(title: "Fach") {
-                    GlassMenuPicker(title: "Fach", selection: $shelfID,
+                SettingsRow(title: String(localized: "Fach")) {
+                    GlassMenuPicker(title: String(localized: "Fach"), selection: $shelfID,
                                     current: targetShelf.map(shelfLabel) ?? "–") {
                         ForEach(availableShelves) { shelf in
                             Text(shelfLabel(shelf)).tag(Optional(shelf.id))
@@ -278,9 +278,9 @@ private struct ShelfCopyQuickEditor: View {
                     }
                 }
                 Divider()
-                SettingsRow(title: "Position", hint: "von \(maxPosition)") {
+                SettingsRow(title: String(localized: "Position"), hint: String(localized: "von \(maxPosition)")) {
                     HStack(spacing: 2) {
-                        GlassStepButton(systemImage: "chevron.left", help: "Eine Position nach links") {
+                        GlassStepButton(systemImage: "chevron.left", help: String(localized: "Eine Position nach links")) {
                             position = max(position - 1, 1)
                         }
                         .disabled(position <= 1)
@@ -291,7 +291,7 @@ private struct ShelfCopyQuickEditor: View {
                             .multilineTextAlignment(.center)
                             .monospacedDigit()
                             .frame(width: 34)
-                        GlassStepButton(systemImage: "chevron.right", help: "Eine Position nach rechts") {
+                        GlassStepButton(systemImage: "chevron.right", help: String(localized: "Eine Position nach rechts")) {
                             position = min(position + 1, maxPosition)
                         }
                         .disabled(position >= maxPosition)
@@ -309,7 +309,7 @@ private struct ShelfCopyQuickEditor: View {
             }
             HStack {
                 Spacer()
-                PrimaryButton(title: "Speichern", action: save)
+                PrimaryButton(title: String(localized: "Speichern"), action: save)
                     .keyboardShortcut(.defaultAction)
             }
         }

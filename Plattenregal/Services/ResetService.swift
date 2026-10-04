@@ -12,9 +12,9 @@ enum ResetError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .syncRunning:
-            "Gerade läuft eine Synchronisierung mit Discogs. Warte, bis sie fertig ist, und setze dann zurück."
+            String(localized: "Gerade läuft eine Synchronisierung mit Discogs. Warte, bis sie fertig ist, und setze dann zurück.")
         case .tokenNotRemoved:
-            "Alles andere ist zurückgesetzt, aber der Discogs-Token ließ sich nicht aus dem Schlüsselbund löschen. Entferne ihn unter „Discogs“ oder in der Schlüsselbundverwaltung."
+            String(localized: "Alles andere ist zurückgesetzt, aber der Discogs-Token ließ sich nicht aus dem Schlüsselbund löschen. Entferne ihn unter „Discogs“ oder in der Schlüsselbundverwaltung.")
         }
     }
 }

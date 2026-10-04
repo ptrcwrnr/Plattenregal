@@ -23,11 +23,11 @@ struct StatisticsHero: View {
                 sparkline.frame(maxWidth: .infinity)
             }
             LazyVGrid(columns: StatisticsLayout.columns(columns), alignment: .leading, spacing: StatisticsLayout.gutter) {
-                figure("Schallplatten", statistics.totalItems, "opticaldisc")
-                figure("Releases", statistics.uniqueReleases, "square.stack")
-                figure("Künstler", statistics.artists.count, "music.mic")
-                figure("Styles", statistics.styles.count, "waveform")
-                figure("Labels", statistics.labels.count, "tag")
+                figure(String(localized: "Schallplatten"), statistics.totalItems, "opticaldisc")
+                figure(String(localized: "Releases"), statistics.uniqueReleases, "square.stack")
+                figure(String(localized: "Künstler"), statistics.artists.count, "music.mic")
+                figure(String(localized: "Styles"), statistics.styles.count, "waveform")
+                figure(String(localized: "Labels"), statistics.labels.count, "tag")
             }
         }
         .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { width = $0 }
@@ -47,8 +47,8 @@ struct StatisticsHero: View {
                     Text("Spanne \(DiscogsMoney.format(latest.minimumValue, currency: latest.currency)) – \(DiscogsMoney.format(latest.maximumValue, currency: latest.currency))")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                Text(([latest.averagePerItem.map { "≈ \(DiscogsMoney.format($0, currency: latest.currency)) pro Platte" }]
-                      + ["Stand \(latest.date.formatted(date: .abbreviated, time: .shortened))"]).compactMap { $0 }.joined(separator: " · "))
+                Text(([latest.averagePerItem.map { String(localized: "≈ \(DiscogsMoney.format($0, currency: latest.currency)) pro Platte") }]
+                      + [String(localized: "Stand \(latest.date.formatted(date: .abbreviated, time: .shortened))")]).compactMap { $0 }.joined(separator: " · "))
                     .font(.caption).foregroundStyle(.tertiary)
             }
         } else {
@@ -142,27 +142,27 @@ struct StatisticsFacts: View {
         var facts: [Fact] = []
         let total = statistics.totalItems
         if let artist = statistics.artists.first {
-            facts.append(.init(title: "Häufigster Künstler", value: artist.name, detail: "\(AppStyle.records(artist.count)) · \(artist.percentage(of: total))", systemImage: "music.mic", color: .blue, group: artist))
+            facts.append(.init(title: String(localized: "Häufigster Künstler"), value: artist.name, detail: "\(AppStyle.records(artist.count)) · \(artist.percentage(of: total))", systemImage: "music.mic", color: .blue, group: artist))
         }
         if let style = statistics.styles.first {
-            facts.append(.init(title: "Häufigster Style", value: style.name, detail: "\(AppStyle.records(style.count)) · \(style.percentage(of: total))", systemImage: "waveform", color: .teal, group: style))
+            facts.append(.init(title: String(localized: "Häufigster Style"), value: style.name, detail: "\(AppStyle.records(style.count)) · \(style.percentage(of: total))", systemImage: "waveform", color: .teal, group: style))
         }
         if let decade = statistics.decades.max(by: { $0.count < $1.count }) {
-            facts.append(.init(title: "Stärkstes Jahrzehnt", value: decade.name, detail: "\(AppStyle.records(decade.count))", systemImage: "calendar", color: .indigo, group: decade))
+            facts.append(.init(title: String(localized: "Stärkstes Jahrzehnt"), value: decade.name, detail: "\(AppStyle.records(decade.count))", systemImage: "calendar", color: .indigo, group: decade))
         }
         if let year = statistics.years.max(by: { $0.count < $1.count }) {
-            facts.append(.init(title: "Häufigstes Jahr", value: year.name, detail: "\(AppStyle.records(year.count))", systemImage: "star", color: .purple, group: year))
+            facts.append(.init(title: String(localized: "Häufigstes Jahr"), value: year.name, detail: "\(AppStyle.records(year.count))", systemImage: "star", color: .purple, group: year))
         }
         let thisYear = Calendar.current.component(.year, from: .now)
         // Compared with the same stretch of last year, not all of it: early in
         // the year a whole previous year would always look like much more.
         let current = statistics.addedThisYear, previous = statistics.addedLastYearToDate
-        let comparison = current > previous ? "\(current - previous) mehr als im Vorjahreszeitraum"
-            : current < previous ? "\(previous - current) weniger als im Vorjahreszeitraum"
-            : "genauso viele wie im Vorjahreszeitraum"
+        let comparison = current > previous ? String(localized: "\(current - previous) mehr als im Vorjahreszeitraum")
+            : current < previous ? String(localized: "\(previous - current) weniger als im Vorjahreszeitraum")
+            : String(localized: "genauso viele wie im Vorjahreszeitraum")
         let period = Date.now.formatted(.dateTime.day().month(.abbreviated))
-        facts.append(.init(title: "Neu in \(thisYear)", value: "\(AppStyle.records(current))", detail: comparison, systemImage: "plus.circle", color: .orange,
-                           help: "1. Jan. bis \(period): \(current) in \(thisYear), \(previous) in \(thisYear - 1)"))
+        facts.append(.init(title: String(localized: "Neu in \(String(thisYear))"), value: "\(AppStyle.records(current))", detail: comparison, systemImage: "plus.circle", color: .orange,
+                           help: String(localized: "1. Jan. bis \(period): \(current) in \(String(thisYear)), \(previous) in \(String(thisYear - 1))")))
         return facts
     }
 
@@ -211,7 +211,7 @@ struct StatisticsFacts: View {
             .allowsHitTesting(fact.group != nil || fact.help != nil)
             .onHover { hovering = $0 }
             .animation(AppStyle.quickAnimation, value: hovering)
-            .help(fact.help ?? fact.group.map { "\(AppStyle.records($0.count)) mit \($0.name) anzeigen" } ?? "")
+            .help(fact.help ?? fact.group.map { String(localized: "\(AppStyle.records($0.count)) mit \($0.name) anzeigen") } ?? "")
         }
     }
 }
@@ -221,6 +221,14 @@ struct StatisticsFacts: View {
 enum SoundDimension: String, CaseIterable, Identifiable {
     case genres = "Genres", styles = "Styles", formats = "Formate", countries = "Länder"
     var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .genres: String(localized: "Genres")
+        case .styles: String(localized: "Styles")
+        case .formats: String(localized: "Formate")
+        case .countries: String(localized: "Länder")
+        }
+    }
 }
 
 /// Interactive donut: hovering a slice (or its legend row) highlights it and
@@ -267,8 +275,8 @@ struct SoundDonut: View {
         let rest = groups.dropFirst(top.count)
         if !rest.isEmpty {
             let union = rest.reduce(into: Set<UUID>()) { $0.formUnion($1.copyIDs) }
-            result.append(Slice(group: StatisticGroup(id: "weitere:\(dimension.rawValue)", name: "Weitere \(dimension.rawValue) (\(rest.count))", copyIDs: union),
-                                label: "Weitere (\(rest.count))", color: StatisticsPalette.other))
+            result.append(Slice(group: StatisticGroup(id: "weitere:\(dimension.rawValue)", name: String(localized: "Weitere \(dimension.title) (\(rest.count))"), copyIDs: union),
+                                label: String(localized: "Weitere (\(rest.count))"), color: StatisticsPalette.other))
         }
         return result
     }
@@ -291,7 +299,7 @@ struct SoundDonut: View {
                         legend(slices)
                         // The shares are of all records, so say how many have no value here.
                         if missing > 0 {
-                            Text("\(AppStyle.records(missing)) ohne Angabe\(dimension == .countries ? " – Länder kommen mit den Tracklisten von Discogs" : "")")
+                            Text("\(AppStyle.records(missing)) ohne Angabe\(dimension == .countries ? String(localized: " – Länder kommen mit den Tracklisten von Discogs") : "")")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }
@@ -374,7 +382,7 @@ struct SoundDonut: View {
                 // All of them, including those under "Weitere".
                 Text(groups.count.formatted())
                     .font(.system(.title, design: .rounded, weight: .bold))
-                Text(dimension.rawValue).font(.callout).foregroundStyle(.secondary)
+                Text(dimension.title).font(.callout).foregroundStyle(.secondary)
             }
         }
     }
@@ -555,12 +563,12 @@ struct RandomRecordCard: View {
             }
             // Same columns as the page grid to the right of the cover.
             LazyVGrid(columns: StatisticsLayout.columns(max(1, columns - coverSpan)), alignment: .leading, spacing: 14) {
-                detail("Jahr", release.year.map(String.init))
-                detail("Label", release.displayLabel)
-                detail("Land", release.country)
-                detail("Format", release.format)
-                detail("Tracks", release.tracks.isEmpty ? nil : "\(release.tracks.count)")
-                detail("Fach", ShelfRangeLabels.location(of: pick, labels: shelfLabels,
+                detail(String(localized: "Jahr"), release.year.map(String.init))
+                detail(String(localized: "Label"), release.displayLabel)
+                detail(String(localized: "Land"), release.country)
+                detail(String(localized: "Format"), release.format)
+                detail(String(localized: "Tracks"), release.tracks.isEmpty ? nil : "\(release.tracks.count)")
+                detail(String(localized: "Fach"), ShelfRangeLabels.location(of: pick, labels: shelfLabels,
                                                          excluded: exclusions.contains { $0.copyID == pick.id }))
             }
             if !release.styles.isEmpty {
@@ -575,8 +583,8 @@ struct RandomRecordCard: View {
                 .appGlassButton()
                 .keyboardShortcut("r", modifiers: [.command, .shift])
                 .help("Neue Platte ziehen (⇧⌘R)")
-                SecondaryButton(title: pick.shelf == nil ? "Platz im Regal finden" : "Im Regal zeigen") { showShelf(pick) }
-                SecondaryButton(title: "Details") { open(pick) }
+                SecondaryButton(title: pick.shelf == nil ? String(localized: "Platz im Regal finden") : String(localized: "Im Regal zeigen")) { showShelf(pick) }
+                SecondaryButton(title: String(localized: "Details")) { open(pick) }
             }
             .controlSize(.large)
         }
@@ -650,7 +658,7 @@ struct LabelBoard: View {
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(group.count.formatted()).font(.system(.title3, design: .rounded, weight: .semibold)).monospacedDigit()
-                        Text("\(group.count == 1 ? "Platte" : "Platten") · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
+                        Text("\(group.count == 1 ? String(localized: "Platte") : String(localized: "Platten")) · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
                     }
                     GeometryReader { geo in
                         Capsule().fill(Color.primary.opacity(0.06))

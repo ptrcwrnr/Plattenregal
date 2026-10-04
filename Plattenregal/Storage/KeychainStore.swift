@@ -55,5 +55,5 @@ nonisolated enum KeychainStore {
 nonisolated struct KeychainError: LocalizedError {
     let status: OSStatus
     // The code stays at the end: meaningless to most, but it lets a problem be looked up.
-    var errorDescription: String? { "Plattenregal kommt gerade nicht an den Schlüsselbund von macOS, in dem der Discogs-Token liegt. Erlaube den Zugriff, falls macOS danach fragt, und versuche es noch einmal. (Code \(status))" }
+    var errorDescription: String? { String(localized: "Plattenregal kommt gerade nicht an den Schlüsselbund von macOS, in dem der Discogs-Token liegt. Erlaube den Zugriff, falls macOS danach fragt, und versuche es noch einmal. (Code \(status))") }
 }

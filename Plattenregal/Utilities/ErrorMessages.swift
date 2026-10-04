@@ -23,9 +23,9 @@ extension Error {
     nonisolated var userMessage: String {
         switch self {
         case let error as any UserFacingError: return error.errorDescription ?? ErrorMessages.generic
-        case is CancellationError: return "Der Vorgang wurde abgebrochen."
+        case is CancellationError: return String(localized: "Der Vorgang wurde abgebrochen.")
         case let error as URLError where error.code == .timedOut:
-            return "Discogs hat nicht rechtzeitig geantwortet. Prüfe deine Internetverbindung und versuche es noch einmal."
+            return String(localized: "Discogs hat nicht rechtzeitig geantwortet. Prüfe deine Internetverbindung und versuche es noch einmal.")
         case is URLError: return DiscogsError.offline.errorDescription ?? ErrorMessages.generic
         case is DecodingError: return DiscogsError.invalidResponse.errorDescription ?? ErrorMessages.generic
         default:
@@ -69,13 +69,13 @@ nonisolated enum FileTransferError: LocalizedError, CustomStringConvertible {
 
     var errorDescription: String? {
         switch self {
-        case .exportFailed: "Der Export konnte nicht erstellt werden. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
-        case .writeFailed: "Die Datei konnte nicht gespeichert werden. Prüfe, ob am gewählten Ort genug Platz ist und du dort speichern darfst, und versuche es noch einmal."
-        case .readFailed: "Die Datei konnte nicht geöffnet werden. Prüfe, ob sie noch vorhanden ist, und wähle sie noch einmal aus."
-        case .safetyBackupFailed: "Die aktuelle Belegung konnte vorher nicht gesichert werden. Zur Sicherheit wurde nichts verändert – bitte versuche es noch einmal."
-        case .restoreFailed: "Die Belegung konnte nicht wiederhergestellt werden. Dein Regal ist unverändert. Bitte versuche es noch einmal."
-        case .folderUnavailable: "Der gewählte Ordner ist nicht erreichbar – vielleicht wurde er verschoben, gelöscht oder das Laufwerk ist nicht angeschlossen. Wähle den Ordner neu aus."
-        case .folderChangeFailed: "Die vorhandenen Sicherungen ließen sich nicht in den neuen Ordner kopieren. Es bleibt beim bisherigen Ordner. Prüfe, ob du im neuen Ordner speichern darfst und genug Platz ist."
+        case .exportFailed: String(localized: "Der Export konnte nicht erstellt werden. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
+        case .writeFailed: String(localized: "Die Datei konnte nicht gespeichert werden. Prüfe, ob am gewählten Ort genug Platz ist und du dort speichern darfst, und versuche es noch einmal.")
+        case .readFailed: String(localized: "Die Datei konnte nicht geöffnet werden. Prüfe, ob sie noch vorhanden ist, und wähle sie noch einmal aus.")
+        case .safetyBackupFailed: String(localized: "Die aktuelle Belegung konnte vorher nicht gesichert werden. Zur Sicherheit wurde nichts verändert – bitte versuche es noch einmal.")
+        case .restoreFailed: String(localized: "Die Belegung konnte nicht wiederhergestellt werden. Dein Regal ist unverändert. Bitte versuche es noch einmal.")
+        case .folderUnavailable: String(localized: "Der gewählte Ordner ist nicht erreichbar – vielleicht wurde er verschoben, gelöscht oder das Laufwerk ist nicht angeschlossen. Wähle den Ordner neu aus.")
+        case .folderChangeFailed: String(localized: "Die vorhandenen Sicherungen ließen sich nicht in den neuen Ordner kopieren. Es bleibt beim bisherigen Ordner. Prüfe, ob du im neuen Ordner speichern darfst und genug Platz ist.")
         }
     }
     var description: String {
@@ -100,6 +100,6 @@ extension Error {
 }
 
 nonisolated enum ErrorMessages {
-    static let saveFailed = "Die Änderung konnte nicht gespeichert werden. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu."
-    static let generic = "Da ist etwas schiefgelaufen. Bitte versuche es noch einmal."
+    static let saveFailed = String(localized: "Die Änderung konnte nicht gespeichert werden. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
+    static let generic = String(localized: "Da ist etwas schiefgelaufen. Bitte versuche es noch einmal.")
 }

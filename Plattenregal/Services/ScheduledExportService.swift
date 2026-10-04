@@ -42,8 +42,8 @@ struct ExportSettings {
         case .csv:
             return ExportJob(table: table, kind: .csv(delimiter))
         case .pdf:
-            let subtitle = "\(AppStyle.records(table.rows.count)) · \(options.order.title) · Stand \(Date.now.formatted(date: .long, time: .shortened))"
-            return ExportJob(table: table, kind: .pdf(title: "Plattenregal – \(source.title)", subtitle: subtitle))
+            let subtitle = String(localized: "\(AppStyle.records(table.rows.count)) · \(options.order.title) · Stand \(Date.now.formatted(date: .long, time: .shortened))")
+            return ExportJob(table: table, kind: .pdf(title: String(localized: "Plattenregal – \(source.title)"), subtitle: subtitle))
         }
     }
 }
@@ -74,9 +74,9 @@ enum ExportInterval: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .daily: "Täglich"
-        case .weekly: "Wöchentlich"
-        case .monthly: "Monatlich"
+        case .daily: String(localized: "Täglich")
+        case .weekly: String(localized: "Wöchentlich")
+        case .monthly: String(localized: "Monatlich")
         }
     }
     func next(after date: Date, calendar: Calendar = .current) -> Date {

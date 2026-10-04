@@ -39,7 +39,19 @@ private struct SettingsOpener: ViewModifier {
 /// quiet card surfaces and the shared button vocabulary.
 struct AppSettingsView: View {
     enum Tab: String, CaseIterable { case general = "Allgemein", appearance = "Darstellung", shelf = "Regal", discogs = "Discogs"
-        case export = "Export", backup = "Sicherung", data = "Daten" }
+        case export = "Export", backup = "Sicherung", data = "Daten"
+        var title: String {
+            switch self {
+            case .general: String(localized: "Allgemein")
+            case .appearance: String(localized: "Darstellung")
+            case .shelf: String(localized: "Regal")
+            case .discogs: String(localized: "Discogs")
+            case .export: String(localized: "Export")
+            case .backup: String(localized: "Sicherung")
+            case .data: String(localized: "Daten")
+            }
+        }
+    }
     @State private var tab: Tab = {
         #if DEBUG
         // Screenshots of a tab without clicking there: --settings-tab=Regal
@@ -68,11 +80,11 @@ struct AppSettingsView: View {
         .background { AmbientGlow() }
         // Asked for from the main window while this one is already open.
         .onChange(of: request.count) { if let asked = request.take() { tab = asked } }
-        .navigationTitle(tab.rawValue)
+        .navigationTitle(tab.title)
         .toolbar(removing: .title)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.rawValue) }
+                GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.title) }
                     .accessibilityLabel("Bereich")
             }
         }
@@ -88,8 +100,8 @@ struct SettingsPage<Content: View>: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 if DemoMode.isActive {
-                    AppBanner(message: "Demo: Diese Einstellungen gelten nur für die Demo. Deine eigenen bleiben, wie sie sind.", kind: .info,
-                              actionTitle: "Demo beenden", action: { DemoMode.end() })
+                    AppBanner(message: String(localized: "Demo: Diese Einstellungen gelten nur für die Demo. Deine eigenen bleiben, wie sie sind."), kind: .info,
+                              actionTitle: String(localized: "Demo beenden"), action: { DemoMode.end() })
                 }
                 content
             }
@@ -166,34 +178,50 @@ struct GeneralSettingsView: View {
     var body: some View {
         @Bindable var preferences = preferences
         SettingsPage {
-            SettingsCard(title: "Start") {
-                SettingsRow(title: "Beim Öffnen zeigen", hint: "Die Seite, mit der das Hauptfenster startet.") {
+            SettingsCard(title: String(localized: "Sprache")) {
+                SettingsRow(title: String(localized: "Sprache der App"),
+                            hint: preferences.language == .system
+                                ? String(localized: "Folgt der Sprache von macOS. Plattenregal gibt es auf Deutsch und Englisch.")
+                                : String(localized: "Gilt nur für Plattenregal, unabhängig von macOS.")) {
+                    GlassSegmentedPicker(selection: $preferences.language, options: AppLanguage.allCases) { Text($0.title) }
+                        .accessibilityLabel(String(localized: "Sprache"))
+                }
+                if preferences.language != preferences.languageAtLaunch {
+                    Divider()
+                    SettingsRow(title: String(localized: "Neustart nötig"),
+                                hint: String(localized: "Die neue Sprache gilt ab dem nächsten Start von Plattenregal.")) {
+                        PrimaryButton(title: String(localized: "Jetzt neu starten")) { DemoMode.relaunchForLanguage() }
+                    }
+                }
+            }
+            SettingsCard(title: String(localized: "Start")) {
+                SettingsRow(title: String(localized: "Beim Öffnen zeigen"), hint: String(localized: "Die Seite, mit der das Hauptfenster startet.")) {
                     GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
                         .accessibilityLabel("Startseite")
                 }
                 Divider()
-                SettingsRow(title: "Reihenfolge Collection", hint: collectionOrder.hint) {
+                SettingsRow(title: String(localized: "Reihenfolge Collection"), hint: collectionOrder.hint) {
                     GlassSegmentedPicker(selection: order($collectionOrder, scope: DisplaySettings.collectionOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Reihenfolge der Collection")
                 }
                 Divider()
-                SettingsRow(title: "Reihenfolge Wantlist", hint: wantlistOrder.hint) {
+                SettingsRow(title: String(localized: "Reihenfolge Wantlist"), hint: wantlistOrder.hint) {
                     GlassSegmentedPicker(selection: order($wantlistOrder, scope: DisplaySettings.wantlistOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Reihenfolge der Wantlist")
                 }
             }
-            SettingsCard(title: "Demo", subtitle: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.") {
-                SettingsRow(title: DemoMode.isActive ? "Die Demo läuft" : "Beispielsammlung",
+            SettingsCard(title: String(localized: "Demo"), subtitle: String(localized: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.")) {
+                SettingsRow(title: DemoMode.isActive ? String(localized: "Die Demo läuft") : String(localized: "Beispielsammlung"),
                             hint: DemoMode.isActive
-                                ? "Beim Beenden startet Plattenregal neu mit deiner eigenen Sammlung. Alles, was du in der Demo geändert hast, ist dann weg."
-                                : "Rund 50 Platten in zwei Regalen, Wantlist und Wertverlauf. Alles lässt sich ändern, nichts wird gespeichert, deine Sammlung bleibt unberührt. Plattenregal startet dafür neu.") {
+                                ? String(localized: "Beim Beenden startet Plattenregal neu mit deiner eigenen Sammlung. Alles, was du in der Demo geändert hast, ist dann weg.")
+                                : String(localized: "Rund 50 Platten in zwei Regalen, Wantlist und Wertverlauf. Alles lässt sich ändern, nichts wird gespeichert, deine Sammlung bleibt unberührt. Plattenregal startet dafür neu.")) {
                     if DemoMode.isActive {
                         HStack(spacing: AppStyle.itemSpacing) {
-                            GhostButton(title: "Neu starten") { DemoMode.restart() }
-                            SecondaryButton(title: "Demo beenden") { DemoMode.end() }
+                            GhostButton(title: String(localized: "Neu starten")) { DemoMode.restart() }
+                            SecondaryButton(title: String(localized: "Demo beenden")) { DemoMode.end() }
                         }
                     } else {
-                        SecondaryButton(title: "Demo starten …") { DemoMode.confirmStart() }
+                        SecondaryButton(title: String(localized: "Demo starten …")) { DemoMode.confirmStart() }
                     }
                 }
             }
@@ -220,13 +248,13 @@ struct AppearanceSettingsView: View {
     var body: some View {
         @Bindable var preferences = preferences
         SettingsPage {
-            SettingsCard(title: "Erscheinungsbild") {
-                SettingsRow(title: "Modus", hint: preferences.appearance.hint) {
+            SettingsCard(title: String(localized: "Erscheinungsbild")) {
+                SettingsRow(title: String(localized: "Modus"), hint: preferences.appearance.hint) {
                     GlassSegmentedPicker(selection: $preferences.appearance, options: AppearanceMode.allCases) { Text($0.title) }
                         .accessibilityLabel("Modus")
                 }
                 Divider()
-                SettingsRow(title: "Akzentfarbe") {
+                SettingsRow(title: String(localized: "Akzentfarbe")) {
                     HStack(spacing: 6) {
                         ForEach(AccentChoice.allCases) { choice in
                             ColorSwatch(title: choice.title, color: choice.color, rainbow: choice == .system,
@@ -237,7 +265,7 @@ struct AppearanceSettingsView: View {
                     }
                 }
                 Divider()
-                SettingsRow(title: "Ambient-Farbe") {
+                SettingsRow(title: String(localized: "Ambient-Farbe")) {
                     HStack(spacing: 6) {
                         ForEach(AmbientChoice.allCases) { choice in
                             ColorSwatch(title: choice.title, color: choice.color ?? .secondary, off: choice == .off,
@@ -248,19 +276,19 @@ struct AppearanceSettingsView: View {
                     }
                 }
             }
-            SettingsCard(title: "Übersicht",
-                         subtitle: "Lässt sich auch direkt in der Kopfleiste von Collection und Wantlist umschalten.") {
-                SettingsRow(title: "Collection") { OverviewLayoutPicker(selection: $collectionLayout) }
+            SettingsCard(title: String(localized: "Übersicht"),
+                         subtitle: String(localized: "Lässt sich auch direkt in der Kopfleiste von Collection und Wantlist umschalten.")) {
+                SettingsRow(title: String(localized: "Collection")) { OverviewLayoutPicker(selection: $collectionLayout) }
                 Divider()
-                SettingsRow(title: "Wantlist") { OverviewLayoutPicker(selection: $wantlistLayout) }
+                SettingsRow(title: String(localized: "Wantlist")) { OverviewLayoutPicker(selection: $wantlistLayout) }
             }
-            SettingsCard(title: "Cover",
-                         subtitle: "Die Spalten füllen die Fensterbreite immer ganz aus.") {
-                SettingsRow(title: "Mindestgröße im Raster") {
+            SettingsCard(title: String(localized: "Cover"),
+                         subtitle: String(localized: "Die Spalten füllen die Fensterbreite immer ganz aus.")) {
+                SettingsRow(title: String(localized: "Mindestgröße im Raster")) {
                     HStack(spacing: AppStyle.tightSpacing) {
                         if coverSize.wrappedValue != DisplaySettings.defaultCoverSize {
                             IconButton(systemImage: "arrow.counterclockwise",
-                                       help: "Auf Standard (\(Int(DisplaySettings.defaultCoverSize)) pt) zurücksetzen") {
+                                       help: String(localized: "Auf Standard (\(Int(DisplaySettings.defaultCoverSize)) pt) zurücksetzen")) {
                                 storedCoverSize = DisplaySettings.defaultCoverSize
                             }
                             .foregroundStyle(.secondary)
@@ -282,10 +310,10 @@ struct AppearanceSettingsView: View {
                         .accessibilityHidden(true)
                 }
             }
-            SettingsCard(title: "Statistik") {
-                SettingsRow(title: "Reihenfolge der Abschnitte",
-                            hint: "Abschnitte lassen sich auf der Statistikseite per Drag & Drop umsortieren.") {
-                    SecondaryButton(title: "Zurücksetzen") { statisticsOrder = "" }
+            SettingsCard(title: String(localized: "Statistik")) {
+                SettingsRow(title: String(localized: "Reihenfolge der Abschnitte"),
+                            hint: String(localized: "Abschnitte lassen sich auf der Statistikseite per Drag & Drop umsortieren.")) {
+                    SecondaryButton(title: String(localized: "Zurücksetzen")) { statisticsOrder = "" }
                         .disabled(StatisticsSection.ordered(from: statisticsOrder) == StatisticsSection.allCases)
                 }
             }

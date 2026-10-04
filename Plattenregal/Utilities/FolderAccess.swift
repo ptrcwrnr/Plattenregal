@@ -85,7 +85,7 @@ nonisolated struct FolderAccess: Sendable {
 
 /// The system's folder picker; grants the sandbox access to the choice.
 enum FolderPicker {
-    @MainActor static func choose(message: String, prompt: String = "Wählen") -> URL? {
+    @MainActor static func choose(message: String, prompt: String = String(localized: "Wählen")) -> URL? {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false

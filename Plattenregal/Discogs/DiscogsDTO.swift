@@ -45,7 +45,7 @@ nonisolated struct DiscogsReleaseDTO: Decodable, Sendable {
         // Encoding plain values can't fail; should it, the old snapshot stays.
         let previous = release.basicInformation
         do { try basic.apply(to: release, at: .now) } catch { release.basicInformation = previous }
-        if release.artist.isEmpty { release.artist = "Unbekannter Interpret" }
+        if release.artist.isEmpty { release.artist = String(localized: "Unbekannter Interpret") }
         applyDetails(to: release)
     }
     /// Only what the collection sync's basic information lacks — tracklist

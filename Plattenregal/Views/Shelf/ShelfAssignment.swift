@@ -84,7 +84,7 @@ final class ShelfAssignmentSession: Identifiable {
             for copy in available {
                 guard let other = fits[copy.id], !other.isEmpty, !other.contains(where: { $0.id == shelf.id }) else { continue }
                 belongsElsewhere[copy.id] = other.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) }
-                    .joined(separator: " oder ")
+                    .joined(separator: String(localized: " oder "))
             }
             let sorted = ShelfAssignmentPresentation.sortedByArtist(available)
             candidates = sorted.filter { belongsElsewhere[$0.id] == nil } + sorted.filter { belongsElsewhere[$0.id] != nil }
@@ -105,7 +105,7 @@ final class ShelfAssignmentSession: Identifiable {
         // out of the collection.
         guard copy.isInCurrentCollection(owner: owner) else {
             candidates.removeAll { $0.id == copy.id }
-            error = "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“ ist nicht mehr in der Collection."
+            error = String(localized: "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“ ist nicht mehr in der Collection.")
             return
         }
         do {
@@ -213,7 +213,7 @@ struct ShelfAssignmentView: View {
                 }
                 .animation(AppStyle.standardAnimation, value: showsMissing)
                 targetCard
-                AppSearchField(placeholder: "Platten ohne Fach durchsuchen", text: $session.query)
+                AppSearchField(placeholder: String(localized: "Platten ohne Fach durchsuchen"), text: $session.query)
                 if let error = session.error {
                     AppBanner(message: error, kind: .error)
                         .transition(AppStyle.funnelTransition())
@@ -238,13 +238,13 @@ struct ShelfAssignmentView: View {
                 }
                 if session.loaded && items.isEmpty {
                     if !session.query.isEmpty {
-                        AppEmptyState("Keine Treffer", systemImage: "magnifyingglass",
+                        AppEmptyState(String(localized: "Keine Treffer"), systemImage: "magnifyingglass",
                                       description: Text("Versuche einen anderen Suchbegriff."))
                     } else if pausedCount > 0 {
-                        AppEmptyState("Nur noch vermisste Platten", systemImage: "checkmark.circle",
+                        AppEmptyState(String(localized: "Nur noch vermisste Platten"), systemImage: "checkmark.circle",
                                       description: Text("Alle übrigen Platten ohne Fach stehen unter „Vermisst“."))
                     } else {
-                        AppEmptyState("Alles einsortiert", systemImage: "checkmark.circle",
+                        AppEmptyState(String(localized: "Alles einsortiert"), systemImage: "checkmark.circle",
                                       description: Text("Jede Platte der Sammlung liegt bereits in einem Fach."))
                     }
                 }
@@ -264,7 +264,7 @@ struct ShelfAssignmentView: View {
                 .font(.system(size: 22))
                 .foregroundStyle(AppStyle.accent)
             VStack(alignment: .leading, spacing: 1) {
-                Text(rangeLabel.map { "Fach „\($0)“" } ?? "Dieses Fach").font(.headline).lineLimit(1)
+                Text(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")).font(.headline).lineLimit(1)
                 // One line, so long names never grow the card.
                 Text(detail).font(.caption).foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.middle)
@@ -289,25 +289,25 @@ struct ShelfAssignmentView: View {
 
     private var detail: String {
         if let copy = session.hovered {
-            let artist = "„\(copy.release?.displayArtist ?? "—")“"
-            if let other = session.belongsElsewhere[copy.id] { return "\(artist) gehört in „\(other)“ – Pfeil führt dorthin" }
-            return "\(artist) \(place(session.spot(for: copy)))"
+            let artist = String(localized: "„\(copy.release?.displayArtist ?? "—")“")
+            if let other = session.belongsElsewhere[copy.id] { return String(localized: "\(artist) gehört in „\(other)“ – Pfeil führt dorthin") }
+            return String(localized: "\(artist) \(place(session.spot(for: copy)))")
         }
         if let copy = session.lastAddedHere {
             let spot = session.spot(for: copy)
-            return "Zuletzt „\(copy.release?.displayArtist ?? "—")“ \(place(spot))"
+            return String(localized: "Zuletzt „\(copy.release?.displayArtist ?? "—")“ \(place(spot))")
         }
-        return "Jede Platte kommt an ihre alphabetische Stelle"
+        return String(localized: "Jede Platte kommt an ihre alphabetische Stelle")
     }
 
     /// "zwischen „Air“ und „Björk“", "vor „Air“", "nach „Zappa“", "als erste Platte".
     private func place(_ spot: (position: Int, before: RecordCopy?, after: RecordCopy?)) -> String {
-        func name(_ copy: RecordCopy) -> String { "„\(copy.release?.displayArtist ?? "—")“" }
+        func name(_ copy: RecordCopy) -> String { String(localized: "„\(copy.release?.displayArtist ?? "—")“") }
         switch (spot.before, spot.after) {
-        case let (before?, after?): return "zwischen \(name(before)) und \(name(after))"
-        case let (nil, after?): return "ganz vorn, vor \(name(after))"
-        case let (before?, nil): return "ans Ende, nach \(name(before))"
-        case (nil, nil): return "als erste Platte"
+        case let (before?, after?): return String(localized: "zwischen \(name(before)) und \(name(after))")
+        case let (nil, after?): return String(localized: "ganz vorn, vor \(name(after))")
+        case let (before?, nil): return String(localized: "ans Ende, nach \(name(before))")
+        case (nil, nil): return String(localized: "als erste Platte")
         }
     }
 
@@ -526,7 +526,7 @@ private struct ShelfAssignmentRow: View {
                 HStack(spacing: 6) {
                     Text(artist).font(.callout.weight(.medium)).lineLimit(1)
                     if suggested {
-                        StatusTag(text: "Als Nächstes", color: AppStyle.accent)
+                        StatusTag(text: String(localized: "Als Nächstes"), color: AppStyle.accent)
                             .help("Nach Interpret die nächste Platte für dieses Fach")
                     }
                 }
@@ -551,7 +551,7 @@ private struct ShelfAssignmentRow: View {
                 RowGlassButton(systemImage: missing ? "pause.fill" : "pause",
                                color: missing ? AppStyle.errorColor : .secondary, action: toggleMissing)
                     .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
-                    .accessibilityLabel(missing ? "\(artist) – \(title) wieder gefunden" : "\(artist) – \(title) als vermisst markieren")
+                    .accessibilityLabel(missing ? String(localized: "\(artist) – \(title) wieder gefunden") : String(localized: "\(artist) – \(title) als vermisst markieren"))
             }
             if let belongsIn {
                 RowGlassButton(systemImage: "arrow.turn.up.right", color: .secondary, action: findPlace)
@@ -560,7 +560,7 @@ private struct ShelfAssignmentRow: View {
             }
             // The main action: accent in the glyph, like chosen options elsewhere.
             RowGlassButton(systemImage: "plus", color: AppStyle.accent, action: add)
-                .help(belongsIn == nil ? "An ihrer alphabetischen Stelle ins Fach hinzufügen" : "Trotzdem in dieses Fach hinzufügen")
+                .help(belongsIn == nil ? String(localized: "An ihrer alphabetischen Stelle ins Fach hinzufügen") : String(localized: "Trotzdem in dieses Fach hinzufügen"))
                 .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
         }
         .padding(.horizontal, AppStyle.pagePadding)
@@ -659,7 +659,7 @@ struct ShelfSortCheckView: View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Sortierung prüfen").font(AppStyle.dialogTitle)
-                Text("\(rangeLabel.map { "Fach „\($0)“" } ?? "Dieses Fach") · \(AppStyle.records(copies.count)) · Plätze von links gezählt")
+                Text("\(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")) · \(AppStyle.records(copies.count)) · Plätze von links gezählt")
                     .font(.caption).foregroundStyle(.secondary)
             }
             HStack(spacing: AppStyle.rowSpacing) {
@@ -702,7 +702,7 @@ struct ShelfSortCheckView: View {
                 Image(systemName: "checkmark.circle.fill").font(.system(size: 22)).foregroundStyle(AppStyle.successColor)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Alles in Ordnung").font(.headline)
-                    Text(count < 2 ? "Zu wenige Platten, um etwas zu prüfen." : "Alle \(count) Platten stehen in der richtigen Reihenfolge.")
+                    Text(count < 2 ? String(localized: "Zu wenige Platten, um etwas zu prüfen.") : String(localized: "Alle \(count) Platten stehen in der richtigen Reihenfolge."))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
@@ -714,7 +714,7 @@ struct ShelfSortCheckView: View {
                 HStack(spacing: AppStyle.rowSpacing) {
                     Text("Beim Einsortieren gilt bisher „\(savedOrder.title)“.").font(.caption).foregroundStyle(.secondary)
                     Spacer(minLength: 0)
-                    SecondaryButton(title: "„\(order.title)“ übernehmen") {
+                    SecondaryButton(title: String(localized: "„\(order.title)“ übernehmen")) {
                         AppLog.info("Regal", "Bei gleichem Interpreten jetzt nach \(order.title) statt \(savedOrder.title) (aus „Sortierung prüfen“)")
                         savedOrder = order
                     }
@@ -753,7 +753,7 @@ struct ShelfSortCheckView: View {
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: AppStyle.itemSpacing)
-            PrimaryButton(title: "Reihenfolge übernehmen") { apply() }
+            PrimaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
         }
     }
 
@@ -763,7 +763,7 @@ struct ShelfSortCheckView: View {
         let copies = PositionService.inShelfOrder(shelf.copies.filter { !$0.isDeleted && $0.modelContext != nil })
         let count = ShelfSortCheck.steps(copies, by: order).count
         AppLog.info("Regal", "Sortierung geprüft: \(PositionService.name(shelf)), Interpret, dann \(order.title) – "
-                    + (count == 0 ? "alles in Ordnung" : "\(count) von \(copies.count) Platten umzustellen"))
+                    + (count == 0 ? String(localized: "alles in Ordnung") : String(localized: "\(count) von \(copies.count) Platten umzustellen")))
     }
 
     private func apply() {
@@ -812,7 +812,7 @@ private struct SortStepRow: View {
                         Image(systemName: "arrow.right").font(.caption2.weight(.semibold))
                         if let neighbour = step.before ?? step.after {
                             CoverView(url: neighbour.release?.coverURL, size: 16)
-                            Text("\(step.before == nil ? "ganz vorn, vor" : "hinter") „\(neighbour.release?.displayArtist ?? "—") – \(neighbour.release?.displayTitle ?? "—")“")
+                            Text("\(step.before == nil ? String(localized: "ganz vorn, vor") : String(localized: "hinter")) „\(neighbour.release?.displayArtist ?? "—") – \(neighbour.release?.displayTitle ?? "—")“")
                                 .lineLimit(1).truncationMode(.middle)
                         }
                     }

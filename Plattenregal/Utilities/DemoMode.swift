@@ -59,13 +59,13 @@ nonisolated enum DemoMode {
     /// Asks first, then relaunches into the demo.
     @MainActor static func confirmStart() {
         let alert = NSAlert()
-        alert.messageText = "Demo starten?"
-        alert.informativeText = "Plattenregal startet neu – mit einer Beispielsammlung zum Ausprobieren. Du kannst alles verändern: Platten einsortieren, Regale anlegen, Einstellungen ändern. Nichts davon wird gespeichert, und deine eigene Sammlung bleibt unberührt.\n\nBeenden kannst du die Demo jederzeit über „Demo beenden“."
+        alert.messageText = String(localized: "Demo starten?")
+        alert.informativeText = String(localized: "Plattenregal startet neu – mit einer Beispielsammlung zum Ausprobieren. Du kannst alles verändern: Platten einsortieren, Regale anlegen, Einstellungen ändern. Nichts davon wird gespeichert, und deine eigene Sammlung bleibt unberührt.\n\nBeenden kannst du die Demo jederzeit über „Demo beenden“.")
         if DiscogsSyncService.shared.isRunning {
-            alert.informativeText += "\n\nDie laufende Synchronisierung wird dabei abgebrochen; es wird nichts halb gespeichert, und sie lässt sich später einfach wiederholen."
+            alert.informativeText += String(localized: "\n\nDie laufende Synchronisierung wird dabei abgebrochen; es wird nichts halb gespeichert, und sie lässt sich später einfach wiederholen.")
         }
-        alert.addButton(withTitle: "Demo starten")
-        alert.addButton(withTitle: "Abbrechen")
+        alert.addButton(withTitle: String(localized: "Demo starten"))
+        alert.addButton(withTitle: String(localized: "Abbrechen"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         relaunch(intoDemo: true)
     }
@@ -83,28 +83,31 @@ nonisolated enum DemoMode {
     static var fileSuffix: String { isActive ? " (Demo)" : "" }
 
     /// For empty pages in the demo, where "synchronise with Discogs" doesn't apply.
-    static let emptyHint = "Die Beispielsammlung ist leer – vermutlich wurde sie zurückgesetzt. Starte die Demo neu, um sie zurückzuholen."
+    static let emptyHint = String(localized: "Die Beispielsammlung ist leer – vermutlich wurde sie zurückgesetzt. Starte die Demo neu, um sie zurückzuholen.")
 
     /// Set once a relaunch is under way: a second click must not start a
     /// second new instance before this one has quit.
     @MainActor private static var relaunching = false
 
-    @MainActor private static func relaunch(intoDemo: Bool) {
+    /// For a new app language: the same app again, a demo stays a (fresh) demo.
+    @MainActor static func relaunchForLanguage() { relaunch(intoDemo: isActive, forLanguage: true) }
+
+    @MainActor private static func relaunch(intoDemo: Bool, forLanguage: Bool = false) {
         guard !relaunching else { return }
         // Another instance (e.g. started from Xcode) would mean two apps on the
         // same database after the switch – or a demo next to it. Not guessed at.
         let others = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
             .filter { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier && !$0.isTerminated }
         guard others.isEmpty else {
-            AppLog.warning("App", "Neustart für die Demo abgelehnt: eine weitere Instanz läuft (\(others.map(\.processIdentifier)))")
+            AppLog.warning("App", "Neustart \(forLanguage ? "für die Sprache" : "für die Demo") abgelehnt: eine weitere Instanz läuft (\(others.map(\.processIdentifier)))")
             let alert = NSAlert()
-            alert.messageText = "Plattenregal läuft noch ein zweites Mal"
-            alert.informativeText = "Beende zuerst die andere Plattenregal-Instanz und versuche es dann noch einmal. So sind nie zwei Instanzen auf derselben Sammlung geöffnet."
+            alert.messageText = String(localized: "Plattenregal läuft noch ein zweites Mal")
+            alert.informativeText = String(localized: "Beende zuerst die andere Plattenregal-Instanz und versuche es dann noch einmal. So sind nie zwei Instanzen auf derselben Sammlung geöffnet.")
             alert.runModal()
             return
         }
         relaunching = true
-        AppLog.info("App", intoDemo ? "Demo wird gestartet (Neustart)" : "Demo wird beendet (Neustart)")
+        AppLog.info("App", forLanguage ? "Neustart für die Sprache" : intoDemo ? "Demo wird gestartet (Neustart)" : "Demo wird beendet (Neustart)")
         if intoDemo { UserDefaults.standard.set(Date.now, forKey: requestKey) }
         else { UserDefaults.standard.removeObject(forKey: requestKey) }
         let configuration = NSWorkspace.OpenConfiguration()
@@ -114,14 +117,17 @@ nonisolated enum DemoMode {
                 if let error {
                     relaunching = false
                     UserDefaults.standard.removeObject(forKey: requestKey)
-                    AppLog.error("App", "Neustart für die Demo fehlgeschlagen: \(error)")
+                    AppLog.error("App", "Neustart \(forLanguage ? "für die Sprache" : "für die Demo") fehlgeschlagen: \(error)")
                     let alert = NSAlert()
-                    if intoDemo {
-                        alert.messageText = "Die Demo konnte nicht gestartet werden"
-                        alert.informativeText = "Deine Sammlung bleibt geöffnet. Versuche es später noch einmal."
+                    if forLanguage {
+                        alert.messageText = String(localized: "Plattenregal konnte nicht neu starten")
+                        alert.informativeText = String(localized: "Beende die App und öffne sie wieder – dann erscheint sie in der neuen Sprache.")
+                    } else if intoDemo {
+                        alert.messageText = String(localized: "Die Demo konnte nicht gestartet werden")
+                        alert.informativeText = String(localized: "Deine Sammlung bleibt geöffnet. Versuche es später noch einmal.")
                     } else {
-                        alert.messageText = "Plattenregal konnte nicht neu starten"
-                        alert.informativeText = "Beende die App und öffne sie wieder – dann startet sie mit deiner eigenen Sammlung. In der Demo wurde nichts gespeichert."
+                        alert.messageText = String(localized: "Plattenregal konnte nicht neu starten")
+                        alert.informativeText = String(localized: "Beende die App und öffne sie wieder – dann startet sie mit deiner eigenen Sammlung. In der Demo wurde nichts gespeichert.")
                     }
                     alert.runModal()
                 } else {
@@ -158,7 +164,7 @@ nonisolated enum AppDefaults {
 /// with its own margins, so it lines up with the covers and cards below.
 struct DemoBanner: View {
     var body: some View {
-        AppBanner(message: "Demo – eine Beispielsammlung zum Ausprobieren. Ändere, was du willst: Nichts wird gespeichert, deine eigene Sammlung bleibt unberührt.",
-                  kind: .info, actionTitle: "Demo beenden", action: { DemoMode.end() })
+        AppBanner(message: String(localized: "Demo – eine Beispielsammlung zum Ausprobieren. Ändere, was du willst: Nichts wird gespeichert, deine eigene Sammlung bleibt unberührt."),
+                  kind: .info, actionTitle: String(localized: "Demo beenden"), action: { DemoMode.end() })
     }
 }

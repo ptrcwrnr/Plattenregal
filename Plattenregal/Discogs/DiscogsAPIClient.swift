@@ -7,18 +7,18 @@ nonisolated enum DiscogsError: LocalizedError {
     case missingToken, demoMode, unauthorized, rateLimited(Int), http(Int), invalidResponse, offline
     var errorDescription: String? {
         switch self {
-        case .incompletePagination: "Deine Liste bei Discogs hat sich während des Ladens verändert. Es wurde nichts gespeichert. Bitte synchronisiere noch einmal."
-        case .accountChanged: "Der Discogs-Token passt nicht mehr zum geladenen Konto – vermutlich wurde er gerade geändert. Es wurde nichts gespeichert. Bitte synchronisiere noch einmal."
-        case .notFound: "Discogs findet diese Platte oder diesen Ordner nicht (mehr). Vielleicht wurde sie dort gelöscht."
-        case .forbidden: "Discogs lässt den Zugriff nicht zu. Prüfe in den Einstellungen, ob der Token stimmt und zu deinem Konto gehört."
-        case .demoMode: "Im Demo-Modus ist Discogs ausgeschaltet – die Beispieldaten bleiben, wie sie sind. Beende die Demo, um deine eigene Sammlung zu synchronisieren."
-        case .missingToken: "Es ist noch kein Discogs-Token eingetragen. Das Feld dafür findest du in den Einstellungen unter „Discogs“."
-        case .unauthorized: "Discogs hat den Token nicht angenommen. Vielleicht ist er abgelaufen oder unvollständig kopiert. Prüfe ihn in den Einstellungen."
-        case .rateLimited(let seconds): "Discogs bremst gerade, weil in kurzer Zeit viele Anfragen kamen. Versuche es in \(seconds == 1 ? "einer Sekunde" : "\(seconds) Sekunden") noch einmal."
-        case .http(let code) where code >= 500: "Bei Discogs gibt es gerade ein Problem (Fehler \(code)). Versuche es später noch einmal."
-        case .http(let code): "Discogs hat die Anfrage abgelehnt (Fehler \(code)). Versuche es später noch einmal."
-        case .invalidResponse: "Discogs hat Daten geschickt, mit denen Plattenregal nichts anfangen kann. Versuche es später noch einmal."
-        case .offline: "Discogs ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es noch einmal."
+        case .incompletePagination: String(localized: "Deine Liste bei Discogs hat sich während des Ladens verändert. Es wurde nichts gespeichert. Bitte synchronisiere noch einmal.")
+        case .accountChanged: String(localized: "Der Discogs-Token passt nicht mehr zum geladenen Konto – vermutlich wurde er gerade geändert. Es wurde nichts gespeichert. Bitte synchronisiere noch einmal.")
+        case .notFound: String(localized: "Discogs findet diese Platte oder diesen Ordner nicht (mehr). Vielleicht wurde sie dort gelöscht.")
+        case .forbidden: String(localized: "Discogs lässt den Zugriff nicht zu. Prüfe in den Einstellungen, ob der Token stimmt und zu deinem Konto gehört.")
+        case .demoMode: String(localized: "Im Demo-Modus ist Discogs ausgeschaltet – die Beispieldaten bleiben, wie sie sind. Beende die Demo, um deine eigene Sammlung zu synchronisieren.")
+        case .missingToken: String(localized: "Es ist noch kein Discogs-Token eingetragen. Das Feld dafür findest du in den Einstellungen unter „Discogs“.")
+        case .unauthorized: String(localized: "Discogs hat den Token nicht angenommen. Vielleicht ist er abgelaufen oder unvollständig kopiert. Prüfe ihn in den Einstellungen.")
+        case .rateLimited(let seconds): String(localized: "Discogs bremst gerade, weil in kurzer Zeit viele Anfragen kamen. Versuche es in \(seconds == 1 ? String(localized: "einer Sekunde") : String(localized: "\(seconds) Sekunden")) noch einmal.")
+        case .http(let code) where code >= 500: String(localized: "Bei Discogs gibt es gerade ein Problem (Fehler \(code)). Versuche es später noch einmal.")
+        case .http(let code): String(localized: "Discogs hat die Anfrage abgelehnt (Fehler \(code)). Versuche es später noch einmal.")
+        case .invalidResponse: String(localized: "Discogs hat Daten geschickt, mit denen Plattenregal nichts anfangen kann. Versuche es später noch einmal.")
+        case .offline: String(localized: "Discogs ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es noch einmal.")
         }
     }
 }

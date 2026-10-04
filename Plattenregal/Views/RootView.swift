@@ -8,6 +8,14 @@ enum Destination: String, CaseIterable, Identifiable {
     case shelf = "Regal"
     case statistics = "Statistik"
     var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .collection: String(localized: "Collection")
+        case .wantlist: String(localized: "Wantlist")
+        case .shelf: String(localized: "Regal")
+        case .statistics: String(localized: "Statistik")
+        }
+    }
     /// ⌘1 … ⌘4, in the order of the switch in the toolbar.
     var shortcut: KeyEquivalent {
         switch self {
@@ -78,7 +86,7 @@ struct RootView: View {
     private var pageShortcuts: some View {
         Group {
             ForEach(Destination.allCases) { page in
-                Button(page.rawValue) { destination.current = page }
+                Button(page.title) { destination.current = page }
                     .keyboardShortcut(page.shortcut, modifiers: .command)
             }
             Button("Suchen") { searchRequests.request() }
@@ -120,7 +128,7 @@ private struct PagePicker: View {
     @Bindable var selection: PageSelection<Destination>
     var body: some View {
         GlassSegmentedPicker(selection: $selection.current, options: Destination.allCases, glass: false) {
-            Text($0.rawValue)
+            Text($0.title)
         }
         .accessibilityLabel("Rubrik")
     }

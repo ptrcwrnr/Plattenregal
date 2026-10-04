@@ -14,7 +14,7 @@ struct DiscogsSyncStatusView: View {
                 if sync.isRunning {
                     ActivityRing(size: 13)
                     Text("Synchronisierung läuft")
-                    CancelIconButton(help: "Synchronisierung abbrechen") { sync.cancel() }
+                    CancelIconButton(help: String(localized: "Synchronisierung abbrechen")) { sync.cancel() }
                 } else {
                     Text(sync.status)
                         .transition(.opacity)
@@ -56,9 +56,9 @@ struct DiscogsSyncStatusView: View {
             let progress = sync.tracklistProgress.map { progress in
                 // Zero-padded to the total's width, so the counter doesn't jump around.
                 let digits = String(progress.total).count
-                return String(format: "%0\(digits)d von %d", progress.done, progress.total)
+                return String(localized: "\(String(format: "%0\(digits)d", progress.done)) von \(progress.total)", comment: "Fortschritt beim Laden der Tracklisten")
             }
-            return ("Tracklisten werden geladen", progress, false)
+            return (String(localized: "Tracklisten werden geladen"), progress, false)
         }
         // Errors live in the "i" popover, not in the line.
         if let summary = sync.summary { return (summary, nil, false) }
@@ -84,7 +84,7 @@ private struct ErrorInfoButton: View {
         .accessibilityLabel("Fehlerdetails anzeigen")
         .popover(isPresented: $showing, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-                Label(title.isEmpty ? "Hinweis" : title, systemImage: "exclamationmark.triangle.fill")
+                Label(title.isEmpty ? String(localized: "Hinweis") : title, systemImage: "exclamationmark.triangle.fill")
                     .font(.headline)
                     .foregroundStyle(AppStyle.warningColor)
                 Text(message)
@@ -115,7 +115,7 @@ struct DiscogsSyncPill: View {
         if sync.busy { return .loading }
         if sync.isRunning { return .tracklists }
         if sync.error != nil { return .failed }
-        if sync.summary != nil || sync.status == "Synchronisierung abgeschlossen" { return .done }
+        if sync.summary != nil || sync.status == String(localized: "Synchronisierung abgeschlossen") { return .done }
         return .note
     }
 
@@ -148,13 +148,13 @@ struct DiscogsSyncPill: View {
                 }
             }
             if sync.isRunning {
-                CancelIconButton(help: "Synchronisierung abbrechen") { sync.cancel() }
+                CancelIconButton(help: String(localized: "Synchronisierung abbrechen")) { sync.cancel() }
                     .transition(.opacity)
             } else if let error = sync.error {
                 ErrorInfoButton(title: sync.status, message: error) { sync.dismissStatus() }
                     .transition(.opacity)
             } else if phase == .note {
-                CancelIconButton(help: "Ausblenden") { sync.dismissStatus() }
+                CancelIconButton(help: String(localized: "Ausblenden")) { sync.dismissStatus() }
                     .transition(.opacity)
             }
         }
@@ -185,18 +185,18 @@ struct DiscogsSyncPill: View {
 
     private var title: String {
         switch phase {
-        case .loading: sync.status.isEmpty ? "Synchronisierung läuft" : sync.status
-        case .tracklists: "Tracklisten werden geladen"
-        case .done: "Synchronisiert"
-        case .failed: sync.status.isEmpty ? "Synchronisierung nicht möglich" : sync.status
-        case .note: sync.status.isEmpty ? "Hinweis" : sync.status
+        case .loading: sync.status.isEmpty ? String(localized: "Synchronisierung läuft") : sync.status
+        case .tracklists: String(localized: "Tracklisten werden geladen")
+        case .done: String(localized: "Synchronisiert")
+        case .failed: sync.status.isEmpty ? String(localized: "Synchronisierung nicht möglich") : sync.status
+        case .note: sync.status.isEmpty ? String(localized: "Hinweis") : sync.status
         }
     }
 
     private var subtitle: String? {
         switch phase {
         case .tracklists:
-            return sync.tracklistProgress.map { "\($0.done.formatted()) von \($0.total.formatted())" }
+            return sync.tracklistProgress.map { String(localized: "\($0.done.formatted()) von \($0.total.formatted())") }
         case .done:
             return sync.summary
         default:
@@ -294,7 +294,7 @@ struct WantlistView: View {
                     .padding(.top, AppStyle.pagePadding)
             }
             OverviewSearchControl(
-                placeholder: "Wantlist durchsuchen",
+                placeholder: String(localized: "Wantlist durchsuchen"),
                 query: Bindable(search).query,
                 focus: $searchFocused,
                 otherCount: collectionMatches,
@@ -309,10 +309,10 @@ struct WantlistView: View {
                 Color.clear
             } else if sortedEntries.isEmpty {
                 AppEmptyState(
-                    "Wantlist ist leer",
+                    String(localized: "Wantlist ist leer"),
                     systemImage: "heart.text.clipboard",
-                    description: Text(DemoMode.isActive ? DemoMode.emptyHint : "Die Wantlist kommt von Discogs. Den Token dafür trägst du in den Einstellungen ein."),
-                    actionTitle: DemoMode.isActive ? "Demo neu starten" : !hasToken ? "Token eintragen" : sync.busy ? nil : "Jetzt synchronisieren"
+                    description: Text(DemoMode.isActive ? DemoMode.emptyHint : String(localized: "Die Wantlist kommt von Discogs. Den Token dafür trägst du in den Einstellungen ein.")),
+                    actionTitle: DemoMode.isActive ? String(localized: "Demo neu starten") : !hasToken ? String(localized: "Token eintragen") : sync.busy ? nil : String(localized: "Jetzt synchronisieren")
                 ) {
                     if DemoMode.isActive { DemoMode.restart() }
                     else if !hasToken { settingsTab = .discogs }
@@ -321,7 +321,7 @@ struct WantlistView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if visibleEntries.isEmpty {
                 AppEmptyState(
-                    "Keine Treffer",
+                    String(localized: "Keine Treffer"),
                     systemImage: "magnifyingglass",
                     description: Text("Versuche einen anderen Titel, Interpreten oder ein anderes Label.")
                 )
@@ -449,12 +449,12 @@ struct WantlistView: View {
                                     .animation(AppStyle.quickAnimation, value: appliedQuery.isEmpty)
                                 VStack(alignment: .leading, spacing: 1) {
                                     // As under the covers on the statistics page.
-                                    Text(entry.release?.displayArtist ?? "Unbekannter Interpret")
+                                    Text(entry.release?.displayArtist ?? String(localized: "Unbekannter Interpret"))
                                         .font(.callout.weight(.medium)).lineLimit(1)
                                     if !appliedQuery.isEmpty, let track = entry.release?.track(matching: appliedQuery) {
                                         MatchedTrackLine(track: track)
                                     } else {
-                                        Text(entry.release?.displayTitle ?? "Release #\(entry.releaseID)")
+                                        Text(entry.release?.displayTitle ?? String(localized: "Release #\(String(entry.releaseID))"))
                                             .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                                     }
                                 }
@@ -496,12 +496,12 @@ struct WantlistView: View {
             }
             .width(24)
             TableColumn("Interpret") { entry in
-                let artist = entry.release?.displayArtist ?? "Unbekannter Interpret"
+                let artist = entry.release?.displayArtist ?? String(localized: "Unbekannter Interpret")
                 Text(artist).lineLimit(1).help(artist)
             }
             .width(min: 120, ideal: 200)
             TableColumn("Titel") { entry in
-                let title = entry.release?.displayTitle ?? "Release #\(entry.releaseID)"
+                let title = entry.release?.displayTitle ?? String(localized: "Release #\(String(entry.releaseID))")
                 Text(title).lineLimit(1).help(title)
             }
             .width(min: 140, ideal: 260)

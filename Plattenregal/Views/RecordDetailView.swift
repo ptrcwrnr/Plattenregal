@@ -54,9 +54,9 @@ struct RecordDetailView: View {
             }
           }
           Divider()
-          SettingsRow(title: "Nicht im Regal", hint: excluded
-                      ? "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen."
-                      : "Fach und Position vergibst du in der Rubrik Regal.") {
+          SettingsRow(title: String(localized: "Nicht im Regal"), hint: excluded
+                      ? String(localized: "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen.")
+                      : String(localized: "Fach und Position vergibst du in der Rubrik Regal.")) {
               Toggle("Nicht im Regal", isOn: Binding(get: { excluded }, set: setExcluded))
                   .labelsHidden().toggleStyle(.switch)
           }
@@ -93,20 +93,20 @@ struct ReleaseHeaderView: View {
                 .textSelection(.enabled)
                 Grid(alignment: .leading, horizontalSpacing: AppStyle.sectionSpacing, verticalSpacing: AppStyle.rowSpacing) {
                     GridRow {
-                        detail("Jahr", release.year.map(String.init))
-                        detail("Land", release.country)
-                        detail("Format", release.format)
+                        detail(String(localized: "Jahr"), release.year.map(String.init))
+                        detail(String(localized: "Land"), release.country)
+                        detail(String(localized: "Format"), release.format)
                     }
                     GridRow {
-                        detail("Label", release.displayLabel)
-                        detail("Katalognummer", release.catalogNumber)
-                        detail("Genre", release.genres.joined(separator: " · "))
+                        detail(String(localized: "Label"), release.displayLabel)
+                        detail(String(localized: "Katalognummer"), release.catalogNumber)
+                        detail(String(localized: "Genre"), release.genres.joined(separator: " · "))
                     }
                 }
                 if !release.styles.isEmpty || removedFromDiscogs {
                     HStack(spacing: 6) {
                         ForEach(release.styles.prefix(5), id: \.self) { AppBadge(title: $0) }
-                        if removedFromDiscogs { AppBadge(title: "Nicht mehr in der Discogs-Collection", systemImage: "exclamationmark.circle") }
+                        if removedFromDiscogs { AppBadge(title: String(localized: "Nicht mehr in der Discogs-Collection"), systemImage: "exclamationmark.circle") }
                     }
                 }
                 if let url = release.sourceURL {
@@ -156,15 +156,15 @@ struct RecordPopover: View {
             HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
                 CoverView(url: release?.coverURL, size: 128)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                    Text(release?.displayArtist ?? "Unbekannt")
+                    Text(release?.displayArtist ?? String(localized: "Unbekannt"))
                         .font(.callout).foregroundStyle(.secondary).lineLimit(2)
                     Text(release?.displayTitle ?? "—")
                         .font(AppStyle.sectionTitle).lineLimit(3)
                         .fixedSize(horizontal: false, vertical: true)
                     Grid(alignment: .leading, horizontalSpacing: AppStyle.itemSpacing, verticalSpacing: 3) {
-                        GridRow { label("Label"); Text(release.map { $0.label.isEmpty ? "–" : $0.displayLabel } ?? "–").lineLimit(2) }
-                        GridRow { label("Jahr"); Text(release?.year.map(String.init) ?? "–").monospacedDigit() }
-                        GridRow { label("Style"); Text(release.map { $0.primaryStyle.isEmpty ? "–" : $0.primaryStyle } ?? "–").lineLimit(1) }
+                        GridRow { label(String(localized: "Label")); Text(release.map { $0.label.isEmpty ? "–" : $0.displayLabel } ?? "–").lineLimit(2) }
+                        GridRow { label(String(localized: "Jahr")); Text(release?.year.map(String.init) ?? "–").monospacedDigit() }
+                        GridRow { label(String(localized: "Style")); Text(release.map { $0.primaryStyle.isEmpty ? "–" : $0.primaryStyle } ?? "–").lineLimit(1) }
                     }
                     .font(.callout)
                     .padding(.top, AppStyle.tightSpacing)

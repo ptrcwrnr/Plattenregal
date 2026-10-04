@@ -72,8 +72,8 @@ struct ShelfSettingsView: View {
 
     var body: some View {
         SettingsPage {
-            SettingsCard(title: "Regale",
-                         subtitle: "Mit ← / → zwischen den Regalen wechseln, mit der Leertaste aktivieren oder deaktivieren.") {
+            SettingsCard(title: String(localized: "Regale"),
+                         subtitle: String(localized: "Mit ← / → zwischen den Regalen wechseln, mit der Leertaste aktivieren oder deaktivieren.")) {
                 cabinetStrip
                 if adding {
                     CabinetCreator(suggestedName: CabinetService(context: context).suggestedName(),
@@ -95,8 +95,8 @@ struct ShelfSettingsView: View {
 
             if let cabinet, !adding {
                 let own = cabinet.orderedShelves
-                SettingsCard(title: "Fächer · \(cabinet.name)",
-                             subtitle: "\(cabinet.sizeText) Fächer · \(AppStyle.records(cabinet.recordCount)) eingeräumt\(cabinet.isActive ? "" : " · inaktiv")") {
+                SettingsCard(title: String(localized: "Fächer · \(cabinet.name)"),
+                             subtitle: String(localized: "\(cabinet.sizeText) Fächer · \(AppStyle.records(cabinet.recordCount)) eingeräumt\(cabinet.isActive ? "" : String(localized: " · inaktiv"))")) {
                     Grid(horizontalSpacing: AppStyle.itemSpacing, verticalSpacing: AppStyle.itemSpacing) {
                         ForEach(0..<cabinet.rows, id: \.self) { row in
                             GridRow {
@@ -117,32 +117,32 @@ struct ShelfSettingsView: View {
                             }
                         }
                     }
-                    SettingsNote("Klicke auf ein Fach, um es zu sperren oder zu entsperren – z. B. für Deko oder andere Dinge. Gesperrte Fächer werden beim Einsortieren übersprungen.")
+                    SettingsNote(String(localized: "Klicke auf ein Fach, um es zu sperren oder zu entsperren – z. B. für Deko oder andere Dinge. Gesperrte Fächer werden beim Einsortieren übersprungen."))
                     if let shelfError { AppBanner(message: shelfError, kind: .error).transition(AppStyle.funnelTransition()) }
                 }
             }
 
-            SettingsCard(title: "Einsortieren",
-                         subtitle: "Wie die Platten im Fach stehen und was beim Hinzufügen hilft.") {
-                SettingsRow(title: "Bei gleichem Interpreten nach", hint: "Immer zuerst nach Interpret. \(secondaryOrder.hint) Gilt für Platzsuche, Hinzufügen und „Sortierung prüfen“.") {
+            SettingsCard(title: String(localized: "Einsortieren"),
+                         subtitle: String(localized: "Wie die Platten im Fach stehen und was beim Hinzufügen hilft.")) {
+                SettingsRow(title: String(localized: "Bei gleichem Interpreten nach"), hint: String(localized: "Immer zuerst nach Interpret. \(secondaryOrder.hint) Gilt für Platzsuche, Hinzufügen und „Sortierung prüfen“.")) {
                     GlassSegmentedPicker(selection: $secondaryOrder, options: ShelfSecondaryOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Bei gleichem Interpreten nach")
                 }
                 Divider()
-                SettingsRow(title: "Vermisst-Liste",
+                SettingsRow(title: String(localized: "Vermisst-Liste"),
                             hint: missingEnabled
-                            ? "Platten, die du beim Einsortieren nicht findest, lassen sich zurückstellen. Sie stehen neben „Platte hinzufügen“, bis sie wieder auftauchen."
-                            : "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest.") {
+                            ? String(localized: "Platten, die du beim Einsortieren nicht findest, lassen sich zurückstellen. Sie stehen neben „Platte hinzufügen“, bis sie wieder auftauchen.")
+                            : String(localized: "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest.")) {
                     Toggle("Vermisst-Liste", isOn: $missingEnabled)
                         .labelsHidden().toggleStyle(.switch)
                 }
             }
 
-            SettingsCard(title: "Beschriftung",
-                         subtitle: "Wie die Fächer auf der Regalseite, in Listen und im Export heißen.") {
-                SettingsRow(title: "Fächer benennen nach", hint: labelStyle == .range
-                            ? "Erste und letzte Buchstaben der Interpreten im Fach, \(labelStyle.example)."
-                            : "Platz im Regal von links oben, \(labelStyle.example).") {
+            SettingsCard(title: String(localized: "Beschriftung"),
+                         subtitle: String(localized: "Wie die Fächer auf der Regalseite, in Listen und im Export heißen.")) {
+                SettingsRow(title: String(localized: "Fächer benennen nach"), hint: labelStyle == .range
+                            ? String(localized: "Erste und letzte Buchstaben der Interpreten im Fach, \(labelStyle.example).")
+                            : String(localized: "Platz im Regal von links oben, \(labelStyle.example).")) {
                     GlassSegmentedPicker(selection: $labelStyle, options: ShelfLabelStyle.allCases) { Text($0.title) }
                         .accessibilityLabel("Beschriftung")
                 }
@@ -258,8 +258,8 @@ private struct CabinetChip: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .animation(AppStyle.quickAnimation, value: hovering)
-        .help(cabinet.isActive ? "Aktiv – Leertaste deaktiviert es" : "Inaktiv – Leertaste aktiviert es")
-        .accessibilityLabel("\(cabinet.name), \(cabinet.sizeText), \(cabinet.isActive ? "aktiv" : "inaktiv")")
+        .help(cabinet.isActive ? String(localized: "Aktiv – Leertaste deaktiviert es") : String(localized: "Inaktiv – Leertaste aktiviert es"))
+        .accessibilityLabel("\(cabinet.name), \(cabinet.sizeText), \(cabinet.isActive ? String(localized: "aktiv") : String(localized: "inaktiv"))")
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
@@ -286,12 +286,12 @@ private struct CabinetSizePicker: View {
         preset.title + (preset.orientation.map { " (\($0))" } ?? "")
     }
     private var currentSizeTitle: String {
-        KallaxPreset.all.first { $0.id == selection.wrappedValue }.map(presetTitle) ?? "Eigene Größe"
+        KallaxPreset.all.first { $0.id == selection.wrappedValue }.map(presetTitle) ?? String(localized: "Eigene Größe")
     }
 
     var body: some View {
         VStack(alignment: .trailing, spacing: AppStyle.itemSpacing) {
-            GlassMenuPicker(title: "Größe", selection: selection, current: currentSizeTitle) {
+            GlassMenuPicker(title: String(localized: "Größe"), selection: selection, current: currentSizeTitle) {
                 Section("IKEA KALLAX") {
                     ForEach(KallaxPreset.all) { preset in
                         Text(presetTitle(preset)).tag(preset.id)
@@ -302,8 +302,8 @@ private struct CabinetSizePicker: View {
             }
             if selection.wrappedValue == "custom" {
                 HStack(spacing: AppStyle.rowSpacing) {
-                    GlassStepper(value: $columns, range: ShelfGeometry.sizeRange) { "\($0) Spalten" }
-                    GlassStepper(value: $rows, range: ShelfGeometry.sizeRange) { "\($0) Reihen" }
+                    GlassStepper(value: $columns, range: ShelfGeometry.sizeRange) { String(localized: "\($0) Spalten") }
+                    GlassStepper(value: $rows, range: ShelfGeometry.sizeRange) { String(localized: "\($0) Reihen") }
                 }
                 .monospacedDigit()
             }
@@ -323,17 +323,17 @@ private struct CabinetCreator: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             Divider()
-            SettingsRow(title: "Name") {
+            SettingsRow(title: String(localized: "Name")) {
                 CabinetNameField(placeholder: suggestedName, text: $name) { add() }
             }
             Divider()
-            SettingsRow(title: "Größe", hint: "Spalten × Reihen.") {
+            SettingsRow(title: String(localized: "Größe"), hint: String(localized: "Spalten × Reihen.")) {
                 CabinetSizePicker(columns: $columns, rows: $rows)
             }
             HStack(spacing: AppStyle.itemSpacing) {
                 Spacer()
-                GhostButton(title: "Abbrechen", action: cancel).keyboardShortcut(.cancelAction)
-                PrimaryButton(title: "Regal anlegen", action: add).keyboardShortcut(.defaultAction)
+                GhostButton(title: String(localized: "Abbrechen"), action: cancel).keyboardShortcut(.cancelAction)
+                PrimaryButton(title: String(localized: "Regal anlegen"), action: add).keyboardShortcut(.defaultAction)
             }
         }
     }
@@ -378,36 +378,36 @@ private struct CabinetEditor: View {
     private var sizeChanged: Bool { columns != cabinet.columns || rows != cabinet.rows }
     private var activeHint: String {
         if !cabinet.isActive {
-            return "Die Platten behalten ihre Plätze, sind aber auf der Regalseite ausgeblendet und werden beim Einsortieren übersprungen."
+            return String(localized: "Die Platten behalten ihre Plätze, sind aber auf der Regalseite ausgeblendet und werden beim Einsortieren übersprungen.")
         }
         return isOnlyActive
-            ? "Das einzige aktive Regal – mindestens eines muss aktiv bleiben, damit es Platz zum Einsortieren gibt."
-            : "Wird auf der Regalseite gezeigt und beim Einsortieren berücksichtigt."
+            ? String(localized: "Das einzige aktive Regal – mindestens eines muss aktiv bleiben, damit es Platz zum Einsortieren gibt.")
+            : String(localized: "Wird auf der Regalseite gezeigt und beim Einsortieren berücksichtigt.")
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            SettingsRow(title: "Name", hint: "Auch per Rechtsklick auf den Reiter der Regalseite.") {
-                CabinetNameField(placeholder: "Name", text: $name, submit: commitName)
+            SettingsRow(title: String(localized: "Name"), hint: String(localized: "Auch per Rechtsklick auf den Reiter der Regalseite.")) {
+                CabinetNameField(placeholder: String(localized: "Name"), text: $name, submit: commitName)
             }
             Divider()
-            SettingsRow(title: "Aktiv", hint: activeHint) {
+            SettingsRow(title: String(localized: "Aktiv"), hint: activeHint) {
                 Toggle("Aktiv", isOn: Binding(get: { cabinet.isActive },
                                               set: { on in report { try service.setActive(cabinet, on) } }))
                     .labelsHidden().toggleStyle(.switch)
                     .disabled(isOnlyActive)
             }
             Divider()
-            SettingsRow(title: "Größe", hint: sizeChanged
-                        ? "Die Fächer behalten ihre Reihenfolge von links oben. Fallen Fächer weg, müssen sie leer sein – gesperrte verlieren dabei Sperre und Namen."
-                        : "Spalten × Reihen") {
+            SettingsRow(title: String(localized: "Größe"), hint: sizeChanged
+                        ? String(localized: "Die Fächer behalten ihre Reihenfolge von links oben. Fallen Fächer weg, müssen sie leer sein – gesperrte verlieren dabei Sperre und Namen.")
+                        : String(localized: "Spalten × Reihen")) {
                 CabinetSizePicker(columns: $columns, rows: $rows)
             }
             if sizeChanged {
                 HStack(spacing: AppStyle.itemSpacing) {
                     Spacer()
-                    GhostButton(title: "Zurücksetzen") { columns = cabinet.columns; rows = cabinet.rows }
-                    PrimaryButton(title: "Größe übernehmen") {
+                    GhostButton(title: String(localized: "Zurücksetzen")) { columns = cabinet.columns; rows = cabinet.rows }
+                    PrimaryButton(title: String(localized: "Größe übernehmen")) {
                         report { try service.resize(cabinet, columns: columns, rows: rows) }
                     }
                 }
@@ -415,22 +415,22 @@ private struct CabinetEditor: View {
             }
             if !isOnly {
                 Divider()
-                SettingsRow(title: "Reihenfolge", hint: "Position unter den Reitern der Regalseite.") {
+                SettingsRow(title: String(localized: "Reihenfolge"), hint: String(localized: "Position unter den Reitern der Regalseite.")) {
                     HStack(spacing: AppStyle.tightSpacing) {
-                        IconButton(systemImage: "arrow.left", help: "Nach vorne schieben") { report { try service.move(cabinet, by: -1) } }
+                        IconButton(systemImage: "arrow.left", help: String(localized: "Nach vorne schieben")) { report { try service.move(cabinet, by: -1) } }
                             .disabled(isFirst)
-                        IconButton(systemImage: "arrow.right", help: "Nach hinten schieben") { report { try service.move(cabinet, by: 1) } }
+                        IconButton(systemImage: "arrow.right", help: String(localized: "Nach hinten schieben")) { report { try service.move(cabinet, by: 1) } }
                             .disabled(isLast)
                     }
                     .foregroundStyle(.secondary)
                 }
                 Divider()
-                SettingsRow(title: "Regal löschen", hint: cabinet.recordCount > 0
-                            ? "Nur leere Regale lassen sich löschen."
-                            : "Das Regal ist leer und kann entfernt werden.") {
+                SettingsRow(title: String(localized: "Regal löschen"), hint: cabinet.recordCount > 0
+                            ? String(localized: "Nur leere Regale lassen sich löschen.")
+                            : String(localized: "Das Regal ist leer und kann entfernt werden.")) {
                     // Red only while it can be used: a set color would hide the
                     // dimmed look of a disabled button.
-                    GhostButton(title: "Löschen") { confirmingDelete = true }
+                    GhostButton(title: String(localized: "Löschen")) { confirmingDelete = true }
                         .foregroundStyle(cabinet.recordCount > 0 ? AnyShapeStyle(.tertiary) : AnyShapeStyle(AppStyle.errorColor))
                         .disabled(cabinet.recordCount > 0)
                 }
@@ -521,7 +521,7 @@ private struct ShelfTile: View {
         return label ?? shelf.numberText
     }
     private var detail: String {
-        shelf.isReserved ? "Gesperrt" : shelf.copies.isEmpty ? "Leer" : AppStyle.records(shelf.copies.count)
+        shelf.isReserved ? String(localized: "Gesperrt") : shelf.copies.isEmpty ? String(localized: "Leer") : AppStyle.records(shelf.copies.count)
     }
 }
 

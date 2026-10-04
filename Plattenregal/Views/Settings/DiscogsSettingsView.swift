@@ -35,22 +35,22 @@ struct DiscogsSettingsView: View {
     var body: some View {
         @Bindable var model = model
         SettingsPage {
-            SettingsCard(title: "Konto",
-                         subtitle: DemoMode.isActive ? "Im Demo-Modus ist Discogs ausgeschaltet – Token und Synchronisierung sind gesperrt, dein gespeicherter Token wird nicht gelesen." : accountStatus) {
-                GlassTextField(placeholder: "Persönlicher API-Token", text: $model.token, secure: true,
+            SettingsCard(title: String(localized: "Konto"),
+                         subtitle: DemoMode.isActive ? String(localized: "Im Demo-Modus ist Discogs ausgeschaltet – Token und Synchronisierung sind gesperrt, dein gespeicherter Token wird nicht gelesen.") : accountStatus) {
+                GlassTextField(placeholder: String(localized: "Persönlicher API-Token"), text: $model.token, secure: true,
                                onSubmit: { if canTest { model.startTest() } }, focus: $tokenFocused)
                     // Without a token (first start) the field is where to begin.
                     .onAppear { if !model.hasStoredToken && !DemoMode.isActive { tokenFocused = true } }
                     // The tested token replaces the field when the test ends.
                     .disabled(model.busy || DemoMode.isActive)
                 HStack(spacing: AppStyle.itemSpacing) {
-                    PrimaryButton(title: "Speichern & testen") { model.startTest() }
+                    PrimaryButton(title: String(localized: "Speichern & testen")) { model.startTest() }
                         .disabled(!canTest || DemoMode.isActive)
                     if model.busy {
-                        GhostButton(title: "Abbrechen") { model.cancelTest() }
+                        GhostButton(title: String(localized: "Abbrechen")) { model.cancelTest() }
                     }
                     if model.hasStoredToken {
-                        GhostButton(title: "Token entfernen") { confirmingRemoval = true }
+                        GhostButton(title: String(localized: "Token entfernen")) { confirmingRemoval = true }
                             .disabled(model.busy || sync.isRunning)
                             .confirmationDialog("Token entfernen?", isPresented: $confirmingRemoval) {
                                 Button("Entfernen", role: .destructive) { model.remove() }
@@ -59,7 +59,7 @@ struct DiscogsSettingsView: View {
                             }
                     }
                     if model.keychainUnreadable {
-                        SecondaryButton(title: "Erneut lesen") { model.load() }
+                        SecondaryButton(title: String(localized: "Erneut lesen")) { model.load() }
                             .disabled(model.busy)
                     }
                     if model.busy { ActivityRing(size: 14).transition(.opacity) }
@@ -72,31 +72,31 @@ struct DiscogsSettingsView: View {
                         .transition(AppStyle.funnelTransition())
                 }
                 if sync.isRunning {
-                    SettingsNote("Während der Synchronisierung lässt sich der Token nicht ändern.")
+                    SettingsNote(String(localized: "Während der Synchronisierung lässt sich der Token nicht ändern."))
                 } else if model.hasUnsavedToken && !model.busy {
                     SettingsNote(model.hasStoredToken
-                        ? "Der eingegebene Token ist noch nicht gespeichert – synchronisiert wird weiter mit dem gespeicherten."
-                        : "Der eingegebene Token ist noch nicht gespeichert.")
+                        ? String(localized: "Der eingegebene Token ist noch nicht gespeichert – synchronisiert wird weiter mit dem gespeicherten.")
+                        : String(localized: "Der eingegebene Token ist noch nicht gespeichert."))
                 }
-                SettingsNote("Der Token liegt ausschließlich im macOS-Schlüsselbund.")
+                SettingsNote(String(localized: "Der Token liegt ausschließlich im macOS-Schlüsselbund."))
             }
             .animation(AppStyle.standardAnimation, value: model.status)
 
-            SettingsCard(title: "Synchronisierung",
-                         subtitle: "Collection und Wantlist lassen sich auch auf ihrer Seite mit ⌘R oder durch Herunterziehen aktualisieren.") {
+            SettingsCard(title: String(localized: "Synchronisierung"),
+                         subtitle: String(localized: "Collection und Wantlist lassen sich auch auf ihrer Seite mit ⌘R oder durch Herunterziehen aktualisieren.")) {
                 if let account {
                     HStack(spacing: AppStyle.itemSpacing) {
                         let counts = counts(for: account.username)
-                        syncTile("Collection", count: counts.collection,
+                        syncTile(String(localized: "Collection"), count: counts.collection,
                                  date: account.lastCollectionSync, systemImage: "square.stack")
-                        syncTile("Wantlist", count: counts.wantlist,
+                        syncTile(String(localized: "Wantlist"), count: counts.wantlist,
                                  date: account.lastWantlistSync, systemImage: "heart.text.clipboard")
                     }
                 }
                 HStack(spacing: AppStyle.itemSpacing) {
-                    PrimaryButton(title: "Alles synchronisieren") { start(.all) }
-                    SecondaryButton(title: "Nur Collection") { start(.collection) }
-                    SecondaryButton(title: "Nur Wantlist") { start(.wantlist) }
+                    PrimaryButton(title: String(localized: "Alles synchronisieren")) { start(.all) }
+                    SecondaryButton(title: String(localized: "Nur Collection")) { start(.collection) }
+                    SecondaryButton(title: String(localized: "Nur Wantlist")) { start(.wantlist) }
                 }
                 .disabled(sync.busy || model.busy || !canSync)
                 if sync.hasStatus {
@@ -110,8 +110,8 @@ struct DiscogsSettingsView: View {
 
             let ownFolders = folders.filter { $0.owner == account?.username }
             if !ownFolders.isEmpty {
-                SettingsCard(title: "Discogs-Ordner",
-                             subtitle: "Ordner organisieren die Collection bei Discogs. Die Fächer im Regal sind davon unabhängig.") {
+                SettingsCard(title: String(localized: "Discogs-Ordner"),
+                             subtitle: String(localized: "Ordner organisieren die Collection bei Discogs. Die Fächer im Regal sind davon unabhängig.")) {
                     VStack(spacing: 0) {
                         ForEach(Array(ownFolders.enumerated()), id: \.element.key) { index, folder in
                             if index > 0 { Divider() }
@@ -119,7 +119,7 @@ struct DiscogsSettingsView: View {
                                 Text(folder.name)
                                 Spacer()
                                 Text(AppStyle.records(folder.count)).monospacedDigit().foregroundStyle(.secondary)
-                                IconButton(systemImage: "arrow.triangle.2.circlepath", help: "Ordner „\(folder.name)“ synchronisieren") {
+                                IconButton(systemImage: "arrow.triangle.2.circlepath", help: String(localized: "Ordner „\(folder.name)“ synchronisieren")) {
                                     sync.start(.folder(folder.folderID), container: context.container, expectedOwner: folder.owner)
                                 }
                                 .disabled(sync.busy || model.busy || !canSync)
@@ -130,8 +130,8 @@ struct DiscogsSettingsView: View {
                 }
             }
 
-            SettingsCard(title: "Hinweise", subtitle: "Speicherplatz und Cover-Cache stehen unter „Daten“.") {
-                SettingsNote("Release-Daten werden bei jeder Synchronisierung aktualisiert; ältere Einträge lassen sich in der Detailansicht einzeln neu laden. Ohne Verbindung bleiben eigene Exemplar- und Standortdaten vollständig verfügbar.")
+            SettingsCard(title: String(localized: "Hinweise"), subtitle: String(localized: "Speicherplatz und Cover-Cache stehen unter „Daten“.")) {
+                SettingsNote(String(localized: "Release-Daten werden bei jeder Synchronisierung aktualisiert; ältere Einträge lassen sich in der Detailansicht einzeln neu laden. Ohne Verbindung bleiben eigene Exemplar- und Standortdaten vollständig verfügbar."))
                 SettingsNote("This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. ‘Discogs’ is a trademark of Zink Media, LLC.")
                 Link("Discogs API-Nutzungsbedingungen ↗", destination: URL(string: "https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use")!)
                     .font(.callout)
@@ -152,16 +152,16 @@ struct DiscogsSettingsView: View {
     /// account doesn't keep showing the old name. Without a test in this
     /// session only the last sync is known – "connected" would be a guess.
     private var accountStatus: String {
-        if model.keychainUnreadable { return "Schlüsselbund nicht lesbar" }
-        guard model.hasStoredToken else { return "Kein Token gespeichert" }
+        if model.keychainUnreadable { return String(localized: "Schlüsselbund nicht lesbar") }
+        guard model.hasStoredToken else { return String(localized: "Kein Token gespeichert") }
         switch model.verified {
-        case .success(let name): return "Verbunden als \(name)"
-        case .failure: return "Token gespeichert · Die Verbindung zu Discogs hat nicht geklappt"
+        case .success(let name): return String(localized: "Verbunden als \(name)")
+        case .failure: return String(localized: "Token gespeichert · Die Verbindung zu Discogs hat nicht geklappt")
         case nil:
             if let fingerprint = model.storedFingerprint, fingerprint == sync.rejectedFingerprint {
-                return "Token ungültig · Discogs hat ihn bei der letzten Synchronisierung abgelehnt"
+                return String(localized: "Token ungültig · Discogs hat ihn bei der letzten Synchronisierung abgelehnt")
             }
-            return account.map { "Zuletzt synchronisiert als \($0.username)" } ?? "Token gespeichert · noch nicht synchronisiert"
+            return account.map { String(localized: "Zuletzt synchronisiert als \($0.username)") } ?? String(localized: "Token gespeichert · noch nicht synchronisiert")
         }
     }
 
@@ -189,7 +189,7 @@ struct DiscogsSettingsView: View {
                 Text(title).font(.headline)
                 // Ticks along while the window stays open ("vor 2 Minuten" …).
                 TimelineView(.everyMinute) { _ in
-                    Text(AppStyle.records(count) + " · " + (date.map { "Stand \($0.formatted(.relative(presentation: .named)))" } ?? "noch nicht synchronisiert"))
+                    Text(AppStyle.records(count) + " · " + (date.map { String(localized: "Stand \($0.formatted(.relative(presentation: .named)))") } ?? String(localized: "noch nicht synchronisiert")))
                         .monospacedDigit()
                 }
                 .font(.caption).foregroundStyle(.secondary)

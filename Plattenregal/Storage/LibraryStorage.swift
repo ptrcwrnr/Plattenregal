@@ -5,7 +5,7 @@ import OSLog
 nonisolated enum StorageError: LocalizedError {
     case alreadyOpen
     var errorDescription: String? {
-        "Plattenregal ist bereits geöffnet – zum Beispiel aus Xcode oder ein zweites Mal aus dem Finder. Damit nie zwei Instanzen gleichzeitig in deine Sammlung schreiben, öffnet diese hier sie nicht. Beende die andere Instanz und starte Plattenregal dann neu."
+        String(localized: "Plattenregal ist bereits geöffnet – zum Beispiel aus Xcode oder ein zweites Mal aus dem Finder. Damit nie zwei Instanzen gleichzeitig in deine Sammlung schreiben, öffnet diese hier sie nicht. Beende die andere Instanz und starte Plattenregal dann neu.")
     }
 }
 
@@ -74,7 +74,7 @@ enum LibraryStorage {
         // Stores from before cabinets (and fresh installs) get one KALLAX
         // holding the compartments 1…12, keeping their numbers and places.
         if cabinets.isEmpty {
-            let cabinet = Cabinet(name: "Regal", rows: ShelfGeometry.rows, columns: ShelfGeometry.columns, sortOrder: 0)
+            let cabinet = Cabinet(name: String(localized: "Regal"), rows: ShelfGeometry.rows, columns: ShelfGeometry.columns, sortOrder: 0)
             context.insert(cabinet)
             cabinets = [cabinet]
         }

@@ -38,33 +38,33 @@ struct ExportSettingsView: View {
     var body: some View {
         let total = count
         SettingsPage {
-            SettingsCard(title: "Inhalt", subtitle: "Exportiert wird die Collection bzw. Wantlist des aktuellen Discogs-Kontos.") {
-                SettingsRow(title: "Daten") {
+            SettingsCard(title: String(localized: "Inhalt"), subtitle: String(localized: "Exportiert wird die Collection bzw. Wantlist des aktuellen Discogs-Kontos.")) {
+                SettingsRow(title: String(localized: "Daten")) {
                     segmented($source, ExportSource.allCases) { $0.title }
                 }
                 Divider()
-                SettingsRow(title: "Format",
+                SettingsRow(title: String(localized: "Format"),
                             hint: format == .csv
-                                ? "Für Numbers, Excel oder Google Sheets – mit den unten gewählten Spalten."
+                                ? String(localized: "Für Numbers, Excel oder Google Sheets – mit den unten gewählten Spalten.")
                                 : source == .collection
-                                    ? "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer, Format und Fach."
-                                    : "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer und Format.") {
+                                    ? String(localized: "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer, Format und Fach.")
+                                    : String(localized: "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer und Format.")) {
                     segmented($format, ExportFormat.allCases) { $0.title }
                 }
                 if source == .collection {
                     Divider()
-                    SettingsRow(title: "Reihenfolge",
+                    SettingsRow(title: String(localized: "Reihenfolge"),
                                 hint: order == .shelf
-                                    ? "Fach für Fach, jeweils von vorne nach hinten; Platten ohne Fach am Ende."
-                                    : "Nach Interpret und Titel, wie auf der Collection-Seite.") {
+                                    ? String(localized: "Fach für Fach, jeweils von vorne nach hinten; Platten ohne Fach am Ende.")
+                                    : String(localized: "Nach Interpret und Titel, wie auf der Collection-Seite.")) {
                         segmented($order, ExportOrder.allCases) { $0.title }
                     }
                 }
             }
 
             if format == .csv {
-                SettingsCard(title: "Spalten",
-                             subtitle: "Interpret, Titel, Jahr, Label, Katalognummer, Format, Land und Stile sind immer enthalten.") {
+                SettingsCard(title: String(localized: "Spalten"),
+                             subtitle: String(localized: "Interpret, Titel, Jahr, Label, Katalognummer, Format, Land und Stile sind immer enthalten.")) {
                     let available = ExportColumnGroup.allCases.filter { $0.applies(to: source) }
                     ForEach(Array(available.enumerated()), id: \.element) { index, group in
                         if index > 0 { Divider() }
@@ -73,17 +73,17 @@ struct ExportSettingsView: View {
                         }
                     }
                     Divider()
-                    SettingsRow(title: "Trennzeichen", hint: "Excel mit deutschen Einstellungen erwartet Semikolons.") {
+                    SettingsRow(title: String(localized: "Trennzeichen"), hint: String(localized: "Excel mit deutschen Einstellungen erwartet Semikolons.")) {
                         segmented($delimiter, ExportDelimiter.allCases) { $0.title }
                     }
                 }
                 .transition(AppStyle.funnelTransition())
             }
 
-            SettingsCard(title: "Datei") {
+            SettingsCard(title: String(localized: "Datei")) {
                 SettingsRow(title: AppStyle.records(total),
-                            hint: sync.isRunning ? "Nach der laufenden Synchronisierung ist der Export vollständig." : nil) {
-                    PrimaryButton(title: preparing ? "Wird erstellt …" : "Als \(format.title) exportieren …", action: export)
+                            hint: sync.isRunning ? String(localized: "Nach der laufenden Synchronisierung ist der Export vollständig.") : nil) {
+                    PrimaryButton(title: preparing ? String(localized: "Wird erstellt …") : String(localized: "Als \(format.title) exportieren …"), action: export)
                         .disabled(total == 0 || preparing)
                 }
                 if let status {
@@ -103,7 +103,7 @@ struct ExportSettingsView: View {
             let done = exported ?? settings
             switch result {
             case .success(let url):
-                status = ("Gespeichert als „\(url.lastPathComponent)“.", false)
+                status = (String(localized: "Gespeichert als „\(url.lastPathComponent)“."), false)
                 AppLog.info("Export", "\(done.format.title)-Export gespeichert (\(done.source.title), \(url.lastPathComponent))")
             case .failure(let error) where error.isUserCancellation:
                 break
@@ -122,7 +122,7 @@ struct ExportSettingsView: View {
     }
 
     private var defaultFilename: String {
-        "Plattenregal \((exported ?? settings).source.title) \(ExportDate.day(.now))\(DemoMode.fileSuffix)"
+        String(localized: "Plattenregal \((exported ?? settings).source.title) \(ExportDate.day(.now))\(DemoMode.fileSuffix)")
     }
 
     private func export() {
@@ -145,41 +145,41 @@ struct ExportSettingsView: View {
 
     /// Writes the export on its own into a fixed folder, with the settings above.
     private var automaticCard: some View {
-        SettingsCard(title: "Automatisch exportieren",
+        SettingsCard(title: String(localized: "Automatisch exportieren"),
                             subtitle: DemoMode.isActive
-                                ? "In der Demo wird nicht automatisch exportiert. Über „Als … exportieren“ oben lässt sich die Beispielsammlung trotzdem als Datei sichern."
-                                : "Schreibt den Export mit den Einstellungen oben regelmäßig in einen Ordner – z. B. in iCloud Drive. Die Datei „\(ScheduledExport.fileName(for: settings))“ wird dabei jedes Mal ersetzt.") {
-            SettingsRow(title: "Automatisch exportieren") {
+                                ? String(localized: "In der Demo wird nicht automatisch exportiert. Über „Als … exportieren“ oben lässt sich die Beispielsammlung trotzdem als Datei sichern.")
+                                : String(localized: "Schreibt den Export mit den Einstellungen oben regelmäßig in einen Ordner – z. B. in iCloud Drive. Die Datei „\(ScheduledExport.fileName(for: settings))“ wird dabei jedes Mal ersetzt.")) {
+            SettingsRow(title: String(localized: "Automatisch exportieren")) {
                 Toggle("Automatisch exportieren", isOn: $autoEnabled).labelsHidden().toggleStyle(.switch)
                     .disabled(DemoMode.isActive)
             }
             if autoEnabled {
                 Divider()
-                SettingsRow(title: "Häufigkeit") {
+                SettingsRow(title: String(localized: "Häufigkeit")) {
                     segmented($autoInterval, ExportInterval.allCases) { $0.title }
                 }
                 Divider()
-                SettingsRow(title: "Ordner", hint: folder.map(FolderAccess.displayName) ?? (ScheduledExport.folder.isSet
-                                ? "Der gewählte Ordner ist nicht mehr erreichbar (verschoben, gelöscht oder Laufwerk getrennt). Bitte neu wählen."
-                                : "Noch kein Ordner gewählt – ohne Ordner wird nichts exportiert.")) {
+                SettingsRow(title: String(localized: "Ordner"), hint: folder.map(FolderAccess.displayName) ?? (ScheduledExport.folder.isSet
+                                ? String(localized: "Der gewählte Ordner ist nicht mehr erreichbar (verschoben, gelöscht oder Laufwerk getrennt). Bitte neu wählen.")
+                                : String(localized: "Noch kein Ordner gewählt – ohne Ordner wird nichts exportiert."))) {
                     HStack(spacing: AppStyle.itemSpacing) {
                         // Worded like "Im Finder zeigen" under Sicherung and Daten.
                         if folder != nil {
-                            GhostButton(title: "Im Finder zeigen") {
+                            GhostButton(title: String(localized: "Im Finder zeigen")) {
                                 try? ScheduledExport.folder.withAccess { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
                             }
                         }
-                        SecondaryButton(title: folder == nil ? "Wählen …" : "Ändern …") { chooseExportFolder() }
+                        SecondaryButton(title: folder == nil ? String(localized: "Wählen …") : String(localized: "Ändern …")) { chooseExportFolder() }
                     }
                 }
                 Divider()
-                SettingsRow(title: scheduled.lastRun.map { "Zuletzt \($0.formatted(.relative(presentation: .named)))" } ?? "Noch nicht exportiert",
-                            hint: sync.busy ? "Nach der laufenden Synchronisierung."
-                                : count == 0 ? "Ohne Platten wird nichts exportiert, damit keine leere Liste die letzte Datei ersetzt."
-                                : scheduled.nextRun.map { $0 <= .now ? "Der nächste Export folgt in Kürze." : "Nächster Export \($0.formatted(date: .abbreviated, time: .shortened))." }) {
-                    SecondaryButton(title: "Jetzt exportieren") {
+                SettingsRow(title: scheduled.lastRun.map { String(localized: "Zuletzt \($0.formatted(.relative(presentation: .named)))") } ?? String(localized: "Noch nicht exportiert"),
+                            hint: sync.busy ? String(localized: "Nach der laufenden Synchronisierung.")
+                                : count == 0 ? String(localized: "Ohne Platten wird nichts exportiert, damit keine leere Liste die letzte Datei ersetzt.")
+                                : scheduled.nextRun.map { $0 <= .now ? String(localized: "Der nächste Export folgt in Kürze.") : String(localized: "Nächster Export \($0.formatted(date: .abbreviated, time: .shortened)).") }) {
+                    SecondaryButton(title: String(localized: "Jetzt exportieren")) {
                         Task {
-                            do { autoStatus = ("Gespeichert als „\(try await scheduled.run(container: context.container))“.", false) }
+                            do { autoStatus = (String(localized: "Gespeichert als „\(try await scheduled.run(container: context.container))“."), false) }
                             catch { autoStatus = (scheduled.lastError ?? error.reportedMessage(), true) }
                         }
                     }
@@ -190,7 +190,7 @@ struct ExportSettingsView: View {
                     AppBanner(message: autoStatus.message, kind: autoStatus.failed ? .error : .success)
                         .transition(AppStyle.funnelTransition())
                 } else if let error = scheduled.lastError {
-                    AppBanner(message: "Der letzte automatische Export hat nicht geklappt. \(error)", kind: .warning)
+                    AppBanner(message: String(localized: "Der letzte automatische Export hat nicht geklappt. \(error)"), kind: .warning)
                         .transition(AppStyle.funnelTransition())
                 }
             }
@@ -207,7 +207,7 @@ struct ExportSettingsView: View {
     }
 
     private func chooseExportFolder() {
-        guard let url = FolderPicker.choose(message: "Ordner für den automatischen Export") else { return }
+        guard let url = FolderPicker.choose(message: String(localized: "Ordner für den automatischen Export")) else { return }
         do {
             try ScheduledExport.folder.set(url)
             autoStatus = nil

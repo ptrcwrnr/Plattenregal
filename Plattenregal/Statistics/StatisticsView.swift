@@ -16,16 +16,16 @@ enum StatisticsSection: String, CaseIterable, Identifiable {
     }
     var title: String {
         switch self {
-        case .overview: "Deine Sammlung"
-        case .highlights: "Auf einen Blick"
-        case .valueHistory: "Sammlungswert im Verlauf"
-        case .sound: "Klangbild"
-        case .artists: "Top-Künstler"
-        case .labels: "Labels"
-        case .discover: "Zufallsfund"
-        case .years: "Zeitreise"
-        case .acquisitions: "Neuzugänge"
-        case .recent: "Zuletzt hinzugefügt"
+        case .overview: String(localized: "Deine Sammlung")
+        case .highlights: String(localized: "Auf einen Blick")
+        case .valueHistory: String(localized: "Sammlungswert im Verlauf")
+        case .sound: String(localized: "Klangbild")
+        case .artists: String(localized: "Top-Künstler")
+        case .labels: String(localized: "Labels")
+        case .discover: String(localized: "Zufallsfund")
+        case .years: String(localized: "Zeitreise")
+        case .acquisitions: String(localized: "Neuzugänge")
+        case .recent: String(localized: "Zuletzt hinzugefügt")
         }
     }
     var systemImage: String {
@@ -109,7 +109,7 @@ struct StatisticsView: View {
                     }
                     // Only once loaded: before the first calculation the count is 0 too.
                     if model.version > 0 && model.statistics.totalItems == 0 {
-                        AppEmptyState("Noch keine Sammlung", systemImage: "opticaldisc", description: Text(DemoMode.isActive ? DemoMode.emptyHint : "Die Statistik entsteht aus deiner Discogs-Collection. Trage den Token in den Einstellungen ein und synchronisiere."))
+                        AppEmptyState(String(localized: "Noch keine Sammlung"), systemImage: "opticaldisc", description: Text(DemoMode.isActive ? DemoMode.emptyHint : String(localized: "Die Statistik entsteht aus deiner Discogs-Collection. Trage den Token in den Einstellungen ein und synchronisiere.")))
                             .frame(height: 240)
                     }
                     footnotes.padding(.top, AppStyle.itemSpacing)
@@ -250,9 +250,9 @@ struct StatisticsView: View {
     /// Controls that sit on the right of a card's title row.
     private func accessory(for section: StatisticsSection) -> AnyView? {
         switch section {
-        case .sound: AnyView(segmented($soundDimension, SoundDimension.allCases.map { ($0.rawValue, $0) }))
-        case .years: AnyView(segmented($yearsByDecade, [("Jahrzehnte", true), ("Jahre", false)]))
-        case .acquisitions: AnyView(segmented($additionsByYear, [("Monate", false), ("Jahre", true)]))
+        case .sound: AnyView(segmented($soundDimension, SoundDimension.allCases.map { ($0.title, $0) }))
+        case .years: AnyView(segmented($yearsByDecade, [(String(localized: "Jahrzehnte"), true), (String(localized: "Jahre"), false)]))
+        case .acquisitions: AnyView(segmented($additionsByYear, [(String(localized: "Monate"), false), (String(localized: "Jahre"), true)]))
         default: nil
         }
     }

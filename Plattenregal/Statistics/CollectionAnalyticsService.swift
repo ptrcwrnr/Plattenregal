@@ -120,7 +120,7 @@ nonisolated enum CollectionAnalyticsService {
         s.labels = mergingLegacy(groups { $0.labels })
         s.formats = groups { named($0.formats) }; s.countries = groups { named([$0.country]) }
         s.years = groups { named($0.year.map { [String($0)] } ?? []) }.sorted { $0.id < $1.id }
-        s.decades = groups { named($0.year.map { ["\($0 / 10 * 10)er"] } ?? []) }.sorted { $0.id < $1.id }
+        s.decades = groups { named($0.year.map { [String(localized: "\(String($0 / 10 * 10))er")] } ?? []) }.sorted { $0.id < $1.id }
         s.oldest = items.compactMap(\.year).min(); s.newest = items.compactMap(\.year).max()
         s.missingYear = items.filter { $0.year == nil }.count
         s.missingStyle = items.filter { $0.styles.isEmpty }.count

@@ -22,7 +22,7 @@ struct StylePalette {
         ("Drum & Bass / Breaks", 0x3A2A4A, 0x6E5788, ["Drum & Bass", "Breaks"]),                     // black-violet
     ]
     /// Name of the neutral family for every style not listed above.
-    static let otherFamily = "Sonstige"
+    static let otherFamily = String(localized: "Sonstige")
 
     private static let families: [String: (name: String, colorStyle: String)] = {
         var result: [String: (name: String, colorStyle: String)] = [:]
@@ -282,7 +282,7 @@ struct StatusTag: View {
 
 /// Small tag on a record marked "Vermisst" (table, search, "Platte hinzufügen").
 struct MissingBadge: View {
-    var body: some View { StatusTag(text: "Vermisst", color: AppStyle.errorColor) }
+    var body: some View { StatusTag(text: String(localized: "Vermisst"), color: AppStyle.errorColor) }
 }
 
 /// The "Vermisst" column beside "Platte hinzufügen": grouped by shelf (in
@@ -311,7 +311,7 @@ struct MissingCopiesColumn: View {
             if let last = result.last, last.id == id {
                 result[result.count - 1] = Group(id: id, title: last.title, copies: last.copies + [copy])
             } else {
-                let title = copy.shelf.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) } ?? "Noch ohne Fach"
+                let title = copy.shelf.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) } ?? String(localized: "Noch ohne Fach")
                 result.append(Group(id: id, title: title, copies: [copy]))
             }
         }
@@ -328,7 +328,7 @@ struct MissingCopiesColumn: View {
                         .contentTransition(.numericText())
                     Spacer()
                     if let collapse {
-                        IconButton(systemImage: "chevron.right", help: "Vermisst einklappen", action: collapse)
+                        IconButton(systemImage: "chevron.right", help: String(localized: "Vermisst einklappen"), action: collapse)
                             .foregroundStyle(.secondary)
                             .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
                     }
@@ -690,9 +690,9 @@ private struct ShelfCompartment: View {
     }
 
     private var accessibilityText: String {
-        if isReserved { return "\(shelf.name.isEmpty ? "Fach" : shelf.name), gesperrt" }
-        if stats.count == 0 { return "Leeres Fach" }
-        return "\(rangeLabel ?? "Fach"), \(AppStyle.records(stats.count))"
+        if isReserved { return String(localized: "\(shelf.name.isEmpty ? String(localized: "Fach") : shelf.name), gesperrt") }
+        if stats.count == 0 { return String(localized: "Leeres Fach") }
+        return String(localized: "\(rangeLabel ?? String(localized: "Fach")), \(AppStyle.records(stats.count))")
     }
 }
 

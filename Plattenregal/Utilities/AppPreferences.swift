@@ -7,10 +7,10 @@ enum StartPage: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .collection: "Collection"
-        case .wantlist: "Wantlist"
-        case .statistics: "Statistik"
-        case .shelf: "Regal"
+        case .collection: String(localized: "Collection")
+        case .wantlist: String(localized: "Wantlist")
+        case .statistics: String(localized: "Statistik")
+        case .shelf: String(localized: "Regal")
         }
     }
     var destination: Destination {
@@ -28,7 +28,7 @@ enum StartPage: String, CaseIterable, Identifiable {
 enum OverviewLayout: String, CaseIterable, Identifiable {
     case grid, list
     var id: Self { self }
-    var title: String { self == .grid ? "Raster" : "Liste" }
+    var title: String { self == .grid ? String(localized: "Raster") : String(localized: "Liste") }
     var systemImage: String { self == .grid ? "square.grid.2x2" : "list.bullet" }
 }
 
@@ -39,16 +39,16 @@ enum OverviewOrder: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .alphabetical: "Alphabetisch"
-        case .random: "Zufällig"
-        case .recent: "Neueste zuerst"
+        case .alphabetical: String(localized: "Alphabetisch")
+        case .random: String(localized: "Zufällig")
+        case .recent: String(localized: "Neueste zuerst")
         }
     }
     var hint: String {
         switch self {
-        case .alphabetical: "Nach Interpret, mit dem Alphabet am Rand."
-        case .random: "Bei jedem Start neu gemischt – so fällt immer mal wieder etwas anderes ins Auge."
-        case .recent: "Zuletzt bei Discogs hinzugefügt zuerst."
+        case .alphabetical: String(localized: "Nach Interpret, mit dem Alphabet am Rand.")
+        case .random: String(localized: "Bei jedem Start neu gemischt – so fällt immer mal wieder etwas anderes ins Auge.")
+        case .recent: String(localized: "Zuletzt bei Discogs hinzugefügt zuerst.")
         }
     }
 
@@ -129,17 +129,17 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .system: "System"
-        case .light: "Hell"
-        case .dark: "Dunkel"
+        case .system: String(localized: "System")
+        case .light: String(localized: "Hell")
+        case .dark: String(localized: "Dunkel")
         }
     }
     /// Always shown, so the row keeps its height when switching.
     var hint: String {
         switch self {
-        case .system: "Folgt der Einstellung von macOS."
-        case .light: "Immer hell, unabhängig von macOS."
-        case .dark: "Immer dunkel, unabhängig von macOS."
+        case .system: String(localized: "Folgt der Einstellung von macOS.")
+        case .light: String(localized: "Immer hell, unabhängig von macOS.")
+        case .dark: String(localized: "Immer dunkel, unabhängig von macOS.")
         }
     }
     var appearance: NSAppearance? {
@@ -157,15 +157,15 @@ enum AccentChoice: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .system: "Wie macOS"
-        case .blue: "Blau"
-        case .purple: "Lila"
-        case .pink: "Pink"
-        case .red: "Rot"
-        case .orange: "Orange"
-        case .yellow: "Gold"
-        case .green: "Grün"
-        case .graphite: "Graphit"
+        case .system: String(localized: "Wie macOS")
+        case .blue: String(localized: "Blau")
+        case .purple: String(localized: "Lila")
+        case .pink: String(localized: "Pink")
+        case .red: String(localized: "Rot")
+        case .orange: String(localized: "Orange")
+        case .yellow: String(localized: "Gold")
+        case .green: String(localized: "Grün")
+        case .graphite: String(localized: "Graphit")
         }
     }
     var color: Color {
@@ -193,9 +193,40 @@ enum AccentChoice: String, CaseIterable, Identifiable {
 enum AmbientChoice: String, CaseIterable, Identifiable {
     case off, blue, purple, pink, red, orange, yellow, green, graphite
     var id: Self { self }
-    var title: String { self == .off ? "Aus" : AccentChoice(rawValue: rawValue)?.title ?? rawValue }
+    var title: String { self == .off ? String(localized: "Aus") : AccentChoice(rawValue: rawValue)?.title ?? rawValue }
     /// nil when off.
     var color: Color? { AccentChoice(rawValue: rawValue)?.color }
+}
+
+/// The language of the app. `system` follows macOS (where Plattenregal can
+/// also get its own language under Language & Region); the others override it
+/// for this app only. Stored where macOS looks for it, so it applies from the
+/// next launch on – menus and system panels included.
+enum AppLanguage: String, CaseIterable, Identifiable {
+    case system, german = "de", english = "en"
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .system: String(localized: "Wie macOS")
+        // Each in its own language, so it can be found whatever is shown.
+        case .german: "Deutsch"
+        case .english: "English"
+        }
+    }
+
+    private static let key = "AppleLanguages"
+
+    /// The language set for this app – not the list macOS has for all apps.
+    /// Always in the real defaults: the language is the same in the demo.
+    static var stored: AppLanguage {
+        let list = UserDefaults.standard.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "")?[key] as? [String]
+        return list?.first.flatMap { AppLanguage(rawValue: String($0.prefix(2))) } ?? .system
+    }
+
+    static func store(_ language: AppLanguage) {
+        if language == .system { UserDefaults.standard.removeObject(forKey: key) }
+        else { UserDefaults.standard.set([language.rawValue], forKey: key) }
+    }
 }
 
 /// Settings that change the whole app at once. Observable, so every view
@@ -211,10 +242,14 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
         static let ambient = "ambientChoice"
     }
 
+    /// The language this launch was started with; a different choice needs a restart.
+    let languageAtLaunch = AppLanguage.stored
+
     var startPage: StartPage { didSet { store(startPage.rawValue, Key.startPage) } }
     var appearance: AppearanceMode { didSet { store(appearance.rawValue, Key.appearance); applyAppearance() } }
     var accent: AccentChoice { didSet { store(accent.rawValue, Key.accent) } }
     var ambient: AmbientChoice { didSet { store(ambient.rawValue, Key.ambient) } }
+    var language: AppLanguage { didSet { AppLanguage.store(language) } }
 
     private init() {
         let defaults = AppDefaults.store
@@ -222,6 +257,7 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppearanceMode.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .system
         ambient = defaults.string(forKey: Key.ambient).flatMap(AmbientChoice.init) ?? .blue
+        language = languageAtLaunch
     }
 
     /// Light or dark for every window, including sheets and the settings.
@@ -235,6 +271,8 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
         appearance = .system
         accent = .system
         ambient = .blue
+        // The demo's settings are its own; the language is the real app's.
+        if !DemoMode.isActive { language = .system }
     }
 
     private func store(_ value: String, _ key: String) {

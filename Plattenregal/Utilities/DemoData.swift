@@ -103,15 +103,15 @@ enum DemoData {
         account.lastCollectionSync = now
         account.lastWantlistSync = now
         context.insert(account)
-        let folders = [(1, "Uncategorized"), (2, "Elektronisch"), (3, "Klassiker")]
+        let folders = [(1, "Uncategorized"), (2, String(localized: "Elektronisch")), (3, String(localized: "Klassiker"))]
         for (id, name) in folders { context.insert(DiscogsFolder(owner: owner, id: id, name: name, count: 0)) }
 
         // The living room: the cabinet every store starts with.
         let cabinets = try context.fetch(FetchDescriptor<Cabinet>(sortBy: [SortDescriptor(\Cabinet.sortOrder)]))
         guard let livingRoom = cabinets.first else { throw LibraryError.missingRelease }
-        livingRoom.name = "Wohnzimmer"
+        livingRoom.name = String(localized: "Wohnzimmer")
         try context.save()
-        let hall = try CabinetService(context: context).add(name: "Flur", columns: 2, rows: 2)
+        let hall = try CabinetService(context: context).add(name: String(localized: "Flur"), columns: 2, rows: 2)
 
         var copies: [(copy: RecordCopy, album: Album)] = []
         for (index, album) in albums.enumerated() {
@@ -156,7 +156,7 @@ enum DemoData {
             item.copy.positionInShelf = index + 1
         }
         // One compartment holds the record player's accessories.
-        if let deko = hallShelves.last { deko.isReserved = true; deko.name = "Deko" }
+        if let deko = hallShelves.last { deko.isReserved = true; deko.name = String(localized: "Deko") }
         for item in copies where setAside.contains(item.album.artist) {
             context.insert(OptimizationExclusion(copyID: item.copy.id))
         }

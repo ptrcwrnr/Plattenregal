@@ -74,7 +74,7 @@ struct CollectionView: View {
     @Environment(\.openURL) private var openURL
     @State private var error: String?
     /// Saving a shelf change and reloading from Discogs fail differently.
-    @State private var errorTitle = "Änderung nicht gespeichert"
+    @State private var errorTitle = String(localized: "Änderung nicht gespeichert")
 
     init(
         pages: PageSelection<Destination>? = nil,
@@ -191,9 +191,9 @@ struct CollectionView: View {
     @State private var shelfLabels = ShelfLabels()
     private func placeLabel(for copy: RecordCopy) -> String {
         guard let shelf = copy.shelf else {
-            return excludedIDs.contains(copy.id) ? "Nicht im Regal" : "–"
+            return excludedIDs.contains(copy.id) ? String(localized: "Nicht im Regal") : "–"
         }
-        if shelf.isReserved { return shelfLabels.prefix(for: shelf) + (shelf.name.isEmpty ? "Gesperrtes Fach" : shelf.name) }
+        if shelf.isReserved { return shelfLabels.prefix(for: shelf) + (shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name) }
         return shelfLabels.prefix(for: shelf) + (shelfLabels[shelf.id] ?? "–")
     }
 
@@ -215,7 +215,7 @@ struct CollectionView: View {
             }
             if let pages {
                 OverviewSearchControl(
-                    placeholder: "Collection durchsuchen",
+                    placeholder: String(localized: "Collection durchsuchen"),
                     query: queryBinding,
                     focus: $searchFocused,
                     otherCount: wantlistMatches,
@@ -240,28 +240,28 @@ struct CollectionView: View {
             } else if items.isEmpty {
                 // Hits filtered away; an empty collection still gets the sync prompt below.
                 if !base.isEmpty {
-                    AppEmptyState("Keine Treffer", systemImage: "magnifyingglass",
+                    AppEmptyState(String(localized: "Keine Treffer"), systemImage: "magnifyingglass",
                         description: Text("Versuche einen anderen Titel, Interpreten oder ein anderes Label."))
                 } else if analyticsFilter != nil {
-                    AppEmptyState("Keine Schallplatten", systemImage: "opticaldisc",
+                    AppEmptyState(String(localized: "Keine Schallplatten"), systemImage: "opticaldisc",
                         description: Text("In dieser Auswahl ist nichts mehr in der Collection."))
                 } else {
                     // The collection mirrors Discogs, so the way in is a sync.
                     if DemoMode.isActive {
-                        AppEmptyState("Noch keine Schallplatten", systemImage: "opticaldisc",
-                            description: Text(DemoMode.emptyHint), actionTitle: "Demo neu starten") { DemoMode.restart() }
+                        AppEmptyState(String(localized: "Noch keine Schallplatten"), systemImage: "opticaldisc",
+                            description: Text(DemoMode.emptyHint), actionTitle: String(localized: "Demo neu starten")) { DemoMode.restart() }
                     } else {
                         if hasToken {
-                            AppEmptyState("Noch keine Schallplatten", systemImage: "opticaldisc",
+                            AppEmptyState(String(localized: "Noch keine Schallplatten"), systemImage: "opticaldisc",
                                 description: Text("Die Collection kommt von Discogs. Eine Synchronisierung holt deine Sammlung."),
-                                actionTitle: sync.busy ? nil : "Jetzt synchronisieren") {
+                                actionTitle: sync.busy ? nil : String(localized: "Jetzt synchronisieren")) {
                                 sync.start(.collection, container: context.container)
                             }
                         } else {
                             // First start: nothing works without the token, so that is the way in.
-                            AppEmptyState("Willkommen bei Plattenregal", systemImage: "opticaldisc",
+                            AppEmptyState(String(localized: "Willkommen bei Plattenregal"), systemImage: "opticaldisc",
                                 description: Text("Deine Collection kommt von Discogs. Trag deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her."),
-                                actionTitle: "Token eintragen") { settingsTab = .discogs }
+                                actionTitle: String(localized: "Token eintragen")) { settingsTab = .discogs }
                         }
                     }
                 }
@@ -308,8 +308,8 @@ struct CollectionView: View {
                                                      arrowEdge: .trailing) {
                                                 AppMenu(dismiss: { contextMenu = nil }) { gridContextMenu(group) }
                                             }
-                                            .help("\(copy.release?.displayArtist ?? "Unbekannt") · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? " · \(group.copies.count) Exemplare" : "")")
-                                            .accessibilityLabel("\(copy.release?.displayArtist ?? "Unbekannt"), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? ", \(group.copies.count) Exemplare" : "")")
+                                            .help("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")) · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: " · \(group.copies.count) Exemplare") : "")")
+                                            .accessibilityLabel("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: ", \(group.copies.count) Exemplare") : "")")
                                         }
                                     }
                                     .coverGridMotion(width: width, columnCount: columnCount)
@@ -477,7 +477,7 @@ struct CollectionView: View {
             ForEach(Array(group.copies.enumerated()), id: \.element.id) { index, copy in
                 let excluded = excludedIDs.contains(copy.id)
                 if index > 0 { Divider() }
-                AppMenuSection(title: "Exemplar \(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excluded))")
+                AppMenuSection(title: String(localized: "Exemplar \(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excluded))"))
                 actions(copy)
             }
         } else {
@@ -554,14 +554,14 @@ struct CollectionView: View {
             Button("Discogs-Daten aktualisieren") {
                 Task {
                     await refresh.reload(releases, context: context)
-                    if let message = refresh.error { errorTitle = "Discogs-Daten nicht aktualisiert"; error = message }
+                    if let message = refresh.error { errorTitle = String(localized: "Discogs-Daten nicht aktualisiert"); error = message }
                 }
             }
             .disabled(refresh.busy || sync.busy)
         }
     }
     private func perform(_ action: () throws -> Void) {
-        do { try action() } catch { errorTitle = "Änderung nicht gespeichert"; self.error = error.reportedMessage() }
+        do { try action() } catch { errorTitle = String(localized: "Änderung nicht gespeichert"); self.error = error.reportedMessage() }
     }
 }
 /// A grid tile represents one release, even when the collection contains
@@ -694,7 +694,7 @@ struct OverviewSearchControl: View {
                 Color.clear.frame(width: 0).overlay(alignment: .leading) {
                     if showsOtherSection {
                         Button(action: openOtherSection) {
-                            Text("\(otherCount.formatted()) in der \(otherSection.rawValue)")
+                            Text("\(otherCount.formatted()) in der \(otherSection.title)")
                                 .monospacedDigit()
                                 .lineLimit(1)
                                 .padding(.horizontal, 14)
@@ -706,8 +706,8 @@ struct OverviewSearchControl: View {
                         .buttonStyle(.plain)
                         .fixedSize()
                         .padding(.leading, AppStyle.itemSpacing)
-                        .help("Treffer in der \(otherSection.rawValue) anzeigen")
-                        .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.rawValue) anzeigen")
+                        .help("Treffer in der \(otherSection.title) anzeigen")
+                        .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.title) anzeigen")
                         .transition(.opacity)
                     }
                 }
@@ -725,13 +725,13 @@ struct PlacementBadge: View, Equatable {
     let inCollection: Bool
     let inWantlist: Bool
     var body: some View {
-        Text([inCollection ? "Collection" : nil, inWantlist ? "Wantlist" : nil].compactMap { $0 }.joined(separator: " · "))
+        Text([inCollection ? String(localized: "Collection") : nil, inWantlist ? String(localized: "Wantlist") : nil].compactMap { $0 }.joined(separator: " · "))
             .font(.caption2.weight(.medium))
             .foregroundStyle(.secondary)
             .padding(.horizontal, 7)
             .padding(.vertical, 3)
             .glassEffect(.regular, in: .capsule)
             .padding(6)
-            .accessibilityLabel("In: " + [inCollection ? "Collection" : nil, inWantlist ? "Wantlist" : nil].compactMap { $0 }.joined(separator: " und "))
+            .accessibilityLabel(String(localized: "In: ") + [inCollection ? String(localized: "Collection") : nil, inWantlist ? String(localized: "Wantlist") : nil].compactMap { $0 }.joined(separator: String(localized: " und ")))
     }
 }

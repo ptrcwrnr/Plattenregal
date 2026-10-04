@@ -27,8 +27,8 @@ enum ExportSource: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .collection: "Collection"
-        case .wantlist: "Wantlist"
+        case .collection: String(localized: "Collection")
+        case .wantlist: String(localized: "Wantlist")
         }
     }
 }
@@ -38,8 +38,8 @@ enum ExportOrder: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .shelf: "Wie im Regal"
-        case .artist: "Alphabetisch"
+        case .shelf: String(localized: "Wie im Regal")
+        case .artist: String(localized: "Alphabetisch")
         }
     }
 }
@@ -48,7 +48,7 @@ nonisolated enum ExportDelimiter: String, CaseIterable, Identifiable {
     case semicolon, comma
     var id: Self { self }
     var character: Character { self == .semicolon ? ";" : "," }
-    var title: String { self == .semicolon ? "Semikolon" : "Komma" }
+    var title: String { self == .semicolon ? String(localized: "Semikolon") : String(localized: "Komma") }
 }
 
 /// Optional column blocks on top of the release data (artist, title, year …),
@@ -58,22 +58,22 @@ enum ExportColumnGroup: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .location: "Standort im Regal"
-        case .copy: "Exemplar"
-        case .discogs: "Discogs-Verweise"
-        case .tracklist: "Tracklist"
+        case .location: String(localized: "Standort im Regal")
+        case .copy: String(localized: "Exemplar")
+        case .discogs: String(localized: "Discogs-Verweise")
+        case .tracklist: String(localized: "Tracklist")
         }
     }
     var hint: String {
         switch self {
-        case .location: "Regal, Fach und Position"
-        case .copy: "Discogs-Ordner und Hinzufügedatum"
-        case .discogs: "Release-ID, Master-ID und Link"
-        case .tracklist: "Alle Titel in einer Spalte"
+        case .location: String(localized: "Regal, Fach und Position")
+        case .copy: String(localized: "Discogs-Ordner und Hinzufügedatum")
+        case .discogs: String(localized: "Release-ID, Master-ID und Link")
+        case .tracklist: String(localized: "Alle Titel in einer Spalte")
         }
     }
     func hint(for source: ExportSource) -> String {
-        self == .copy && source == .wantlist ? "Hinzufügedatum" : hint
+        self == .copy && source == .wantlist ? String(localized: "Hinzufügedatum") : hint
     }
     /// The wantlist has no shelf places.
     func applies(to source: ExportSource) -> Bool { source == .collection || self != .location }
@@ -99,13 +99,13 @@ nonisolated struct ExportTable: Sendable {
 }
 
 nonisolated enum ExportColumn {
-    static let artist = "Interpret", title = "Titel", year = "Jahr", label = "Label"
-    static let catalogNumber = "Katalognummer", format = "Format", country = "Land"
-    static let styles = "Stile"
-    static let cabinet = "Regal", shelf = "Fach", position = "Position"
-    static let folder = "Ordner", added = "Hinzugefügt"
-    static let releaseID = "Release-ID", masterID = "Master-ID", link = "Discogs-Link"
-    static let tracklist = "Tracklist"
+    static let artist = String(localized: "Interpret"), title = String(localized: "Titel"), year = String(localized: "Jahr"), label = String(localized: "Label")
+    static let catalogNumber = String(localized: "Katalognummer"), format = String(localized: "Format"), country = String(localized: "Land")
+    static let styles = String(localized: "Stile")
+    static let cabinet = String(localized: "Regal"), shelf = String(localized: "Fach"), position = String(localized: "Position")
+    static let folder = String(localized: "Ordner"), added = String(localized: "Hinzugefügt")
+    static let releaseID = String(localized: "Release-ID"), masterID = String(localized: "Master-ID"), link = String(localized: "Discogs-Link")
+    static let tracklist = String(localized: "Tracklist")
 }
 
 /// Builds exports of the collection the app currently mirrors (same account
@@ -176,7 +176,7 @@ struct CollectionExportService {
             }
             if groups.contains(.discogs) { values += Self.discogsValues(copy.release) }
             if groups.contains(.tracklist) { values.append(Self.tracklist(copy.release)) }
-            let section = options.order == .shelf ? copy.shelf.map { sectionTitle($0, labels: labels) } ?? "Ohne Fach" : nil
+            let section = options.order == .shelf ? copy.shelf.map { sectionTitle($0, labels: labels) } ?? String(localized: "Ohne Fach") : nil
             let place = groups.contains(.location) ? copy.shelf.map { labels.prefix(for: $0) + "\($0.sortOrder)" } ?? "–" : nil
             return ExportTable.Row(section: section, values: values, place: place)
         }
@@ -221,7 +221,7 @@ struct CollectionExportService {
     }
 
     private func shelfLabel(_ shelf: Shelf, labels: ShelfLabels) -> String {
-        shelf.isReserved ? (shelf.name.isEmpty ? "Gesperrtes Fach" : shelf.name) : labels[shelf.id] ?? ""
+        shelf.isReserved ? (shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name) : labels[shelf.id] ?? ""
     }
 
     private func sectionTitle(_ shelf: Shelf, labels: ShelfLabels) -> String {
@@ -375,7 +375,7 @@ nonisolated enum PDFListWriter {
         let bottom = page.height - margin - 14
 
         func endPage() {
-            draw("Seite \(pageNumber)", in: CGRect(x: margin, y: page.height - margin, width: width, height: 12),
+            draw(String(localized: "Seite \(pageNumber)"), in: CGRect(x: margin, y: page.height - margin, width: width, height: 12),
                  font: .systemFont(ofSize: 8), color: .secondaryLabelColor, alignment: .right)
             pdf.endPDFPage()
         }
@@ -417,7 +417,7 @@ nonisolated enum PDFListWriter {
             // Keep a heading together with its first record.
             if y + rowHeight + (startsSection ? sectionHeight : 0) > bottom {
                 beginPage()
-                if grouped, !startsSection, let currentSection { section(currentSection + " (Fortsetzung)") }
+                if grouped, !startsSection, let currentSection { section(currentSection + String(localized: " (Fortsetzung)")) }
             }
             if startsSection {
                 currentSection = row.section
@@ -436,7 +436,7 @@ nonisolated enum PDFListWriter {
             y += rowHeight
         }
         if table.rows.isEmpty {
-            draw("Keine Einträge", in: CGRect(x: margin, y: y + 8, width: width, height: 14), font: .systemFont(ofSize: 10), color: .secondaryLabelColor)
+            draw(String(localized: "Keine Einträge"), in: CGRect(x: margin, y: y + 8, width: width, height: 14), font: .systemFont(ofSize: 10), color: .secondaryLabelColor)
         }
         endPage()
         pdf.closePDF()

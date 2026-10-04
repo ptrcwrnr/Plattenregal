@@ -52,8 +52,8 @@ struct ShelfNamePopover: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("Name des gesperrten Fachs").font(.callout.weight(.medium))
-            GlassTextField(placeholder: "z. B. Plattenspieler", text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
-            Text(error ?? "Erscheint im Regal unter dem Schloss und als Titel des Fachs.")
+            GlassTextField(placeholder: String(localized: "z. B. Plattenspieler"), text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
+            Text(error ?? String(localized: "Erscheint im Regal unter dem Schloss und als Titel des Fachs."))
                 .font(.caption)
                 .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
                 .fixedSize(horizontal: false, vertical: true)
@@ -96,8 +96,8 @@ struct CabinetNamePopover: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("Name des Regals").font(.callout.weight(.medium))
-            GlassTextField(placeholder: "z. B. Wohnzimmer", text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
-            Text(error ?? "Erscheint auf der Regalseite und in den Einstellungen.")
+            GlassTextField(placeholder: String(localized: "z. B. Wohnzimmer"), text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
+            Text(error ?? String(localized: "Erscheint auf der Regalseite und in den Einstellungen."))
                 .font(.caption)
                 .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
                 .fixedSize(horizontal: false, vertical: true)
