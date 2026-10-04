@@ -96,7 +96,7 @@ struct StatisticsView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(alignment: .leading, spacing: StatisticsLayout.gutter) {
-                    if DemoMode.isActive { DemoBanner() }
+                    if DemoMode.showsBanner { DemoBanner() }
                     if let error = model.error {
                         // Dismissable: a failed value refresh shouldn't sit above the
                         // page until the next successful one.

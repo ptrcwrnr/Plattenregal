@@ -287,7 +287,7 @@ struct WantlistView: View {
         // Spacing as in the collection (see CollectionView), so both pages
         // start their covers at the same height.
         VStack(alignment: .leading, spacing: 0) {
-            if DemoMode.isActive {
+            if DemoMode.showsBanner {
                 DemoBanner()
                     .padding(.horizontal, pageMargin)
                     .padding(.trailing, alphabetGutter)
@@ -301,9 +301,9 @@ struct WantlistView: View {
                 otherSection: .collection
             ) { pages.current = .collection }
             .padding(.horizontal, pageMargin)
-            .padding(.top, DemoMode.isActive ? AppStyle.rowSpacing : AppStyle.pagePadding)
-            .searchBarSlot(shown: showsSearchBar, topPadding: DemoMode.isActive ? AppStyle.rowSpacing : AppStyle.pagePadding)
-            Color.clear.frame(height: showsSearchBar || DemoMode.isActive ? AppStyle.sectionSpacing : AppStyle.pagePadding)
+            .padding(.top, DemoMode.showsBanner ? AppStyle.rowSpacing : AppStyle.pagePadding)
+            .searchBarSlot(shown: showsSearchBar, topPadding: DemoMode.showsBanner ? AppStyle.rowSpacing : AppStyle.pagePadding)
+            Color.clear.frame(height: showsSearchBar || DemoMode.showsBanner ? AppStyle.sectionSpacing : AppStyle.pagePadding)
             Group {
             if !loaded {
                 Color.clear

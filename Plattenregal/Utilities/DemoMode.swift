@@ -42,6 +42,16 @@ nonisolated enum DemoMode {
         return abs(now.timeIntervalSince(request)) < 60
     }
 
+    /// The banner on the pages. Debug builds can leave it out for screenshots
+    /// of the sample collection (`--screenshots`).
+    static var showsBanner: Bool {
+        #if DEBUG
+        isActive && !ProcessInfo.processInfo.arguments.contains("--screenshots")
+        #else
+        isActive
+        #endif
+    }
+
     /// Backups and covers of the demo; emptied when a demo starts.
     static let temporaryDirectory = FileManager.default.temporaryDirectory
         .appendingPathComponent("Plattenregal-Demo", isDirectory: true)

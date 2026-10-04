@@ -228,7 +228,7 @@ struct KallaxView: View {
         GeometryReader { geometry in
             let lit = searchResults.litShelfIDs
             VStack(alignment: .leading, spacing: Self.blockSpacing) {
-                if DemoMode.isActive { DemoBanner() }
+                if DemoMode.showsBanner { DemoBanner() }
                 if nothingPlaced {
                     // Typically right after a new install and the first sync.
                     AppBanner(message: String(localized: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her."),

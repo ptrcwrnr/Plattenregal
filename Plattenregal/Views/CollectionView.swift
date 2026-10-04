@@ -204,10 +204,10 @@ struct CollectionView: View {
 
     var body: some View {
         let visibleIDs = items.map(\.id)
-        let searchTopPadding = DemoMode.isActive && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding
+        let searchTopPadding = DemoMode.showsBanner && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding
         VStack(spacing: 0) {
             // Not in the drill-down sheets of the statistics: only on the page itself.
-            if DemoMode.isActive && analyticsFilter == nil {
+            if DemoMode.showsBanner && analyticsFilter == nil {
                 DemoBanner()
                     .padding(.horizontal, AppStyle.pagePadding + 4)
                     .padding(.trailing, alphabetGutter)
@@ -230,10 +230,10 @@ struct CollectionView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, AppStyle.pagePadding + 4)
                     .padding(.trailing, alphabetGutter)
-                    .padding(.top, showsSearchBar || (DemoMode.isActive && analyticsFilter == nil) ? AppStyle.rowSpacing : AppStyle.pagePadding)
+                    .padding(.top, showsSearchBar || (DemoMode.showsBanner && analyticsFilter == nil) ? AppStyle.rowSpacing : AppStyle.pagePadding)
                     .transition(AppStyle.funnelTransition())
             }
-            Color.clear.frame(height: showsSearchBar || showsControls || DemoMode.isActive ? AppStyle.sectionSpacing : AppStyle.pagePadding)
+            Color.clear.frame(height: showsSearchBar || showsControls || DemoMode.showsBanner ? AppStyle.sectionSpacing : AppStyle.pagePadding)
             Group {
             if !loaded {
                 Color.clear
