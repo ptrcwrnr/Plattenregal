@@ -83,7 +83,7 @@ Läuft Plattenregal noch ein zweites Mal, wird der Wechsel abgelehnt, damit nie 
 
 ## Sprache
 
-Plattenregal gibt es auf Deutsch (Ausgangssprache) und Englisch. Die Wahl steht unter Einstellungen → Allgemein → „Sprache“ („Wie macOS“, „Deutsch“, „English“) und gilt ab dem nächsten Start; gespeichert wird sie als `AppleLanguages` in der Domäne der App – dieselbe Stelle, die macOS unter Sprache & Region → Apps nutzt. Alle Texte stehen in `Plattenregal/Localizable.xcstrings`. Texte in Swift-Code außerhalb von `Text`, `Button` usw. laufen über `String(localized:)`; Jahreszahlen und IDs werden dabei als `String(...)` eingesetzt, sonst bekämen sie einen Tausenderpunkt. Das Protokoll bleibt deutsch. Die Tests laufen per Schema immer mit `-AppleLanguages (de)`.
+Plattenregal gibt es auf Deutsch (Ausgangssprache) und Englisch. Die Wahl steht unter Einstellungen → Allgemein → „Sprache“ („System“, „Deutsch“, „English“) und gilt ab dem nächsten Start; gespeichert wird sie als `AppleLanguages` in der Domäne der App – dieselbe Stelle, die macOS unter Sprache & Region → Apps nutzt. Alle Texte stehen in `Plattenregal/Localizable.xcstrings`. Texte in Swift-Code außerhalb von `Text`, `Button` usw. laufen über `String(localized:)`; Jahreszahlen und IDs werden dabei als `String(...)` eingesetzt, sonst bekämen sie einen Tausenderpunkt. Das Protokoll bleibt deutsch. Die Tests laufen per Schema immer mit `-AppleLanguages (de)`.
 
 ## Fehlermeldungen und Protokoll
 

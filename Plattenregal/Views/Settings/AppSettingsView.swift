@@ -39,7 +39,7 @@ private struct SettingsOpener: ViewModifier {
 /// quiet card surfaces and the shared button vocabulary.
 struct AppSettingsView: View {
     enum Tab: String, CaseIterable { case general = "Allgemein", appearance = "Darstellung", shelf = "Regal", discogs = "Discogs"
-        case export = "Export", backup = "Sicherung", data = "Daten"
+        case export = "Export", backup = "Sicherung", data = "Daten", shortcuts = "Tastenkürzel"
         var title: String {
             switch self {
             case .general: String(localized: "Allgemein")
@@ -49,6 +49,7 @@ struct AppSettingsView: View {
             case .export: String(localized: "Export")
             case .backup: String(localized: "Sicherung")
             case .data: String(localized: "Daten")
+            case .shortcuts: String(localized: "Tastenkürzel")
             }
         }
     }
@@ -73,6 +74,7 @@ struct AppSettingsView: View {
             case .export: ExportSettingsView()
             case .backup: BackupSettingsView()
             case .data: DataSettingsView()
+            case .shortcuts: ShortcutSettingsView()
             }
         }
         .frame(width: 760, height: 620)
@@ -229,6 +231,26 @@ struct GeneralSettingsView: View {
     }
 }
 
+// MARK: - Tastenkürzel
+
+/// Every shortcut of the app, one card per place it works.
+struct ShortcutSettingsView: View {
+    var body: some View {
+        SettingsPage {
+            ForEach(AppShortcuts.groups) { group in
+                SettingsCard(title: group.title) {
+                    ForEach(group.entries) { entry in
+                        if entry.id != group.entries.first?.id { Divider() }
+                        SettingsRow(title: entry.title) {
+                            Text(entry.keys).monospacedDigit().foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Darstellung
 
 struct AppearanceSettingsView: View {
@@ -321,7 +343,7 @@ struct AppearanceSettingsView: View {
     }
 }
 
-/// One round color choice; `rainbow` for "Wie macOS", `off` (a white ball) for "Aus".
+/// One round color choice; `rainbow` for "System", `off` (a white ball) for "Aus".
 private struct ColorSwatch: View {
     let title: String
     let color: Color

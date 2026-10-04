@@ -1310,6 +1310,16 @@
         }
       }
     },
+    "Alles mit Discogs synchronisieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync everything with Discogs"
+          }
+        }
+      }
+    },
     "Alles synchronisieren": {
       "localizations": {
         "en": {
@@ -1940,6 +1950,16 @@
         }
       }
     },
+    "Collection und Wantlist": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collection and wantlist"
+          }
+        }
+      }
+    },
     "Collection und Wantlist lassen sich auch auf ihrer Seite mit ⌘R oder durch Herunterziehen aktualisieren.": {
       "localizations": {
         "en": {
@@ -1956,6 +1976,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Loading collection"
+          }
+        }
+      }
+    },
+    "Collection, Wantlist, Regal, Statistik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collection, Wantlist, Shelf, Statistics"
           }
         }
       }
@@ -1982,6 +2012,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Covers"
+          }
+        }
+      }
+    },
+    "Cover größer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Larger covers"
+          }
+        }
+      }
+    },
+    "Cover größer / kleiner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Larger / smaller covers"
+          }
+        }
+      }
+    },
+    "Cover in Standardgröße": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Covers at default size"
+          }
+        }
+      }
+    },
+    "Cover kleiner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smaller covers"
           }
         }
       }
@@ -3296,6 +3366,16 @@
         }
       }
     },
+    "Einstellungen → Regal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings → Shelf"
+          }
+        }
+      }
+    },
     "Elektronisch": {
       "localizations": {
         "en": {
@@ -3910,6 +3990,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Light"
+          }
+        }
+      }
+    },
+    "Herausnehmen rückgängig machen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo taking out"
           }
         }
       }
@@ -4636,6 +4726,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Empty compartment (row %lld, column %lld)"
+          }
+        }
+      }
+    },
+    "Leertaste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Space"
           }
         }
       }
@@ -5980,6 +6080,16 @@
         }
       }
     },
+    "Raster / Liste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grid / list"
+          }
+        }
+      }
+    },
     "Regal": {
       "localizations": {
         "en": {
@@ -5996,6 +6106,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shelf %lld"
+          }
+        }
+      }
+    },
+    "Regal aktivieren oder deaktivieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activate or deactivate shelf"
           }
         }
       }
@@ -6400,6 +6520,16 @@
         }
       }
     },
+    "Seite aktualisieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh page"
+          }
+        }
+      }
+    },
     "Semikolon": {
       "localizations": {
         "en": {
@@ -6736,6 +6866,16 @@
         }
       }
     },
+    "Suche leeren, dann schließen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear search, then close it"
+          }
+        }
+      }
+    },
     "Suchen": {
       "localizations": {
         "en": {
@@ -6852,6 +6992,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Keep daily states"
+          }
+        }
+      }
+    },
+    "Tastenkürzel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keyboard Shortcuts"
           }
         }
       }
@@ -7222,6 +7372,16 @@
         }
       }
     },
+    "Vorheriges / nächstes Regal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous / next shelf"
+          }
+        }
+      }
+    },
     "Vorheriges Regal": {
       "localizations": {
         "en": {
@@ -7404,16 +7564,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "As on the shelf"
-          }
-        }
-      }
-    },
-    "Wie macOS": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Like macOS"
           }
         }
       }
@@ -7758,6 +7908,16 @@
         }
       }
     },
+    "Zufallsfund: neue Platte ziehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Random find: pick a new record"
+          }
+        }
+      }
+    },
     "Zufällig": {
       "localizations": {
         "en": {
@@ -7866,6 +8026,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Between %@ and %@"
+          }
+        }
+      }
+    },
+    "Zwischen den Regalen wechseln": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch between shelves"
           }
         }
       }
@@ -8228,6 +8398,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "About Plattenregal"
+          }
+        }
+      }
+    },
+    "Überall": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everywhere"
           }
         }
       }

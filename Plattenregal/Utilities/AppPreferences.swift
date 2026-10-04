@@ -157,7 +157,7 @@ enum AccentChoice: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .system: String(localized: "Wie macOS")
+        case .system: String(localized: "System")
         case .blue: String(localized: "Blau")
         case .purple: String(localized: "Lila")
         case .pink: String(localized: "Pink")
@@ -189,7 +189,7 @@ enum AccentChoice: String, CaseIterable, Identifiable {
 
 /// The faint glow behind every page, from the top of the window: off or one
 /// of the accent colors. Same count as `AccentChoice`, so both rows of
-/// swatches line up with "Aus" under "Wie macOS".
+/// swatches line up with "Aus" under "System".
 enum AmbientChoice: String, CaseIterable, Identifiable {
     case off, blue, purple, pink, red, orange, yellow, green, graphite
     var id: Self { self }
@@ -207,7 +207,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .system: String(localized: "Wie macOS")
+        case .system: String(localized: "System")
         // Each in its own language, so it can be found whatever is shown.
         case .german: "Deutsch"
         case .english: "English"
@@ -277,5 +277,61 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
     private func store(_ value: String, _ key: String) {
         AppDefaults.store.set(value, forKey: key)
+    }
+}
+
+/// The keyboard shortcuts, for the list under Einstellungen → Allgemein. The
+/// app-wide ones are registered with these values (see `GlobalShortcuts`), so
+/// the list can't drift from what the keys do.
+enum AppShortcuts {
+    static let syncAll = KeyboardShortcut("r", modifiers: [.command, .option])
+    static let cancelSync = KeyboardShortcut(".", modifiers: .command)
+    static let grid = KeyboardShortcut("1", modifiers: [.command, .option])
+    static let list = KeyboardShortcut("2", modifiers: [.command, .option])
+    static let largerCovers = KeyboardShortcut("+", modifiers: .command)
+    static let smallerCovers = KeyboardShortcut("-", modifiers: .command)
+    static let defaultCovers = KeyboardShortcut("0", modifiers: .command)
+    /// One step of ⌘+ / ⌘−, twice the slider's.
+    static let coverStep = 10.0
+
+    struct Entry: Identifiable {
+        let keys: String
+        let title: String
+        var id: String { keys }
+    }
+    struct Group: Identifiable {
+        let title: String
+        let entries: [Entry]
+        var id: String { title }
+    }
+
+    static var groups: [Group] {
+        [
+            Group(title: String(localized: "Überall"), entries: [
+                Entry(keys: "⌘1 – ⌘4", title: String(localized: "Collection, Wantlist, Regal, Statistik")),
+                Entry(keys: "⌘F", title: String(localized: "Suchen")),
+                Entry(keys: "⌘R", title: String(localized: "Seite aktualisieren")),
+                Entry(keys: "⌥⌘R", title: String(localized: "Alles mit Discogs synchronisieren")),
+                Entry(keys: "⌘.", title: String(localized: "Synchronisierung abbrechen")),
+                Entry(keys: "⌘,", title: String(localized: "Einstellungen")),
+            ]),
+            Group(title: String(localized: "Collection und Wantlist"), entries: [
+                Entry(keys: "⌥⌘1 / ⌥⌘2", title: String(localized: "Raster / Liste")),
+                Entry(keys: "⌘+ / ⌘−", title: String(localized: "Cover größer / kleiner")),
+                Entry(keys: "⌘0", title: String(localized: "Cover in Standardgröße")),
+                Entry(keys: "esc", title: String(localized: "Suche leeren, dann schließen")),
+            ]),
+            Group(title: String(localized: "Regal"), entries: [
+                Entry(keys: "⌘← / ⌘→", title: String(localized: "Vorheriges / nächstes Regal")),
+                Entry(keys: "⌘Z", title: String(localized: "Herausnehmen rückgängig machen")),
+            ]),
+            Group(title: String(localized: "Statistik"), entries: [
+                Entry(keys: "⇧⌘R", title: String(localized: "Zufallsfund: neue Platte ziehen")),
+            ]),
+            Group(title: String(localized: "Einstellungen → Regal"), entries: [
+                Entry(keys: "← / →", title: String(localized: "Zwischen den Regalen wechseln")),
+                Entry(keys: String(localized: "Leertaste"), title: String(localized: "Regal aktivieren oder deaktivieren")),
+            ]),
+        ]
     }
 }

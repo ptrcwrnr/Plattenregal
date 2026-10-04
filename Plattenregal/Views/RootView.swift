@@ -78,6 +78,7 @@ struct RootView: View {
                 ToolbarItem(placement: .primaryAction) { LayoutSwitch(selection: destination) }
             }
             .background(pageShortcuts)
+            .background(GlobalShortcuts(selection: destination))
             .background { AmbientGlow() }
     }
 
@@ -120,6 +121,60 @@ struct RootView: View {
     private func showShelf(_ copy: RecordCopy) {
         shelfRequests.placing = copy.id
         destination.current = .shelf
+    }
+}
+
+/// The shortcuts listed in `AppShortcuts` beyond page and search. A view of
+/// its own, so following the sync and the layouts doesn't redraw `RootView`.
+private struct GlobalShortcuts: View {
+    let selection: PageSelection<Destination>
+    @Environment(\.modelContext) private var context
+    @State private var sync = DiscogsSyncService.shared
+    @AppStorage(DisplaySettings.collectionLayoutKey) private var collectionLayout = OverviewLayout.grid
+    @AppStorage(DisplaySettings.wantlistLayoutKey) private var wantlistLayout = OverviewLayout.grid
+    @AppStorage(DisplaySettings.coverSizeKey) private var storedCoverSize = DisplaySettings.defaultCoverSize
+
+    /// Grid or list of the page shown; nil on shelf and statistics.
+    private var layout: Binding<OverviewLayout>? {
+        switch selection.current {
+        case .collection: $collectionLayout.animation(AppStyle.fadeAnimation)
+        case .wantlist: $wantlistLayout.animation(AppStyle.fadeAnimation)
+        case .shelf, .statistics: nil
+        }
+    }
+
+    var body: some View {
+        let coverSize = DisplaySettings.coverSize(storedCoverSize)
+        let showsGrid = layout?.wrappedValue == .grid
+        Group {
+            Button("Alles mit Discogs synchronisieren") { sync.start(.all, container: context.container) }
+                .keyboardShortcut(AppShortcuts.syncAll)
+                .disabled(sync.busy || DemoMode.isActive)
+            Button("Synchronisierung abbrechen") { sync.cancel() }
+                .keyboardShortcut(AppShortcuts.cancelSync)
+                .disabled(!sync.isRunning)
+            Button("Raster") { layout?.wrappedValue = .grid }
+                .keyboardShortcut(AppShortcuts.grid)
+                .disabled(layout == nil)
+            Button("Liste") { layout?.wrappedValue = .list }
+                .keyboardShortcut(AppShortcuts.list)
+                .disabled(layout == nil)
+            Button("Cover größer") { storedCoverSize = DisplaySettings.coverSize(coverSize + AppShortcuts.coverStep) }
+                .keyboardShortcut(AppShortcuts.largerCovers)
+                .disabled(!showsGrid || coverSize >= DisplaySettings.coverSizeRange.upperBound)
+            // ⌘= as well: on US keyboards "+" needs Shift.
+            Button("Cover größer") { storedCoverSize = DisplaySettings.coverSize(coverSize + AppShortcuts.coverStep) }
+                .keyboardShortcut("=", modifiers: .command)
+                .disabled(!showsGrid || coverSize >= DisplaySettings.coverSizeRange.upperBound)
+            Button("Cover kleiner") { storedCoverSize = DisplaySettings.coverSize(coverSize - AppShortcuts.coverStep) }
+                .keyboardShortcut(AppShortcuts.smallerCovers)
+                .disabled(!showsGrid || coverSize <= DisplaySettings.coverSizeRange.lowerBound)
+            Button("Cover in Standardgröße") { storedCoverSize = DisplaySettings.defaultCoverSize }
+                .keyboardShortcut(AppShortcuts.defaultCovers)
+                .disabled(!showsGrid || coverSize == DisplaySettings.defaultCoverSize)
+        }
+        .opacity(0).frame(width: 0, height: 0)
+        .accessibilityHidden(true)
     }
 }
 
