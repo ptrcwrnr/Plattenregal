@@ -99,8 +99,6 @@ struct AppSettingsView: View {
         .onChange(of: request.count) { if let asked = request.take() { tab = asked } }
         .navigationTitle(tab.title)
         .toolbar(removing: .title)
-        // No separator line under the toolbar, not even on hover.
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.title) }
