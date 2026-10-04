@@ -127,6 +127,7 @@ struct CollectionView: View {
     @State private var scrollBeforeSearch: UUID?
     /// The results, faded out while leaving a search.
     @State private var resultsHidden = false
+    @State private var shuffles = ShuffleRevisions.shared
 
     /// `animated`: records glide to their new place (search or section).
     /// Data refreshes (e.g. a Discogs sync) and the list layout update
@@ -451,6 +452,14 @@ struct CollectionView: View {
         .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
         // Debounced, and only for the visible section — the hidden ones
         // share the query but catch up when they're shown again.
+        // The dice in the toolbar: mixed anew, shown from the top.
+        .task(id: shuffles.count(DisplaySettings.collectionOrderKey)) {
+            guard shuffles.count(DisplaySettings.collectionOrderKey) > 0 else { return }
+            await fadeThrough {
+                rebuildBase()
+                scrollPosition = coverGroups.first?.primary.id ?? items.first?.id
+            }
+        }
         .onChange(of: query) { old, new in
             if old.isEmpty && !new.isEmpty && !searching { scrollBeforeSearch = scrollPosition }
         }
@@ -473,13 +482,23 @@ struct CollectionView: View {
     /// before the search, fade it in. Typing again meanwhile cancels this and
     /// brings the results back at once.
     private func leaveSearch() async {
-        withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
-        try? await Task.sleep(for: .milliseconds(100))
-        if !Task.isCancelled {
+        await fadeThrough {
             applyQuery()
             scrollPosition = scrollBeforeSearch ?? items.first?.id
             normalizeGridScrollPosition(in: coverGroups)
             scrollBeforeSearch = nil
+        }
+    }
+
+    /// Fades the results out, applies `change` while they are invisible and
+    /// fades them in again – for changes of the whole list, where gliding
+    /// every cover to its new place looked busy. Cancelled, the results just
+    /// come back.
+    private func fadeThrough(_ change: () -> Void) async {
+        withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
+        try? await Task.sleep(for: .milliseconds(100))
+        if !Task.isCancelled {
+            change()
             // One layout pass for the jump, still invisible.
             try? await Task.sleep(for: .milliseconds(30))
         }

@@ -268,6 +268,7 @@ struct WantlistView: View {
     @State private var scrollBeforeSearch: PersistentIdentifier?
     /// The results, faded out while leaving a search.
     @State private var resultsHidden = false
+    @State private var shuffles = ShuffleRevisions.shared
     @State private var hasToken = true
     @State private var settingsTab: AppSettingsView.Tab?
     /// The entry whose menu is open, and where it was right-clicked.
@@ -374,6 +375,14 @@ struct WantlistView: View {
         }
         // New tracks are found by a running search (the index follows them).
         .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
+        // The dice in the toolbar, as in the collection.
+        .task(id: shuffles.count(DisplaySettings.wantlistOrderKey)) {
+            guard shuffles.count(DisplaySettings.wantlistOrderKey) > 0 else { return }
+            await fadeThrough {
+                rebuild()
+                scrollPosition = visibleEntries.first?.persistentModelID
+            }
+        }
         .onChange(of: query) { old, new in
             if old.isEmpty && !new.isEmpty && appliedQuery.isEmpty { scrollBeforeSearch = scrollPosition }
         }
@@ -391,12 +400,19 @@ struct WantlistView: View {
     /// The search ends: hits out, the whole list back where it was, in again
     /// (see CollectionView).
     private func leaveSearch() async {
-        withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
-        try? await Task.sleep(for: .milliseconds(100))
-        if !Task.isCancelled {
+        await fadeThrough {
             applyQuery()
             scrollPosition = scrollBeforeSearch ?? visibleEntries.first?.persistentModelID
             scrollBeforeSearch = nil
+        }
+    }
+
+    /// Out, `change`, in again (see CollectionView).
+    private func fadeThrough(_ change: () -> Void) async {
+        withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
+        try? await Task.sleep(for: .milliseconds(100))
+        if !Task.isCancelled {
+            change()
             try? await Task.sleep(for: .milliseconds(30))
         }
         withAnimation(AppStyle.searchExitFadeIn) { resultsHidden = false }
