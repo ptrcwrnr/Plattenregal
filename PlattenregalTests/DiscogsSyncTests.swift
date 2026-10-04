@@ -55,6 +55,18 @@ extension AllTests {
             #expect(try merge(c, wants: [renamed]).hasChanges)
             #expect(try !merge(c, wants: [renamed]).hasChanges)
         }
+        /// Changes on records the counts don't name still reach the pages.
+        @Test func collectionDetailsCountAsChanges() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let folders = [DiscogsFolderDTO(id: 1, name: "Eins", count: 1), DiscogsFolderDTO(id: 2, name: "Zwei", count: 0)]
+            try merge(c, collection: [entry(folder: 1)], folders: folders)
+            // Moved to another folder on Discogs.
+            #expect(try merge(c, collection: [entry(folder: 2)], folders: folders).hasChanges)
+            #expect(try !merge(c, collection: [entry(folder: 2)], folders: folders).hasChanges)
+            // Taken out of the collection.
+            #expect(try merge(c, collection: [], folders: folders).hasChanges)
+            #expect(try !merge(c, collection: [], folders: folders).hasChanges)
+        }
         @Test func anotherAccountCountsAsChange() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry()], owner: "erstes")

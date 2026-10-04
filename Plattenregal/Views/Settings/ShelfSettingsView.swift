@@ -67,6 +67,9 @@ struct ShelfSettingsView: View {
         hasher.combine(labelStyle)
         hasher.combine(changes.libraryVersion)
         hasher.combine(changes.shelvesVersion)
+        // A swap between two shelves keeps their counts; `ShelfLabelsCache`
+        // then reads only those two again.
+        hasher.combine(changes.placementsVersion)
         for shelf in shelves { hasher.combine(shelf.id); hasher.combine(shelf.isReserved); hasher.combine(shelf.copies.count) }
         return hasher.finalize()
     }
