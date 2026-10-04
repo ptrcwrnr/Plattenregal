@@ -40,7 +40,6 @@ actor DiscogsAPIClient {
         try await request(path: userPath(username) + "/collection/value")
     }
     func identity() async throws -> DiscogsIdentity { try await request(path: "/oauth/identity") }
-    func testToken() async throws -> String { try await identity().username }
     /// One quick attempt for the settings' connection test: no retries and
     /// no waiting out a rate limit, so the answer comes within seconds.
     static func quickTest(_ token: String) async throws -> String {

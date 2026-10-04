@@ -1198,7 +1198,6 @@ enum LibrarySchemaV15: VersionedSchema {
             label = ""; catalogNumber = ""; country = ""; format = "Vinyl"
             genres = []; styles = []; tracks = []
         }
-        var isFresh: Bool { fetchedAt.map { Date().timeIntervalSince($0) < 6 * 3600 - 30 } ?? false }
         // Stored names keep Discogs' "(3)" suffix (search and re-sync rely on the
         // raw value); only what is shown drops it.
         var displayArtist: String { artist.isEmpty ? String(localized: "Unbekannter Interpret") : DiscogsName.clean(artist) }

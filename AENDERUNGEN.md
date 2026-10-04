@@ -1,3 +1,10 @@
+# Aufgeräumt nach der technischen Prüfung · 04.10.2026
+
+- **Tracklist im Popover**: Wird beim Klick auf ein Cover eine fehlende Tracklist nachgeladen, speichert die App sie jetzt direkt. Vorher lief das über den Speicherweg für Regal-Änderungen, der jedes Mal eine automatische Sicherung der Belegung anstieß und die Fach-Beschriftungen neu berechnete, obwohl sich am Regal nichts geändert hatte.
+- **Ungenutzter Code entfernt**: `DiscogsAPIClient.testToken()` (der Verbindungstest nutzt `quickTest`) und `Release.isFresh` (nur noch in einem Test geprüft; der Test prüft jetzt, dass `fetchedAt` gesetzt wird). Am Datenbankschema ändert sich nichts.
+
+183 Tests, 0 Fehler.
+
 # Technische Prüfung · 04.10.2026
 
 Das ganze Projekt auf mögliche Fehler durchgesehen (Sync, Speichern, Sicherungen, Export, Regal, Statistik, Nebenläufigkeit). Die Daten- und Fehlerwege sind gut abgesichert; behoben wurden zwei Stellen:

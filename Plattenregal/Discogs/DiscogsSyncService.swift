@@ -256,7 +256,10 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         let id = release.discogsID
         let dto = try await api.release(id: id)
         guard !release.isDeleted else { return }
-        try PositionService(context: context).save { dto.applyDetails(to: release) }
+        // Not through `PositionService.save`: no place in the shelf changes,
+        // so no layout backup and no new shelf labels.
+        do { dto.applyDetails(to: release); try context.save() }
+        catch { context.rollback(); throw error }
         LibraryChanges.shared.tracksDidChange()
     }
 
