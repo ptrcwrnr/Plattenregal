@@ -100,21 +100,16 @@ struct CollectionView: View {
     @State private var alphabetIndex: [String: UUID] = [:]
 
     // Search works in two stages so typing stays smooth: `rebuildBase` does
-    // the expensive part (filter, sort, search texts, letter anchors) only when
-    // the data or section changes; `applyQuery` then just filters that
-    // sorted list with the prebuilt index on each (debounced) keystroke.
+    // the expensive part (filter, sort, letter anchors) only when the data or
+    // section changes; `applyQuery` then just filters that sorted list with
+    // the search texts folded once (`LibrarySearchIndexes`) on each
+    // (debounced) keystroke.
     @State private var base: [RecordCopy] = []
-    @State private var searchIndex = SearchIndex<UUID>()
     @State private var letters: [UUID: String] = [:]
-    @State private var wantlistIndex = SearchIndex<PersistentIdentifier>()
     /// Discogs release IDs on the wantlist, for the search badge on the covers.
     @State private var wantedReleaseIDs: Set<Int> = []
     /// The query changed while this section was hidden; apply it on return.
     @State private var queryPending = false
-    /// Tracklists arrived while nobody searched: the tracklist download reports
-    /// every few seconds, so the search indexes catch up on the next search
-    /// instead of indexing the whole collection each time.
-    @State private var indexesStale = false
     /// Records, account, metadata or wantlist changed. A sync reports itself
     /// and changes the queries a moment apart; one rebuild covers them all.
     @State private var dataRevision = 0
@@ -143,7 +138,6 @@ struct CollectionView: View {
         base = order.apply(matched, scope: DisplaySettings.collectionOrderKey, alphabetical: SortingService.sortedByAlphabetSection,
                            key: { CollectionCoverGroup.identity(of: $0) },
                            added: { DiscogsDate.parse($0.discogsDateAdded) })
-        searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
         letters = showsAlphabetIndex
             ? Dictionary(base.map { ($0.id, SortingService.alphabetSection(for: $0.release?.displayArtist ?? "")) }, uniquingKeysWith: { a, _ in a })
             : [:]
@@ -162,12 +156,11 @@ struct CollectionView: View {
     private func applyQuery(animated: Bool = false) {
         queryPending = false
         let words = SearchIndex<UUID>.words(query)
-        if !words.isEmpty && indexesStale {
-            indexesStale = false
-            searchIndex = SearchIndex(base, id: \.id, text: SortingService.searchText)
-            rebuildWantlistIndex()
+        let filtered: [RecordCopy]
+        if words.isEmpty { filtered = base } else {
+            let index = collectionIndex()
+            filtered = base.filter { index.matches($0.id, words) }
         }
-        let filtered = words.isEmpty ? base : base.filter { searchIndex.matches($0.id, words) }
         let grouped = CollectionCoverGroup.make(from: filtered)
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
             items = filtered
@@ -176,8 +169,21 @@ struct CollectionView: View {
         }
         normalizeGridScrollPosition(in: grouped)
         alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
-        wantlistMatches = pages == nil || words.isEmpty ? 0
-            : currentWantlist.reduce(0) { $0 + (wantlistIndex.matches($1.persistentModelID, words) ? 1 : 0) }
+        if pages == nil || words.isEmpty { wantlistMatches = 0 } else {
+            let index = LibrarySearchIndexes.shared.wantlist(owner: owner, allEntries: wantlistEntries.count) { currentWantlist }
+            wantlistMatches = currentWantlist.reduce(0) { $0 + (index.matches($1.persistentModelID, words) ? 1 : 0) }
+        }
+    }
+
+    private var owner: String? { DiscogsAccount.current(in: accounts)?.username }
+
+    /// The whole current collection, also for the statistics' selections:
+    /// they look up only their own records in it.
+    private func collectionIndex() -> SearchIndex<UUID> {
+        let owner = owner
+        return LibrarySearchIndexes.shared.collection(owner: owner, allCopies: copies.count) {
+            copies.filter { $0.isInCurrentCollection(owner: owner) }
+        }
     }
 
     private func normalizeGridScrollPosition(in groups: [CollectionCoverGroup]) {
@@ -187,11 +193,9 @@ struct CollectionView: View {
         if scrollPosition != group.primary.id { self.scrollPosition = group.primary.id }
     }
 
-    private func rebuildWantlistIndex() {
+    private func rebuildWantedReleaseIDs() {
         guard pages != nil else { return }
-        let entries = currentWantlist
-        wantlistIndex = SearchIndex(entries, id: \.persistentModelID, text: WantlistPresentation.searchText)
-        wantedReleaseIDs = Set(entries.map(\.releaseID))
+        wantedReleaseIDs = Set(currentWantlist.map(\.releaseID))
     }
 
     private var currentWantlist: [WantlistEntry] {
@@ -428,7 +432,7 @@ struct CollectionView: View {
         .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
         .onChange(of: order) { _, _ in scrollPosition = nil; rebuildBase(animated: true) }
         .onChange(of: secondaryOrder) { _, _ in rebuildBase(animated: true) }
-        .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantlistIndex(); rebuildBase() }
+        .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantedReleaseIDs(); rebuildBase() }
         .onChange(of: copies) { _, _ in dataRevision += 1 }
         .onChange(of: labelStyle) { _, style in shelfLabels = labelsCache.labels(for: shelves, style: style) }
         .onChange(of: changes.shelvesVersion) { _, _ in refreshLabels() }
@@ -443,14 +447,11 @@ struct CollectionView: View {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
-            indexesStale = false
-            rebuildWantlistIndex()
+            rebuildWantedReleaseIDs()
             rebuildBase()
         }
-        .onChange(of: changes.tracksVersion) { _, _ in
-            indexesStale = true
-            if !query.isEmpty { applyQuery() }
-        }
+        // New tracks are found by a running search (the index follows them).
+        .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
         // Debounced, and only for the visible section — the hidden ones
         // share the query but catch up when they're shown again.
         .task(id: query) {

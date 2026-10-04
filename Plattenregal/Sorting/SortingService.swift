@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 enum SortingService {
     static let alphabetNavigationSymbols = ["#"] + (65...90).compactMap(UnicodeScalar.init).map(String.init)
@@ -95,6 +96,46 @@ struct SearchIndex<ID: Hashable> {
         // Case folding keeps "ß", so "Strasse" would miss "Straße".
         value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
             .replacingOccurrences(of: "ß", with: "ss")
+    }
+}
+
+/// The search texts of the current collection and wantlist, folded once
+/// and shared by both pages: each searches its own list and counts the
+/// other's hits, so each index used to be built twice. Built on the first
+/// search after a change, not with every change – the tracklist download
+/// reports every few seconds, mostly while nobody searches.
+final class LibrarySearchIndexes {
+    static let shared = LibrarySearchIndexes()
+
+    /// What an index was built from. The counts are of all records and
+    /// entries (what the pages' queries hold), so a page doesn't have to
+    /// filter them just to ask; changes beyond adding and removing come
+    /// with `LibraryChanges`.
+    private struct Key: Equatable { let library: Int; let tracks: Int; let owner: String?; let count: Int }
+    private var collection: (key: Key, index: SearchIndex<UUID>)?
+    private var wantlist: (key: Key, index: SearchIndex<PersistentIdentifier>)?
+
+    private func key(owner: String?, count: Int) -> Key {
+        Key(library: LibraryChanges.shared.libraryVersion, tracks: LibraryChanges.shared.tracksVersion, owner: owner, count: count)
+    }
+
+    /// `copies`: the current collection (see `RecordCopy.isInCurrentCollection`),
+    /// only read when the index has to be built.
+    func collection(owner: String?, allCopies count: Int, copies: () -> [RecordCopy]) -> SearchIndex<UUID> {
+        let key = key(owner: owner, count: count)
+        if let collection, collection.key == key { return collection.index }
+        let index = SearchIndex(copies(), id: \.id, text: SortingService.searchText)
+        collection = (key, index)
+        return index
+    }
+
+    /// `entries`: the current account's wantlist.
+    func wantlist(owner: String?, allEntries count: Int, entries: () -> [WantlistEntry]) -> SearchIndex<PersistentIdentifier> {
+        let key = key(owner: owner, count: count)
+        if let wantlist, wantlist.key == key { return wantlist.index }
+        let index = SearchIndex(entries(), id: \.persistentModelID, text: WantlistPresentation.searchText)
+        wantlist = (key, index)
+        return index
     }
 }
 

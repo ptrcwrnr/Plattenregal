@@ -242,20 +242,15 @@ struct WantlistView: View {
     @State private var activity = PageActivity()
     /// Search hits in the collection, for the hint next to the count.
     @State private var collectionMatches = 0
-    // Same two stages as the collection: sort and index on data changes,
-    // cheap filtering per (debounced) keystroke.
+    // Same two stages as the collection: sort on data changes, cheap
+    // filtering per (debounced) keystroke with the shared search texts.
     @State private var sortedEntries: [WantlistEntry] = []
-    @State private var searchIndex = SearchIndex<PersistentIdentifier>()
-    @State private var collectionIndex = SearchIndex<UUID>()
     /// Active copies with the release they belong to: the hint counts
     /// releases (grid tiles), not copies.
     @State private var activeCopies: [(id: UUID, group: CollectionCoverGroup.Identity)] = []
     /// Discogs release IDs in the collection, for the search badge on the covers.
     @State private var ownedReleaseIDs: Set<Int> = []
     @State private var queryPending = false
-    /// Tracklists arrived while nobody searched; the indexes catch up on the
-    /// next search (see CollectionView).
-    @State private var indexesStale = false
     /// Entries, records, account or metadata changed; one rebuild for all (see CollectionView).
     @State private var dataRevision = 0
     /// The query the visible entries were filtered with — badges and track
@@ -358,7 +353,7 @@ struct WantlistView: View {
         .settingsOpener($settingsTab)
         .onChange(of: order) { _, _ in scrollPosition = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
-        .task { rebuildCollectionIndex(); rebuild() }
+        .task { rebuildCollection(); rebuild() }
         .onChange(of: entries) { _, _ in dataRevision += 1 }
         .onChange(of: copies) { _, _ in dataRevision += 1 }
         .onChange(of: accounts) { _, _ in dataRevision += 1 }
@@ -368,14 +363,11 @@ struct WantlistView: View {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
-            indexesStale = false
-            rebuildCollectionIndex()
+            rebuildCollection()
             rebuild()
         }
-        .onChange(of: changes.tracksVersion) { _, _ in
-            indexesStale = true
-            if !query.isEmpty { applyQuery() }
-        }
+        // New tracks are found by a running search (the index follows them).
+        .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
         .task(id: query) {
             guard activity.isActive else { queryPending = true; return }
             try? await Task.sleep(for: .milliseconds(120))
@@ -393,17 +385,15 @@ struct WantlistView: View {
         let owned = owner.map { owner in entries.filter { $0.owner == owner } } ?? entries
         sortedEntries = order.apply(owned, scope: DisplaySettings.wantlistOrderKey, alphabetical: WantlistPresentation.sorted,
                                     key: \.releaseID, added: { DiscogsDate.parse($0.dateAdded) })
-        searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
         loaded = true
         applyQuery()
     }
 
-    private func rebuildCollectionIndex() {
+    private func rebuildCollection() {
         let owner = owner
         let active = copies.filter { $0.isInCurrentCollection(owner: owner) }
         activeCopies = active.map { ($0.id, CollectionCoverGroup.identity(of: $0)) }
         ownedReleaseIDs = Set(active.compactMap { $0.release?.discogsID })
-        collectionIndex = SearchIndex(active, id: \.id, text: SortingService.searchText)
     }
 
     /// `animated`: search results glide into place (grid only; a sync
@@ -411,14 +401,20 @@ struct WantlistView: View {
     private func applyQuery(animated: Bool = false) {
         queryPending = false
         let words = SearchIndex<UUID>.words(query)
-        if !words.isEmpty && indexesStale {
-            indexesStale = false
-            searchIndex = SearchIndex(sortedEntries, id: \.persistentModelID, text: WantlistPresentation.searchText)
-            rebuildCollectionIndex()
+        let visible: [WantlistEntry]
+        if words.isEmpty {
+            visible = sortedEntries
+            collectionMatches = 0
+        } else {
+            let owner = owner
+            let indexes = LibrarySearchIndexes.shared
+            let index = indexes.wantlist(owner: owner, allEntries: entries.count) { sortedEntries }
+            visible = sortedEntries.filter { index.matches($0.persistentModelID, words) }
+            let collection = indexes.collection(owner: owner, allCopies: copies.count) {
+                copies.filter { $0.isInCurrentCollection(owner: owner) }
+            }
+            collectionMatches = Set(activeCopies.filter { collection.matches($0.id, words) }.map(\.group)).count
         }
-        let visible = words.isEmpty ? sortedEntries : sortedEntries.filter { searchIndex.matches($0.persistentModelID, words) }
-        collectionMatches = words.isEmpty ? 0
-            : Set(activeCopies.filter { collectionIndex.matches($0.id, words) }.map(\.group)).count
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
             visibleEntries = visible
             appliedQuery = words.isEmpty ? "" : query

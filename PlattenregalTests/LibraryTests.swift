@@ -19,6 +19,26 @@ extension AllTests {
         @discardableResult private func add(_ service: PositionService, _ shelf: Shelf, _ artist: String, _ title: String = "Album", at position: Int? = nil) throws -> RecordCopy {
             try service.insert(release: Release(artist: artist, title: title), shelf: shelf, position: position ?? shelf.copies.count + 1)
         }
+        /// Both pages share one index; it follows tracklists and new records.
+        @Test func sharedSearchIndexFollowsChanges() throws {
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            let context = container.mainContext
+            let service = PositionService(context: context)
+            let first = try service.insert(release: Release(artist: "Moby", title: "Play"), shelf: nil)
+            // A fresh state, whatever other tests built before.
+            LibraryChanges.shared.libraryDidChange()
+            func index() throws -> SearchIndex<UUID> {
+                let copies = try context.fetch(FetchDescriptor<RecordCopy>())
+                return LibrarySearchIndexes.shared.collection(owner: nil, allCopies: copies.count) { copies }
+            }
+            #expect(try index().matches(first.id, ["moby"]))
+            #expect(try !index().matches(first.id, ["porcelain"]))
+            first.release?.tracks = [Track(position: "A1", title: "Porcelain", duration: "")]
+            LibraryChanges.shared.tracksDidChange()
+            #expect(try index().matches(first.id, ["porcelain"]))
+            let second = try service.insert(release: Release(artist: "Air", title: "Moon Safari"), shelf: nil)
+            #expect(try index().matches(second.id, ["safari"]))
+        }
         @Test func shelfGeometry() throws {
             let (container, shelves, _) = try fixture(); _ = container
             #expect(shelves.count == 12)
