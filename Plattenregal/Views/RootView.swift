@@ -75,7 +75,6 @@ struct RootView: View {
             .toolbar(removing: .title)
             .toolbar {
                 ToolbarItem(placement: .principal) { PagePicker(selection: destination) }
-                ToolbarItem(placement: .primaryAction) { ShuffleButton(selection: destination) }
                 ToolbarItem(placement: .primaryAction) { LayoutSwitch(selection: destination) }
             }
             .background(pageShortcuts)
@@ -200,34 +199,6 @@ private struct LayoutSwitch: View {
         case .collection: OverviewLayoutPicker(selection: $collectionLayout.animation(AppStyle.fadeAnimation), glass: false)
         case .wantlist: OverviewLayoutPicker(selection: $wantlistLayout.animation(AppStyle.fadeAnimation), glass: false)
         case .shelf, .statistics: EmptyView()
-        }
-    }
-}
-
-/// The dice next to grid/list: mixes collection or wantlist anew. Only there
-/// while the page is in random order – the other orders have nothing to mix.
-private struct ShuffleButton: View {
-    let selection: PageSelection<Destination>
-    @AppStorage(DisplaySettings.collectionOrderKey) private var collectionOrder = OverviewOrder.alphabetical
-    @AppStorage(DisplaySettings.wantlistOrderKey) private var wantlistOrder = OverviewOrder.alphabetical
-    @State private var shuffles = ShuffleRevisions.shared
-
-    private var scope: String? {
-        switch selection.current {
-        case .collection: collectionOrder == .random ? DisplaySettings.collectionOrderKey : nil
-        case .wantlist: wantlistOrder == .random ? DisplaySettings.wantlistOrderKey : nil
-        case .shelf, .statistics: nil
-        }
-    }
-
-    var body: some View {
-        if let scope {
-            Button { OverviewOrder.shuffleAgain(scope) } label: {
-                Image(systemName: "dice")
-                    .symbolEffect(.bounce, value: shuffles.count(scope))
-            }
-            .help("Neu mischen")
-            .accessibilityLabel("Neu mischen")
         }
     }
 }

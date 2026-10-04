@@ -1,7 +1,6 @@
 # Suche verlassen · 04.10.2026
 
 - **Einstellungsfenster**: ohne Fensterknöpfe, nur die Bereichsleiste mittig in der Titelzeile; Esc und ⌘W schließen es. 760 × 510 pt, keine Trennlinie mehr unter der Leiste. „Demo starten“ im Fenster ohne Auslassungspunkte (im Menü bleiben sie, dort folgt eine Rückfrage).
-- **Würfel in der Toolbar**: Steht Collection oder Wantlist auf „Zufällig“, sitzt links neben Raster/Liste ein Würfel. Ein Klick mischt die Seite neu – mit demselben Durchblenden wie beim Verlassen der Suche, danach von oben. Bei alphabetischer Reihenfolge oder „Neueste zuerst“ gibt es nichts zu mischen, dann fehlt der Würfel.
 - **Suche in Collection und Wantlist verlassen**: Wird die Suche geleert (Esc, ⌘F, Löschknopf), wartet die Liste nicht mehr 0,12 s wie beim Tippen, und die Cover gleiten nicht mehr zurück. Die Treffer blenden in 0,1 s aus, die ganze Liste steht wieder an der Stelle, an der sie vor der Suche war, und blendet in 0,22 s ein – getaktet wie der Rubrikwechsel. Beim Tippen gleiten die Treffer weiter an ihren Platz.
 
 # Rubrikwechsel mit Richtung · 04.10.2026

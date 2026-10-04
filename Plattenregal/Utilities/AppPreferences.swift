@@ -57,12 +57,6 @@ enum OverviewOrder: String, CaseIterable, Identifiable {
     /// shuffling the wantlist must not reorder the collection on its next sync.
     @MainActor private static var shuffleSeeds: [String: UInt64] = [:]
     @MainActor static func reshuffle(_ scope: String) { shuffleSeeds[scope] = .random(in: .min ... .max) }
-    /// The dice in the toolbar: shuffled anew, and the page shown follows
-    /// (see `ShuffleRevisions`).
-    @MainActor static func shuffleAgain(_ scope: String) {
-        reshuffle(scope)
-        ShuffleRevisions.shared.bump(scope)
-    }
     /// Position of `key` in the current random order of `scope`.
     @MainActor static func shuffleRank(_ key: some Hashable, scope: String) -> Int {
         let seed = shuffleSeeds[scope] ?? {
@@ -100,16 +94,6 @@ enum OverviewOrder: String, CaseIterable, Identifiable {
             }.map(\.2)
         }
     }
-}
-
-/// Counts the dice presses per page (storage key of its order), so the page
-/// shows its records in the new random order. A switch to "Zufällig" in the
-/// settings doesn't count: the page follows the changed order anyway.
-@MainActor @Observable final class ShuffleRevisions {
-    static let shared = ShuffleRevisions()
-    private var counts: [String: Int] = [:]
-    func count(_ scope: String) -> Int { counts[scope] ?? 0 }
-    func bump(_ scope: String) { counts[scope, default: 0] += 1 }
 }
 
 /// Keys and limits of the `@AppStorage` display settings, shared by the
