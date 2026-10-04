@@ -22,6 +22,7 @@ Das Projekt ist für lokales Ad-hoc-Signing eingerichtet und braucht kein bezahl
 - **„Vermisst“ beim Einsortieren.** Nur auf der Regalseite: Eine Platte, die gerade nicht zu finden ist, lässt sich zurückstellen (Pause-Knopf in „Platte hinzufügen“, Rechtsklick in der Fach-Tabelle). Sie wandert dann animiert aus der Liste in die Spalte **Vermisst** rechts daneben – nach Fach gruppiert, mit Cover, „Zeigen“ und „Wieder gefunden“; wieder gefunden kehrt sie an ihre Stelle in der Liste zurück. Die Spalte gibt es nur, solange etwas vermisst wird, und sie lässt sich einklappen (dann steht oben „x vermisst ‹“). Im Streifen der Plattenrücken erscheinen vermisste Platten als roter Umriss. Einsortieren von Hand gilt als gefunden. Unter **Einstellungen → Regal → Einsortieren** lässt sich die Vermisst-Liste ganz abschalten; die Markierungen bleiben dabei gespeichert. Collection, Statistik und Export bleiben davon unberührt.
 - **„Sortierung prüfen“** (Rechtsklick auf ein Fach) prüft die gespeicherte Reihenfolge des Fachs – immer zuerst nach Interpret, bei gleichem Interpreten wahlweise nach Titel, Jahr oder Label/Katalognummer. Stimmt etwas nicht, zeigt es die kleinstmögliche Zahl an Umstellungen als nummerierte Schritte („Platz 17 → hinter „Ian Van Dahl – Ace““, mit Cover von Platte und Nachbar). Jeder Schritt bezieht sich nur auf Platten, die dann schon richtig stehen; abgehakt wird per Klick. „Reihenfolge übernehmen“ speichert danach die neue Reihenfolge. Die App kennt nur die gespeicherte Reihenfolge, nicht das echte Regal.
 - **Reihenfolge bei gleichem Interpreten** (Einstellungen → Regal → Einsortieren: Titel, Jahr oder Label) gilt für Platzsuche, „Platte hinzufügen“, „Sortierung prüfen“ und die alphabetische Reihenfolge der Collection. Der Interpret bleibt immer der erste Schlüssel, deshalb bleiben Fachnamen wie „He – La“ gültig.
+- **Tastenkürzel** über die ganze App: ⌘1–⌘4 und ⌘F wie oben, ⌘R synchronisiert die Seite, ⌥⌘R alles, ⌘. bricht ab; auf Collection und Wantlist ⌥⌘1/⌥⌘2 für Raster/Liste und ⌘+/⌘−/⌘0 für die Covergröße. Die vollständige Liste steht unter Einstellungen → Tastenkürzel (`AppShortcuts`).
 - **Suche und Sortierung** über Interpret, Titel, Label, Katalognummer, Genre, Style und mehr; Raster oder Liste mit einstellbarer Covergröße.
 - **Statistik** mit Verteilungen und dem Verlauf des Sammlungswerts (Details in [STATISTIK.md](STATISTIK.md)).
 - **Sicherung** der Regal-Belegung, **Export** als CSV oder PDF, **Protokoll** für die Fehlersuche – siehe unten.
@@ -41,13 +42,14 @@ Die Tabs stehen als Glas-Umschalter in der Toolbar des Einstellungsfensters.
 
 | Tab | Inhalt |
 |---|---|
-| Allgemein | Startseite des Hauptfensters, Reihenfolge von Collection und Wantlist, Demo starten/beenden |
+| Allgemein | Sprache, Startseite des Hauptfensters, Reihenfolge von Collection und Wantlist, Demo starten/beenden |
 | Darstellung | Hell/Dunkel, Akzentfarbe, Raster oder Liste, Covergröße, Reihenfolge der Statistik |
 | Regal | Regale anlegen, Größe ändern, umbenennen, (de)aktivieren, löschen; Fächer sperren und benennen (Klick aufs Fach öffnet dasselbe Menü wie im Regal); Einsortieren (Reihenfolge bei gleichem Interpreten, Vermisst-Liste an/aus); Beschriftung |
 | Discogs | Token, Verbindungstest, Synchronisierung |
 | Export | CSV/PDF von Collection oder Wantlist, automatischer Export in einen Ordner |
 | Sicherung | Belegung sichern und wiederherstellen, automatische Sicherung, Aufbewahrung, Speicherort |
 | Daten | Speicherplatz, Cover-Cache, Protokoll, Discogs-Anfragen, Zurücksetzen |
+| Tastenkürzel | Alle Kürzel der App nach Ort (nur zum Nachschlagen) |
 
 ## Daten, Sicherung und Export
 

@@ -1,15 +1,15 @@
-# Aktueller Stand · 04.10.2026 (Englisch, Tastenkürzel, technische Prüfung, weniger Rechenarbeit)
+# Aktueller Stand · 04.10.2026 (Englisch, Tastenkürzel, technische Prüfung, weniger Rechenarbeit, Abschlussprüfung)
 
-Stand nach Englisch als zweiter Sprache, den Tastenkürzeln, der technischen Prüfung und der Durchsicht auf unnötige Rechenarbeit (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+Stand nach Englisch als zweiter Sprache, den Tastenkürzeln, der technischen Prüfung, der Durchsicht auf unnötige Rechenarbeit und einer abschließenden Prüfung aller Änderungen des Tages (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 
 ## Ergebnis
 
-- Gesamte Testsuite: **189 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die Meldungen „Discogs JSON decoding failed“ und die CoreData-Hinweise im Testlauf stammen aus Tests, die ungültige Antworten und Migrationen absichtlich prüfen.
+- Gesamte Testsuite: **190 Tests in 13 Suites, 0 Fehler** (Debug, `xcodebuild … test`), keine Compiler-Warnungen. Die Meldungen „Discogs JSON decoding failed“ und die CoreData-Hinweise im Testlauf stammen aus Tests, die ungültige Antworten und Migrationen absichtlich prüfen.
 
 | Testdatei | Tests | Schwerpunkt |
 |---|---|---|
 | `LibraryTests.swift` | 53 | Positionen, Sortierung, Sortierprüfung, Suche (auch die gemeinsamen Suchtexte), Fach-Beschriftungen, Speicherung, Fehlermeldungen, Absturz-Auswertung, Discogs-Mapping, Demo-Sammlung |
-| `DiscogsSyncTests.swift` | 39 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration, Doppelte in der Datenbank, Erkennen eines Abgleichs ohne Änderungen |
+| `DiscogsSyncTests.swift` | 40 | Abgleich, Ordner, Wantlist, Pagination, Konten, `Retry-After`, Migration, Doppelte in der Datenbank, Erkennen eines Abgleichs ohne Änderungen |
 | `StatisticsTests.swift` | 30 | Auswertungen, Wertverlauf, Migrationen, Zurücksetzen, welche Speichervorgänge neu rechnen lassen |
 | `SettingsTests.swift` | 17 | Discogs-Token, Reihenfolge der Statistik, Reihenfolge von Collection und Wantlist, Eingabequellen-Blase |
 | `BackupTests.swift` | 15 | Sichern, Wiederherstellen, Aufbewahrung, Dateinamen mit Zeitzone |
@@ -17,8 +17,9 @@ Stand nach Englisch als zweiter Sprache, den Tastenkürzeln, der technischen Pr�
 | `ExportTests.swift` | 13 | CSV (Maskierung, BOM, Formel-Schutz, Trennzeichen), Reihenfolge, Spalten, PDF |
 | `ScenarioTests.swift` | 7 | Abläufe gegen die echten Services: ohne Netz, Bremse, gelöschte Fächer, „Platte hinzufügen“, 10.000 Platten |
 
-- Neu seit dem vorigen Stand (176): u. a. Export- und Sicherungstests aus den Prüfungen vom 27./28.09. und heute `unchangedSyncReportsNoChanges`, `wantlistDetailsCountAsChanges`, `anotherAccountCountsAsChange`, `onlyRelevantSavesReloadStatistics`, `sharedSearchIndexFollowsChanges`, `cachedShelfLabelsMatchFullComputation`. `errorsReachTheUserInPlainGerman` prüft zusätzlich die Meldung bei Lesefehlern.
-- **Laufende App**: Demo-Build nach jeder Änderungsrunde gestartet, läuft ohne Absturz. Keine Sichtprüfung der Seiten in diesem Durchgang.
+- Neu seit dem vorigen Stand (176): u. a. Export- und Sicherungstests aus den Prüfungen vom 27./28.09. und heute `unchangedSyncReportsNoChanges`, `wantlistDetailsCountAsChanges`, `collectionDetailsCountAsChanges`, `anotherAccountCountsAsChange`, `onlyRelevantSavesReloadStatistics`, `sharedSearchIndexFollowsChanges`, `cachedShelfLabelsMatchFullComputation`. `errorsReachTheUserInPlainGerman` prüft zusätzlich die Meldung bei Lesefehlern.
+- **Abschlussprüfung** per Code-Durchsicht: Änderungserkennung des Abgleichs (alle Felder, die Seiten zeigen, setzen `hasChanges`; Sync-Zeiten in den Discogs-Kacheln folgen trotzdem, weil die Seite beim Sync-Ende neu zeichnet), Statistik-Filter (keine Zahl der Statistik hängt an Fach oder Position; Detailansicht holt die Platte aus dem Hauptkontext), Beschriftungs-Cache (Beschriftungen hängen nur am Interpreten, nicht an der Reihenfolge bei gleichem Interpreten), gemeinsame Suchdaten (Demo startet die App neu, kein Index wandert zwischen Sammlungen), direkte Speicherwege für Tracklist und Discogs-Daten, paralleles Cover-Laden. Korrigiert: Regal-Einstellungen bemerkten einen Tausch zwischen zwei Fächern nicht (gleiche Plattenzahl). String-Katalog maschinell geprüft: 831 Einträge, alle englisch übersetzt, keine verwaisten.
+- **Laufende App**: Demo-Build nach jeder Änderungsrunde gestartet, läuft ohne Absturz und beendet sich regulär. Keine Sichtprüfung der Seiten in diesem Durchgang.
 - **Protokoll** der echten App durchgesehen: kein Absturzblock. Einzige Fehlerzeile ist ein Schemafehler beim Öffnen vom 25.09. (Entwicklungsstand, seitdem nicht wieder aufgetreten). Die Warnungen „nicht normal beendet“ gehören zu Testinstanzen, die per Befehl beendet wurden.
 - **Fehlermeldungen** per Code-Durchsicht geprüft: alle Fehlertypen mit verständlichem Text in beiden Sprachen; Lesefehler sagen nicht mehr „nicht gespeichert“.
 

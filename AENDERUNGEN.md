@@ -1,3 +1,12 @@
+# Abschlussprüfung des Tages · 04.10.2026
+
+Alle Änderungen von heute noch einmal auf Richtigkeit und Nebenwirkungen durchgesehen (Sprache, Tastenkürzel, Speicherwege, Änderungserkennung des Abgleichs, Statistik, Beschriftungen, Suchdaten, Cover). Die App baut ohne Warnungen, die Demo startet und beendet sich sauber.
+
+- **Regal-Einstellungen**: Die Fach-Beschriftungen dort merkten nur, wenn sich die Zahl der Platten in einem Fach änderte. Tauschte man zwei Platten zwischen zwei Fächern, blieb die alte Beschriftung stehen, bis sich sonst etwas änderte. Jetzt folgen sie jeder Platzänderung – wie Collection und Zufallsfund; dank des Zwischenspeichers werden nur die betroffenen Fächer neu gelesen.
+- **Ohne Befund**: Ein Abgleich ohne Änderungen lässt die Seiten in Ruhe, die Zeit in den Discogs-Kacheln („synchronisiert vor 1 Minute“) folgt trotzdem. Keine Zahl der Statistik hängt an Fach oder Position; der Zufallsfund und die von dort geöffnete Detailansicht zeigen den aktuellen Platz. Beschriftungen hängen nur am Interpreten, der Zwischenspeicher bleibt also auch beim Umstellen der Reihenfolge bei gleichem Interpreten richtig. Alle 831 Texte sind übersetzt, keiner ist verwaist.
+- **README**: Einstellungsreiter „Tastenkürzel“ und die Sprachwahl unter „Allgemein“ ergänzt, die Kürzel kurz in „Was die App kann“.
+- Neuer Test: `collectionDetailsCountAsChanges` (Ordnerwechsel und Entfernen aus der Collection gelten als Änderung, ein Wiederholen nicht). 190 Tests, 0 Fehler.
+
 # Weniger unnötige Rechenarbeit · 04.10.2026
 
 Die App auf Arbeit durchgesehen, die sie umsonst macht – vor allem bei großen Sammlungen spürbar. Am Verhalten und an den Daten ändert sich nichts.
