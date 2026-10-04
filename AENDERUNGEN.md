@@ -1,3 +1,8 @@
+# Rubrikwechsel mit Richtung · 04.10.2026
+
+- **Wechsel zwischen den Rubriken**: Statt der Überblendung (0,2 s) blendet die Seite jetzt durch: Die alte verschwindet in 0,1 s an Ort und Stelle, danach blendet die neue ein und schiebt sich dabei ein Stück (18 pt) in Richtung des Umschalters herein – nach rechts von rechts, nach links von links. Die beiden Seiten liegen nie gleichzeitig sichtbar übereinander (beim Überblenden mit Schub lagen sonst die Cover der einen Seite in den Lücken der anderen); dazwischen sieht man kurz nur Fensterhintergrund und Ambient-Schein. Der Schub ist eine kritisch gedämpfte Feder (~0,3 s) wie überall in der App, rein Core Animation, ohne Neuzeichnen der Seiten. Mit „Bewegung reduzieren“ bleibt nur das Ein- und Ausblenden.
+- **Ausprobiert und verworfen**: weiche Ränder am Cover-Raster – Cover unter Kopfleiste und Toolbar laufen lassen (der Systemrand verwischte dort nicht, die Suchleiste über den Covern war kaum lesbar) und kurze Verläufe oben und unten (wirkten wie ein heller Streifen bzw. eine unscharfe Kante). Die Cover enden weiter an einer klaren Kante.
+
 # Abschlussprüfung des Tages · 04.10.2026
 
 Alle Änderungen von heute noch einmal auf Richtigkeit und Nebenwirkungen durchgesehen (Sprache, Tastenkürzel, Speicherwege, Änderungserkennung des Abgleichs, Statistik, Beschriftungen, Suchdaten, Cover). Die App baut ohne Warnungen, die Demo startet und beendet sich sauber.

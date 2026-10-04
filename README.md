@@ -133,7 +133,7 @@ atos -o Plattenregal.app/Contents/MacOS/Plattenregal -l <Ladeadresse> <Adresse> 
 | Statistik | `Statistics/` | Auswertungen und Wertverlauf |
 | Fehler & Protokoll | `Utilities/ErrorMessages.swift`, `Utilities/AppLog.swift` | Verständliche Meldungen, Protokoll, Absturz-Handler |
 | Oberfläche | `Views/`, `Views/Shelf/`, `Views/Settings/`, `Utilities/AppAppearance.swift` | Fenster, Regalseite (Seite, Suche, Regalbild, Fach-Tabelle, „Platte hinzufügen“), ein Einstellungs-Tab pro Datei, gemeinsame Glas-Bausteine (`GlassSegmentedPicker`, `GlassMenuPicker`, `AppMenu`, `AppSearchField`, `AmbientBackdrop`, `appPanel` mit eigener Esc-Abfrage, `appCardSurface`, Knöpfe) |
-| Seiten | `Views/RootView.swift`, `Views/PageStack.swift` | Rubriken in der Toolbar, ⌘1–⌘4, ⌘F; jede Seite bleibt in einer eigenen Hosting-View eingehängt und wird nur überblendet (ruckelfreier Wechsel) |
+| Seiten | `Views/RootView.swift`, `Views/PageStack.swift` | Rubriken in der Toolbar, ⌘1–⌘4, ⌘F; jede Seite bleibt in einer eigenen Hosting-View eingehängt und wird nur durchgeblendet und leicht in Richtung des Umschalters hereingeschoben (ruckelfreier Wechsel) |
 | Tests | `PlattenregalTests/` | Regal, „Platte hinzufügen“, „Sortierung prüfen“, Sicherung, Export, Discogs-Abgleich, Statistik, Einstellungen, Reihenfolge |
 
 ## Entwicklung und Prüfung

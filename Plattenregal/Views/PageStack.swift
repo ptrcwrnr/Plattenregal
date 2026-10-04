@@ -6,12 +6,13 @@ import AppKit
 /// its data, sorting, scroll position and search while another one is shown.
 ///
 /// Each page lives in its own hosting view that stays in the window the whole
-/// time; switching only fades the layers (see `PageHostingView`). A SwiftUI
+/// time; switching only fades and nudges the layers (see `PageHostingView`,
+/// `PageStackView.show`). A SwiftUI
 /// `ZStack` with `.opacity(0)` did the same visually, but SwiftUI takes fully
 /// transparent content out of the window: every switch tore down and rebuilt
 /// the AppKit views behind tables and scroll views (100–200 ms on the main
-/// thread) and the fade then redrew whole pages in every frame. Here the fade
-/// is a pure Core Animation crossfade of what is already drawn.
+/// thread) and the fade then redrew whole pages in every frame. Here the switch
+/// is a pure Core Animation fade of what is already drawn.
 ///
 /// - The selection is a `PageSelection` object, not a value: switching then
 ///   updates only the views that read it (the switch control, the pages'
@@ -141,10 +142,9 @@ extension View {
 
 final class PageStackView<Page: Hashable>: NSView {
     fileprivate(set) var hosts: [Page: any PageHosting] = [:]
+    /// The pages in the order of the switch, for the direction of a switch.
+    private var order: [Page] = []
     private var shown: Page?
-    /// Bumped per switch, so a fade that finishes late doesn't touch a page
-    /// that has been selected again meanwhile.
-    private var generation = 0
 
     override var isFlipped: Bool { true }
 
@@ -158,17 +158,39 @@ final class PageStackView<Page: Hashable>: NSView {
         host.alphaValue = 0
         addSubview(host)
         hosts[page] = host
+        order.append(page)
     }
 
-    /// Every switch fades, whichever way it was triggered (switch control,
-    /// ⌘1…3, "Im Regal anzeigen"), with "Bewegung reduzieren" too: it is a
-    /// fade, not a movement. The first page just appears.
+    /// How far the incoming page travels: a nudge, not a full slide.
+    private static var shift: CGFloat { 18 }
+    /// The old page is gone before the new one shows up (see `show`).
+    private static var fadeOut: CFTimeInterval { 0.1 }
+    private static var fadeInDelay: CFTimeInterval { 0.07 }
+    private static var fadeIn: CFTimeInterval { 0.22 }
+    private static var fadeKey: String { "pageFade" }
+    private static var shiftKey: String { "pageShift" }
+
+    /// Every switch fades through: the old page fades out quickly on the
+    /// spot, then the new one fades in with a slight push in the direction of
+    /// the switch control – a page to the right comes in from the right –
+    /// whichever way it was triggered (switch control, ⌘1…4, "Im Regal
+    /// anzeigen"). The two pages are never visible on top of each other: a
+    /// crossfade showed both grids half transparent and, shifted against each
+    /// other, covers of one page in the gaps of the other. In between there is
+    /// only the window background with the ambient glow. With "Bewegung
+    /// reduzieren" the push is dropped, the fade stays. The first page just
+    /// appears.
+    ///
+    /// Everything runs as explicit Core Animation on the hosting views'
+    /// layers: the pages are not redrawn, the final values are set right away,
+    /// and the model values AppKit manages (position, transform) are never
+    /// touched – the shift exists only in the animation. The stack is not
+    /// clipped: pages draw their background up under the toolbar, past its
+    /// top edge; sideways the window clips the push anyway.
     fileprivate func show(_ page: Page) {
         guard page != shown, let incoming = hosts[page] else { return }
         let outgoing = shown.flatMap { hosts[$0] }
         shown = page
-        generation += 1
-        let current = generation
 
         // Typing must not go on in a page that is fading out.
         if let outgoing, let responder = window?.firstResponder as? NSView, responder.isDescendant(of: outgoing) {
@@ -176,34 +198,45 @@ final class PageStackView<Page: Hashable>: NSView {
         }
         for (key, host) in hosts {
             host.isShown = key == page
-            // Pages still mid-fade from an earlier switch end now.
-            if key != page && host !== outgoing { host.alphaValue = 0 }
+            // Pages still mid-switch from an earlier one end now.
+            host.layer?.removeAnimation(forKey: Self.fadeKey)
+            host.layer?.removeAnimation(forKey: Self.shiftKey)
+            host.alphaValue = key == page ? 1 : 0
         }
-        guard let outgoing else {
-            incoming.alphaValue = 1
-            return
-        }
-        // Only the upper of the two pages fades, the lower one stays opaque,
-        // so the window background never shows through. The subview order is
-        // left alone: moving a view up means taking it out of the window and
-        // back in, which is exactly the work this avoids.
-        let incomingOnTop = (subviews.firstIndex(of: incoming) ?? 0) > (subviews.firstIndex(of: outgoing) ?? 0)
-        incoming.alphaValue = incomingOnTop ? 0 : 1
-        outgoing.alphaValue = 1
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.2
-            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            if incomingOnTop {
-                incoming.animator().alphaValue = 1
-            } else {
-                outgoing.animator().alphaValue = 0
-            }
-        } completionHandler: { [weak self] in
-            // AppKit calls this on the main thread; the SDK just doesn't say so.
-            MainActor.assumeIsolated {
-                guard let self, self.generation == current else { return }
-                outgoing.alphaValue = 0
-            }
+        guard let outgoing, let outgoingPage = order.first(where: { hosts[$0] === outgoing }),
+              let incomingLayer = incoming.layer, let outgoingLayer = outgoing.layer else { return }
+        // Going right, the new page comes from the right.
+        let forward = (order.firstIndex(of: page) ?? 0) > (order.firstIndex(of: outgoingPage) ?? 0)
+        let distance = AppStyle.reduceMotion ? 0 : (forward ? Self.shift : -Self.shift)
+
+        let fadeOut = CABasicAnimation(keyPath: "opacity")
+        fadeOut.fromValue = 1
+        fadeOut.toValue = 0
+        fadeOut.duration = Self.fadeOut
+        fadeOut.timingFunction = CAMediaTimingFunction(name: .easeIn)
+        outgoingLayer.add(fadeOut, forKey: Self.fadeKey)
+
+        // Until it starts, the delayed animation holds its start value
+        // (`.backwards`), so the new page stays invisible meanwhile.
+        let start = incomingLayer.convertTime(CACurrentMediaTime(), from: nil) + Self.fadeInDelay
+        let fadeIn = CABasicAnimation(keyPath: "opacity")
+        fadeIn.fromValue = 0
+        fadeIn.toValue = 1
+        fadeIn.beginTime = start
+        fadeIn.duration = Self.fadeIn
+        fadeIn.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        fadeIn.fillMode = .backwards
+        incomingLayer.add(fadeIn, forKey: Self.fadeKey)
+        if distance != 0 {
+            // Critically damped like `AppStyle.layoutAnimation`: no overshoot.
+            let push = CASpringAnimation(perceptualDuration: 0.3, bounce: 0)
+            push.keyPath = "transform.translation.x"
+            push.fromValue = distance
+            push.toValue = 0
+            push.beginTime = start
+            push.duration = push.settlingDuration
+            push.fillMode = .backwards
+            incomingLayer.add(push, forKey: Self.shiftKey)
         }
     }
 }
