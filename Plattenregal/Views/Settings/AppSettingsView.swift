@@ -78,14 +78,17 @@ struct AppSettingsView: View {
             }
         }
         // Wide enough that the centered switch with all eight areas stays
-        // clear of the window buttons on every tab.
-        .frame(width: 860, height: 620)
+        // clear of the window buttons on every tab; tall enough for
+        // "Allgemein" without a gap below, longer tabs scroll.
+        .frame(width: 860, height: 510)
         // The chosen ambient color, as in the main window.
         .background { AmbientGlow() }
         // Asked for from the main window while this one is already open.
         .onChange(of: request.count) { if let asked = request.take() { tab = asked } }
         .navigationTitle(tab.title)
         .toolbar(removing: .title)
+        // No separator line under the toolbar, not even on hover.
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.title) }
@@ -112,6 +115,8 @@ struct SettingsPage<Content: View>: View {
                 .padding(AppStyle.pagePadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
+        // The edge effect draws a line under the toolbar when hovered.
+        .scrollEdgeEffectHidden(true, for: .top)
     }
 }
 
