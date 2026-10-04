@@ -188,7 +188,7 @@ struct GeneralSettingsView: View {
                     GlassSegmentedPicker(selection: $preferences.language, options: AppLanguage.allCases) { Text($0.title) }
                         .accessibilityLabel(String(localized: "Sprache"))
                 }
-                if preferences.language != preferences.languageAtLaunch {
+                if preferences.languageNeedsRestart {
                     Divider()
                     SettingsRow(title: String(localized: "Neustart nötig"),
                                 hint: String(localized: "Die neue Sprache gilt ab dem nächsten Start von Plattenregal.")) {

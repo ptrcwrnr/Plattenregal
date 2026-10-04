@@ -115,7 +115,7 @@ struct DiscogsSyncPill: View {
         if sync.busy { return .loading }
         if sync.isRunning { return .tracklists }
         if sync.error != nil { return .failed }
-        if sync.summary != nil || sync.status == String(localized: "Synchronisierung abgeschlossen") { return .done }
+        if sync.summary != nil || sync.status == DiscogsSyncService.completedStatus { return .done }
         return .note
     }
 

@@ -103,8 +103,6 @@ enum DemoData {
         account.lastCollectionSync = now
         account.lastWantlistSync = now
         context.insert(account)
-        let folders = [(1, "Uncategorized"), (2, String(localized: "Elektronisch")), (3, String(localized: "Klassiker"))]
-        for (id, name) in folders { context.insert(DiscogsFolder(owner: owner, id: id, name: name, count: 0)) }
 
         // The living room: the cabinet every store starts with.
         let cabinets = try context.fetch(FetchDescriptor<Cabinet>(sortBy: [SortDescriptor(\Cabinet.sortOrder)]))
@@ -139,6 +137,11 @@ enum DemoData {
             second.discogsFolderID = 3
             context.insert(second)
             copies.append((second, kindOfBlue.album))
+        }
+        // Folder 1 has this name on Discogs in every language. Counts as Discogs reports them.
+        for (id, name) in [(1, "Uncategorized"), (2, String(localized: "Elektronisch")), (3, String(localized: "Klassiker"))] {
+            let count = copies.filter { $0.copy.discogsFolderID == id }.count
+            context.insert(DiscogsFolder(owner: owner, id: id, name: name, count: count))
         }
 
         // Alphabetically into the living room, a few per compartment; jazz in the hallway.

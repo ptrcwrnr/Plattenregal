@@ -189,7 +189,7 @@ struct DiscogsSettingsView: View {
                 Text(title).font(.headline)
                 // Ticks along while the window stays open ("vor 2 Minuten" …).
                 TimelineView(.everyMinute) { _ in
-                    Text(AppStyle.records(count) + " · " + (date.map { String(localized: "Stand \($0.formatted(.relative(presentation: .named)))") } ?? String(localized: "noch nicht synchronisiert")))
+                    Text(AppStyle.records(count) + " · " + (date.map { String(localized: "synchronisiert \($0.formatted(.relative(presentation: .named)))") } ?? String(localized: "noch nicht synchronisiert")))
                         .monospacedDigit()
                 }
                 .font(.caption).foregroundStyle(.secondary)

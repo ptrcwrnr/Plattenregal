@@ -260,7 +260,7 @@ struct CollectionView: View {
                         } else {
                             // First start: nothing works without the token, so that is the way in.
                             AppEmptyState(String(localized: "Willkommen bei Plattenregal"), systemImage: "opticaldisc",
-                                description: Text("Deine Collection kommt von Discogs. Trag deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her."),
+                                description: Text("Deine Collection kommt von Discogs. Trage deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her."),
                                 actionTitle: String(localized: "Token eintragen")) { settingsTab = .discogs }
                         }
                     }

@@ -78,13 +78,16 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         if rejectedFingerprint == fingerprint { rejectedFingerprint = nil }
     }
 
+    /// The status after a successful sync; also how views recognise it.
+    static let completedStatus = String(localized: "Synchronisierung abgeschlossen")
+
     /// Success: show "abgeschlossen" briefly, then let the lines go — unless
     /// something else (an error, a new sync) has taken over meanwhile.
     private func finish() {
-        status = String(localized: "Synchronisierung abgeschlossen")
+        status = Self.completedStatus
         Task {
             try? await Task.sleep(for: .seconds(5))
-            if !isRunning, error == nil, status == String(localized: "Synchronisierung abgeschlossen") { dismissStatus() }
+            if !isRunning, error == nil, status == Self.completedStatus { dismissStatus() }
         }
     }
     private let api: DiscogsAPIClient

@@ -49,6 +49,9 @@ nonisolated enum ExportDelimiter: String, CaseIterable, Identifiable {
     var id: Self { self }
     var character: Character { self == .semicolon ? ";" : "," }
     var title: String { self == .semicolon ? String(localized: "Semikolon") : String(localized: "Komma") }
+    /// What Excel expects here: a semicolon where the comma is the decimal
+    /// separator (German settings), otherwise a comma.
+    static var standard: Self { Locale.current.decimalSeparator == "," ? .semicolon : .comma }
 }
 
 /// Optional column blocks on top of the release data (artist, title, year …),
@@ -83,7 +86,7 @@ struct ExportOptions {
     var source: ExportSource = .collection
     var order: ExportOrder = .shelf
     var groups: Set<ExportColumnGroup> = []
-    var delimiter: ExportDelimiter = .semicolon
+    var delimiter: ExportDelimiter = .standard
 }
 
 // MARK: - Table

@@ -242,14 +242,23 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         static let ambient = "ambientChoice"
     }
 
-    /// The language this launch was started with; a different choice needs a restart.
-    let languageAtLaunch = AppLanguage.stored
+    /// The choice this launch was started with.
+    private let languageAtLaunch = AppLanguage.stored
 
     var startPage: StartPage { didSet { store(startPage.rawValue, Key.startPage) } }
     var appearance: AppearanceMode { didSet { store(appearance.rawValue, Key.appearance); applyAppearance() } }
     var accent: AccentChoice { didSet { store(accent.rawValue, Key.accent) } }
     var ambient: AmbientChoice { didSet { store(ambient.rawValue, Key.ambient) } }
     var language: AppLanguage { didSet { AppLanguage.store(language) } }
+    /// Whether the chosen language shows differently from this launch – a
+    /// restart is only worth it then: on a German Mac, "System" and
+    /// "Deutsch" look the same.
+    var languageNeedsRestart: Bool {
+        guard language != languageAtLaunch else { return false }
+        let available = Bundle.main.localizations.filter { $0 != "Base" }
+        let next = Bundle.preferredLocalizations(from: available, forPreferences: UserDefaults.standard.stringArray(forKey: "AppleLanguages")).first
+        return next != Bundle.main.preferredLocalizations.first
+    }
 
     private init() {
         let defaults = AppDefaults.store

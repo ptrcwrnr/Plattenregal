@@ -223,7 +223,8 @@ struct DataSettingsView: View {
             .contentTransition(.numericText())
     }
 
-    private func bytes(_ value: Int64) -> String { value.formatted(.byteCount(style: .file)) }
+    /// Digits even for nothing – the formatter would say "Zero kB".
+    private func bytes(_ value: Int64) -> String { value.formatted(.byteCount(style: .file, spellsOutZero: false)) }
 
     private func updateSizes() async {
         var new = await StorageSizes.measure(customBackupFolder: autoBackup.usesCustomFolder)

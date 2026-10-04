@@ -301,7 +301,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ without compartment"
+            "value": "%@ without a compartment"
           }
         }
       }
@@ -603,9 +603,6 @@
       }
     },
     "%lld": {
-      "shouldTranslate": false
-    },
-    "%lld %%": {
       "shouldTranslate": false
     },
     "%lld / %lld": {
@@ -1331,7 +1328,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "All %lld labels"
+            "value": "All %lld Labels"
           }
         }
       }
@@ -1351,7 +1348,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show all %lld"
+            "value": "Show All %lld"
           }
         }
       }
@@ -1501,7 +1498,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete everything"
+            "value": "Delete Everything"
           }
         }
       }
@@ -1511,7 +1508,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sync everything with Discogs"
+            "value": "Sync Everything with Discogs"
           }
         }
       }
@@ -1521,7 +1518,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sync everything"
+            "value": "Sync Everything"
           }
         }
       }
@@ -1541,7 +1538,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset everything …"
+            "value": "Reset Everything…"
           }
         }
       }
@@ -1581,7 +1578,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Export as %@ …"
+            "value": "Export as %@…"
           }
         }
       }
@@ -1611,7 +1608,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mark as missing"
+            "value": "Mark as Missing"
           }
         }
       }
@@ -1681,7 +1678,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shares refer to copies. Several styles, artists or labels per release are counted individually; the shares can add up to more than 100 %."
+            "value": "Shares refer to copies. Several styles, artists or labels per release are counted individually; the shares can add up to more than 100%."
           }
         }
       }
@@ -1761,7 +1758,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "From file …"
+            "value": "From File…"
           }
         }
       }
@@ -1771,7 +1768,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remove from compartment"
+            "value": "Remove from Compartment"
           }
         }
       }
@@ -1791,7 +1788,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Take off the shelf"
+            "value": "Remove from Shelf"
           }
         }
       }
@@ -1801,7 +1798,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete from collection"
+            "value": "Delete from Collection"
           }
         }
       }
@@ -1811,7 +1808,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete from collection …"
+            "value": "Delete from Collection…"
           }
         }
       }
@@ -1901,7 +1898,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quit the app and start it again. If it still doesn't work, first back up the folder ~/Library/Containers/de.private.Plattenregal before you try anything else."
+            "value": "Quit the app and start it again. If it still doesn’t work, first back up the folder ~/Library/Containers/de.private.Plattenregal before you try anything else."
           }
         }
       }
@@ -2011,7 +2008,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not found while placing – right-click → “Found again” once it turns up"
+            "value": "Not found while placing – right-click → “Found Again” once it turns up"
           }
         }
       }
@@ -2071,7 +2068,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restore layout …"
+            "value": "Restore Layout…"
           }
         }
       }
@@ -2217,7 +2214,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Larger covers"
+            "value": "Larger Covers"
           }
         }
       }
@@ -2227,7 +2224,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Larger / smaller covers"
+            "value": "Larger / Smaller Covers"
           }
         }
       }
@@ -2237,7 +2234,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Covers at default size"
+            "value": "Default Cover Size"
           }
         }
       }
@@ -2247,7 +2244,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Smaller covers"
+            "value": "Smaller Covers"
           }
         }
       }
@@ -2317,7 +2314,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Appearance, start page, export and all other settings return to their defaults. Collection, shelves, locations, the Discogs token as well as location and retention of the backups are kept."
+            "value": "Appearance, start page, export and all other settings return to their defaults. Collection, shelves, locations, the Discogs token and the backup folder and retention are kept."
           }
         }
       }
@@ -2357,7 +2354,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The app's shared log – it can't be cleared in the demo."
+            "value": "The app’s shared log – it can’t be cleared in the demo."
           }
         }
       }
@@ -2367,7 +2364,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The last shelf can't be deleted."
+            "value": "The last shelf can’t be deleted."
           }
         }
       }
@@ -2412,7 +2409,7 @@
         }
       }
     },
-    "Deine Collection kommt von Discogs. Trag deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her.": {
+    "Deine Collection kommt von Discogs. Trage deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her.": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -2477,7 +2474,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "End demo"
+            "value": "End Demo"
           }
         }
       }
@@ -2487,7 +2484,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restart demo"
+            "value": "Restart Demo"
           }
         }
       }
@@ -2497,7 +2494,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start demo"
+            "value": "Start Demo"
           }
         }
       }
@@ -2507,7 +2504,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start demo …"
+            "value": "Start Demo…"
           }
         }
       }
@@ -2607,7 +2604,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The entered token isn't saved yet – syncing continues with the saved one."
+            "value": "The entered token isn’t saved yet – syncing continues with the saved one."
           }
         }
       }
@@ -2617,7 +2614,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The entered token isn't saved yet."
+            "value": "The entered token isn’t saved yet."
           }
         }
       }
@@ -2627,7 +2624,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The chosen folder can't be reached – until it's back or another one is chosen, the app backs up to its own folder."
+            "value": "The chosen folder can’t be reached – until it’s back or another one is chosen, the app backs up to its own folder."
           }
         }
       }
@@ -2637,7 +2634,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The chosen folder can't be reached – it may have been moved or deleted, or the drive isn't connected. Choose the folder again."
+            "value": "The chosen folder can’t be reached – it may have been moved or deleted, or the drive isn’t connected. Choose the folder again."
           }
         }
       }
@@ -2657,7 +2654,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The last version of each day – so a day with many changes doesn't push out all older backups."
+            "value": "The last version of each day – so a day with many changes doesn’t push out all older backups."
           }
         }
       }
@@ -2727,7 +2724,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The sample collection has been emptied. “Restart demo” under “General” brings it back."
+            "value": "The sample collection has been emptied. “Restart Demo” under “General” brings it back."
           }
         }
       }
@@ -2787,7 +2784,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The file could not be saved. Check that there is enough space at the chosen location and that you're allowed to save there, then try again."
+            "value": "The file could not be saved. Check that there is enough space at the chosen location and that you’re allowed to save there, then try again."
           }
         }
       }
@@ -2817,7 +2814,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The demo could not be started. “Plattenregal → End demo” takes you back to your collection."
+            "value": "The demo could not be started. “Plattenregal → End Demo” takes you back to your collection."
           }
         }
       }
@@ -2847,7 +2844,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The record gets no compartment and doesn't count among the records that still need to be placed."
+            "value": "The record gets no compartment and doesn’t count among the records that still need to be placed."
           }
         }
       }
@@ -2857,7 +2854,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The record is not (or no longer) in your Discogs collection. Deleting removes it along with its compartment and position; the other records in the compartment move up. This can't be undone."
+            "value": "The record is not (or no longer) in your Discogs collection. Deleting removes it along with its compartment and position; the other records in the compartment move up. This can’t be undone."
           }
         }
       }
@@ -2877,7 +2874,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The record leaves its compartment and doesn't count among the records that still need to be placed."
+            "value": "The record leaves its compartment and doesn’t count among the records that still need to be placed."
           }
         }
       }
@@ -2897,7 +2894,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "An artist's records by release year, oldest first."
+            "value": "An artist’s records by release year, oldest first."
           }
         }
       }
@@ -2907,7 +2904,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "An artist's records by label and catalog number."
+            "value": "An artist’s records by label and catalog number."
           }
         }
       }
@@ -2917,7 +2914,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "An artist's records by title, from A to Z."
+            "value": "An artist’s records by title, from A to Z."
           }
         }
       }
@@ -3007,7 +3004,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The composition of the collection affects this figure. It doesn't describe the price development of an unchanged collection."
+            "value": "The composition of the collection affects this figure. It doesn’t describe the price development of an unchanged collection."
           }
         }
       }
@@ -3027,7 +3024,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The current layout couldn't be read right now. If this persists, restart Plattenregal."
+            "value": "The current layout couldn’t be read right now. If this persists, restart Plattenregal."
           }
         }
       }
@@ -3057,7 +3054,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The automatic backup at %@ failed. To be safe, save the layout to a file with “Save As …”."
+            "value": "The automatic backup at %@ failed. To be safe, save the layout to a file with “Save As…”."
           }
         }
       }
@@ -3087,7 +3084,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The existing backups could not be copied to the new folder. The previous folder is kept. Check that you're allowed to save in the new folder and that there is enough space."
+            "value": "The existing backups could not be copied to the new folder. The previous folder is kept. Check that you’re allowed to save in the new folder and that there is enough space."
           }
         }
       }
@@ -3107,7 +3104,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This file isn't a backup of the shelf layout or it is damaged. Choose a file that Plattenregal created with “Save As …” or automatically."
+            "value": "This file isn’t a backup of the shelf layout or it is damaged. Choose a file that Plattenregal created with “Save As…” or automatically."
           }
         }
       }
@@ -3137,7 +3134,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This position doesn't exist in the compartment. Choose a number between 1 and the spot right after the last record."
+            "value": "This position doesn’t exist in the compartment. Choose a number between 1 and the spot right after the last record."
           }
         }
       }
@@ -3167,7 +3164,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This compartment is locked and doesn't take records. It can be unlocked by right-clicking the compartment."
+            "value": "This compartment is locked and doesn’t take records. It can be unlocked by right-clicking the compartment."
           }
         }
       }
@@ -3207,7 +3204,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Discogs can't find this record or folder (anymore). It may have been deleted there."
+            "value": "Discogs can’t find this record or folder (anymore). It may have been deleted there."
           }
         }
       }
@@ -3217,7 +3214,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Discogs sent data that Plattenregal can't make sense of. Please try again later."
+            "value": "Discogs sent data that Plattenregal can’t make sense of. Please try again later."
           }
         }
       }
@@ -3227,7 +3224,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Discogs didn't accept the token. It may have expired or been copied incompletely. Check it in the settings."
+            "value": "Discogs didn’t accept the token. It may have expired or been copied incompletely. Check it in the settings."
           }
         }
       }
@@ -3247,7 +3244,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Discogs didn't respond in time. Check your internet connection and try again."
+            "value": "Discogs didn’t respond in time. Check your internet connection and try again."
           }
         }
       }
@@ -3267,7 +3264,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Discogs can't be reached right now. Check your internet connection and try again."
+            "value": "Discogs can’t be reached right now. Check your internet connection and try again."
           }
         }
       }
@@ -3277,7 +3274,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Discogs doesn't allow access. Check in the settings that the token is correct and belongs to your account."
+            "value": "Discogs doesn’t allow access. Check in the settings that the token is correct and belongs to your account."
           }
         }
       }
@@ -3297,7 +3294,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Update Discogs data"
+            "value": "Update Discogs Data"
           }
         }
       }
@@ -3387,7 +3384,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not moved yet after all"
+            "value": "Mark as not moved"
           }
         }
       }
@@ -3447,7 +3444,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Custom size …"
+            "value": "Custom Size…"
           }
         }
       }
@@ -3457,7 +3454,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A compartment with records can't be locked. Take the records out first."
+            "value": "A compartment with records can’t be locked. Take the records out first."
           }
         }
       }
@@ -3557,7 +3554,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset settings"
+            "value": "Reset Settings"
           }
         }
       }
@@ -3633,7 +3630,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Read again"
+            "value": "Read Again"
           }
         }
       }
@@ -3653,7 +3650,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Appears on the shelf under the lock and as the compartment's title."
+            "value": "Appears on the shelf under the lock and as the compartment’s title."
           }
         }
       }
@@ -3693,7 +3690,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No Discogs token has been entered yet. You'll find the field for it in the settings under “Discogs”."
+            "value": "No Discogs token has been entered yet. You’ll find the field for it in the settings under “Discogs”."
           }
         }
       }
@@ -3703,7 +3700,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "There's no record on the shelf yet that this record could be aligned with. Choose a compartment and add it there with “+”."
+            "value": "There’s no record on the shelf yet that this record could be aligned with. Choose a compartment and add it there with “+”."
           }
         }
       }
@@ -3749,7 +3746,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Edit copy …"
+            "value": "Edit Copy…"
           }
         }
       }
@@ -3819,7 +3816,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unlock compartment"
+            "value": "Unlock Compartment"
           }
         }
       }
@@ -3839,7 +3836,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lock compartment"
+            "value": "Lock Compartment"
           }
         }
       }
@@ -4055,7 +4052,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A sync with Discogs is running right now. Wait until it's finished, then reset."
+            "value": "A sync with Discogs is running right now. Wait until it’s finished, then reset."
           }
         }
       }
@@ -4065,7 +4062,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A sync with Discogs is running right now. Wait until it's finished, then restore the layout."
+            "value": "A sync with Discogs is running right now. Wait until it’s finished, then restore the layout."
           }
         }
       }
@@ -4165,7 +4162,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apply size"
+            "value": "Apply Size"
           }
         }
       }
@@ -4195,7 +4192,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Undo taking out"
+            "value": "Undo Removal"
           }
         }
       }
@@ -4205,7 +4202,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Today from your collection"
+            "value": "From your collection today"
           }
         }
       }
@@ -4215,7 +4212,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Place here"
+            "value": "Place Here"
           }
         }
       }
@@ -4245,7 +4242,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hide note"
+            "value": "Hide Note"
           }
         }
       }
@@ -4395,7 +4392,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "In the app's folder. A folder in iCloud Drive also protects the layout if the Mac is lost."
+            "value": "In the app’s folder. A folder in iCloud Drive also protects the layout if the Mac is lost."
           }
         }
       }
@@ -4405,7 +4402,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show on shelf"
+            "value": "Show on Shelf"
           }
         }
       }
@@ -4415,7 +4412,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show on shelf"
+            "value": "Show on Shelf"
           }
         }
       }
@@ -4445,7 +4442,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Always by artist first. %@ Applies to finding a spot, adding and “Check order”."
+            "value": "Always by artist first. %@ Applies to finding a spot, adding and “Check Order”."
           }
         }
       }
@@ -4455,7 +4452,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "In %@ – doesn't count toward the app's storage."
+            "value": "In %@ – doesn’t count toward the app’s storage."
           }
         }
       }
@@ -4475,7 +4472,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "There is no automatic export in the demo. You can still save the sample collection as a file with “Export as …” above."
+            "value": "There is no automatic export in the demo. You can still save the sample collection as a file with “Export as…” above."
           }
         }
       }
@@ -4485,7 +4482,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "There are no automatic backups in the demo, and location and retention can't be changed – so your real backups stay untouched."
+            "value": "There are no automatic backups in the demo, and the folder and retention can’t be changed – so your real backups stay untouched."
           }
         }
       }
@@ -4545,7 +4542,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show contents"
+            "value": "Show Contents"
           }
         }
       }
@@ -4645,7 +4642,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Export now"
+            "value": "Export Now"
           }
         }
       }
@@ -4655,7 +4652,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restart now"
+            "value": "Restart Now"
           }
         }
       }
@@ -4665,7 +4662,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sync now"
+            "value": "Sync Now"
           }
         }
       }
@@ -4795,7 +4792,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sound"
+            "value": "Sound profile"
           }
         }
       }
@@ -5071,7 +5068,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "More than half of the records from the backup are missing. If the collection isn't fully synced yet, cancel and sync first."
+            "value": "More than half of the records from the backup are missing. If the collection isn’t fully synced yet, cancel and sync first."
           }
         }
       }
@@ -5111,7 +5108,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "With the new setting, fewer backups are kept. The surplus ones are deleted immediately and can't be recovered."
+            "value": "With the new setting, fewer backups are kept. The surplus ones are deleted immediately and can’t be recovered."
           }
         }
       }
@@ -5281,7 +5278,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rename …"
+            "value": "Rename…"
           }
         }
       }
@@ -5327,7 +5324,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pick a new record"
+            "value": "Draw Another Record"
           }
         }
       }
@@ -5337,7 +5334,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pick a new record (⇧⌘R)"
+            "value": "Draw another record (⇧⌘R)"
           }
         }
       }
@@ -5527,7 +5524,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No records to pick yet."
+            "value": "No records to draw from yet."
           }
         }
       }
@@ -5657,7 +5654,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Collection only"
+            "value": "Collection Only"
           }
         }
       }
@@ -5667,7 +5664,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wantlist only"
+            "value": "Wantlist Only"
           }
         }
       }
@@ -5727,7 +5724,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Next shelf"
+            "value": "Next Shelf"
           }
         }
       }
@@ -5903,7 +5900,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add record"
+            "value": "Add Record"
           }
         }
       }
@@ -5913,7 +5910,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search for a record on the shelf …"
+            "value": "Search for a record on the shelf…"
           }
         }
       }
@@ -5943,7 +5940,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search records without compartment"
+            "value": "Search records without a compartment"
           }
         }
       }
@@ -5963,7 +5960,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Records you can't find while placing can be set aside. They are listed next to “Add record” until they turn up again."
+            "value": "Records you can’t find while placing can be set aside. They are listed next to “Add Record” until they turn up again."
           }
         }
       }
@@ -6045,7 +6042,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plattenregal is already open – for example from Xcode or a second time from the Finder. So that two instances never write to your collection at the same time, this one doesn't open it. Quit the other instance and then restart Plattenregal."
+            "value": "Plattenregal is already open – for example from Xcode or a second time from the Finder. So that two instances never write to your collection at the same time, this one doesn’t open it. Quit the other instance and then restart Plattenregal."
           }
         }
       }
@@ -6065,7 +6062,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plattenregal can't access the macOS keychain where the Discogs token is stored right now. Allow access if macOS asks, and try again. (Code %d)"
+            "value": "Plattenregal can’t access the macOS keychain where the Discogs token is stored right now. Allow access if macOS asks, and try again. (Code %d)"
           }
         }
       }
@@ -6125,7 +6122,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plattenregal restarts – with a sample collection to try out. You can change everything: place records, add shelves, change settings. None of it is saved, and your own collection stays untouched.\n\nYou can end the demo at any time with “End demo”."
+            "value": "Plattenregal restarts – with a sample collection to try out. You can change everything: place records, add shelves, change settings. None of it is saved, and your own collection stays untouched.\n\nYou can end the demo at any time with “End Demo”."
           }
         }
       }
@@ -6165,7 +6162,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Find a spot on the shelf"
+            "value": "Find a Spot on the Shelf"
           }
         }
       }
@@ -6185,7 +6182,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show spot on shelf"
+            "value": "Show Spot on Shelf"
           }
         }
       }
@@ -6261,7 +6258,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show log in Finder"
+            "value": "Show Log in Finder"
           }
         }
       }
@@ -6271,7 +6268,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ranking from rank %lld"
+            "value": "Ranking from #%lld"
           }
         }
       }
@@ -6281,7 +6278,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hide ranking"
+            "value": "Hide Ranking"
           }
         }
       }
@@ -6301,7 +6298,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Grid / list"
+            "value": "Grid / List"
           }
         }
       }
@@ -6331,7 +6328,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Activate or deactivate shelf"
+            "value": "Activate or Deactivate Shelf"
           }
         }
       }
@@ -6341,7 +6338,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Create shelf"
+            "value": "Create Shelf"
           }
         }
       }
@@ -6351,7 +6348,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show shelf"
+            "value": "Show Shelf"
           }
         }
       }
@@ -6361,7 +6358,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add shelf"
+            "value": "Add Shelf"
           }
         }
       }
@@ -6371,7 +6368,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete shelf"
+            "value": "Delete Shelf"
           }
         }
       }
@@ -6381,7 +6378,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rename shelf …"
+            "value": "Rename Shelf…"
           }
         }
       }
@@ -6471,7 +6468,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apply order"
+            "value": "Apply Order"
           }
         }
       }
@@ -6601,7 +6598,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Collection, wantlist, statistics history, additional shelves, Discogs account including token, covers and all settings will be deleted – like a fresh install. Only the backups of the shelf layout remain, along with their location and retention (a current one is written first). This can't be undone."
+            "value": "Collection, wantlist, statistics history, additional shelves, Discogs account including token, covers and all settings will be deleted – like a fresh install. Only the backups of the shelf layout remain, along with their folder and retention (a current one is written first). This can’t be undone."
           }
         }
       }
@@ -6741,7 +6738,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Refresh page"
+            "value": "Refresh Page"
           }
         }
       }
@@ -6761,7 +6758,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Save As …"
+            "value": "Save As…"
           }
         }
       }
@@ -6791,7 +6788,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "It can't be made that small right now: the compartments that would be dropped still hold %@. Take them out first or choose a larger variant."
+            "value": "It can’t be made that small right now: the compartments that would be dropped still hold %@. Take them out first or choose a larger variant."
           }
         }
       }
@@ -6811,7 +6808,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Check order"
+            "value": "Check Order"
           }
         }
       }
@@ -6877,7 +6874,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Save & test"
+            "value": "Save & Test"
           }
         }
       }
@@ -6887,7 +6884,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Location"
+            "value": "Storage location"
           }
         }
       }
@@ -6987,7 +6984,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset locations"
+            "value": "Reset Locations"
           }
         }
       }
@@ -7037,7 +7034,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stands in the deactivated shelf “%@”. Activate it in the settings under “Shelves” to see it here."
+            "value": "It’s on the deactivated shelf “%@”. Activate the shelf in the settings under “Shelves” to see the record here."
           }
         }
       }
@@ -7087,7 +7084,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clear search, then close it"
+            "value": "Clear Search, Then Close It"
           }
         }
       }
@@ -7127,7 +7124,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cancel sync"
+            "value": "Cancel Sync"
           }
         }
       }
@@ -7247,7 +7244,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Enter token"
+            "value": "Enter Token"
           }
         }
       }
@@ -7257,7 +7254,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remove token"
+            "value": "Remove Token"
           }
         }
       }
@@ -7287,7 +7284,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Create token ↗"
+            "value": "Create Token ↗"
           }
         }
       }
@@ -7593,7 +7590,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Previous / next shelf"
+            "value": "Previous / Next Shelf"
           }
         }
       }
@@ -7603,7 +7600,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Previous shelf"
+            "value": "Previous Shelf"
           }
         }
       }
@@ -7653,7 +7650,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "What the app did and when – helpful when something doesn't work."
+            "value": "What the app did and when – helpful when something doesn’t work."
           }
         }
       }
@@ -7699,7 +7696,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hide more labels"
+            "value": "Hide Other Labels"
           }
         }
       }
@@ -7709,7 +7706,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show less"
+            "value": "Show Less"
           }
         }
       }
@@ -7759,7 +7756,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "How records stand in the compartment and what helps when adding."
+            "value": "How records are arranged in a compartment and what helps when adding."
           }
         }
       }
@@ -7789,7 +7786,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Place again"
+            "value": "Place Again"
           }
         }
       }
@@ -7799,7 +7796,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Found again"
+            "value": "Found Again"
           }
         }
       }
@@ -7819,7 +7816,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restore …"
+            "value": "Restore…"
           }
         }
       }
@@ -7859,7 +7856,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Calculating …"
+            "value": "Calculating…"
           }
         }
       }
@@ -7869,7 +7866,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Creating …"
+            "value": "Creating…"
           }
         }
       }
@@ -7879,7 +7876,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loading from Discogs …"
+            "value": "Loading from Discogs…"
           }
         }
       }
@@ -7929,7 +7926,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose …"
+            "value": "Choose…"
           }
         }
       }
@@ -7939,7 +7936,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The token can't be changed during a sync."
+            "value": "The token can’t be changed during a sync."
           }
         }
       }
@@ -7949,7 +7946,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A layout can't be restored during a sync."
+            "value": "A layout can’t be restored during a sync."
           }
         }
       }
@@ -7969,7 +7966,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The token can't be changed during a sync. Please test it again afterwards."
+            "value": "The token can’t be changed during a sync. Please test it again afterwards."
           }
         }
       }
@@ -8119,7 +8116,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Random find"
+            "value": "Random pick"
           }
         }
       }
@@ -8129,7 +8126,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Random find: pick a new record"
+            "value": "Random Pick: Draw Another Record"
           }
         }
       }
@@ -8225,7 +8222,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset …"
+            "value": "Reset…"
           }
         }
       }
@@ -8251,7 +8248,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Switch between shelves"
+            "value": "Switch Between Shelves"
           }
         }
       }
@@ -8411,7 +8408,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "portrait"
+            "value": "vertical"
           }
         }
       }
@@ -8461,7 +8458,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "landscape"
+            "value": "horizontal"
           }
         }
       }
@@ -8482,6 +8479,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 record"
+          }
+        }
+      }
+    },
+    "synchronisiert %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "synced %@"
           }
         }
       }
@@ -8573,7 +8580,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Change …"
+            "value": "Change…"
           }
         }
       }
@@ -8725,7 +8732,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "“Found again”"
+            "value": "“Found Again”"
           }
         }
       }

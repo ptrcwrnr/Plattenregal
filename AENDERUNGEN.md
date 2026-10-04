@@ -1,3 +1,17 @@
+# Englisch und Deutsch, zweite Prüfung · 04.10.2026
+
+Alle Texte noch einmal gelesen, dazu die App auf Englisch und Deutsch in der Demo durchgesehen (alle Einstellungsseiten, Regal, Statistik). Korrigiert:
+
+- **macOS-Schreibweise im Englischen**: Menüpunkte, Knöpfe und die Tastenkürzel-Liste in Title Case („Show in Finder“, „End Demo“, „Sync Everything“), Hinweise, die diese Knöpfe zitieren, passend dazu. Auslassungspunkte direkt am Wort („Save As…“ statt „Save As …“), typografische Apostrophe („can’t“), „100%“ ohne Leerzeichen.
+- **Zahlen und Einheiten**: Der Anteil der Stile unter dem Regal war fest als „12 %“ geschrieben, jetzt im Format der Sprache („12%“ im Englischen). Speicherplatz zeigt „0 bytes“ statt „Zero kB“.
+- **Begriffe**: „Speicherort“ der Sicherungen heißt „Storage location“ und in Sätzen „folder“ – vorher stand „location“ für Ordner und Plattenstandorte im selben Satz. „Neue Platte ziehen“ ist „Draw Another Record“, „Zufallsfund“ „Random pick“, „Klangbild“ „Sound profile“, Regalgrößen „vertical/horizontal“ statt „portrait/landscape“ u. a.
+- **Discogs-Kacheln**: „56 Platten · synchronisiert vor 5 Minuten“ statt „Stand vor 5 Minuten“ (englisch „synced 5 minutes ago“ statt „As of 5 minutes ago“).
+- **CSV-Trennzeichen** voreingestellt nach Systemeinstellung: Semikolon, wo das Komma Dezimalzeichen ist (deutsches Excel), sonst Komma. Gespeicherte Wahl bleibt.
+- **Automatischer Export**: Der Dateiname hängt nicht mehr an der Sprache der Oberfläche – die Datei soll bei jedem Lauf ersetzt werden, nicht nach einem Sprachwechsel neu entstehen.
+- **Sprachwahl**: „Neustart nötig“ erscheint nur noch, wenn sich die angezeigte Sprache wirklich ändert (auf einem deutschen Mac ist „System“ → „Deutsch“ keine Änderung).
+- **Code**: „Synchronisierung abgeschlossen“ wird über eine Konstante erkannt statt über zwei Vergleiche mit dem übersetzten Text. Deutsch: „Trage deinen Token ein“ wie überall sonst statt einmal „Trag“.
+- **Demo**: Die Discogs-Ordner zeigten „0 Platten“, jetzt die echte Zahl. 183 Tests, 0 Fehler.
+
 # Englische Übersetzung geprüft · 04.10.2026
 
 Alle rund 800 Texte im String-Katalog gegengelesen und mit dem Code abgeglichen (jeder Text im Code hat einen Eintrag, kein Eintrag ist verwaist). Korrigiert:

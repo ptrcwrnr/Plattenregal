@@ -10,7 +10,7 @@ struct ExportSettings {
     var format = ExportFormat.csv
     var source = ExportSource.collection
     var order = ExportOrder.shelf
-    var delimiter = ExportDelimiter.semicolon
+    var delimiter = ExportDelimiter.standard
     var groups: Set<ExportColumnGroup> = []
 
     static var stored: ExportSettings {
@@ -125,8 +125,11 @@ enum ExportInterval: String, CaseIterable, Identifiable {
         return interval.next(after: lastRun)
     }
 
+    /// Not translated: the file is replaced on every run, so its name must
+    /// stay the same whatever language the app shows.
     static func fileName(for settings: ExportSettings) -> String {
-        "Plattenregal \(settings.source.title)\(DemoMode.fileSuffix).\(settings.fileExtension)"
+        let source = settings.source == .collection ? "Collection" : "Wantlist"
+        return "Plattenregal \(source)\(DemoMode.fileSuffix).\(settings.fileExtension)"
     }
 
     /// Once per launch, for the app's real store only.

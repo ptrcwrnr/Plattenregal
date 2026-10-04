@@ -720,7 +720,7 @@ struct ShelfStyleLegend: View {
                 HStack(spacing: 5) {
                     Circle().fill(palette.color(for: share.colorStyle)).frame(width: 7, height: 7)
                     Text(share.style).foregroundStyle(.secondary)
-                    Text("\(Int((share.fraction * 100).rounded())) %").foregroundStyle(.tertiary)
+                    Text(share.fraction.formatted(.percent.precision(.fractionLength(0)))).foregroundStyle(.tertiary)
                 }
                 .fixedSize()
                 .help(share.members.joined(separator: ", "))

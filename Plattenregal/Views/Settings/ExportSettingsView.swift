@@ -11,7 +11,7 @@ struct ExportSettingsView: View {
     @AppStorage(ExportSettings.formatKey) private var format = ExportFormat.csv
     @AppStorage(ExportSettings.sourceKey) private var source = ExportSource.collection
     @AppStorage(ExportSettings.orderKey) private var order = ExportOrder.shelf
-    @AppStorage(ExportSettings.delimiterKey) private var delimiter = ExportDelimiter.semicolon
+    @AppStorage(ExportSettings.delimiterKey) private var delimiter = ExportDelimiter.standard
     @AppStorage(ExportSettings.groupsKey) private var storedGroups = ""
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @AppStorage(ScheduledExport.enabledKey) private var autoEnabled = false
