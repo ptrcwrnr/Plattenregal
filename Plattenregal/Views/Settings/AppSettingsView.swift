@@ -62,6 +62,7 @@ struct AppSettingsView: View {
         return SettingsRequest.shared.take() ?? .general
     }()
     @State private var request = SettingsRequest.shared
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         // The same Liquid Glass switch as the main window, instead of tabs.
@@ -77,10 +78,18 @@ struct AppSettingsView: View {
             case .shortcuts: ShortcutSettingsView()
             }
         }
-        // Wide enough that the centered switch with all eight areas stays
-        // clear of the window buttons on every tab; tall enough for
-        // "Allgemein" without a gap below, longer tabs scroll.
-        .frame(width: 860, height: 510)
+        // Tall enough for "Allgemein" without a gap below, longer tabs scroll.
+        .frame(width: 760, height: 510)
+        // Only the area switch in the title bar: no window buttons next to
+        // it. Esc and ⌘W close the window instead.
+        .background { WindowButtonsHidden() }
+        .background {
+            Group {
+                Button { dismiss() } label: { EmptyView() }.keyboardShortcut(.cancelAction)
+                Button { dismiss() } label: { EmptyView() }.keyboardShortcut("w")
+            }
+            .opacity(0).accessibilityHidden(true)
+        }
         // The chosen ambient color, as in the main window.
         .background { AmbientGlow() }
         // Asked for from the main window while this one is already open.
@@ -93,6 +102,20 @@ struct AppSettingsView: View {
             ToolbarItem(placement: .principal) {
                 GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.title) }
                     .accessibilityLabel("Bereich")
+            }
+        }
+    }
+}
+
+/// Hides close, minimize and zoom of the window this view sits in.
+private struct WindowButtonsHidden: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { Probe() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+    private final class Probe: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            for kind in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
+                window?.standardWindowButton(kind)?.isHidden = true
             }
         }
     }
