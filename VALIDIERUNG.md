@@ -1,4 +1,19 @@
-# Aktueller Stand · 04.10.2026 (Englisch, Tastenkürzel, technische Prüfung, weniger Rechenarbeit, Abschlussprüfung)
+# Aktueller Stand · 05.10.2026 (neues App-Symbol, Version 1.0.2)
+
+Stand nach dem neuen App-Symbol und dem Versionssprung auf 1.0.2 (Details in [AENDERUNGEN.md](AENDERUNGEN.md)). Am Code hat sich nichts geändert.
+
+## Ergebnis
+
+- **Symbol-Dateien**: alle zehn PNGs im `AppIcon`-Satz haben die geforderte Pixelgröße (16, 32, 32, 64, 128, 256, 256, 512, 512, 1024) und einen Alphakanal.
+- **Debug-Build** erfolgreich, keine Compiler-Warnungen. Im fertigen Paket liegen `AppIcon.icns` und `Assets.car`; `Info.plist` meldet Version 1.0.2, Build 102026.
+
+## Nicht geprüft (dieser Durchgang)
+
+- Testsuite nicht erneut ausgeführt (nur Bilder und Versionsnummern geändert; Stand bleibt 190 Tests, 0 Fehler vom 04.10.).
+- Symbol nicht in Dock, Finder und Über-Karte angesehen; keine Sichtprüfung der kleinen Größen.
+- Kein Release-Build, keine Codesign-Prüfung.
+
+# Vorheriger Stand · 04.10.2026 (Englisch, Tastenkürzel, technische Prüfung, weniger Rechenarbeit, Abschlussprüfung)
 
 Stand nach Englisch als zweiter Sprache, den Tastenkürzeln, der technischen Prüfung, der Durchsicht auf unnötige Rechenarbeit und einer abschließenden Prüfung aller Änderungen des Tages (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 

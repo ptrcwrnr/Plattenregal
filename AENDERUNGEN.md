@@ -1,3 +1,8 @@
+# Neues App-Symbol · 05.10.2026
+
+- **App-Symbol** neu: eine schwarze Schallplatte, die aus einer elfenbeinfarbenen Papierhülle ragt, mit sandfarbenem Etikett auf einer gedämpft petrolblauen, abgerundeten Kachel – in den ruhigen Petrol- und Sandtönen der App, ohne Schrift. Alle zehn macOS-Größen (16 bis 1024 px) im `AppIcon`-Satz ersetzt, außen transparent. Erscheint im Dock, im Finder und auf der Karte „Über Plattenregal“.
+- **Version 1.0.2, Build 102026** (vorher 1.0, Build 092026); „Über Plattenregal“ und das Protokoll zeigen sie automatisch.
+
 # Prüfung der App · 04.10.2026
 
 Abgleich mit Discogs (Seitenprüfung, Wiederholungen, Kontowechsel), Positionen und Einsortieren, Sicherung und Wiederherstellen, Zurücksetzen, Export (CSV-Formelschutz, PDF-Umbruch), Start und Datenbank-Sperre, Demo sowie die heutigen Änderungen an Suche und Einstellungsfenster auf Randfälle durchgesehen. Kein Fehler gefunden; alle Listenzugriffe sind abgesichert. Nur ein veralteter Kommentar beim Wantlist-Export ist berichtigt. 190 Tests, 0 Fehler.
