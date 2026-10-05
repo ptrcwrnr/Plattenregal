@@ -2,16 +2,28 @@
 
 Stand nach dem neuen App-Symbol und dem Versionssprung auf 1.0.2 (Details in [AENDERUNGEN.md](AENDERUNGEN.md)). Am Code hat sich nichts geändert.
 
+## Vorgehen
+
+1. Die zehn PNG-Dateien im `AppIcon.appiconset` auf Pixelgröße und Alphakanal geprüft und mit der finalen Vorlage `outputs/AppIcon-Vinyl-2026-10-05/AppIcon-Vinyl-1024.png` verglichen: Die 1.024-Pixel-Datei ist byte-gleich mit der Vorlage.
+2. Debug-Build mit `xcodebuild` erstellt (DerivedData außerhalb des Schreibtischs).
+3. `AppIcon.icns` aus dem gebauten Paket entpackt (`sips`) und angesehen. Es zeigt das neue Motiv.
+4. `Info.plist` des gebauten Pakets gelesen und `codesign --verify --deep --strict` ausgeführt.
+
 ## Ergebnis
 
-- **Symbol-Dateien**: alle zehn PNGs im `AppIcon`-Satz haben die geforderte Pixelgröße (16, 32, 32, 64, 128, 256, 256, 512, 512, 1024) und einen Alphakanal.
-- **Debug-Build** erfolgreich, keine Compiler-Warnungen. Im fertigen Paket liegen `AppIcon.icns` und `Assets.car`; `Info.plist` meldet Version 1.0.2, Build 102026.
+| Prüfung | Ergebnis |
+|---|---|
+| Symbol-Satz im Projekt | ✅ 10 Größen (16, 32, 32, 64, 128, 256, 256, 512, 512, 1024), alle mit Alphakanal; `Contents.json` unverändert |
+| Debug-Build | ✅ erfolgreich, keine Compiler-Warnungen |
+| Symbol im gebauten Paket | ✅ `AppIcon.icns` und `Assets.car` enthalten, neues Motiv |
+| Version im gebauten Paket | ✅ `Info.plist` meldet 1.0.2, Build 102026 |
+| Signatur (Debug, ad-hoc) | ✅ gültig |
 
 ## Nicht geprüft (dieser Durchgang)
 
-- Testsuite nicht erneut ausgeführt (nur Bilder und Versionsnummern geändert; Stand bleibt 190 Tests, 0 Fehler vom 04.10.).
-- Symbol nicht in Dock, Finder und Über-Karte angesehen; keine Sichtprüfung der kleinen Größen.
-- Kein Release-Build, keine Codesign-Prüfung.
+- **Tests:** nicht erneut ausgeführt, weil sich weder Code noch Tests geändert haben. Es gilt der Stand vom 04.10.: 190 Tests, 0 Fehler.
+- **Darstellung im System:** Dock, Finder und die Karte „Über Plattenregal“ wurden nicht angesehen; keine Sichtprüfung der kleinen Größen. macOS zeigt dort unter Umständen noch kurz das alte Symbol aus dem Zwischenspeicher.
+- **Release-Build:** nicht gebaut; keine Prüfung von Release-Signatur oder Notarisierung.
 
 # Vorheriger Stand · 04.10.2026 (Englisch, Tastenkürzel, technische Prüfung, weniger Rechenarbeit, Abschlussprüfung)
 

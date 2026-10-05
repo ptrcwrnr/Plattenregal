@@ -1,7 +1,11 @@
 # Neues App-Symbol · 05.10.2026
 
-- **App-Symbol** neu: eine schwarze Schallplatte, die aus einer elfenbeinfarbenen Papierhülle ragt, mit sandfarbenem Etikett auf einer gedämpft petrolblauen, abgerundeten Kachel – in den ruhigen Petrol- und Sandtönen der App, ohne Schrift. Alle zehn macOS-Größen (16 bis 1024 px) im `AppIcon`-Satz ersetzt, außen transparent. Erscheint im Dock, im Finder und auf der Karte „Über Plattenregal“.
-- **Version 1.0.2, Build 102026** (vorher 1.0, Build 092026); „Über Plattenregal“ und das Protokoll zeigen sie automatisch.
+Das App-Symbol wurde ersetzt. Es zeigt jetzt eine schwarze Schallplatte mit sandfarbenem Etikett, die aus einer elfenbeinfarbenen Papierhülle ragt, auf einer gedämpft petrolblauen, abgerundeten Kachel – in den ruhigen Petrol- und Sandtönen der App, ohne Schrift. Bisher war es eine flache Schallplatte über einem hellen Balken. Damit gehört es zur gleichen Icon-Familie wie Media und Sync.
+
+- Alle zehn Größen in `Plattenregal/Assets.xcassets/AppIcon.appiconset` (16 bis 1.024 Pixel) wurden ersetzt, außen transparent. `Contents.json` ist unverändert. Das Symbol erscheint im Dock, im Finder und auf der Karte „Über Plattenregal“.
+- Vorlage, Prompt und das bisherige Symbol liegen in `outputs/AppIcon-Vinyl-2026-10-05/`.
+- **Version 1.0.2, Build 102026** (vorher 1.0, Build 092026); „Über Plattenregal“ und das Protokoll zeigen sie automatisch. Die Beispielangabe im README ist entsprechend angepasst.
+- Am Swift-Code und an den Tests hat sich nichts geändert.
 
 # Prüfung der App · 04.10.2026
 

@@ -106,7 +106,7 @@ Weitere Fälle:
 
 Alle Fehlertypen der App (`DiscogsError`, `LibraryError`, `CabinetError`, `ResetError`, `StorageError`, `ShelfBackupError`, `FileTransferError`, `KeychainError`, `ReadError`) sind als nutzerlesbar markiert (`UserFacingError`); ein Test prüft, dass keiner auf „Da ist etwas schiefgelaufen“ zurückfällt.
 
-Das Protokoll lässt sich unter **Einstellungen → Daten → Diagnose** im Finder zeigen oder als Datei sichern. Wer einen Fehler meldet, gibt am besten diese Datei und die Version aus **Über Plattenregal** mit („Version 1.0 (092026)“, auswählbar zum Kopieren) – dieselbe Angabe steht in jeder Startzeile des Protokolls und in jedem Absturz-Block.
+Das Protokoll lässt sich unter **Einstellungen → Daten → Diagnose** im Finder zeigen oder als Datei sichern. Wer einen Fehler meldet, gibt am besten diese Datei und die Version aus **Über Plattenregal** mit („Version 1.0.2 (102026)“, auswählbar zum Kopieren) – dieselbe Angabe steht in jeder Startzeile des Protokolls und in jedem Absturz-Block.
 
 **Abstürze.** Bei einem Absturz schreibt die App einen Block `==== ABSTURZ … ====` mit Signal, Uhrzeit, Version und Aufrufliste ins Protokoll (auch bei einem Stack-Überlauf). Beim nächsten Start steht darunter in Klartext, welcher Absturz es war und wann – und wo der Block steht (direkt vor dem Start oder, wenn das Protokoll beim Start gerade gewechselt wurde, am Ende von `Plattenregal.old.log`). Endete eine Sitzung ohne Absturz-Eintrag unerwartet (in Xcode gestoppt, zwangsweise beendet, Stromausfall), wird auch das vermerkt – erkannt an einer Laufmarkierung (`Logs/.running` mit der Prozess-ID), die nur ein reguläres Beenden entfernt. Eine zweite Instanz, die die Sammlung nicht öffnen darf, gibt diese Markierung an die laufende Instanz zurück, damit deren Ende weiter richtig erkannt wird.
 
@@ -146,5 +146,9 @@ xcodebuild -project Plattenregal.xcodeproj -scheme Plattenregal -destination 'pl
 Die Tests laufen mit einer Datenbank im Arbeitsspeicher, schreiben nicht ins echte Protokoll und brauchen weder Internet noch Token: Discogs-Antworten kommen aus lokalen `URLProtocol`-Attrappen.
 
 Für einen Demo-Lauf aus Xcode unter **Edit Scheme → Run → Arguments** `--demo` ergänzen; `--statistics-demo` öffnet die Demo direkt auf der Statistik. `--settings-tab=Daten` zeigt im Debug-Build einen Einstellungs-Tab im Hauptfenster – zusammen mit `--demo`, sonst mit der echten Sammlung.
+
+## Neues App-Symbol vom 5. Oktober 2026
+
+Das App-Symbol zeigt jetzt eine schwarze Schallplatte in einer hellen Papierhülle auf petrolblauem Grund, passend zu Media und Sync. Nur die Bilddateien in `Plattenregal/Assets.xcassets/AppIcon.appiconset` wurden ersetzt, der Code nicht. Zugleich steht die Version jetzt auf 1.0.2 (Build 102026). Vorlage, Prompt und das bisherige Symbol liegen in `outputs/AppIcon-Vinyl-2026-10-05/`. Einzelheiten in [AENDERUNGEN.md](AENDERUNGEN.md).
 
 Änderungen im Detail: [AENDERUNGEN.md](AENDERUNGEN.md). Build- und Teststände: [VALIDIERUNG.md](VALIDIERUNG.md).
