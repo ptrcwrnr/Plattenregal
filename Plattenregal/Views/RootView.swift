@@ -52,8 +52,14 @@ struct RootView: View {
     // already populated the moment the user first navigates to it instead of
     // recomputing everything from scratch on every visit.
     @State private var statisticsModel = StatisticsViewModel()
+    @State private var tour = AppTour.shared
     var body: some View {
         library
+            // Over all pages; marked as seen however it closes.
+            .appPanel(item: $tour.request, onDismiss: { AppTour.shared.markSeen() }) { _ in
+                TourView { AppTour.shared.request = nil }
+            }
+            .onAppear { AppTour.shared.showOnFirstLaunch() }
             .task { await statisticsModel.initialLoad(container: context.container) }
             // An interrupted first tracklist run (or due refreshes) continues on its own.
             .task { await DiscogsSyncService.shared.resumeTracklistsIfNeeded(container: context.container) }

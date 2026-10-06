@@ -1,4 +1,30 @@
-# Aktueller Stand · 05.10.2026 (neues App-Symbol, Version 1.0.2)
+# Aktueller Stand · 06.10.2026 (Tour beim ersten Start)
+
+Stand nach der Tour (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Vorgehen
+
+1. Bilder mit `Scripts/tour-screenshots.sh` aus der Demo aufgenommen (Deutsch/Englisch, hell/dunkel) und die Ausschnitte als Kontaktbogen angesehen.
+2. Debug-Build mit `xcodebuild` im Projektordner.
+3. Demo mit `--preview-tour` gestartet und alle sechs Seiten mit der Pfeiltaste durchgeblättert: hell auf Deutsch, dunkel auf Deutsch, hell auf Englisch. Jede Seite angesehen.
+4. Tests dreimal ausgeführt.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Debug-Build | ✅ erfolgreich |
+| Tour hell/dunkel, Deutsch/Englisch | ✅ richtige Bildvariante, Texte übersetzt, ausgeblendete Kanten samt Rahmen und Schatten |
+| Blättern mit → | ✅ genau eine Seite pro Tastendruck |
+| Tests | ✅ 190 Tests, 0 Fehler (zweiter und dritter Lauf). Der erste Lauf meldete einen Fehler, ohne dass das Protokoll mitgeschnitten war; er fiel mit dem Beenden einer Demo-Instanz zusammen und ließ sich nicht wiederholen. |
+
+## Nicht geprüft (dieser Durchgang)
+
+- **Erster Start mit der echten Sammlung:** nicht ausprobiert, um die echten Einstellungen nicht zu verändern; der Weg ist derselbe wie mit `--preview-tour`, nur ausgelöst über `tourSeen`.
+- **Menüpunkt „Hilfe → Tour durch Plattenregal …“** und „Token eintragen …“ nicht angeklickt.
+- **„Bewegung reduzieren“** nicht eingeschaltet.
+
+# Vorheriger Stand · 05.10.2026 (neues App-Symbol, Version 1.0.2)
 
 Stand nach dem neuen App-Symbol und dem Versionssprung auf 1.0.2 (Details in [AENDERUNGEN.md](AENDERUNGEN.md)). Am Code hat sich nichts geändert.
 

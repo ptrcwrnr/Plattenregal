@@ -301,6 +301,22 @@ struct KallaxView: View {
         .onChange(of: changes.libraryVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onChange(of: changes.tracksVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onAppear { takePlacingRequest() }
+        #if DEBUG
+        // Screenshots for the tour without clicking: --preview-add opens
+        // "Platte hinzufügen" for the selected compartment,
+        // --preview-place=Artist the placement card of that artist's record.
+        .task {
+            let arguments = ProcessInfo.processInfo.arguments
+            try? await Task.sleep(for: .seconds(1))
+            if arguments.contains("--preview-add") {
+                ensureShelfSelected()
+                if let shelf = committedShelf { startAssignment(shelf) }
+            } else if let raw = arguments.first(where: { $0.hasPrefix("--preview-place=") }) {
+                let artist = String(raw.dropFirst("--preview-place=".count))
+                if let copy = allCopies.first(where: { $0.release?.artist == artist }) { startPlacement(copy) }
+            }
+        }
+        #endif
         .onChange(of: requests.placing) { takePlacingRequest() }
         // Marks change without touching `statsSignature` (menu, table, sheet).
         .onChange(of: missingIDs) { refreshPlacement() }

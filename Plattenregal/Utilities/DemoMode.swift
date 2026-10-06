@@ -42,8 +42,11 @@ nonisolated enum DemoMode {
         return abs(now.timeIntervalSince(request)) < 60
     }
 
-    /// The banner on the pages. Debug builds can leave it out for screenshots
-    /// of the sample collection (`--screenshots`).
+    /// The banner on the pages and the demo notes and locked controls in the
+    /// settings (token field, automatic export and backup). Debug builds can
+    /// leave them out for screenshots of the sample collection
+    /// (`--screenshots`), e.g. the pictures of the tour; the services keep
+    /// checking `isActive`, so nothing is synced, exported or backed up.
     static var showsBanner: Bool {
         #if DEBUG
         isActive && !ProcessInfo.processInfo.arguments.contains("--screenshots")

@@ -1,0 +1,8 @@
+{
+  "images" : [
+    { "filename" : "collection-de.jpg", "idiom" : "universal", "scale" : "2x" },
+    { "appearances" : [ { "appearance" : "luminosity", "value" : "dark" } ],
+      "filename" : "collection-de-dark.jpg", "idiom" : "universal", "scale" : "2x" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}

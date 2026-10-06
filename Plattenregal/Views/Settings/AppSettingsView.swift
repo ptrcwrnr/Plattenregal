@@ -139,7 +139,7 @@ struct SettingsPage<Content: View>: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-                if DemoMode.isActive {
+                if DemoMode.showsBanner {
                     AppBanner(message: String(localized: "Demo: Diese Einstellungen gelten nur für die Demo. Deine eigenen bleiben, wie sie sind."), kind: .info,
                               actionTitle: String(localized: "Demo beenden"), action: { DemoMode.end() })
                 }

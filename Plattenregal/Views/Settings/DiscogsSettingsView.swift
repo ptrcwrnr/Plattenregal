@@ -36,13 +36,13 @@ struct DiscogsSettingsView: View {
         @Bindable var model = model
         SettingsPage {
             SettingsCard(title: String(localized: "Konto"),
-                         subtitle: DemoMode.isActive ? String(localized: "Im Demo-Modus ist Discogs ausgeschaltet – Token und Synchronisierung sind gesperrt, dein gespeicherter Token wird nicht gelesen.") : accountStatus) {
+                         subtitle: DemoMode.showsBanner ? String(localized: "Im Demo-Modus ist Discogs ausgeschaltet – Token und Synchronisierung sind gesperrt, dein gespeicherter Token wird nicht gelesen.") : accountStatus) {
                 GlassTextField(placeholder: String(localized: "Persönlicher API-Token"), text: $model.token, secure: true,
                                onSubmit: { if canTest { model.startTest() } }, focus: $tokenFocused)
                     // Without a token (first start) the field is where to begin.
                     .onAppear { if !model.hasStoredToken && !DemoMode.isActive { tokenFocused = true } }
                     // The tested token replaces the field when the test ends.
-                    .disabled(model.busy || DemoMode.isActive)
+                    .disabled(model.busy || DemoMode.showsBanner)
                 HStack(spacing: AppStyle.itemSpacing) {
                     PrimaryButton(title: String(localized: "Speichern & testen")) { model.startTest() }
                         .disabled(!canTest || DemoMode.isActive)

@@ -8756,6 +8756,176 @@
           }
         }
       }
+    },
+    "Tour durch Plattenregal …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plattenregal Tour …"
+          }
+        }
+      }
+    },
+    "Deine Schallplatten auf dem Mac – die ganze Sammlung auf einen Blick, dein Regal zu Hause als Abbild und immer die Antwort auf die Frage, wo eine Platte steht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your records on the Mac – the whole collection at a glance, your shelf at home as a picture, and always the answer to where a record is."
+          }
+        }
+      }
+    },
+    "Alles kommt von Discogs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything Comes from Discogs"
+          }
+        }
+      }
+    },
+    "Plattenregal zeigt deine Discogs-Collection und -Wantlist. Trag einmal deinen persönlichen Token ein, dann holt ⌥⌘R alle Platten. Neue Platten trägst du bei Discogs ein – beim nächsten Abgleich sind sie hier.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plattenregal shows your Discogs collection and wantlist. Enter your personal token once, then ⌥⌘R fetches all records. Add new records on Discogs – they show up here with the next sync."
+          }
+        }
+      }
+    },
+    "Dein Regal, Fach für Fach": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Shelf, Compartment by Compartment"
+          }
+        }
+      }
+    },
+    "Die Regal-Seite zeigt deine Regale so, wie sie bei dir stehen, mit dem Buchstabenbereich und der Anzahl Platten jedes Fachs. Für jede Platte siehst du, wo sie hingehört: Fach, Position und zwischen welchen beiden Platten.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Shelf page shows your shelves the way they stand at home, with the letter range and number of records of each compartment. For every record you see where it belongs: compartment, position and between which two records."
+          }
+        }
+      }
+    },
+    "Neue Platten einsortieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sorting In New Records"
+          }
+        }
+      }
+    },
+    "Das + an einem Fach listet alle Platten, die noch keinen Platz haben. Ein Klick stellt eine Platte an ihre alphabetische Stelle; gehört sie in ein anderes Fach, führt dich der Pfeil dorthin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The + on a compartment lists every record that has no place yet. One click puts a record at its alphabetical spot; if it belongs in another compartment, the arrow takes you there."
+          }
+        }
+      }
+    },
+    "Statistik und Wertentwicklung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistics and Value History"
+          }
+        }
+      }
+    },
+    "Was steckt in deiner Sammlung? Künstler, Styles, Jahrzehnte und Labels – und der Wert laut Discogs-Marktplatz, mit jedem Abgleich als Verlauf.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's in your collection? Artists, styles, decades and labels – and its value on the Discogs marketplace, tracked with every sync."
+          }
+        }
+      }
+    },
+    "Export und Sicherung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export and Backup"
+          }
+        }
+      }
+    },
+    "Collection und Wantlist gehen als CSV oder PDF hinaus, auf Wunsch regelmäßig von selbst. Wo deine Platten im Regal stehen, gibt es nur hier – Plattenregal sichert es automatisch.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collection and wantlist go out as CSV or PDF, regularly on their own if you like. Where your records stand on the shelf exists only here – Plattenregal backs it up automatically."
+          }
+        }
+      }
+    },
+    "Überspringen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        }
+      }
+    },
+    "Token eintragen …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter Token …"
+          }
+        }
+      }
+    },
+    "Zurück": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "Los geht’s": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let’s Go"
+          }
+        }
+      }
+    },
+    "Weiter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

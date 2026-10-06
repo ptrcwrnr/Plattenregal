@@ -54,20 +54,20 @@ struct BackupSettingsView: View {
             .animation(AppStyle.standardAnimation, value: status?.message)
 
             SettingsCard(title: String(localized: "Automatische Sicherung"),
-                         subtitle: DemoMode.isActive
+                         subtitle: DemoMode.showsBanner
                             ? String(localized: "In der Demo wird nicht automatisch gesichert, und Speicherort und Aufbewahrung lassen sich nicht ändern – so bleiben deine echten Sicherungen unberührt.")
                             : String(localized: "Ein paar Sekunden nach jeder Änderung am Regal. ") + (keptDays > 0
                             ? String(localized: "Erhalten bleiben die letzten \(keptCount) Stände und zusätzlich der letzte Stand jedes Tages der vergangenen \(keptDays) Tage.")
                             : String(localized: "Erhalten bleiben die letzten \(keptCount) Stände."))) {
                 SettingsRow(title: String(localized: "Automatisch sichern")) {
                     Toggle("Automatisch sichern", isOn: $autoEnabled).labelsHidden().toggleStyle(.switch)
-                        .disabled(DemoMode.isActive)
+                        .disabled(DemoMode.showsBanner)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Letzte Stände behalten")) {
                     GlassSegmentedPicker(selection: retention(\.count), options: ShelfAutoBackup.keptCountOptions) { Text("\($0)") }
                         .accessibilityLabel("Letzte Stände")
-                    .disabled(DemoMode.isActive)
+                    .disabled(DemoMode.showsBanner)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Tagesstände behalten"), hint: String(localized: "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.")) {
@@ -75,7 +75,7 @@ struct BackupSettingsView: View {
                                     current: keptDays == 0 ? String(localized: "Keine") : String(localized: "\(keptDays) Tage")) {
                         ForEach(ShelfAutoBackup.keptDaysOptions, id: \.self) { Text($0 == 0 ? "Keine" : "\($0) Tage").tag($0) }
                     }
-                    .disabled(DemoMode.isActive)
+                    .disabled(DemoMode.showsBanner)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Speicherort"), hint: customFolder.map(FolderAccess.displayName)

@@ -1,0 +1,8 @@
+{
+  "images" : [
+    { "filename" : "backup-en.jpg", "idiom" : "universal", "scale" : "2x" },
+    { "appearances" : [ { "appearance" : "luminosity", "value" : "dark" } ],
+      "filename" : "backup-en-dark.jpg", "idiom" : "universal", "scale" : "2x" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}

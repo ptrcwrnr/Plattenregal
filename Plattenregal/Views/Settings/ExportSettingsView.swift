@@ -146,12 +146,12 @@ struct ExportSettingsView: View {
     /// Writes the export on its own into a fixed folder, with the settings above.
     private var automaticCard: some View {
         SettingsCard(title: String(localized: "Automatisch exportieren"),
-                            subtitle: DemoMode.isActive
+                            subtitle: DemoMode.showsBanner
                                 ? String(localized: "In der Demo wird nicht automatisch exportiert. Über „Als … exportieren“ oben lässt sich die Beispielsammlung trotzdem als Datei sichern.")
                                 : String(localized: "Schreibt den Export mit den Einstellungen oben regelmäßig in einen Ordner – z. B. in iCloud Drive. Die Datei „\(ScheduledExport.fileName(for: settings))“ wird dabei jedes Mal ersetzt.")) {
             SettingsRow(title: String(localized: "Automatisch exportieren")) {
                 Toggle("Automatisch exportieren", isOn: $autoEnabled).labelsHidden().toggleStyle(.switch)
-                    .disabled(DemoMode.isActive)
+                    .disabled(DemoMode.showsBanner)
             }
             if autoEnabled {
                 Divider()
