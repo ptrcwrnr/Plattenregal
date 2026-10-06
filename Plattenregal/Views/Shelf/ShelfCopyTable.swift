@@ -381,9 +381,19 @@ private struct RowIconButton: View {
 /// Used by every table in the app, so their headers look the same.
 struct QuietIconColumnHeaders: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { Anchor() }
-    func updateNSView(_ view: NSView, context: Context) { (view as? Anchor)?.install() }
+    func updateNSView(_ view: NSView, context: Context) {
+        guard let anchor = view as? Anchor else { return }
+        // Read here, so switching the design updates the header right away;
+        // AppKit draws it on its own and would keep the old look until the
+        // next scroll or resize.
+        anchor.atelier = AppStyle.isAtelier
+        anchor.install()
+    }
 
     final class Anchor: NSView {
+        var atelier = AppStyle.isAtelier {
+            didSet { if atelier != oldValue { nearbyTable()?.headerView?.needsDisplay = true } }
+        }
         override func viewDidMoveToWindow() { install() }
 
         /// The table may not exist yet when this is placed (e.g. a window
