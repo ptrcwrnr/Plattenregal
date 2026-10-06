@@ -619,29 +619,56 @@ struct RecordCard: View {
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
                         .appChipSurface(in: Capsule())
-                        .padding(AppStyle.isAtelier ? 11 : 6)
+                        .padding(AtelierCoverFrame.badgeInset)
                 }
             }
     }
 }
 
+/// How Klassisch frames a cover. `sleeve` (default): the cover as a real
+/// LP sleeve – nearly square corners, a fine printed edge, lying on the paper
+/// with a close and a soft shadow. `passepartout`: the earlier cream mat with
+/// rounded corners, kept to switch back:
+/// `defaults write <bundle id> atelierCoverFrame passepartout`.
+enum AtelierCoverFrame: String {
+    case sleeve, passepartout
+    static var current: AtelierCoverFrame {
+        UserDefaults.standard.string(forKey: "atelierCoverFrame").flatMap(Self.init) ?? .sleeve
+    }
+    /// Distance of the tags on a cover from its edge, the mat included.
+    static var badgeInset: CGFloat {
+        guard AppStyle.isAtelier else { return 6 }
+        return current == .sleeve ? 8 : 11
+    }
+}
+
 extension View {
-    /// Atelier's matte sleeve around the existing image. The unchanged cover
+    /// Atelier's frame around the existing image. The unchanged cover
     /// remains in the tree, including its loading state, in every design.
-    func atelierRecordSleeve() -> some View {
-        padding(AppStyle.isAtelier ? 6 : 0)
-            .background {
-                if AppStyle.isAtelier {
-                    RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                        .fill(AtelierPalette.surface)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                                .strokeBorder(AtelierPalette.border, lineWidth: 1)
-                        }
+    @ViewBuilder func atelierRecordSleeve() -> some View {
+        if AppStyle.isAtelier && AtelierCoverFrame.current == .sleeve {
+            environment(\.coverCornerRadius, 2)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 2)
+                        .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: 0.5)
                 }
-            }
-            .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.08 : 0),
-                    radius: AppStyle.isAtelier ? 8 : 0, y: AppStyle.isAtelier ? 3 : 0)
+                .shadow(color: AtelierPalette.petrol.opacity(0.18), radius: 1, y: 1)
+                .shadow(color: AtelierPalette.petrol.opacity(0.14), radius: 10, y: 6)
+        } else {
+            padding(AppStyle.isAtelier ? 6 : 0)
+                .background {
+                    if AppStyle.isAtelier {
+                        RoundedRectangle(cornerRadius: AppStyle.cardRadius)
+                            .fill(AtelierPalette.surface)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: AppStyle.cardRadius)
+                                    .strokeBorder(AtelierPalette.border, lineWidth: 1)
+                            }
+                    }
+                }
+                .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.08 : 0),
+                        radius: AppStyle.isAtelier ? 8 : 0, y: AppStyle.isAtelier ? 3 : 0)
+        }
     }
 }
 
@@ -674,7 +701,7 @@ struct PlacementBadge: View, Equatable {
             .padding(.horizontal, 7)
             .padding(.vertical, 3)
             .appChipSurface(in: Capsule())
-            .padding(AppStyle.isAtelier ? 11 : 6)
+            .padding(AtelierCoverFrame.badgeInset)
             .accessibilityLabel(String(localized: "In: ") + [inCollection ? String(localized: "Collection") : nil, inWantlist ? String(localized: "Wantlist") : nil].compactMap { $0 }.joined(separator: String(localized: " und ")))
     }
 }

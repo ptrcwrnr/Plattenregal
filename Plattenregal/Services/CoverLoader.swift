@@ -217,6 +217,8 @@ actor CoverCache {
 struct CoverView: View {
     let url: String?
     var size: CGFloat? = 160
+    /// Rounding of the cover's corners (see `atelierRecordSleeve`).
+    @Environment(\.coverCornerRadius) private var cornerRadius
     @State private var image: NSImage?
     @State private var failed = false
     /// Rendered edge length, only used for decode resolution and the
@@ -243,7 +245,7 @@ struct CoverView: View {
         }
         .frame(width: size, height: size)
         .aspectRatio(1, contentMode: .fit)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { width in
             if size == nil, abs(width - measured) > 0.5 { measured = width }
         }
@@ -270,4 +272,8 @@ struct CoverView: View {
         }
         catch is CancellationError {} catch { failed = true }
     }
+}
+
+extension EnvironmentValues {
+    @Entry var coverCornerRadius: CGFloat = 6
 }
