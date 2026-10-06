@@ -288,12 +288,16 @@ private struct ShelfWell: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
-        let fill = AppStyle.isAtelier ? AtelierPalette.soft : Self.fill
-        let shade = AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.18) : Self.shade
-        let rim = AppStyle.isAtelier ? AtelierPalette.surface.opacity(0.8) : Self.rim
-        shape
-            .fill(fill.shadow(.inner(color: shade, radius: 2.5, y: 1.5)))
-            .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
+        if AppStyle.isAtelier {
+            // Klassisch: matte paper with a fine rim, like the sleeves and
+            // cards – no glassy shading or light catching the edge.
+            shape.fill(AtelierPalette.paper)
+                .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+        } else {
+            shape
+                .fill(Self.fill.shadow(.inner(color: Self.shade, radius: 2.5, y: 1.5)))
+                .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, Self.rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
+        }
     }
 }
 

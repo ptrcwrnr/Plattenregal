@@ -658,6 +658,29 @@ extension View {
         }
     }
 
+    /// A small capsule or circle on the page – tags on covers, steppers,
+    /// toasts, round row buttons: Liquid Glass in Modern; in Klassisch the
+    /// cards' matte paper with a fine rim, never see-through.
+    func appChipSurface<S: InsettableShape>(in shape: S, interactive: Bool = false) -> some View {
+        background {
+            if AppStyle.isAtelier {
+                shape.fill(AtelierPalette.surface)
+                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+            }
+        }
+        .glassEffect(AppStyle.isAtelier ? .identity : interactive ? .regular.interactive() : .regular, in: shape)
+    }
+
+    /// The background of a popover: the system's glass in Modern, the
+    /// cards' matte paper in Klassisch. On the popover's content.
+    @ViewBuilder func appPopoverSurface() -> some View {
+        if AppStyle.isAtelier {
+            presentationBackground(AtelierPalette.surface)
+        } else {
+            self
+        }
+    }
+
     /// The Liquid Glass capsule every search bar sits in.
     func searchBarChrome() -> some View {
         padding(.horizontal, 12)
@@ -745,7 +768,18 @@ struct AppBanner: View {
         }
         .font(.callout)
         .padding(AppStyle.itemSpacing + 2)
-        .background(kind.color.opacity(0.1), in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
+        .background {
+            let shape = RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
+            if AppStyle.isAtelier {
+                // Klassisch: a paper card; the kind shows in the icon and a
+                // faint wash, not in a see-through tint.
+                shape.fill(AtelierPalette.surface)
+                    .overlay(shape.fill(kind.color.opacity(kind == .info ? 0 : 0.06)))
+                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+            } else {
+                shape.fill(kind.color.opacity(0.1))
+            }
+        }
     }
 }
 
@@ -1010,7 +1044,7 @@ struct GlassStepper: View {
         .animation(AppStyle.quickAnimation, value: value)
         .padding(.horizontal, 6)
         .frame(height: 30)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .appChipSurface(in: Capsule(), interactive: true)
         .fixedSize()
         .accessibilityElement(children: .combine)
         .accessibilityValue(label(value))
@@ -1042,7 +1076,7 @@ struct GlassStepButton: View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary))
                 .frame(width: 20, height: 20)
                 .background(hovering && isEnabled ? AppStyle.hoverBackground : .clear, in: Circle())
                 .contentShape(Circle())
@@ -1094,9 +1128,15 @@ extension View {
     /// Liquid Glass capsule sliding in from where the pull ring was.
     func activityPillChrome() -> some View {
         padding(.horizontal, 14).padding(.vertical, 8)
-            // Tinted with the window color: still glass, but covers underneath
-            // don't run through the text.
-            .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .capsule)
+            // Klassisch: matte paper. Modern: tinted with the window color –
+            // still glass, but covers underneath don't run through the text.
+            .background {
+                if AppStyle.isAtelier {
+                    Capsule().fill(AtelierPalette.surface)
+                        .overlay(Capsule().strokeBorder(AtelierPalette.border, lineWidth: 1))
+                }
+            }
+            .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .capsule)
             // Lifts it off bright covers underneath.
             .shadow(color: .black.opacity(0.15), radius: 10, y: 3)
             .padding(.top, 12)
@@ -1210,6 +1250,7 @@ struct AppMenu<Content: View>: View {
             .padding(5)
             .frame(minWidth: 220, alignment: .leading)
             .fixedSize()
+            .appPopoverSurface()
     }
 }
 

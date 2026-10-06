@@ -99,6 +99,7 @@ private struct ErrorInfoButton: View {
             }
             .padding(AppStyle.cardPadding)
             .frame(width: 320)
+            .appPopoverSurface()
         }
     }
 }

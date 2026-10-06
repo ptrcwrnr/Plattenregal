@@ -298,7 +298,7 @@ private struct ShelfCopyQuickEditor: View {
                     }
                     .padding(.horizontal, 6)
                     .frame(height: 30)
-                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .appChipSurface(in: Capsule(), interactive: true)
                 }
             }
             .disabled(notInShelf)
@@ -332,6 +332,7 @@ private struct ShelfCopyQuickEditor: View {
                 ? max(copy.positionInShelf, 1)
                 : AlphabeticalPlacement.position(for: copy, in: target)
         }
+        .appPopoverSurface()
     }
 
     private func save() {

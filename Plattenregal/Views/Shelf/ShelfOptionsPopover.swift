@@ -60,6 +60,7 @@ struct ShelfNamePopover: View {
         }
         .padding(AppStyle.cardPadding)
         .frame(width: 280)
+        .appPopoverSurface()
         .onAppear { focused = true }
         // Closing by clicking elsewhere can't show a failure any more; it is
         // in the protocol, and the old name stays.
@@ -104,6 +105,7 @@ struct CabinetNamePopover: View {
         }
         .padding(AppStyle.cardPadding)
         .frame(width: 280)
+        .appPopoverSurface()
         .onAppear { focused = true }
         .onDisappear { _ = save() }
     }

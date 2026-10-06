@@ -348,11 +348,29 @@ private struct ToolbarSearchField: View {
     /// the placeholder, inside the field.
     private func otherButton(_ other: (page: Destination, count: Int)) -> some View {
         Button { selection.current = other.page } label: {
-            Text("\(other.count.formatted()) in der \(other.page.title)")
-                .font(.caption)
+            if AppStyle.isAtelier {
+                // Klassisch: a small tag with a fine rim and the petrol of
+                // the links, with an arrow – it leads to the other page.
+                HStack(spacing: 3) {
+                    Text("\(other.count.formatted()) in der \(other.page.title)")
+                    Image(systemName: "arrow.right").font(.caption2.weight(.semibold))
+                }
+                .font(.caption.weight(.medium))
                 .monospacedDigit()
                 .lineLimit(1)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AtelierPalette.accent)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2)
+                .background(AtelierPalette.paper, in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                .contentShape(RoundedRectangle(cornerRadius: 6))
+            } else {
+                Text("\(other.count.formatted()) in der \(other.page.title)")
+                    .font(.caption)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .foregroundStyle(.secondary)
+            }
         }
         .buttonStyle(.plain)
         .fixedSize()

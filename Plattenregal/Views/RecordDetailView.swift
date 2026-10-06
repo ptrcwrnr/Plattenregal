@@ -229,6 +229,7 @@ struct RecordPopover: View {
             catch { trackLoadError = error.reportedMessage() }
             loadingTracks = false; triedLoadingTracks = true
         }
+        .appPopoverSurface()
     }
 
     private func trackList(_ tracks: [Track]) -> some View {

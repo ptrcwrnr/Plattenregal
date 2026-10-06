@@ -504,7 +504,8 @@ struct KallaxView: View {
 
     @ViewBuilder private var shelfDetail: some View {
         if let shown = detailShelf {
-            let stats = shelfStats[shown.id] ?? ShelfStatistics(shelf: shown)
+            // No title row: the compartment above already shows its range
+            // and count.
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 if let placement {
                     PlacementCard(
@@ -517,7 +518,6 @@ struct KallaxView: View {
                     )
                     .transition(AppStyle.funnelTransition())
                 }
-                detailHeader(for: shown, stats: stats)
                 if shown.isReserved || shown.copies.isEmpty {
                     ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                         if locked {
@@ -551,6 +551,12 @@ struct KallaxView: View {
                     .modifier(FadeInOnChange(value: shown.id))
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .popover(isPresented: $showsNameEditor, arrowEdge: .top) {
+                // Fresh state per shelf: a name seeded for one shelf must
+                // never be saved onto another.
+                ShelfNamePopover(shelf: shown).id(shown.id)
+            }
         } else {
             detailNote(String(localized: "Wähle ein Fach im Regal oder suche oben nach einer Platte."))
         }
@@ -558,38 +564,6 @@ struct KallaxView: View {
 
     private func detailNote(_ text: String) -> some View {
         Text(text).font(.callout).foregroundStyle(.secondary)
-    }
-
-    private func detailHeader(for shown: Shelf, stats: ShelfStatistics) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: AppStyle.rowSpacing) {
-            // Title and indicator follow the options switch via
-            // `ShelfLockReader`, so they change together with the hatching.
-            ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
-                Text(locked ? (shown.name.isEmpty ? String(localized: "Gesperrtes Fach") : shown.name) : (rangeLabels[shown.id] ?? String(localized: "Leeres Fach")))
-                    .contentTransition(.opacity)
-            }
-            .font(AppStyle.pageTitle)
-            .lineLimit(1)
-            .layoutPriority(1)
-            .popover(isPresented: $showsNameEditor, arrowEdge: .bottom) {
-                // Fresh state per shelf: a name seeded for one shelf must
-                // never be saved onto another.
-                ShelfNamePopover(shelf: shown).id(shown.id)
-            }
-            ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
-                if locked {
-                    Image(systemName: "lock")
-                } else if stats.count > 0 {
-                    // An empty one says so in the note below.
-                    Text(AppStyle.records(stats.count)).monospacedDigit()
-                }
-            }
-            .font(.callout)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-            // Adding records: the "+" in the compartment itself.
-            Spacer(minLength: 0)
-        }
     }
 
     @ViewBuilder private var undoToast: some View {
@@ -607,7 +581,7 @@ struct KallaxView: View {
             .font(.callout)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .glassEffect(.regular, in: .capsule)
+            .appChipSurface(in: Capsule())
             .padding(.bottom, 16)
             .transition(AppStyle.funnelTransition(from: .bottom))
             .task(id: entry.id) {

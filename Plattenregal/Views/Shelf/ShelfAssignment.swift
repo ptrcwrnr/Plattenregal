@@ -593,7 +593,7 @@ private struct RowGlassButton: View {
                 .foregroundStyle(color)
                 .frame(width: 30, height: 30)
                 .contentShape(Circle())
-                .glassEffect(.regular.interactive(), in: .circle)
+                .appChipSurface(in: Circle(), interactive: true)
         }
         .buttonStyle(.plain)
     }

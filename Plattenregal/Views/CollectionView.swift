@@ -618,8 +618,7 @@ struct RecordCard: View {
                         .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
-                        .background(AppStyle.isAtelier ? AtelierPalette.surface : .clear, in: Capsule())
-                        .glassEffect(AppStyle.isAtelier ? .identity : .regular, in: .capsule)
+                        .appChipSurface(in: Capsule())
                         .padding(AppStyle.isAtelier ? 11 : 6)
                 }
             }
@@ -662,7 +661,7 @@ struct MatchedTrackLine: View {
     }
 }
 
-/// Small glass tag on a cover while searching: where the record is —
+/// Small tag on a cover while searching (glass, in Klassisch paper): where the record is —
 /// "Collection", "Wantlist" or both. Deliberately quiet (caption size,
 /// secondary text) so it reads as a hint, not a label.
 struct PlacementBadge: View, Equatable {
@@ -671,11 +670,11 @@ struct PlacementBadge: View, Equatable {
     var body: some View {
         Text([inCollection ? String(localized: "Collection") : nil, inWantlist ? String(localized: "Wantlist") : nil].compactMap { $0 }.joined(separator: " · "))
             .font(.caption2.weight(.medium))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.secondary))
             .padding(.horizontal, 7)
             .padding(.vertical, 3)
-            .glassEffect(.regular, in: .capsule)
-            .padding(6)
+            .appChipSurface(in: Capsule())
+            .padding(AppStyle.isAtelier ? 11 : 6)
             .accessibilityLabel(String(localized: "In: ") + [inCollection ? String(localized: "Collection") : nil, inWantlist ? String(localized: "Wantlist") : nil].compactMap { $0 }.joined(separator: String(localized: " und ")))
     }
 }
