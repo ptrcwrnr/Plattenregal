@@ -23,6 +23,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                 + (AppPreferences.shared.signatureDesign == .atelier ? " · Design Klassisch" : ""),
                             version: "\(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         FocusRings.disableGlobally()
+        #if DEBUG
+        DebugSnapshot.scheduleIfRequested()
+        #endif
         // macOS shows a glass bubble with the input source (or Caps Lock) over
         // the cursor when a text field is focused first – right over the page
         // when ⌘F reveals the search. Off for this app unless switched on in

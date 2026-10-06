@@ -40,7 +40,7 @@ struct StatisticsHero: View {
                 RollingNumber(value: NSDecimalNumber(decimal: latest.medianValue).doubleValue) {
                     DiscogsMoney.format(Decimal($0.rounded()), currency: latest.currency)
                 }
-                .font(.system(size: 44, weight: .bold, design: .rounded))
+                .font(.system(size: 44, weight: .bold, design: AppStyle.figureDesign))
                 .lineLimit(1).minimumScaleFactor(0.6)
                 HStack(spacing: 10) {
                     if sameCurrency.count >= 2 { DeltaChip(current: latest.medianValue, previous: sameCurrency[sameCurrency.count - 2].medianValue, currency: latest.currency) }
@@ -55,7 +55,7 @@ struct StatisticsHero: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Schallplatten in der Sammlung").font(.callout).foregroundStyle(.secondary)
                 RollingNumber(value: Double(statistics.totalItems)) { Int($0.rounded()).formatted() }
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .font(.system(size: 44, weight: .bold, design: AppStyle.figureDesign))
                 Text(!hasOwner ? "Verbinde eine Discogs-Collection, um ihren Wert zu verfolgen."
                      : !hasToken ? "Für den Sammlungswert fehlt der Discogs-Token. Trage ihn in den Einstellungen ein."
                      : "Noch kein Sammlungswert. Zum Laden die Seite nach unten ziehen oder ⌘R drücken.")
@@ -89,16 +89,16 @@ struct StatisticsHero: View {
                 .font(.body.weight(.semibold))
                 .foregroundStyle(AppStyle.accent)
                 .frame(width: 34, height: 34)
-                .background(AppStyle.accent.opacity(0.12), in: Circle())
+                .background(AppStyle.isAtelier ? AtelierPalette.soft : AppStyle.accent.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 0) {
                 RollingNumber(value: Double(value)) { Int($0.rounded()).formatted() }
-                    .font(.system(.title2, design: .rounded, weight: .semibold))
+                    .font(.system(.title2, design: AppStyle.figureDesign, weight: .semibold))
                 Text(title).font(.caption).foregroundStyle(.secondary)
             }
         }
         .padding(StatisticsLayout.tilePadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.opacity(0.6), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
+        .statisticsTile(.background.opacity(0.6))
     }
 }
 
@@ -184,11 +184,12 @@ struct StatisticsFacts: View {
             Button { if let group = fact.group { select(group) } } label: {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 8) {
+                        // Klassisch: one petrol for all, no rainbow.
                         Image(systemName: fact.systemImage)
                             .font(.callout.weight(.semibold))
-                            .foregroundStyle(fact.color)
+                            .foregroundStyle(AppStyle.isAtelier ? AppStyle.accent : fact.color)
                             .frame(width: 28, height: 28)
-                            .background(fact.color.opacity(0.14), in: RoundedRectangle(cornerRadius: 8))
+                            .background(AppStyle.isAtelier ? AtelierPalette.soft : fact.color.opacity(0.14), in: RoundedRectangle(cornerRadius: 8))
                         Text(fact.title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                         Spacer(minLength: 0)
                         if fact.group != nil {
@@ -203,7 +204,8 @@ struct StatisticsFacts: View {
                 }
                 .padding(StatisticsLayout.tilePadding)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
-                .background(hovering && fact.group != nil ? fact.color.opacity(0.08) : Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
+                .statisticsTile(hovering && fact.group != nil ? fact.color.opacity(0.08) : Color.primary.opacity(0.03),
+                                hovering: hovering && fact.group != nil)
                 .contentShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius))
             }
             .buttonStyle(.plain)
@@ -373,7 +375,7 @@ struct SoundDonut: View {
         if let hovered, let slice = slices.first(where: { $0.id == hovered }) {
             VStack(spacing: 2) {
                 Text(slice.group.percentage(of: statistics.totalItems))
-                    .font(.system(.title, design: .rounded, weight: .bold)).foregroundStyle(slice.color)
+                    .font(.system(.title, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(slice.color)
                 Text(slice.label).font(.callout.weight(.medium)).lineLimit(2).multilineTextAlignment(.center)
                 Text("\(AppStyle.records(slice.group.count))").font(.caption).foregroundStyle(.secondary)
             }
@@ -381,7 +383,7 @@ struct SoundDonut: View {
             VStack(spacing: 2) {
                 // All of them, including those under "Weitere".
                 Text(groups.count.formatted())
-                    .font(.system(.title, design: .rounded, weight: .bold))
+                    .font(.system(.title, design: AppStyle.figureDesign, weight: .bold))
                 Text(dimension.title).font(.callout).foregroundStyle(.secondary)
             }
         }
@@ -444,7 +446,7 @@ struct ArtistPodium: View {
                 } label: {
                     Label(showsList ? "Rangliste ausblenden" : "Rangliste ab Platz \(podiumCount + 1)", systemImage: showsList ? "chevron.up" : "chevron.down")
                 }
-                .buttonStyle(.link).font(.caption)
+                .appLinkButton().font(.caption)
                 if showsList {
                     GroupStatisticsList(groups: Array(groups.dropFirst(podiumCount)), total: total, columnCount: 2, select: select)
                         .transition(AppStyle.funnelTransition())
@@ -474,11 +476,12 @@ struct ArtistPodium: View {
                     // The rank sits by the name, as on the label tiles: on
                     // the cover it hid the artwork's own lettering.
                     CoverView(url: cover, size: nil)
-                        .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
+                        .atelierRecordSleeve()
+                        .shadow(color: .black.opacity(AppStyle.isAtelier ? 0 : hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
                         .scaleEffect(hovering ? 1.03 : 1)
                     VStack(alignment: .leading, spacing: 1) {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text("\(rank)").font(.system(.caption, design: .rounded, weight: .bold)).foregroundStyle(AppStyle.accent)
+                            Text("\(rank)").font(.system(.caption, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(AppStyle.accent)
                             Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
                         }
                         Text("\(AppStyle.records(group.count)) · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
@@ -530,8 +533,9 @@ struct RandomRecordCard: View {
                 HStack(alignment: .top, spacing: StatisticsLayout.gutter) {
                     Button { open(pick) } label: {
                         CoverView(url: release.coverURL, size: nil)
+                            .atelierRecordSleeve()
                             .frame(width: min(coverWidth, 380))
-                            .shadow(color: .black.opacity(0.25), radius: 18, y: 8)
+                            .shadow(color: .black.opacity(AppStyle.isAtelier ? 0 : 0.25), radius: 18, y: 8)
                     }
                     .buttonStyle(.plain)
                     .help("Details anzeigen")
@@ -563,7 +567,7 @@ struct RandomRecordCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Heute aus deiner Sammlung").font(.caption.weight(.semibold)).foregroundStyle(AppStyle.accent)
                 Text(release.displayArtist)
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .font(.system(.largeTitle, design: AppStyle.figureDesign, weight: .bold))
                     .lineLimit(2)
                 Text(release.displayTitle).font(.title2).foregroundStyle(.secondary).lineLimit(2)
             }
@@ -646,7 +650,7 @@ struct LabelBoard: View {
                 } label: {
                     Label(showsList ? "Weitere Labels ausblenden" : "Alle \(groups.count) Labels", systemImage: showsList ? "chevron.up" : "chevron.down")
                 }
-                .buttonStyle(.link).font(.caption)
+                .appLinkButton().font(.caption)
                 if showsList {
                     GroupStatisticsList(groups: Array(groups.dropFirst(boardCount)), total: total, columnCount: 2, select: select)
                         .transition(AppStyle.funnelTransition())
@@ -667,11 +671,11 @@ struct LabelBoard: View {
             Button { select(group) } label: {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("\(rank)").font(.system(.caption, design: .rounded, weight: .bold)).foregroundStyle(AppStyle.accent)
+                        Text("\(rank)").font(.system(.caption, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(AppStyle.accent)
                         Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(group.count.formatted()).font(.system(.title3, design: .rounded, weight: .semibold)).monospacedDigit()
+                        Text(group.count.formatted()).font(.system(.title3, design: AppStyle.figureDesign, weight: .semibold)).monospacedDigit()
                         Text("\(group.count == 1 ? String(localized: "Platte") : String(localized: "Platten")) · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
                     }
                     GeometryReader { geo in
@@ -683,7 +687,7 @@ struct LabelBoard: View {
                 }
                 .padding(StatisticsLayout.tilePadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(hovering ? AppStyle.accent.opacity(0.08) : Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
+                .statisticsTile(hovering ? AppStyle.accent.opacity(0.08) : Color.primary.opacity(0.03), hovering: hovering)
                 .contentShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius))
             }
             .buttonStyle(.plain)

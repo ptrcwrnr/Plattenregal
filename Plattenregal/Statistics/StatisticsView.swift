@@ -263,7 +263,8 @@ struct StatisticsView: View {
         return true
     }
     private func movableSection(_ section: StatisticsSection) -> some View {
-        StatisticsMovableArea(section: section, prominent: section == .overview, accessory: accessory(for: section), move: moveSection) {
+        StatisticsMovableArea(section: section, prominent: section == .overview, first: section == visibleSections.first,
+                              accessory: accessory(for: section), move: moveSection) {
             sectionContent(section)
         }
     }
@@ -318,10 +319,15 @@ struct StatisticsView: View {
 // MARK: - Card chrome
 
 /// A card on the statistics page: its title (also the drag handle for
-/// reordering) and content on a Liquid Glass surface.
+/// reordering) and content on a Liquid Glass surface. In Klassisch there is
+/// no card: the section lies on the paper like the covers of Collection and
+/// Wantlist, a fine rule above it, and only its tiles are cream sleeves (see
+/// `statisticsTile`).
 private struct StatisticsMovableArea<Content: View>: View {
     let section: StatisticsSection
     var prominent = false
+    /// The topmost section: in Klassisch without the rule above it.
+    var first = false
     var accessory: AnyView?
     let move: (String, StatisticsSection) -> Bool
     @ViewBuilder let content: Content
@@ -332,7 +338,7 @@ private struct StatisticsMovableArea<Content: View>: View {
             // Fixed-height title row, so content starts at the same height in every card.
             HStack(spacing: StatisticsLayout.gutter) {
                 Label(section.title, systemImage: section.systemImage)
-                    .font(AppStyle.sectionTitle)
+                    .font(.system(.title3, design: AppStyle.figureDesign, weight: .semibold))
                     .labelStyle(SectionTitleLabelStyle())
                     .lineLimit(1)
                     .draggable("plattenregal-statistics:\(section.rawValue)")
@@ -344,18 +350,23 @@ private struct StatisticsMovableArea<Content: View>: View {
             .frame(height: 28)
             content
         }
-        .padding(StatisticsLayout.gutter)
+        .padding(.vertical, StatisticsLayout.gutter)
+        // Klassisch: on the paper, flush with the page margins; the first
+        // title as far from the toolbar as the covers on the other pages.
+        .padding(.horizontal, AppStyle.isAtelier ? 0 : StatisticsLayout.gutter)
+        .padding(.top, AppStyle.isAtelier && first ? -StatisticsLayout.gutter : 0)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
-                .fill(prominent
+                .fill(prominent && !AppStyle.isAtelier
                       ? AnyShapeStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.07), AppStyle.accent.opacity(0.0)],
                                                      startPoint: .topLeading, endPoint: .bottomTrailing))
                       : AnyShapeStyle(Color.clear))
         }
         .backgroundPreferenceValue(StatisticsBackdropKey.self) { url in
-            // A card's content can ask for a blurred cover behind the whole card.
-            if let url {
+            // A card's content can ask for a blurred cover behind the whole
+            // card; Klassisch stays matte.
+            if let url, !AppStyle.isAtelier {
                 GeometryReader { geometry in
                     let edge = max(geometry.size.width, geometry.size.height)
                     CoverView(url: url, size: edge)
@@ -367,8 +378,7 @@ private struct StatisticsMovableArea<Content: View>: View {
                 .id(url)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: AppStyle.controlRadius))
-        .appCardSurface()
+        .modifier(SectionSurface(first: first))
         // The glass brings its own edge; a frame only marks the drop target.
         .overlay {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
@@ -379,6 +389,44 @@ private struct StatisticsMovableArea<Content: View>: View {
             return move(first, section)
         } isTargeted: { isTargeted = $0 }
         .animation(AppStyle.quickAnimation, value: isTargeted)
+    }
+}
+
+/// Glass card in Modern; in Klassisch the paper itself with a fine rule
+/// above every section but the first, unclipped so the tiles keep their shadows.
+private struct SectionSurface: ViewModifier {
+    let first: Bool
+    func body(content: Content) -> some View {
+        if AppStyle.isAtelier {
+            content.overlay(alignment: .top) {
+                if !first {
+                    Rectangle().fill(AtelierPalette.border).frame(height: 1)
+                        .offset(y: -StatisticsLayout.gutter / 2)
+                }
+            }
+        } else {
+            // Clipped for the blurred cover behind the card.
+            content.clipShape(RoundedRectangle(cornerRadius: AppStyle.controlRadius))
+                .appCardSurface()
+        }
+    }
+}
+
+extension View {
+    /// A tile inside a statistics section (figures, facts, labels): `modern`
+    /// as its fill in Modern; in Klassisch a cream sleeve with a fine rim and
+    /// a soft shadow like the record covers, its rim gold under the pointer.
+    func statisticsTile(_ modern: some ShapeStyle, hovering: Bool = false) -> some View {
+        let shape = RoundedRectangle(cornerRadius: AppStyle.cardRadius)
+        return background {
+            if AppStyle.isAtelier {
+                shape.fill(AtelierPalette.surface)
+                    .overlay(shape.strokeBorder(hovering ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
+                    .shadow(color: AtelierPalette.shadow, radius: hovering ? 8 : 5, y: hovering ? 3 : 2)
+            } else {
+                shape.fill(modern)
+            }
+        }
     }
 }
 
@@ -398,9 +446,10 @@ private struct SectionTitleLabelStyle: LabelStyle {
 }
 
 /// Categorical colors for the donut; the last slot is reserved for "Weitere".
+/// Klassisch takes its own, calmer palette.
 enum StatisticsPalette {
-    static let colors: [Color] = [.blue, .teal, .indigo, .purple, .pink, .orange, .mint]
-    static let other = Color.gray.opacity(0.5)
+    static var colors: [Color] { AppStyle.isAtelier ? AtelierPalette.chart : [.blue, .teal, .indigo, .purple, .pink, .orange, .mint] }
+    static var other: Color { AppStyle.isAtelier ? AtelierPalette.muted.opacity(0.5) : Color.gray.opacity(0.5) }
 }
 
 // MARK: - Hero

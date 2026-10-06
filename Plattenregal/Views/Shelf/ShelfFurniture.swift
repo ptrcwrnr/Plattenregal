@@ -13,7 +13,7 @@ struct ShelfStatusControl: View {
                 .help("Nicht (mehr) in deiner Discogs-Collection – verkauft, verschenkt oder aus einem anderen Konto –, aber noch im Regal")
             Text("·").foregroundStyle(.tertiary)
             Button("Aus Regal nehmen", action: removeSold)
-                .buttonStyle(.link)
+                .appLinkButton()
         }
         .font(.callout)
     }

@@ -18,6 +18,10 @@ enum AtelierPalette {
     static let toolbarSelection = Color(nsColor: rgb(0xF4EFE5))
     static let toolbarInk = Color(nsColor: rgb(0x233A3E))
     static let shadow = adaptive(0x1D3C42, 0x000000).opacity(0.08)
+    /// Categories in charts (statistics): petrol and gold first, then muted
+    /// earth tones that sit well on cream and on the dark paper.
+    static let chart: [Color] = [0x2F6F80, 0xD9A441, 0x7FA38A, 0xC2714F, 0x5B7DA6, 0x8C5A7A, 0xA8A060]
+        .map { Color(nsColor: rgb($0)) }
 
     private static func rgb(_ hex: UInt32) -> NSColor {
         NSColor(srgbRed: Double((hex >> 16) & 0xFF) / 255,
@@ -128,6 +132,9 @@ enum AppStyle {
     // MARK: Typography
     static let pageTitle = Font.system(.title, design: .rounded, weight: .semibold)
     static let sectionTitle = Font.system(.title3, design: .rounded, weight: .semibold)
+    /// Figures and headings on the statistics: rounded in Modern, plain in
+    /// Klassisch like the captions under its covers.
+    static var figureDesign: Font.Design { isAtelier ? .default : .rounded }
     static let dialogTitle = Font.system(.title2, design: .rounded, weight: .semibold)
 
     // MARK: Colors
@@ -582,6 +589,16 @@ extension View {
             buttonStyle(AtelierButtonStyle())
         } else {
             buttonStyle(.glass).buttonBorderShape(.capsule).tint(nil)
+        }
+    }
+
+    /// A button that reads as a link in the text: the system's link blue in
+    /// Modern, petrol in Klassisch, where the blue would be the only one.
+    @ViewBuilder func appLinkButton() -> some View {
+        if AppStyle.isAtelier {
+            buttonStyle(.plain).foregroundStyle(AppStyle.accent)
+        } else {
+            buttonStyle(.link)
         }
     }
 

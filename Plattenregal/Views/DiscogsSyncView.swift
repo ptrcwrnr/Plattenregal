@@ -94,7 +94,7 @@ private struct ErrorInfoButton: View {
                 HStack {
                     Spacer()
                     Button("Hinweis ausblenden") { showing = false; dismiss() }
-                        .buttonStyle(.link).font(.callout)
+                        .appLinkButton().font(.callout)
                 }
             }
             .padding(AppStyle.cardPadding)

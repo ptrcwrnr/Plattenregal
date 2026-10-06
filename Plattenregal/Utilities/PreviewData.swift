@@ -55,3 +55,26 @@ enum PreviewData {
 #Preview("Hauptfenster") { RootView().modelContainer(PreviewData.container).frame(width: 1250, height: 850) }
 #Preview("KALLAX") { KallaxView(requests: ShelfRequests(), search: ShelfSearch()).modelContainer(PreviewData.container).frame(width: 1000, height: 800) }
 #endif
+
+#if DEBUG
+/// `--snapshot=name.png`: draws the main window into a PNG in the app's
+/// temporary folder (in the container) after a few seconds and quits. Works
+/// while the screen is locked, where `screencapture` gets nothing; the
+/// window's own glass and toolbar may look flatter than on screen.
+enum DebugSnapshot {
+    static func scheduleIfRequested() {
+        guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--snapshot=") }) else { return }
+        let name = String(raw.dropFirst("--snapshot=".count))
+        DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
+            let window = NSApp.windows.max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+            if let view = window?.contentView?.superview ?? window?.contentView,
+               let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
+                view.cacheDisplay(in: view.bounds, to: rep)
+                let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+                try? rep.representation(using: .png, properties: [:])?.write(to: url)
+            }
+            NSApp.terminate(nil)
+        }
+    }
+}
+#endif

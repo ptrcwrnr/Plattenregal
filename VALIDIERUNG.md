@@ -1,4 +1,28 @@
-# Aktueller Stand · 06.10.2026 (Toolbar-Leiste, ausklappbare Suche, Modern/Klassisch)
+# Aktueller Stand · 06.10.2026 (Statistik in Klassisch)
+
+## Vorgehen
+
+1. Bildschirm war gesperrt, `screencapture` lieferte nichts. Darum `--snapshot=…` gebaut: Die Demo zeichnet ihr Fenster selbst in eine PNG-Datei.
+2. Statistik in Klassisch fotografiert, alle Bereiche über `-statisticsSectionOrder` nach oben geholt (Klangbild, Top-Künstler, Labels, Zufallsfund, Zeitreise, Neuzugänge, Deine Sammlung, Auf einen Blick).
+3. `build-for-testing` erfolgreich.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Bereiche | ✅ auf Papiergrund, feine Linien dazwischen, keine Linie über dem ersten, bündig mit dem Seitenrand |
+| Kacheln | ✅ cremefarbene Hüllen mit Rand und Schatten, Symbole einheitlich Petrol |
+| Klangbild | ✅ Palette Petrol/Gold/Erdtöne, „Weitere“ gedeckt grau |
+| Cover | ✅ Top-Künstler und Zufallsfund in Hüllen, kein weichgezeichnetes Cover dahinter |
+| Links | ✅ „Alle 40 Labels“ in Petrol |
+
+## Nicht geprüft
+
+- **Tests nicht gelaufen**: Bei gesperrtem Bildschirm hing der Test-Runner vor dem Start („hung before establishing connection“), zweimal. Sie kompilieren; beim nächsten entsperrten Bildschirm `xcodebuild test` laufen lassen.
+- **Modern** nur im Schnappschuss, der kein Glas zeichnet; der Code für Modern ist bis auf die verschobene Beschneidung der Karte unverändert.
+- **Hover** (goldener Rand) nicht von Hand ausprobiert.
+
+# Vorheriger Stand · 06.10.2026 (Toolbar-Leiste, ausklappbare Suche, Modern/Klassisch)
 
 ## Vorgehen
 

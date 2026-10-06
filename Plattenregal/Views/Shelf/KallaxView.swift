@@ -526,7 +526,7 @@ struct KallaxView: View {
                             HStack(spacing: AppStyle.itemSpacing) {
                                 detailNote(String(localized: "Noch keine Platten in diesem Fach."))
                                 Button("Platte hinzufügen") { startAssignment(shown) }
-                                    .buttonStyle(.link)
+                                    .appLinkButton()
                             }
                         }
                     }
@@ -600,7 +600,7 @@ struct KallaxView: View {
                 // "Nicht im Regal" meanwhile stays out; nothing to undo then.
                 if canUndo(entry) {
                     Button("Rückgängig", action: undoUnplace)
-                        .buttonStyle(.link)
+                        .appLinkButton()
                         .keyboardShortcut(searchFocused ? nil : KeyboardShortcut("z", modifiers: .command))
                 }
             }

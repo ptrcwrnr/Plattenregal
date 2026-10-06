@@ -1,3 +1,12 @@
+# Statistik im Design „Klassisch“ · 06.10.2026
+
+- **Auf dem Papier statt in Karten**: In Klassisch liegen die Bereiche der Statistik wie die Cover in Collection und Wantlist direkt auf dem cremefarbenen Grund, getrennt durch feine Linien und bündig mit dem Seitenrand; der erste Titel steht so weit unter der Toolbar wie die Cover auf den anderen Seiten. Modern bleibt unverändert (Glas-Karten).
+- **Kacheln als Hüllen**: Kennzahlen, „Auf einen Blick“ und Labels sind cremefarbene Kacheln mit feinem Rand und weichem Schatten wie die Cover-Hüllen; beim Überfahren wird der Rand golden. Top-Künstler und Zufallsfund zeigen ihre Cover in derselben Hülle (`atelierRecordSleeve`).
+- **Farben des Designs**: Die bunten Symbole (blau, türkis, lila, rosa, orange) sind in Klassisch einheitlich Petrol auf hellem Grund. Das Klangbild nutzt eine eigene Palette (`AtelierPalette.chart`: Petrol, Gold, Salbei, Terrakotta, Schieferblau, Pflaume, Oliv). Der Farbverlauf in „Deine Sammlung“ und das weichgezeichnete Cover hinter dem Zufallsfund entfallen.
+- **Schrift**: Zahlen und Bereichstitel in Klassisch in normaler statt runder Schrift (`AppStyle.figureDesign`), wie die Angaben unter den Covern.
+- **Text-Links** („Alle 40 Labels“, „Rangliste ab Platz 6“, Links auf der Regalseite und im Sync-Hinweis) sind in Klassisch Petrol statt Systemblau (`appLinkButton()`).
+- Debug: `--snapshot=name.png` zeichnet das Fenster nach ein paar Sekunden selbst in eine PNG-Datei im temporären Ordner des Containers und beendet die App – funktioniert auch bei gesperrtem Bildschirm (Glas wird dabei nicht gezeichnet).
+
 # Toolbar aus einem Guss, ausklappbare Suche, Designs „Modern“ und „Klassisch“ · 06.10.2026
 
 - **Eine zentrierte Leiste**: App-Symbol und Name oben links sind weg. Rubriken, Raster/Liste, Suche und (in Klassisch) Synchronisieren und Zahnrad stehen gemeinsam in einer Leiste mitten in der Toolbar – in Modern eine Glas-Kapsel, in Klassisch ein etwas dunkleres Band auf dem Petrol, getrennt durch feine Striche. Die Leiste ist so breit wie auf der vollsten Seite und beginnt immer an derselben Stelle: Der Rubriken-Umschalter wandert beim Seitenwechsel nicht unter dem Mauszeiger weg. Das Einstellungsfenster nutzt dieselbe Leiste.

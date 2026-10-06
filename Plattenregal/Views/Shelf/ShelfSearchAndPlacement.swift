@@ -188,7 +188,7 @@ struct PlacementCard: View {
                             Button { choose(index) } label: {
                                 Text("Passt genauso \(other.position == 1 ? String(localized: "an den Anfang") : String(localized: "ans Ende")) von „\(name(other.shelf))“ (\(AppStyle.records(other.shelf.copies.count))) – dorthin wechseln")
                             }
-                            .buttonStyle(.link)
+                            .appLinkButton()
                             .font(.callout)
                             .padding(.top, 2)
                         }
