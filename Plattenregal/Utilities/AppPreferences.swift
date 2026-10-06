@@ -209,6 +209,8 @@ enum SignatureDesign: String, CaseIterable, Identifiable {
         case .atelier: "Atelier"
         }
     }
+    /// For the protocol, which stays German.
+    var logName: String { self == .atelier ? "Atelier" : "aktuelle Gestaltung" }
 }
 
 /// The language of the app. `system` follows macOS (where Plattenregal can

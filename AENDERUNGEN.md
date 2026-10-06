@@ -1,3 +1,14 @@
+# Signature Design „Atelier“ · 06.10.2026
+
+Unter **Einstellungen → Darstellung → Designs** lässt sich neben der bisherigen Gestaltung das Design **„Atelier“** wählen – Petrol, Creme und Gold aus dem App-Symbol.
+
+- **Aussehen**: cremefarbener Seitengrund, matte Karten, Knöpfe, Suchleisten und Menüs mit feinem Rand statt Liquid Glass; Toolbar petrolfarben mit App-Symbol, Rubriken und Zahnrad für die Einstellungen (auch im Einstellungsfenster). Über jeder Seite ein Titel, rechts die Lupe (wie ⌘F) und „Synchronisieren“ (Collection, Wantlist; in der Demo gesperrt) bzw. „Aktualisieren“ (Statistik). Cover stehen in einer matten Hülle mit mehr Abstand, darunter Interpret, Titel sowie Jahr und Label; bei Suchtreffern in der Wantlist der gefundene Track. Das Regal ist ein petrolfarbener Korpus mit cremefarbenen Mulden, das gewählte Fach hat einen goldenen Rand. Hell und Dunkel folgen dem gewählten Modus.
+- **Bisherige Einstellungen bleiben**: Modus, Akzent- und Ambient-Farbe werden nicht verändert und gelten wieder, sobald „Aktuelle Gestaltung“ gewählt ist. Gespeichert als `signatureDesign`; ein unbekannter Wert (etwa aus einer späteren Version) fällt auf die aktuelle Gestaltung zurück, ohne ihn zu überschreiben. „Einstellungen zurücksetzen“ stellt auf die aktuelle Gestaltung zurück.
+- **Technik**: Die gemeinsamen Bausteine in `AppAppearance.swift` fragen `AppStyle.isAtelier` ab; die Seiten selbst bleiben dieselben Instanzen, ein Wechsel baut nichts neu auf. `AppPreferences` lässt sich für Tests mit eigenen `UserDefaults` anlegen.
+- **Bei der Prüfung korrigiert**: Die nur für Atelier gedachten Toolbar-Einträge (Symbol, Zahnrad) standen auch in der bisherigen Gestaltung als leere Einträge in der Toolbar; jetzt gibt es sie nur in Atelier. In der Wantlist zeigte Atelier für fehlende Release-Daten „Unbekannt“ und „—“ statt wie bisher „Unbekannter Interpret“ und „Release #…“.
+- **Protokoll**: Die Startzeile trägt „Design Atelier“, wenn es gewählt ist; ein Wechsel steht als „Design: Atelier statt aktuelle Gestaltung“ im Protokoll – hilfreich, wenn ein Fehlerbericht nur in einem Design auftritt.
+- Englische Übersetzungen für alle neuen Texte. Drei neue Tests (Standard und unbekannte Werte, Speichern und Neuladen, bisherige Einstellungen bleiben unverändert). 193 Tests, 0 Fehler.
+
 # Keine Einfüge-Linie mehr in der Rückenleiste · 06.10.2026
 
 - Beim Einsortieren stand in der Rückenleiste eine pulsierende blaue Linie an der Zielposition. Sie ist entfernt, samt Puls-Zeitgeber; `SpineRack` kennt keine `insertionPosition` mehr. Die Position nennt weiterhin die Zeile unter der Leiste („Neue Platte an Position 3 · …“) und die Einsortier-Karte.

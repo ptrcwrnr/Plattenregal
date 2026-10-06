@@ -395,6 +395,10 @@ struct AppearanceSettingsView: View {
                 }
             }
         }
+        // Changes every page's look: worth a line in the protocol for bug reports.
+        .onChange(of: preferences.signatureDesign) { old, new in
+            AppLog.info("Einstellungen", "Design: \(new.logName) statt \(old.logName)")
+        }
     }
 }
 

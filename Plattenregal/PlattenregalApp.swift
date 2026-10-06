@@ -19,7 +19,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let info = Bundle.main.infoDictionary
         // Before anything reads settings: the demo gets fresh ones of its own.
         DemoMode.prepare()
-        AppLog.startSession(details: "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)" + (DemoMode.isActive ? " · Demo" : ""),
+        AppLog.startSession(details: "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)" + (DemoMode.isActive ? " · Demo" : "")
+                                + (AppPreferences.shared.signatureDesign == .atelier ? " · Design Atelier" : ""),
                             version: "\(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         FocusRings.disableGlobally()
         // macOS shows a glass bubble with the input source (or Caps Lock) over

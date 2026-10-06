@@ -1,4 +1,31 @@
-# Aktueller Stand · 06.10.2026 (Tour beim ersten Start)
+# Aktueller Stand · 06.10.2026 (Signature Design „Atelier“)
+
+Stand nach dem neuen wählbaren Design (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Vorgehen
+
+1. Den gesamten Diff (10 Dateien) auf Aufbau und Nebenwirkungen durchgesehen: Speicherung der Wahl, Rückfall bei unbekannten Werten, Zurücksetzen, Hell/Dunkel, Raster-Berechnung mit größerem Abstand, Toolbar in beiden Designs, Platzhalter bei fehlenden Release-Daten, Demo-Sperren, Übersetzungen.
+2. Zwei Fehler behoben (leere Toolbar-Einträge in der bisherigen Gestaltung, abweichende Wantlist-Platzhalter) und die Protokollierung des Designs ergänzt.
+3. Debug-Build mit `xcodebuild` im Projektordner, Tests zweimal ausgeführt.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Debug-Build | ✅ erfolgreich, ohne neue Warnungen |
+| Bisherige Einstellungen beim Wechsel | ✅ Modus, Akzent, Ambient und Startseite bleiben unverändert (Test) |
+| Unbekannter gespeicherter Wert | ✅ fällt auf die aktuelle Gestaltung zurück, Wert bleibt stehen (Test) |
+| Cover-Raster | ✅ Spaltenzahl und Spaltenabstand nutzen beide `CoverGrid.spacing`, rechnen also mit 18 pt in Atelier richtig |
+| Fehlermeldungen | ✅ „Synchronisieren“ und „Aktualisieren“ im Seitentitel nutzen dieselben Wege wie ⌘R bzw. Ziehen, samt deren Meldungen; keine neuen Fehlerfälle |
+| Übersetzungen | ✅ alle neuen Texte englisch; „Signature Designs“ und „Atelier“ bewusst unübersetzt |
+| Tests | ✅ 193 Tests, 0 Fehler (beide Läufe) |
+
+## Nicht geprüft (dieser Durchgang)
+
+- **Atelier in der laufenden App** nicht angesehen: Die Demo startet mit leeren Einstellungen, und die Wahl in der echten App sollte nicht verändert werden. Insbesondere offen: petrolfarbene Toolbar im inaktiven Fenster, Popover-Pfeil (bleibt systemfarben, nur der Inhalt ist cremefarben), Tour-Bilder (zeigen weiter die bisherige Gestaltung).
+- **Wechsel des Designs bei offenem Glasfenster** (Tour, „Platte hinzufügen“) nicht ausprobiert.
+
+# Vorheriger Stand · 06.10.2026 (Tour beim ersten Start)
 
 Stand nach der Tour (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 
