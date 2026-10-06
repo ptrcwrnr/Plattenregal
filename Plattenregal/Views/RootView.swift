@@ -25,10 +25,11 @@ enum Destination: String, CaseIterable, Identifiable {
         case .statistics: "4"
         }
     }
-    /// Pages with a search (⌘F opens it, see `FloatingControls`).
+    /// Pages with the search field in the toolbar (⌘F, see `ToolbarSearchField`).
     var hasSearch: Bool { self != .statistics }
-    /// Pages with grid and list (see `FloatingControls`).
-    var hasLayoutSwitch: Bool { self == .collection || self == .wantlist }
+    /// Pages with grid and list, and with the round button of actions at the
+    /// bottom right (see `FloatingControls`).
+    var hasActions: Bool { self == .collection || self == .wantlist }
 }
 
 struct RootView: View {
@@ -89,19 +90,15 @@ struct RootView: View {
             .task { CoverCache.shared.pruneDisk() }
     }
 
-    /// No sidebar: only the page switch, centered in the toolbar, so the
-    /// pages start right below it. Everything else – search, grid or list,
-    /// sync, settings – fans out of the round button at the bottom right
-    /// (see `FloatingControls`). ⌘F opens the search beside it. The settings
-    /// are also where a Mac app has them: Plattenregal menu and ⌘,.
+    /// No sidebar: the page switch centered in the toolbar, the search at
+    /// its right end (⌘F), so the pages start right below it. On collection
+    /// and wantlist grid or list, sync and settings fan out of the round
+    /// button at the bottom right (see `FloatingControls`). The settings are
+    /// also where a Mac app has them: Plattenregal menu and ⌘,.
     private var library: some View {
         pages
             .environment(\.searchRequests, searchRequests)
-            .overlay(alignment: .bottomTrailing) {
-                FloatingControls(selection: destination, library: search, shelf: shelfSearch, requests: searchRequests) {
-                    Task { await statisticsModel.refresh(container: context.container) }
-                }
-            }
+            .overlay(alignment: .bottomTrailing) { FloatingControls(selection: destination) }
             // Names the window in the Fenster menu and Mission Control; the
             // toolbar shows the page switch instead of a title.
             .navigationTitle("Plattenregal")
@@ -110,6 +107,11 @@ struct RootView: View {
                 ToolbarItem(placement: .principal) { PagePicker(selection: destination).toolbarBar() }
                     // The bar brings its own background (see `toolbarBar`).
                     .sharedBackgroundVisibility(.hidden)
+                ToolbarItem(placement: .primaryAction) {
+                    ToolbarSearchField(selection: destination, library: search, shelf: shelfSearch, requests: searchRequests)
+                }
+                // Brings its own capsule (see `searchBarChrome`).
+                .sharedBackgroundVisibility(.hidden)
             }
             .background { SignatureToolbarAppearance() }
             .background(pageShortcuts)
@@ -140,9 +142,9 @@ struct RootView: View {
     private var pages: some View {
         PageStack(pages: Destination.allCases, selection: destination) {
             pageContent($0)
-                // Room at the end of every page, so the last covers and rows
-                // scroll clear of the floating button.
-                .safeAreaPadding(.bottom, AppStyle.floatingClearance)
+                // Room at the end of the pages with the floating button, so
+                // the last covers and rows scroll clear of it.
+                .safeAreaPadding(.bottom, $0.hasActions ? AppStyle.floatingClearance : 0)
                 .appPageEnvironment(context)
         }
     }
@@ -163,26 +165,17 @@ struct RootView: View {
     }
 }
 
-/// The round button at the bottom right of the window. A click fans the
-/// page's actions out around it on a quarter circle – search, grid or list,
-/// sync (or refresh), settings – and closes them again; so does Esc, a click
-/// beside them or choosing one. The search opens as a field to the left of
-/// the button (also with ⌘F) and stays while a query is active, so no filter
-/// works unseen; Esc clears the query, a second Esc closes the field.
-/// Collection and wantlist share one query (`LibrarySearch`), the shelf has
-/// its own (`ShelfSearch`); the pages read them and filter themselves.
+/// The round button at the bottom right of the window, only on collection
+/// and wantlist. A click fans the page's actions out around it on a quarter
+/// circle – grid or list, sync, settings – and closes them again; so does
+/// Esc, a click beside them or choosing one.
 private struct FloatingControls: View {
     let selection: PageSelection<Destination>
-    let library: LibrarySearch
-    let shelf: ShelfSearch
-    let requests: SearchRequests
-    let refreshStatistics: () -> Void
     @Environment(\.modelContext) private var context
     @Environment(\.openSettings) private var openSettings
     @State private var sync = DiscogsSyncService.shared
     @AppStorage(DisplaySettings.collectionLayoutKey) private var collectionLayout = OverviewLayout.grid
     @AppStorage(DisplaySettings.wantlistLayoutKey) private var wantlistLayout = OverviewLayout.grid
-    @FocusState private var focused: Bool
     /// The actions fanned out (debug: `--preview-actions` starts with them).
     @State private var expanded = {
         #if DEBUG
@@ -191,45 +184,40 @@ private struct FloatingControls: View {
         false
         #endif
     }()
-    /// The search field opened by its button or ⌘F.
-    @State private var searchOpened = false
 
-    private enum Action: Hashable { case search, layout, sync, settings }
+    private enum Action: Hashable, CaseIterable { case layout, sync, settings }
 
     var body: some View {
         let page = selection.current
-        let text = text(for: page)
-        let searchShown = page.hasSearch && (searchOpened || !text.wrappedValue.isEmpty)
-        HStack(spacing: 12) {
-            if searchShown {
-                searchField(page: page, text: text)
-                    // Out of the way of the fanned-out actions.
-                    .opacity(expanded ? 0 : 1)
-                    .allowsHitTesting(!expanded)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
+        ZStack {
+            if page.hasActions {
+                controls(page: page).transition(.scale(scale: 0.6).combined(with: .opacity))
             }
-            ZStack {
-                let actions = actions(for: page)
-                ForEach(Array(actions.enumerated()), id: \.element) { index, action in
-                    actionButton(action, page: page)
-                        .offset(expanded ? Self.offset(index, of: actions.count) : .zero)
-                        .scaleEffect(expanded ? 1 : 0.3)
-                        .opacity(expanded ? 1 : 0)
-                        .allowsHitTesting(expanded)
-                        .accessibilityHidden(!expanded)
-                        .animation(AppStyle.reduceMotion ? .default : .spring(duration: 0.38, bounce: 0.25)
-                            .delay(expanded ? Double(index) * 0.03 : 0), value: expanded)
-                }
-                mainButton
+        }
+        .animation(AppStyle.quickAnimation, value: page.hasActions)
+        .onChange(of: page) { collapse() }
+    }
+
+    private func controls(page: Destination) -> some View {
+        let actions = Action.allCases
+        return ZStack {
+            ForEach(Array(actions.enumerated()), id: \.element) { index, action in
+                actionButton(action, page: page)
+                    .offset(expanded ? Self.offset(index, of: actions.count) : .zero)
+                    .scaleEffect(expanded ? 1 : 0.3)
+                    .opacity(expanded ? 1 : 0)
+                    .allowsHitTesting(expanded)
+                    .accessibilityHidden(!expanded)
+                    .animation(AppStyle.reduceMotion ? .default : .spring(duration: 0.38, bounce: 0.25)
+                        .delay(expanded ? Double(index) * 0.03 : 0), value: expanded)
             }
-            // A click anywhere beside the button and the actions – page,
-            // list, toolbar – closes them.
-            .background {
-                if expanded {
-                    OutsideClickWatcher(spots: [.zero] + actions(for: page).indices.map {
-                        Self.offset($0, of: actions(for: page).count)
-                    }) { collapse() }
-                }
+            mainButton
+        }
+        // A click anywhere beside the button and the actions – page,
+        // list, toolbar – closes them.
+        .background {
+            if expanded {
+                OutsideClickWatcher(spots: [.zero] + actions.indices.map { Self.offset($0, of: actions.count) }) { collapse() }
             }
         }
         .padding(AppStyle.floatingMargin)
@@ -238,22 +226,6 @@ private struct FloatingControls: View {
             if expanded {
                 Button("") { collapse() }.keyboardShortcut(.cancelAction).opacity(0).accessibilityHidden(true)
             }
-        }
-        .animation(AppStyle.fadeAnimation, value: searchShown)
-        .animation(AppStyle.quickAnimation, value: otherSection(for: page)?.count)
-        .onChange(of: requests.count) {
-            guard selection.current.hasSearch else { return }
-            openSearch()
-        }
-        .onChange(of: focused) { _, new in
-            requests.fieldFocused = new
-            if !new && text.wrappedValue.isEmpty { closeSearch() }
-        }
-        .onChange(of: page) {
-            collapse()
-            // The shelf has its own query: the field stays only with one,
-            // or while it has the cursor on a page with a search.
-            if !page.hasSearch || (!focused && text.wrappedValue.isEmpty) { closeSearch() }
         }
     }
 
@@ -277,17 +249,6 @@ private struct FloatingControls: View {
         .accessibilityValue(expanded ? String(localized: "geöffnet") : "")
     }
 
-    /// What the page offers, from the left (beside the search field) up to
-    /// the top of the quarter circle.
-    private func actions(for page: Destination) -> [Action] {
-        var actions: [Action] = []
-        if page.hasSearch { actions.append(.search) }
-        if page.hasLayoutSwitch { actions.append(.layout) }
-        if page != .shelf { actions.append(.sync) }
-        actions.append(.settings)
-        return actions
-    }
-
     /// On a quarter circle from straight left to straight up of the button.
     private static func offset(_ index: Int, of count: Int) -> CGSize {
         let degrees = count == 1 ? 135 : 180 - Double(index) * 90 / Double(count - 1)
@@ -298,8 +259,6 @@ private struct FloatingControls: View {
 
     @ViewBuilder private func actionButton(_ action: Action, page: Destination) -> some View {
         switch action {
-        case .search:
-            item("magnifyingglass", String(localized: "Suchen"), help: String(localized: "Suchen (⌘F)")) { openSearch() }
         case .layout:
             let layout = layoutBinding(for: page)
             let next: OverviewLayout = layout?.wrappedValue == .grid ? .list : .grid
@@ -307,17 +266,12 @@ private struct FloatingControls: View {
                 layout?.wrappedValue = next
             }
         case .sync:
-            let title = page == .statistics ? String(localized: "Aktualisieren") : String(localized: "Synchronisieren")
+            let title = String(localized: "Synchronisieren")
             item("arrow.clockwise", title, help: title + " (⌘R)") {
-                switch page {
-                case .collection: sync.start(.collection, container: context.container)
-                case .wantlist: sync.start(.wantlist, container: context.container)
-                case .statistics: refreshStatistics()
-                case .shelf: break
-                }
+                sync.start(page == .wantlist ? .wantlist : .collection, container: context.container)
             }
-            // Discogs is off in the demo; the statistics still recalculate.
-            .disabled(sync.busy || (DemoMode.isActive && page != .statistics))
+            // Discogs is off in the demo.
+            .disabled(sync.busy || DemoMode.isActive)
         case .settings:
             item("gearshape", String(localized: "Einstellungen"), help: String(localized: "Einstellungen (⌘,)")) { openSettings() }
         }
@@ -353,24 +307,41 @@ private struct FloatingControls: View {
         guard expanded else { return }
         withAnimation(AppStyle.reduceMotion ? .default : .spring(duration: 0.3, bounce: 0.1)) { expanded = false }
     }
+}
 
-    // MARK: Search
+/// The search field at the right end of the toolbar, on the pages that have
+/// one (not on the statistics). It ends flush with the covers below it: the
+/// toolbar's own margin is topped up to the pages' (`toolbarSearchInset`).
+/// ⌘F puts the cursor in it; Esc clears the query, a second Esc leaves it.
+/// Collection and wantlist share one query (`LibrarySearch`), the shelf has
+/// its own (`ShelfSearch`); the pages read them and filter themselves.
+private struct ToolbarSearchField: View {
+    let selection: PageSelection<Destination>
+    let library: LibrarySearch
+    let shelf: ShelfSearch
+    let requests: SearchRequests
+    @FocusState private var focused: Bool
 
-    private func searchField(page: Destination, text: Binding<String>) -> some View {
-        AppSearchField(placeholder: placeholder(for: page), text: text, focus: $focused,
-                       accessory: otherSection(for: page).map { AnyView(otherButton($0)) })
-            .frame(width: AppStyle.floatingSearchWidth)
-            .accessibilityLabel(String(localized: "Suchen"))
-    }
-
-    private func openSearch() {
-        withAnimation(AppStyle.fadeAnimation) { searchOpened = true }
-        focused = true
-    }
-
-    private func closeSearch() {
-        focused = false
-        withAnimation(AppStyle.fadeAnimation) { searchOpened = false }
+    var body: some View {
+        let page = selection.current
+        Group {
+            if page.hasSearch {
+                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused,
+                               accessory: otherSection(for: page).map { AnyView(otherButton($0)) })
+                    .frame(width: AppStyle.toolbarSearchWidth)
+                    .padding(.trailing, AppStyle.toolbarSearchInset)
+                    .accessibilityLabel(String(localized: "Suchen"))
+                    .transition(.opacity)
+            }
+        }
+        .animation(AppStyle.fadeAnimation, value: page.hasSearch)
+        .animation(AppStyle.quickAnimation, value: otherSection(for: page)?.count)
+        .onChange(of: requests.count) {
+            guard selection.current.hasSearch else { return }
+            focused = true
+        }
+        .onChange(of: focused) { _, new in requests.fieldFocused = new }
+        .onChange(of: page) { if !page.hasSearch { focused = false } }
     }
 
     /// The other page's hits for the same query, one click away; quiet, like

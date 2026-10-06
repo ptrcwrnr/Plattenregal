@@ -1,3 +1,10 @@
+# Aktionsknopf nur in Collection/Wantlist, Suche wieder oben, Statistik bündig · 06.10.2026
+
+- **Runder Knopf** (`FloatingControls`) nur noch in Collection und Wantlist; Aktionen dort: Raster/Liste, Synchronisieren, Einstellungen. In Regal und Statistik verschwindet er (die Statistik aktualisiert weiter mit ⌘R oder Herunterziehen, Einstellungen über ⌘,). Platz unten (`floatingClearance`) nur noch auf diesen beiden Seiten.
+- **Suche wieder in der Toolbar** (`ToolbarSearchField`, rechts, 300 pt breit) für Collection, Wantlist und Regal, immer sichtbar, ⌘F setzt den Cursor hinein. Ihr rechtes Ende sitzt bündig mit der rechten Kante der Cover bzw. des Regals: Der Toolbar-Rand (8 pt) wird um `AppStyle.toolbarSearchInset` auf den Seitenrand (`pagePadding + 4`) aufgefüllt – im Bildschirmfoto in Klassisch pixelgenau gleich. Die Trefferliste der Regalsuche schwebt rechtsbündig direkt unter dem Feld.
+- **Statistik bündig**: Bereichstitel („Deine Sammlung“, „Auf einen Blick“ …) ohne vorangestelltes Symbol, sie beginnen jetzt an derselben Kante wie die Werte und Wörter darunter. Die große Zahl (Sammlungswert bzw. Plattenzahl) gleicht den Vorlauf der Ziffern aus.
+- Tests grün.
+
 # Aktionsfächer klappt bei Klick daneben zu · 06.10.2026
 
 - **Klick außerhalb**: Der Fächer am runden Knopf fährt jetzt bei jedem Klick neben Knopf und Aktionen wieder ein – auf der Seite, in Listen und Tabellen und in der Toolbar. Statt einer unsichtbaren Fläche, die AppKit-Listen nicht zuverlässig abfing, beobachtet `OutsideClickWatcher` die Klicks im Fenster; der Klick selbst geht weiter an das, was darunter liegt.

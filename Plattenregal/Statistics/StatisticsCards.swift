@@ -41,6 +41,9 @@ struct StatisticsHero: View {
                     DiscogsMoney.format(Decimal($0.rounded()), currency: latest.currency)
                 }
                 .font(.system(size: 44, weight: .bold, design: AppStyle.figureDesign))
+                // The digits' own side bearing, so the number starts at
+                // the edge of the words above and below it.
+                .padding(.leading, -3)
                 .lineLimit(1).minimumScaleFactor(0.6)
                 HStack(spacing: 10) {
                     if sameCurrency.count >= 2 { DeltaChip(current: latest.medianValue, previous: sameCurrency[sameCurrency.count - 2].medianValue, currency: latest.currency) }
@@ -56,6 +59,9 @@ struct StatisticsHero: View {
                 Text("Schallplatten in der Sammlung").font(.callout).foregroundStyle(.secondary)
                 RollingNumber(value: Double(statistics.totalItems)) { Int($0.rounded()).formatted() }
                     .font(.system(size: 44, weight: .bold, design: AppStyle.figureDesign))
+                // The digits' own side bearing, so the number starts at
+                // the edge of the words above and below it.
+                .padding(.leading, -3)
                 Text(!hasOwner ? "Verbinde eine Discogs-Collection, um ihren Wert zu verfolgen."
                      : !hasToken ? "Für den Sammlungswert fehlt der Discogs-Token. Trage ihn in den Einstellungen ein."
                      : "Noch kein Sammlungswert. Zum Laden die Seite nach unten ziehen oder ⌘R drücken.")

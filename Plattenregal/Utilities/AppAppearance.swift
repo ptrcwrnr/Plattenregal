@@ -104,8 +104,12 @@ enum AppStyle {
     static let controlHeight: CGFloat = 26
     /// Search bars (Liquid Glass capsule, see `searchBarChrome`).
     static let searchBarHeight: CGFloat = 34
-    /// The search field beside the floating button (see `FloatingControls`).
-    static let floatingSearchWidth: CGFloat = 300
+    /// The search field at the right end of the toolbar (see `ToolbarSearchField`).
+    static let toolbarSearchWidth: CGFloat = 300
+    /// Topped up to the toolbar's own right margin (8, measured), so the
+    /// field ends at the pages' margin (`pagePadding + 4`), flush with the
+    /// covers below it.
+    static let toolbarSearchInset: CGFloat = pagePadding + 4 - 8
     /// The round button at the bottom right and the actions around it.
     static let floatingButtonSize: CGFloat = 52
     static let floatingItemSize: CGFloat = 40
@@ -512,7 +516,7 @@ struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
     var onSubmit: (() -> Void)?
-    /// Focus of the text field, for the search beside the floating button (⌘F).
+    /// Focus of the text field, for the search field in the toolbar (⌘F).
     var focus: FocusState<Bool>.Binding?
     /// Shown at the end of the field, before the clear button.
     var accessory: AnyView?

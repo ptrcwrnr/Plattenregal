@@ -28,20 +28,6 @@ enum StatisticsSection: String, CaseIterable, Identifiable {
         case .recent: String(localized: "Zuletzt hinzugefügt")
         }
     }
-    var systemImage: String {
-        switch self {
-        case .overview: "opticaldisc"
-        case .highlights: "sparkles"
-        case .valueHistory: "chart.line.uptrend.xyaxis"
-        case .sound: "waveform"
-        case .artists: "music.mic"
-        case .labels: "tag"
-        case .discover: "dice"
-        case .years: "clock.arrow.circlepath"
-        case .acquisitions: "calendar.badge.plus"
-        case .recent: "clock"
-        }
-    }
 }
 
 /// One grid for the whole page: the same gutter between cards, inside cards
@@ -337,9 +323,10 @@ private struct StatisticsMovableArea<Content: View>: View {
         VStack(alignment: .leading, spacing: StatisticsLayout.titleSpacing) {
             // Fixed-height title row, so content starts at the same height in every card.
             HStack(spacing: StatisticsLayout.gutter) {
-                Label(section.title, systemImage: section.systemImage)
+                // Without an icon in front, so the title starts at the same
+                // edge as the values and words below it.
+                Text(section.title)
                     .font(.system(.title3, design: AppStyle.figureDesign, weight: .semibold))
-                    .labelStyle(SectionTitleLabelStyle())
                     .lineLimit(1)
                     .draggable("plattenregal-statistics:\(section.rawValue)")
                     .help("Am Titel ziehen, um den Bereich anzuordnen")
@@ -434,15 +421,6 @@ extension View {
 struct StatisticsBackdropKey: PreferenceKey {
     static let defaultValue: String? = nil
     static func reduce(value: inout String?, nextValue: () -> String?) { value = value ?? nextValue() }
-}
-
-private struct SectionTitleLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(spacing: 8) {
-            configuration.icon.font(.callout.weight(.semibold)).foregroundStyle(AppStyle.accent)
-            configuration.title
-        }
-    }
 }
 
 /// Categorical colors for the donut; the last slot is reserved for "Weitere".

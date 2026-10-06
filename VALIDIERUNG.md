@@ -1,3 +1,25 @@
+# Aktueller Stand · 06.10.2026 (Aktionsknopf nur Collection/Wantlist, Suche oben, Statistik bündig)
+
+## Vorgehen
+
+1. Build und alle Tests: erfolgreich.
+2. Demo in **Klassisch** fotografiert (`screencapture`): Collection, Collection aufgefächert, Regal mit Suche „Daft“, Statistik. Kanten in der Collection pixelweise gemessen.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Suche bündig | ✅ rechte Kante von Suchfeld und Cover-Hülle beide bei x = 2390 px (vorher Feld bei 2430) |
+| Regal | ✅ Feld endet mit dem Regal, Trefferliste rechtsbündig darunter, kein Knopf unten |
+| Statistik | ✅ Titel, „Sammlungswert · Median“, Betrag und Kacheln an einer Kante, kein Knopf unten |
+| Fächer | ✅ Liste, Sync (in der Demo gesperrt), Zahnrad |
+
+## Nicht geprüft
+
+- **Modern** nicht fotografiert; der Toolbar-Rand ist dort derselbe, die Statistik-Änderung designunabhängig.
+- **Klicks** (⌘F, Esc, Fächer) nicht von Hand.
+- Hinweis: Nach hartem Beenden öffnete die Demo beim nächsten Start kein Fenster (auch mit dem alten Stand); ein zweites `open` (Reopen) holt es. Kein Code-Fehler dieser Änderung.
+
 # Aktueller Stand · 06.10.2026 (Aktionen unten rechts, ohne ABC-Leiste)
 
 ## Vorgehen
