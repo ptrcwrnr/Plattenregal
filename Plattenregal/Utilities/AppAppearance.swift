@@ -18,6 +18,10 @@ enum AtelierPalette {
     static let toolbarSelection = Color(nsColor: rgb(0xF4EFE5))
     static let toolbarInk = Color(nsColor: rgb(0x233A3E))
     static let shadow = adaptive(0x1D3C42, 0x000000).opacity(0.08)
+    /// Signal colors (see `AppStyle.successColor` …): moss, ochre, brick.
+    static let success = adaptive(0x3E7A55, 0x8FC4A0)
+    static let warning = adaptive(0xA8711C, 0xE2B660)
+    static let error = adaptive(0xA9443A, 0xE69384)
     /// Categories in charts (statistics): petrol and gold first, then muted
     /// earth tones that sit well on cream and on the dark paper.
     static let chart: [Color] = [0x2F6F80, 0xD9A441, 0x7FA38A, 0xC2714F, 0x5B7DA6, 0x8C5A7A, 0xA8A060]
@@ -153,12 +157,16 @@ enum AppStyle {
     /// The accent chosen in the settings (or the system's). Read in `body`,
     /// so views redraw when it changes.
     static var accent: Color { isAtelier ? AtelierPalette.accent : AppPreferences.shared.accent.color }
-    static var selectedBackground: Color { accent.opacity(0.12) }
+    /// Klassisch: the deeper cream of its paper, not a tint of the petrol
+    /// (which turns the cream gray); the gold border marks the choice.
+    static var selectedBackground: Color { isAtelier ? AtelierPalette.soft : accent.opacity(0.12) }
     static var selectedBorder: Color { isAtelier ? AtelierPalette.gold : accent }
     static var borderColor: Color { isAtelier ? AtelierPalette.border : Color.primary.opacity(0.08) }
-    static let successColor = Color.green
-    static let warningColor = Color.orange
-    static let errorColor = Color.red
+    /// Klassisch keeps the meaning but takes earthy tones that sit on cream
+    /// and on the dark paper, instead of the system's bright ones.
+    static var successColor: Color { isAtelier ? AtelierPalette.success : Color.green }
+    static var warningColor: Color { isAtelier ? AtelierPalette.warning : Color.orange }
+    static var errorColor: Color { isAtelier ? AtelierPalette.error : Color.red }
 
     // MARK: Wording
     /// "1 Platte", "12 Platten", "1.234 Platten".

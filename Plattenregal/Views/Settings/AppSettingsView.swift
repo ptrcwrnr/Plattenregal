@@ -459,7 +459,7 @@ private struct SignatureDesignOption: View {
                         in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
-                    .strokeBorder(selected ? AppStyle.accent.opacity(0.5) : AppStyle.borderColor, lineWidth: 1)
+                    .strokeBorder(selected ? AppStyle.selectedBorder.opacity(AppStyle.isAtelier ? 1 : 0.5) : AppStyle.borderColor, lineWidth: 1)
             }
             .contentShape(RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
         }

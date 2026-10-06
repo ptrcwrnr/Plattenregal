@@ -443,7 +443,7 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
         /// Klassisch: cream titles, sort arrow and dividers on the petrol band,
         /// drawn here – the system header would bring its own gray.
         private func drawOnBand(_ table: NSTableView, dividers: [CGFloat]) {
-            let cream = NSColor(srgbRed: 0xF4 / 255, green: 0xEF / 255, blue: 0xE5 / 255, alpha: 1)
+            let cream = NSColor(AtelierPalette.toolbarSelection)
             let sortKey = table.sortDescriptors.first
             for (index, column) in table.tableColumns.enumerated() where !column.title.isEmpty {
                 let cell = column.headerCell
