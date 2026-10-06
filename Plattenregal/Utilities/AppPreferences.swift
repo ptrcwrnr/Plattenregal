@@ -32,8 +32,8 @@ enum OverviewLayout: String, CaseIterable, Identifiable {
     var systemImage: String { self == .grid ? "square.grid.2x2" : "list.bullet" }
 }
 
-/// Order of the collection and wantlist. Only the alphabetical one has the
-/// letter index at the edge; the random one is shuffled anew on each launch.
+/// Order of the collection and wantlist. The random one is shuffled anew on
+/// each launch.
 enum OverviewOrder: String, CaseIterable, Identifiable {
     case alphabetical, random, recent
     var id: Self { self }

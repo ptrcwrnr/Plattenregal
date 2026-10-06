@@ -360,7 +360,7 @@ struct AppearanceSettingsView: View {
                 }
             }
             SettingsCard(title: String(localized: "Übersicht"),
-                         subtitle: String(localized: "Lässt sich auch direkt in der Kopfleiste von Collection und Wantlist umschalten.")) {
+                         subtitle: String(localized: "Lässt sich auch direkt in Collection und Wantlist umschalten, über den runden Knopf unten rechts.")) {
                 SettingsRow(title: String(localized: "Collection")) { OverviewLayoutPicker(selection: $collectionLayout) }
                 Divider()
                 SettingsRow(title: String(localized: "Wantlist")) { OverviewLayoutPicker(selection: $wantlistLayout) }

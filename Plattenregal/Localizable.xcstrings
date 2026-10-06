@@ -1263,6 +1263,26 @@
         }
       }
     },
+    "Aktionen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actions"
+          }
+        }
+      }
+    },
+    "Aktionen schließen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close Actions"
+          }
+        }
+      }
+    },
     "Aktiv": {
       "localizations": {
         "en": {
@@ -1573,12 +1593,32 @@
         }
       }
     },
+    "Als Liste anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show as List"
+          }
+        }
+      }
+    },
     "Als Nächstes": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Up next"
+          }
+        }
+      }
+    },
+    "Als Raster anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show as Grid"
           }
         }
       }
@@ -5033,12 +5073,12 @@
         }
       }
     },
-    "Lässt sich auch direkt in der Kopfleiste von Collection und Wantlist umschalten.": {
+    "Lässt sich auch direkt in Collection und Wantlist umschalten, über den runden Knopf unten rechts.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Can also be switched directly in the header of the collection and wantlist."
+            "value": "Can also be switched directly in the collection and wantlist, with the round button at the bottom right."
           }
         }
       }
@@ -8437,6 +8477,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "as many as in the same period last year"
+          }
+        }
+      }
+    },
+    "geöffnet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "open"
           }
         }
       }

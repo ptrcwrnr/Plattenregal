@@ -258,7 +258,6 @@ struct WantlistView: View {
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
     // Filtered/sorted once per change of entries or query, not on every render.
     @State private var visibleEntries: [WantlistEntry] = []
-    @State private var alphabetIndex: [String: PersistentIdentifier] = [:]
     @State private var scrollPosition: PersistentIdentifier?
     /// Where the page was scrolled when the search began (see `leaveSearch`).
     @State private var scrollBeforeSearch: PersistentIdentifier?
@@ -276,11 +275,9 @@ struct WantlistView: View {
 
     /// Same margins as the collection (see CollectionView).
     private var pageMargin: CGFloat { AppStyle.pagePadding + 4 }
-    /// Kept with any order, so switching it never changes the cover size.
-    private var alphabetGutter: CGFloat { 24 }
     @AppStorage(DisplaySettings.wantlistOrderKey) private var order = OverviewOrder.alphabetical
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
-        width - 2 * pageMargin - alphabetGutter
+        width - 2 * pageMargin
     }
 
     var body: some View {
@@ -290,7 +287,6 @@ struct WantlistView: View {
             if DemoMode.showsBanner {
                 DemoBanner()
                     .padding(.horizontal, pageMargin)
-                    .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
             // Atelier: right under its opaque toolbar (see CollectionView).
@@ -328,9 +324,7 @@ struct WantlistView: View {
                         table(visibleEntries)
                             .appTableCard()
                             .padding(.horizontal, pageMargin)
-                            .padding(.trailing, alphabetGutter)
                     }
-                    if order == .alphabetical { alphabetNavigation }
                 }
             }
             }
@@ -430,22 +424,9 @@ struct WantlistView: View {
             scrollPosition = scrollBeforeSearch ?? visible.first?.persistentModelID
             scrollBeforeSearch = nil
         }
-        // Only the alphabetical order has the index at the edge.
-        alphabetIndex = order != .alphabetical ? [:] : visible.reduce(into: [:]) { result, entry in
-            let symbol = SortingService.alphabetSection(for: entry.release?.displayArtist ?? "")
-            if result[symbol] == nil { result[symbol] = entry.persistentModelID }
-        }
         if let scrollPosition, !visible.contains(where: { $0.persistentModelID == scrollPosition }) {
             self.scrollPosition = nil
         }
-    }
-
-    private var alphabetNavigation: some View {
-        AlphabetIndex(availableSymbols: Set(alphabetIndex.keys)) { symbol in
-            guard let id = alphabetIndex[symbol] else { return }
-            withAnimation(AppStyle.layoutAnimation) { scrollPosition = id }
-        }
-        .padding(.trailing, 8)
     }
 
     /// Covers like the collection grid; a click shows the popover with the
@@ -517,7 +498,6 @@ struct WantlistView: View {
                 .scrollTargetLayout()
                 .padding(.vertical, CoverGrid.spacing)
                 .padding(.horizontal, pageMargin)
-                .padding(.trailing, alphabetGutter)
             }
             .scrollPosition(id: $scrollPosition, anchor: .top)
             .pullToRefresh(disabled: sync.busy, action: syncWantlist)
@@ -624,7 +604,7 @@ struct WantlistView: View {
 }
 
 enum WantlistPresentation {
-    /// By alphabet section, artist, title – the order of the alphabet index.
+    /// By alphabet section ("#" first, then A–Z), artist, title – as the collection.
     /// Searching goes through a `SearchIndex` over `searchText`.
     static func sorted(_ entries: [WantlistEntry]) -> [WantlistEntry] {
         // Keys read once per entry, not per comparison: the alphabet section

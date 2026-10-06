@@ -104,10 +104,15 @@ enum AppStyle {
     static let controlHeight: CGFloat = 26
     /// Search bars (Liquid Glass capsule, see `searchBarChrome`).
     static let searchBarHeight: CGFloat = 34
-    /// The search field in the window's toolbar, opened (see `ToolbarSearchField`).
-    static let toolbarSearchWidth: CGFloat = 240
-    /// The controls in the toolbar's bar (see `toolbarBar`).
-    static let toolbarBarHeight: CGFloat = 30
+    /// The search field beside the floating button (see `FloatingControls`).
+    static let floatingSearchWidth: CGFloat = 300
+    /// The round button at the bottom right and the actions around it.
+    static let floatingButtonSize: CGFloat = 52
+    static let floatingItemSize: CGFloat = 40
+    /// Its distance from the window's edges.
+    static let floatingMargin: CGFloat = 20
+    /// Room at the end of every page, so content scrolls clear of the button.
+    static let floatingClearance: CGFloat = floatingButtonSize + floatingMargin + 8
     /// Leaving a search: the hits fade out quickly, then the whole list fades
     /// in where it was before the search – timed like a page switch (see
     /// `PageStackView.show`). Gliding hundreds of covers back in looked busy.
@@ -507,8 +512,10 @@ struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
     var onSubmit: (() -> Void)?
-    /// Focus of the text field, for the search field in the toolbar (⌘F).
+    /// Focus of the text field, for the search beside the floating button (⌘F).
     var focus: FocusState<Bool>.Binding?
+    /// Shown at the end of the field, before the clear button.
+    var accessory: AnyView?
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
@@ -523,11 +530,13 @@ struct AppSearchField: View {
                     focus.wrappedValue = false
                     return .handled
                 }
+            if let accessory { accessory }
             if !text.isEmpty {
                 Button { text = "" } label: {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Suche löschen"))
             }
         }
         .searchBarChrome()
@@ -614,9 +623,9 @@ extension View {
         .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
     }
 
-    /// The one bar in the middle of a window's toolbar that holds all its
-    /// controls: Liquid Glass in Modern, a darker band on the petrol in
-    /// Klassisch. Its controls bring no background of their own.
+    /// The bar in the middle of a window's toolbar around the page switch:
+    /// Liquid Glass in Modern, a darker band on the petrol in Klassisch. Its
+    /// controls bring no background of their own.
     @ViewBuilder func toolbarBar() -> some View {
         if AppStyle.isAtelier {
             padding(.horizontal, 3)
@@ -626,6 +635,22 @@ extension View {
                 }
         } else {
             padding(.horizontal, 3).glassEffect(.regular, in: .capsule)
+        }
+    }
+
+    /// The round floating button and the actions around it (see
+    /// `FloatingControls`): Liquid Glass in Modern; in Klassisch the main
+    /// button petrol, the actions cream sleeves with a fine rim.
+    @ViewBuilder func floatingCircle(prominent: Bool) -> some View {
+        if AppStyle.isAtelier {
+            background {
+                Circle().fill(prominent ? AtelierPalette.petrol : AtelierPalette.surface)
+                    .overlay(Circle().strokeBorder(prominent ? Color.clear : AtelierPalette.border, lineWidth: 1))
+                    .shadow(color: .black.opacity(prominent ? 0.18 : 0.1), radius: prominent ? 10 : 6, y: prominent ? 4 : 2)
+            }
+        } else {
+            glassEffect(.regular.interactive(), in: .circle)
+                .shadow(color: .black.opacity(prominent ? 0.12 : 0.06), radius: prominent ? 10 : 6, y: prominent ? 4 : 2)
         }
     }
 

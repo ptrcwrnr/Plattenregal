@@ -5,7 +5,7 @@ enum SortingService {
     static let alphabetNavigationSymbols = ["#"] + (65...90).compactMap(UnicodeScalar.init).map(String.init)
 
     /// By artist name: the transform below costs microseconds, and every sort
-    /// and letter index of collection and wantlist asks for the same names again.
+    /// and alphabet section of collection and wantlist asks for the same names again.
     private static var sections: [String: String] = [:]
 
     static func alphabetSection(for artist: String) -> String {
@@ -43,8 +43,8 @@ enum SortingService {
         .map(\.copy)
     }
     /// Sorted by artist like `sorted(_:)`, but grouped by the
-    /// alphabet index's sections ("#" first, then A–Z), so every record sits
-    /// under the letter the index jumps to — also names the collation puts
+    /// alphabet sections ("#" first, then A–Z), so every record sits under
+    /// its letter — also names the collation puts
     /// elsewhere ("Þeyr" behind Z, non-Latin scripts at the end).
     static func sortedByAlphabetSection(_ copies: [RecordCopy]) -> [RecordCopy] {
         let order = Dictionary(uniqueKeysWithValues: alphabetNavigationSymbols.enumerated().map { ($1, $0) })

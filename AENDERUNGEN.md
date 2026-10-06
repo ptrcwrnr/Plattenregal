@@ -1,3 +1,15 @@
+# Oben nur die Rubriken, Aktionen unten rechts, keine ABC-Leiste mehr · 06.10.2026
+
+- **Toolbar**: Nur noch der Rubriken-Umschalter, mittig und auf jeder Seite gleich breit. Leiste mit Raster/Liste, Lupe, Sync und Zahnrad entfällt (`MainToolbar` und Hilfsbausteine entfernt).
+- **Runder Knopf unten rechts** (`FloatingControls`): Ein Klick fächert die Aktionen der Seite im Viertelkreis aus (Federanimation, nacheinander), der Knopf dreht dabei seine Punkte. Aktionen je Seite: Suche (Collection, Wantlist, Regal), Raster/Liste (Collection, Wantlist), Synchronisieren bzw. Aktualisieren (nicht im Regal; in der Demo wie bisher gesperrt außer in der Statistik), Einstellungen. Esc, Klick daneben oder eine gewählte Aktion schließen den Fächer, ein Seitenwechsel ebenso. Modern: Glas-Kreise; Klassisch: petrolfarbener Knopf, cremefarbene Aktionen mit feinem Rand. Sync und Einstellungen gibt es damit in beiden Designs an derselben Stelle.
+- **Raster/Liste als ein Umschalter**: Statt zweier Symbole ein Knopf, der das Ziel zeigt („Als Liste anzeigen“ bzw. „Als Raster anzeigen“).
+- **Suche unten rechts**: öffnet als Feld links neben dem Knopf (Klick auf die Lupe im Fächer oder ⌘F), bleibt offen, solange gesucht wird; Treffer-Hinweis der anderen Seite dezent im Feld (`AppSearchField` hat dafür ein `accessory`). Die Trefferliste der Regalsuche schwebt direkt über dem Feld.
+- **Platz unten auf jeder Seite** (`AppStyle.floatingClearance`), damit nichts dauerhaft unter dem Knopf liegt.
+- **ABC-Leiste entfernt**: Die Buchstaben-Navigation am rechten Rand von Collection und Wantlist ist samt Sprungmarken weg; das Raster nutzt die frei gewordene Breite. Die alphabetische Reihenfolge („#“ zuerst, dann A–Z) bleibt unverändert.
+- Einstellungen → Darstellung: Hinweis „über den runden Knopf unten rechts“ statt „in der Kopfleiste“. Neue Texte englisch übersetzt.
+- Debug: `--preview-actions` startet mit aufgefächerten Aktionen.
+- Tests: 193, 0 Fehler.
+
 # Durchsicht: Regal-Trefferliste unter der Leiste, Kleinigkeiten · 06.10.2026
 
 - **Regalsuche**: Die schwebende Trefferliste steht jetzt mittig unter der Toolbar-Leiste, also unter dem Suchfeld, statt oben rechts.

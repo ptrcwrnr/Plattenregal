@@ -38,12 +38,8 @@ struct CollectionView: View {
     /// size on every layout pass — never cached, so it can't go stale when the
     /// window changes size.
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
-        width - 2 * (AppStyle.pagePadding + 4) - alphabetGutter
+        width - 2 * (AppStyle.pagePadding + 4)
     }
-    // Room for the alphabet index; header, grid and table all leave it free
-    // so their right edges stay aligned.
-    /// Kept with any order, so switching it never changes the cover size.
-    private var alphabetGutter: CGFloat { 24 }
     @AppStorage(DisplaySettings.collectionOrderKey) private var order = OverviewOrder.alphabetical
     /// One artist's records follow the shelf's order (Einstellungen › Regal).
     @AppStorage(ShelfSecondaryOrder.key) private var secondaryOrder = ShelfSecondaryOrder.title
@@ -85,18 +81,13 @@ struct CollectionView: View {
     // and navigation stutter.
     @State private var items: [RecordCopy] = []
     @State private var coverGroups: [CollectionCoverGroup] = []
-    // Cached alongside `items`: building this (Unicode folding per artist name)
-    // for the whole collection on every body evaluation was the extra cost that
-    // made the alphabet index noticeably choppier during navigation.
-    @State private var alphabetIndex: [String: UUID] = [:]
 
     // Search works in two stages so typing stays smooth: `rebuildBase` does
-    // the expensive part (filter, sort, letter anchors) only when the data or
+    // the expensive part (filter, sort) only when the data or
     // section changes; `applyQuery` then just filters that sorted list with
     // the search texts folded once (`LibrarySearchIndexes`) on each
     // (debounced) keystroke.
     @State private var base: [RecordCopy] = []
-    @State private var letters: [UUID: String] = [:]
     /// Discogs release IDs on the wantlist, for the search badge on the covers.
     @State private var wantedReleaseIDs: Set<Int> = []
     /// The query changed while this section was hidden; apply it on return.
@@ -134,9 +125,6 @@ struct CollectionView: View {
         base = order.apply(matched, scope: DisplaySettings.collectionOrderKey, alphabetical: SortingService.sortedByAlphabetSection,
                            key: { CollectionCoverGroup.identity(of: $0) },
                            added: { DiscogsDate.parse($0.discogsDateAdded) })
-        letters = showsAlphabetIndex
-            ? Dictionary(base.map { ($0.id, SortingService.alphabetSection(for: $0.release?.displayArtist ?? "")) }, uniquingKeysWith: { a, _ in a })
-            : [:]
         shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
         labelsPending = false
         loaded = true
@@ -171,7 +159,6 @@ struct CollectionView: View {
             scrollBeforeSearch = nil
         }
         normalizeGridScrollPosition(in: grouped)
-        alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
         // For the button beside the search field that jumps to the wantlist's hits.
         if let search, pages != nil {
             if words.isEmpty { search.wantlistMatches = 0 } else {
@@ -223,14 +210,12 @@ struct CollectionView: View {
             if DemoMode.showsBanner && analyticsFilter == nil {
                 DemoBanner()
                     .padding(.horizontal, AppStyle.pagePadding + 4)
-                    .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
             if showsControls {
                 collectionControls(items: items)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, AppStyle.pagePadding + 4)
-                    .padding(.trailing, alphabetGutter)
                     .padding(.top, DemoMode.showsBanner && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
                     .transition(AppStyle.funnelTransition())
             }
@@ -318,7 +303,6 @@ struct CollectionView: View {
                                 }
                                 .padding(.horizontal, AppStyle.pagePadding + 4)
                                 .padding(.vertical, CoverGrid.spacing)
-                                .padding(.trailing, alphabetGutter)
                             }
                             .scrollPosition(id: $scrollPosition, anchor: .top)
                             .pullToRefresh(disabled: sync.busy) {
@@ -352,7 +336,6 @@ struct CollectionView: View {
                         .scrollContentBackground(.hidden)
                         .appTableCard()
                         .padding(.horizontal, AppStyle.pagePadding + 4)
-                        .padding(.trailing, alphabetGutter)
                         // The app's own menu and, on double-click, the quick look – as in the grid.
                         .overlay(TableRowClicks(secondary: { row, point in
                             guard items.indices.contains(row) else { return }
@@ -382,13 +365,6 @@ struct CollectionView: View {
                         }
                     }
 
-                    if showsAlphabetIndex {
-                        AlphabetIndex(
-                            availableSymbols: Set(alphabetIndex.keys),
-                            action: { navigateToLetter($0, anchors: alphabetIndex) }
-                        )
-                        .padding(.trailing, 8)
-                    }
                 }
             }
             }
@@ -466,20 +442,6 @@ struct CollectionView: View {
             try? await Task.sleep(for: .milliseconds(30))
         }
         withAnimation(AppStyle.searchExitFadeIn) { resultsHidden = false }
-    }
-
-    private var showsAlphabetIndex: Bool { order == .alphabetical }
-
-    private func alphabetAnchors(for items: [RecordCopy]) -> [String: UUID] {
-        items.reduce(into: [:]) { result, copy in
-            guard let symbol = letters[copy.id] else { return }
-            if result[symbol] == nil { result[symbol] = copy.id }
-        }
-    }
-
-    private func navigateToLetter(_ symbol: String, anchors: [String: UUID]) {
-        guard let id = anchors[symbol] else { return }
-        withAnimation(AppStyle.layoutAnimation) { scrollPosition = id }
     }
 
     // No "Löschen" here: every record shown comes from the Discogs collection,
@@ -681,36 +643,6 @@ extension View {
             }
             .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.08 : 0),
                     radius: AppStyle.isAtelier ? 8 : 0, y: AppStyle.isAtelier ? 3 : 0)
-    }
-}
-
-struct AlphabetIndex: View {
-    let availableSymbols: Set<String>
-    let action: (String) -> Void
-
-    private var symbols: [String] { SortingService.alphabetNavigationSymbols }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ForEach(symbols, id: \.self) { symbol in
-                let available = availableSymbols.contains(symbol)
-                Button { action(symbol) } label: {
-                    Text(symbol)
-                        .font(.system(size: 9, weight: .semibold, design: .rounded))
-                        .frame(width: 16, height: 13)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(available ? AppStyle.accent : Color.secondary.opacity(0.35))
-                .disabled(!available)
-                .help(available ? "Zu \(symbol) springen" : "Keine Einträge unter \(symbol)")
-                .accessibilityLabel(available ? "Zu Buchstabe \(symbol) springen" : "Keine Einträge unter Buchstabe \(symbol)")
-            }
-        }
-        .padding(.vertical, 5)
-        .padding(.horizontal, 2)
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Alphabetische Navigation")
     }
 }
 

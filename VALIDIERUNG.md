@@ -1,4 +1,27 @@
-# Aktueller Stand · 06.10.2026 (Durchsicht von Toolbar und Statistik)
+# Aktueller Stand · 06.10.2026 (Aktionen unten rechts, ohne ABC-Leiste)
+
+## Vorgehen
+
+1. Build und alle Tests: 193, 0 Fehler.
+2. Demo fotografiert (`screencapture`, Bildschirm entsperrt): Collection in Modern zu und aufgefächert (`--preview-actions`), Collection in Klassisch aufgefächert, Collection-Suche „Daft“, Wantlist-Suche „Kraft“ und „a“.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Toolbar | ✅ nur die Rubriken, mittig, in beiden Designs |
+| Fächer Modern | ✅ Suche, Liste, Sync, Zahnrad im Viertelkreis aus Glas |
+| Fächer Klassisch | ✅ petrolfarbener Knopf, cremefarbene Aktionen; Sync in der Demo ausgegraut |
+| Suche | ✅ Feld links neben dem Knopf, Text, Löschen-Knopf, „2 in der Collection“ dezent im Feld; Raster gefiltert |
+| ABC-Leiste | ✅ weg, Raster bis zum rechten Rand |
+
+## Nicht geprüft
+
+- **Klicks** (Fächer öffnen/schließen, Klick daneben, Esc, Aktionen auslösen, Lupe → Feld mit Cursor) nicht von Hand ausprobiert, nur die Zustände per Startargument.
+- **Listenansicht** mit dem neuen Platz unten und die **Regal-Trefferliste** über dem Feld nicht fotografiert.
+- Einmal zeigte das Feld bei vorbelegter Wantlist-Suche den Platzhalter mit Cursor statt des Texts; bei zwei Wiederholungen nicht mehr – vermutlich ein Klick ins Fenster während der Aufnahme.
+
+# Vorheriger Stand · 06.10.2026 (Durchsicht von Toolbar und Statistik)
 
 ## Vorgehen
 
