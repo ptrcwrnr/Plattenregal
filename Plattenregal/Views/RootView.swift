@@ -200,42 +200,43 @@ private struct FloatingControls: View {
         let page = selection.current
         let text = text(for: page)
         let searchShown = page.hasSearch && (searchOpened || !text.wrappedValue.isEmpty)
-        ZStack(alignment: .bottomTrailing) {
-            if expanded {
-                // A click beside the actions closes them.
-                Color.clear.contentShape(Rectangle())
-                    .onTapGesture { collapse() }
-                    .accessibilityHidden(true)
+        HStack(spacing: 12) {
+            if searchShown {
+                searchField(page: page, text: text)
+                    // Out of the way of the fanned-out actions.
+                    .opacity(expanded ? 0 : 1)
+                    .allowsHitTesting(!expanded)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
             }
-            HStack(spacing: 12) {
-                if searchShown {
-                    searchField(page: page, text: text)
-                        // Out of the way of the fanned-out actions.
-                        .opacity(expanded ? 0 : 1)
-                        .allowsHitTesting(!expanded)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
+            ZStack {
+                let actions = actions(for: page)
+                ForEach(Array(actions.enumerated()), id: \.element) { index, action in
+                    actionButton(action, page: page)
+                        .offset(expanded ? Self.offset(index, of: actions.count) : .zero)
+                        .scaleEffect(expanded ? 1 : 0.3)
+                        .opacity(expanded ? 1 : 0)
+                        .allowsHitTesting(expanded)
+                        .accessibilityHidden(!expanded)
+                        .animation(AppStyle.reduceMotion ? .default : .spring(duration: 0.38, bounce: 0.25)
+                            .delay(expanded ? Double(index) * 0.03 : 0), value: expanded)
                 }
-                ZStack {
-                    let actions = actions(for: page)
-                    ForEach(Array(actions.enumerated()), id: \.element) { index, action in
-                        actionButton(action, page: page)
-                            .offset(expanded ? Self.offset(index, of: actions.count) : .zero)
-                            .scaleEffect(expanded ? 1 : 0.3)
-                            .opacity(expanded ? 1 : 0)
-                            .allowsHitTesting(expanded)
-                            .accessibilityHidden(!expanded)
-                            .animation(AppStyle.reduceMotion ? .default : .spring(duration: 0.38, bounce: 0.25)
-                                .delay(expanded ? Double(index) * 0.03 : 0), value: expanded)
-                    }
-                    mainButton
-                }
+                mainButton
             }
-            .padding(AppStyle.floatingMargin)
-            // Esc closes the fanned-out actions.
+            // A click anywhere beside the button and the actions – page,
+            // list, toolbar – closes them.
             .background {
                 if expanded {
-                    Button("") { collapse() }.keyboardShortcut(.cancelAction).opacity(0).accessibilityHidden(true)
+                    OutsideClickWatcher(spots: [.zero] + actions(for: page).indices.map {
+                        Self.offset($0, of: actions(for: page).count)
+                    }) { collapse() }
                 }
+            }
+        }
+        .padding(AppStyle.floatingMargin)
+        // Esc closes the fanned-out actions.
+        .background {
+            if expanded {
+                Button("") { collapse() }.keyboardShortcut(.cancelAction).opacity(0).accessibilityHidden(true)
             }
         }
         .animation(AppStyle.fadeAnimation, value: searchShown)
@@ -485,4 +486,48 @@ private struct PagePicker: View {
     /// field: the collection counts the wantlist's, the wantlist the collection's.
     var wantlistMatches = 0
     var collectionMatches = 0
+}
+
+/// Watches the window's clicks while the actions are fanned out and reports
+/// one that misses the button and every action. It watches instead of
+/// catching, so the click still reaches what is under it – a list, the
+/// toolbar, a cover – the same as beside an open menu.
+private struct OutsideClickWatcher: NSViewRepresentable {
+    /// The centers of the button and the actions, relative to the button's.
+    let spots: [CGSize]
+    let outside: () -> Void
+
+    func makeNSView(context: Context) -> Watcher { Watcher() }
+    func updateNSView(_ view: Watcher, context: Context) {
+        view.spots = spots
+        view.outside = outside
+    }
+    static func dismantleNSView(_ view: Watcher, coordinator: ()) { view.stop() }
+
+    final class Watcher: NSView {
+        var spots: [CGSize] = []
+        var outside: (() -> Void)?
+        private var monitor: Any?
+        override var isFlipped: Bool { true }
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+        override func viewDidMoveToWindow() {
+            stop()
+            guard window != nil else { return }
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
+                guard let self, event.window === self.window else { return event }
+                let p = self.convert(event.locationInWindow, from: nil)
+                let reach = AppStyle.floatingButtonSize / 2 + 4
+                let hit = self.spots.contains { spot in
+                    hypot(p.x - (self.bounds.midX + spot.width), p.y - (self.bounds.midY + spot.height)) <= reach
+                }
+                if !hit { self.outside?() }
+                return event
+            }
+        }
+        func stop() {
+            if let monitor { NSEvent.removeMonitor(monitor) }
+            monitor = nil
+        }
+    }
 }

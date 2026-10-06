@@ -1,3 +1,7 @@
+# Aktionsfächer klappt bei Klick daneben zu · 06.10.2026
+
+- **Klick außerhalb**: Der Fächer am runden Knopf fährt jetzt bei jedem Klick neben Knopf und Aktionen wieder ein – auf der Seite, in Listen und Tabellen und in der Toolbar. Statt einer unsichtbaren Fläche, die AppKit-Listen nicht zuverlässig abfing, beobachtet `OutsideClickWatcher` die Klicks im Fenster; der Klick selbst geht weiter an das, was darunter liegt.
+
 # Oben nur die Rubriken, Aktionen unten rechts, keine ABC-Leiste mehr · 06.10.2026
 
 - **Toolbar**: Nur noch der Rubriken-Umschalter, mittig und auf jeder Seite gleich breit. Leiste mit Raster/Liste, Lupe, Sync und Zahnrad entfällt (`MainToolbar` und Hilfsbausteine entfernt).
