@@ -650,7 +650,18 @@ struct RecordCard: View {
     /// Set while searching: where this record is (see `PlacementBadge`).
     var placement: PlacementBadge? = nil
     var body: some View {
+        VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 0) {
+            cover
+            if AppStyle.isAtelier {
+                AtelierRecordCaption(release: copy.release)
+            }
+        }
+        .contentShape(Rectangle())
+    }
+
+    private var cover: some View {
         CoverView(url: copy.release?.coverURL, size: nil)
+            .atelierRecordSleeve()
             .overlay(alignment: .topLeading) {
                 if let placement { placement.transition(.opacity) }
             }
@@ -659,14 +670,34 @@ struct RecordCard: View {
                 if copyCount > 1 {
                     Text("\(copyCount)×")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
-                        .glassEffect(.regular, in: .capsule)
-                        .padding(6)
+                        .background(AppStyle.isAtelier ? AtelierPalette.surface : .clear, in: Capsule())
+                        .glassEffect(AppStyle.isAtelier ? .identity : .regular, in: .capsule)
+                        .padding(AppStyle.isAtelier ? 11 : 6)
                 }
             }
-            .contentShape(Rectangle())
+    }
+}
+
+extension View {
+    /// Atelier's matte sleeve around the existing image. The unchanged cover
+    /// remains in the tree, including its loading state, in every design.
+    func atelierRecordSleeve() -> some View {
+        padding(AppStyle.isAtelier ? 6 : 0)
+            .background {
+                if AppStyle.isAtelier {
+                    RoundedRectangle(cornerRadius: AppStyle.cardRadius)
+                        .fill(AtelierPalette.surface)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: AppStyle.cardRadius)
+                                .strokeBorder(AtelierPalette.border, lineWidth: 1)
+                        }
+                }
+            }
+            .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.08 : 0),
+                    radius: AppStyle.isAtelier ? 8 : 0, y: AppStyle.isAtelier ? 3 : 0)
     }
 }
 

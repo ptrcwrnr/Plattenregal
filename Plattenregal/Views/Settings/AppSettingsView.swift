@@ -100,12 +100,15 @@ struct AppSettingsView: View {
         .navigationTitle(tab.title)
         .toolbar(removing: .title)
         // No separator line under the toolbar, not even on hover.
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        // Atelier shows its petrol toolbar instead (see `SignatureToolbarAppearance`).
+        .toolbarBackgroundVisibility(AppStyle.isAtelier ? .visible : .hidden, for: .windowToolbar)
+        .background { SignatureToolbarAppearance() }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.title) }
                     .accessibilityLabel("Bereich")
             }
+            .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
         }
     }
 }
@@ -310,6 +313,18 @@ struct AppearanceSettingsView: View {
     var body: some View {
         @Bindable var preferences = preferences
         SettingsPage {
+            SettingsCard(title: String(localized: "Designs")) {
+                SignatureDesignOption(design: .none, selected: preferences.signatureDesign == .none) {
+                    withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = .none }
+                }
+                Divider()
+                Text("Signature Designs")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                SignatureDesignOption(design: .atelier, selected: preferences.signatureDesign == .atelier) {
+                    withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = .atelier }
+                }
+            }
             SettingsCard(title: String(localized: "Erscheinungsbild")) {
                 SettingsRow(title: String(localized: "Modus"), hint: preferences.appearance.hint) {
                     GlassSegmentedPicker(selection: $preferences.appearance, options: AppearanceMode.allCases) { Text($0.title) }
@@ -380,6 +395,104 @@ struct AppearanceSettingsView: View {
                 }
             }
         }
+    }
+}
+
+/// Both choices share one selection. The preview is purely decorative and
+/// shows the design's surfaces without inventing any collection contents.
+private struct SignatureDesignOption: View {
+    let design: SignatureDesign
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                if design == .atelier {
+                    AtelierDesignPreview()
+                        .frame(width: 112, height: 72)
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(design.title).font(.body.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text(design == .atelier
+                         ? String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon.")
+                         : String(localized: "Verwendet deine bisherigen Einstellungen für Modus, Akzent- und Ambient-Farbe."))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if design == .atelier {
+                        HStack(spacing: 5) {
+                            ForEach(Array([AtelierPalette.petrol, AtelierPalette.paper, AtelierPalette.gold].enumerated()), id: \.offset) { _, color in
+                                Circle().fill(color)
+                                    .frame(width: 12, height: 12)
+                                    .overlay(Circle().strokeBorder(AtelierPalette.border, lineWidth: 0.5))
+                            }
+                        }
+                        .padding(.top, 2)
+                        .accessibilityHidden(true)
+                    }
+                }
+                Spacer(minLength: 8)
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(selected ? AppStyle.accent : Color.secondary.opacity(0.5))
+                    .accessibilityHidden(true)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(selected ? AppStyle.selectedBackground : Color.clear,
+                        in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
+            .overlay {
+                RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
+                    .strokeBorder(selected ? AppStyle.accent.opacity(0.5) : AppStyle.borderColor, lineWidth: 1)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(design.title)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
+private struct AtelierDesignPreview: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 5) {
+                Circle().fill(AtelierPalette.gold).frame(width: 8, height: 8)
+                Spacer(minLength: 0)
+                ForEach(0..<3) { index in
+                    Capsule().fill(index == 0 ? AtelierPalette.toolbarSelection : Color.white.opacity(0.4))
+                        .frame(width: 10, height: 3)
+                }
+            }
+            .padding(.horizontal, 9)
+            .frame(height: 18)
+            .background(AtelierPalette.petrol)
+            VStack(alignment: .leading, spacing: 7) {
+                Capsule().fill(AtelierPalette.ink).frame(width: 42, height: 4)
+                HStack(spacing: 5) {
+                    ForEach(0..<3) { _ in
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(AtelierPalette.soft)
+                            .overlay {
+                                Circle().fill(AtelierPalette.petrol)
+                                    .padding(4)
+                                    .overlay(Circle().fill(AtelierPalette.gold).frame(width: 4, height: 4))
+                            }
+                    }
+                }
+                .frame(height: 22)
+                Capsule().fill(AtelierPalette.muted.opacity(0.4)).frame(width: 54, height: 3)
+                Spacer(minLength: 0)
+            }
+            .padding(9)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(AtelierPalette.paper)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AtelierPalette.border, lineWidth: 0.5))
+        .accessibilityHidden(true)
     }
 }
 

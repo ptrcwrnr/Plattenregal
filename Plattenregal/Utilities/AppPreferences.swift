@@ -198,6 +198,19 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
     var color: Color? { AccentChoice(rawValue: rawValue)?.color }
 }
 
+/// Optional complete designs. The existing appearance settings stay stored
+/// independently, so returning to the current design restores them exactly.
+enum SignatureDesign: String, CaseIterable, Identifiable {
+    case none, atelier
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .none: String(localized: "Aktuelle Gestaltung")
+        case .atelier: "Atelier"
+        }
+    }
+}
+
 /// The language of the app. `system` follows macOS (where Plattenregal can
 /// also get its own language under Language & Region); the others override it
 /// for this app only. Stored where macOS looks for it, so it applies from the
@@ -240,8 +253,10 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         static let appearance = "appearanceMode"
         static let accent = "accentChoice"
         static let ambient = "ambientChoice"
+        static let signatureDesign = "signatureDesign"
     }
 
+    private let defaults: UserDefaults
     /// The choice this launch was started with.
     private let languageAtLaunch = AppLanguage.stored
 
@@ -249,6 +264,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var appearance: AppearanceMode { didSet { store(appearance.rawValue, Key.appearance); applyAppearance() } }
     var accent: AccentChoice { didSet { store(accent.rawValue, Key.accent) } }
     var ambient: AmbientChoice { didSet { store(ambient.rawValue, Key.ambient) } }
+    var signatureDesign: SignatureDesign { didSet { store(signatureDesign.rawValue, Key.signatureDesign) } }
     var language: AppLanguage { didSet { AppLanguage.store(language) } }
     /// Whether the chosen language shows differently from this launch – a
     /// restart is only worth it then: on a German Mac, "System" and
@@ -260,12 +276,13 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         return next != Bundle.main.preferredLocalizations.first
     }
 
-    private init() {
-        let defaults = AppDefaults.store
+    init(defaults: UserDefaults = AppDefaults.store) {
+        self.defaults = defaults
         startPage = defaults.string(forKey: Key.startPage).flatMap(StartPage.init) ?? .collection
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppearanceMode.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .system
         ambient = defaults.string(forKey: Key.ambient).flatMap(AmbientChoice.init) ?? .blue
+        signatureDesign = defaults.string(forKey: Key.signatureDesign).flatMap(SignatureDesign.init) ?? .none
         language = languageAtLaunch
     }
 
@@ -280,12 +297,13 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         appearance = .system
         accent = .system
         ambient = .blue
+        signatureDesign = .none
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }
     }
 
     private func store(_ value: String, _ key: String) {
-        AppDefaults.store.set(value, forKey: key)
+        defaults.set(value, forKey: key)
     }
 }
 

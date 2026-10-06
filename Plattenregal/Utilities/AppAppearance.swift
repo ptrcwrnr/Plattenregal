@@ -2,6 +2,92 @@ import SwiftUI
 import AppKit
 import ObjectiveC
 
+/// The icon's paper, petrol and label gold. These colors only participate in
+/// Signature Designs; the existing system/accent/ambient choices stay intact.
+enum AtelierPalette {
+    static let paper = adaptive(0xF4EFE5, 0x172B32)
+    static let surface = adaptive(0xFFFAF2, 0x213940)
+    static let soft = adaptive(0xEBE5DA, 0x1B3138)
+    static let ink = adaptive(0x233A3E, 0xEEE8DB)
+    static let muted = adaptive(0x63716E, 0xB3C1BE)
+    static let border = adaptive(0xDCD7CB, 0x3E5155)
+    static let petrol = adaptive(0x1D4C5B, 0x123C4B)
+    static let accent = adaptive(0x246074, 0xA5CCCF)
+    static let gold = Color(nsColor: rgb(0xE2B660))
+    static let goldForeground = Color(nsColor: rgb(0x293C39))
+    static let toolbarSelection = Color(nsColor: rgb(0xF4EFE5))
+    static let toolbarInk = Color(nsColor: rgb(0x233A3E))
+    static let shadow = adaptive(0x1D3C42, 0x000000).opacity(0.08)
+
+    private static func rgb(_ hex: UInt32) -> NSColor {
+        NSColor(srgbRed: Double((hex >> 16) & 0xFF) / 255,
+                green: Double((hex >> 8) & 0xFF) / 255,
+                blue: Double(hex & 0xFF) / 255, alpha: 1)
+    }
+    private static func adaptive(_ light: UInt32, _ dark: UInt32) -> Color {
+        Color(nsColor: NSColor(name: nil) { appearance in
+            rgb(appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light)
+        })
+    }
+}
+
+/// Small real release captions below Atelier's sleeves; cover loading and
+/// the existing track-search result remain in their original views.
+struct AtelierRecordCaption: View {
+    let release: Release?
+    var matchedTrack: Track? = nil
+    /// Shown while the release is missing, as in the current design.
+    var fallbackArtist = String(localized: "Unbekannt")
+    var fallbackTitle = "—"
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(release?.displayArtist ?? fallbackArtist)
+                .font(.callout.weight(.medium)).foregroundStyle(AtelierPalette.ink)
+                .lineLimit(1)
+            if let matchedTrack {
+                MatchedTrackLine(track: matchedTrack)
+            } else {
+                Text(release?.displayTitle ?? fallbackTitle)
+                    .font(.caption).foregroundStyle(AtelierPalette.muted).lineLimit(1)
+            }
+            let metadata = [release?.year.map(String.init), release.flatMap { $0.label.isEmpty ? nil : $0.displayLabel }]
+                .compactMap { $0 }.joined(separator: " · ")
+            if !metadata.isEmpty {
+                Text(metadata).font(.caption2).foregroundStyle(AtelierPalette.muted).lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct AtelierButtonStyle: ButtonStyle {
+    var primary = false
+    @Environment(\.isEnabled) private var isEnabled
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.callout)
+            .foregroundStyle(primary ? AtelierPalette.goldForeground : AtelierPalette.ink)
+            .padding(.horizontal, 11).padding(.vertical, 6)
+            .background(primary ? AtelierPalette.gold : configuration.isPressed ? AtelierPalette.soft : AtelierPalette.surface,
+                        in: RoundedRectangle(cornerRadius: 9))
+            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(primary ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
+            .opacity(isEnabled ? 1 : 0.45)
+    }
+}
+
+/// Toolbar preferences from a small background leaf, so switching designs
+/// never changes the page hierarchy. The current design adds no color override.
+struct SignatureToolbarAppearance: View {
+    @ViewBuilder var body: some View {
+        if AppStyle.isAtelier {
+            Color.clear.frame(width: 0, height: 0)
+                .toolbarBackground(AtelierPalette.petrol, for: .windowToolbar)
+                .toolbarBackgroundVisibility(.visible, for: .windowToolbar)
+                .toolbarColorScheme(.dark, for: .windowToolbar)
+        }
+    }
+}
+
 /// Shared typography, spacing, color and motion tokens for every window, sheet,
 /// dashboard and card in the app. Views should pull from here instead of writing
 /// their own literals, so the whole app reads as one consistent design system.
@@ -48,13 +134,14 @@ enum AppStyle {
 
     // MARK: Colors
     // All dynamic/system-based so Light and Dark mode stay correct automatically.
-    static let hoverBackground = Color.primary.opacity(0.05)
+    static var isAtelier: Bool { AppPreferences.shared.signatureDesign == .atelier }
+    static var hoverBackground: Color { isAtelier ? AtelierPalette.ink.opacity(0.05) : Color.primary.opacity(0.05) }
     /// The accent chosen in the settings (or the system's). Read in `body`,
     /// so views redraw when it changes.
-    static var accent: Color { AppPreferences.shared.accent.color }
+    static var accent: Color { isAtelier ? AtelierPalette.accent : AppPreferences.shared.accent.color }
     static var selectedBackground: Color { accent.opacity(0.12) }
-    static var selectedBorder: Color { accent }
-    static let borderColor = Color.primary.opacity(0.08)
+    static var selectedBorder: Color { isAtelier ? AtelierPalette.gold : accent }
+    static var borderColor: Color { isAtelier ? AtelierPalette.border : Color.primary.opacity(0.08) }
     static let successColor = Color.green
     static let warningColor = Color.orange
     static let errorColor = Color.red
@@ -111,12 +198,19 @@ extension View {
 
 private struct AppAppearanceModifier: ViewModifier {
     func body(content: Content) -> some View {
+        let isAtelier = AppStyle.isAtelier
         content.font(.body).fontDesign(.rounded).controlSize(.regular)
             // SwiftUI's own focus effect; AppKit-backed controls are handled by
             // `FocusRings.disableGlobally()` at launch.
             .focusEffectDisabled()
             // Controls, links and `.tint` styles follow the chosen accent.
             .tint(AppStyle.accent)
+            .transformEnvironment(\.backgroundStyle) { style in
+                if isAtelier { style = AnyShapeStyle(AtelierPalette.surface) }
+            }
+            .background {
+                if AppStyle.isAtelier { AtelierPalette.paper.ignoresSafeArea() }
+            }
             .onAppear { AppPreferences.shared.applyAppearance() }
     }
 }
@@ -131,7 +225,15 @@ extension View {
     }
 
     func appGlassSurface(cornerRadius: CGFloat) -> some View {
-        glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+        background {
+            if AppStyle.isAtelier {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(AtelierPalette.surface)
+                    .overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    .shadow(color: AtelierPalette.shadow, radius: 7, y: 2)
+            }
+        }
+        .glassEffect(AppStyle.isAtelier ? .identity : .regular, in: .rect(cornerRadius: cornerRadius))
     }
 
     /// The large cards of the statistics and the settings: glass tinted
@@ -142,10 +244,16 @@ extension View {
     func appCardSurface(cornerRadius: CGFloat = AppStyle.controlRadius) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius)
         return background {
-            Rectangle().fill(.clear)
-                .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)), in: shape)
-                .clipShape(shape)
-                .shadow(color: .black.opacity(0.05), radius: 6, y: 1)
+            if AppStyle.isAtelier {
+                shape.fill(AtelierPalette.surface)
+                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    .shadow(color: AtelierPalette.shadow, radius: 7, y: 2)
+            } else {
+                Rectangle().fill(.clear)
+                    .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)), in: shape)
+                    .clipShape(shape)
+                    .shadow(color: .black.opacity(0.05), radius: 6, y: 1)
+            }
         }
     }
 
@@ -167,7 +275,9 @@ struct AmbientGlow: View {
 
     var body: some View {
         GeometryReader { geometry in
-            if let color = preferences.ambient.color {
+            if preferences.signatureDesign == .atelier {
+                AtelierPalette.paper
+            } else if let color = preferences.ambient.color {
                 RadialGradient(colors: [color.opacity(scheme == .dark ? 0.18 : 0.10), .clear],
                                center: .top, startRadius: 0,
                                endRadius: max(geometry.size.width, geometry.size.height) * 0.7)
@@ -200,7 +310,7 @@ struct AmbientBackdrop: View {
             .frame(maxWidth: shown.count == 1 ? 640 : .infinity)
             .frame(height: 340)
             .blur(radius: 100)
-            .opacity(scheme == .dark ? 0.2 : 0.12)
+            .opacity(AppStyle.isAtelier ? 0 : scheme == .dark ? 0.2 : 0.12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(AppStyle.fadeAnimation.speed(0.5), value: shown)
@@ -256,9 +366,14 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                             .transition(.opacity)
                         panel(shown)
                             .clipShape(RoundedRectangle(cornerRadius: AppStyle.panelRadius))
+                            .background {
+                                if AppStyle.isAtelier {
+                                    RoundedRectangle(cornerRadius: AppStyle.panelRadius).fill(AtelierPalette.surface)
+                                }
+                            }
                             // Tinted with the window color: the page behind
                             // doesn't run through the text.
-                            .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)),
+                            .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)),
                                          in: .rect(cornerRadius: AppStyle.panelRadius))
                             .shadow(color: .black.opacity(0.18), radius: 30, y: 10)
                             // Esc closes it, wherever the focus is.
@@ -340,11 +455,16 @@ struct PrimaryButton: View {
     let title: String
     var action: () -> Void
     @Environment(\.isEnabled) private var isEnabled
+    @ViewBuilder
     var body: some View {
+        if AppStyle.isAtelier {
+            Button(title, action: action).buttonStyle(AtelierButtonStyle(primary: true))
+        } else {
         // Disabled: no accent, so it dims like every other button instead of
         // looking clickable.
         Button(action: action) { Text(title).foregroundStyle(isEnabled ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.tertiary)) }
             .appGlassButton()
+        }
     }
 }
 struct SecondaryButton: View {
@@ -548,21 +668,37 @@ extension View {
     /// Clear Liquid Glass for a button, as a capsule like every other glass
     /// control. Without `.tint(nil)` the glass takes the app-wide accent tint
     /// and turns into a filled blue button.
-    func appGlassButton() -> some View {
-        buttonStyle(.glass).buttonBorderShape(.capsule).tint(nil)
+    @ViewBuilder func appGlassButton() -> some View {
+        if AppStyle.isAtelier {
+            buttonStyle(AtelierButtonStyle())
+        } else {
+            buttonStyle(.glass).buttonBorderShape(.capsule).tint(nil)
+        }
     }
 
     /// A card that says "this is where things happen" (location, placement,
     /// target shelf): glass with a faint accent tint.
     func accentGlassCard() -> some View {
-        glassEffect(.regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+        background {
+            if AppStyle.isAtelier {
+                RoundedRectangle(cornerRadius: 16).fill(AtelierPalette.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(AtelierPalette.gold, lineWidth: 1))
+            }
+        }
+        .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
     }
 
     /// The Liquid Glass capsule every search bar sits in.
     func searchBarChrome() -> some View {
         padding(.horizontal, 12)
             .frame(height: AppStyle.searchBarHeight)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .background {
+                if AppStyle.isAtelier {
+                    RoundedRectangle(cornerRadius: 10).fill(AtelierPalette.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                }
+            }
+            .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
     }
 
     /// Keeps a search bar (or a row holding one) mounted while hidden; see
@@ -750,9 +886,17 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                     label(option)
                         // Color only: a heavier weight would widen the label
                         // and shift its neighbours on every switch.
-                        .foregroundStyle(selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.secondary))
+                        .foregroundStyle(AppStyle.isAtelier
+                            ? AnyShapeStyle(selected ? (glass ? AtelierPalette.ink : AtelierPalette.toolbarInk) : glass ? AtelierPalette.muted : Color.white.opacity(0.8))
+                            : selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.secondary))
                         .padding(.horizontal, small ? 9 : 12)
                         .frame(height: small ? 24 : 30)
+                        .background {
+                            if AppStyle.isAtelier && selected {
+                                RoundedRectangle(cornerRadius: 7).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
+                                    .padding(.vertical, 3)
+                            }
+                        }
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -764,9 +908,18 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
         .animation(AppStyle.quickAnimation, value: selection)
         .fixedSize()
         if glass {
-            row.padding(.horizontal, 3).glassEffect(.regular.interactive(), in: .capsule)
+            row.padding(.horizontal, 3)
+                .background {
+                    if AppStyle.isAtelier {
+                        RoundedRectangle(cornerRadius: 10).fill(AtelierPalette.soft)
+                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    }
+                }
+                .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
         } else {
-            row
+            row.background {
+                if AppStyle.isAtelier { RoundedRectangle(cornerRadius: 10).fill(AtelierPalette.petrol) }
+            }
         }
     }
 }
@@ -808,7 +961,13 @@ struct GlassMenuPicker<Value: Hashable, Options: View>: View {
         .menuIndicator(.hidden)
         .padding(.horizontal, 14)
         .frame(height: 30)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .background {
+            if AppStyle.isAtelier {
+                RoundedRectangle(cornerRadius: 9).fill(AtelierPalette.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(AtelierPalette.border, lineWidth: 1))
+            }
+        }
+        .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
         .fixedSize()
         .accessibilityLabel(title)
     }
@@ -829,7 +988,7 @@ struct OverviewLayoutPicker: View {
 }
 
 enum CoverGrid {
-    static let spacing: CGFloat = 8
+    static var spacing: CGFloat { AppStyle.isAtelier ? 18 : 8 }
 
     static func columnCount(available: CGFloat, minimum: CGFloat) -> Int {
         guard available.isFinite, minimum.isFinite, minimum > 0 else { return 1 }

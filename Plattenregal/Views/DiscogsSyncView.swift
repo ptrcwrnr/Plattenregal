@@ -474,11 +474,12 @@ struct WantlistView: View {
                 minimum: DisplaySettings.coverSize(coverSize)
             )
             ScrollView {
-                LazyVGrid(columns: CoverGrid.columns(count: columnCount), alignment: .leading, spacing: 16) {
+                LazyVGrid(columns: CoverGrid.columns(count: columnCount), alignment: .leading, spacing: AppStyle.isAtelier ? CoverGrid.spacing : 16) {
                     ForEach(rows) { entry in
                         Button { quickLook = (entry.persistentModelID, .center) } label: {
-                            VStack(alignment: .leading, spacing: 6) {
+                            VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 6) {
                                 CoverView(url: entry.release?.coverURL, size: nil)
+                                    .atelierRecordSleeve()
                                     .overlay(alignment: .topLeading) {
                                         if !appliedQuery.isEmpty {
                                             PlacementBadge(inCollection: ownedReleaseIDs.contains(entry.releaseID), inWantlist: true)
@@ -486,15 +487,24 @@ struct WantlistView: View {
                                         }
                                     }
                                     .animation(AppStyle.quickAnimation, value: appliedQuery.isEmpty)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    // As under the covers on the statistics page.
-                                    Text(entry.release?.displayArtist ?? String(localized: "Unbekannter Interpret"))
-                                        .font(.callout.weight(.medium)).lineLimit(1)
-                                    if !appliedQuery.isEmpty, let track = entry.release?.track(matching: appliedQuery) {
-                                        MatchedTrackLine(track: track)
-                                    } else {
-                                        Text(entry.release?.displayTitle ?? String(localized: "Release #\(String(entry.releaseID))"))
-                                            .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                if AppStyle.isAtelier {
+                                    AtelierRecordCaption(
+                                        release: entry.release,
+                                        matchedTrack: appliedQuery.isEmpty ? nil : entry.release?.track(matching: appliedQuery),
+                                        fallbackArtist: String(localized: "Unbekannter Interpret"),
+                                        fallbackTitle: String(localized: "Release #\(String(entry.releaseID))")
+                                    )
+                                } else {
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        // As under the covers on the statistics page.
+                                        Text(entry.release?.displayArtist ?? String(localized: "Unbekannter Interpret"))
+                                            .font(.callout.weight(.medium)).lineLimit(1)
+                                        if !appliedQuery.isEmpty, let track = entry.release?.track(matching: appliedQuery) {
+                                            MatchedTrackLine(track: track)
+                                        } else {
+                                            Text(entry.release?.displayTitle ?? String(localized: "Release #\(String(entry.releaseID))"))
+                                                .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                        }
                                     }
                                 }
                             }

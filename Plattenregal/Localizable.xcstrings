@@ -1313,6 +1313,16 @@
         }
       }
     },
+    "Aktuelle Gestaltung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current appearance"
+          }
+        }
+      }
+    },
     "Akzentfarbe": {
       "localizations": {
         "en": {
@@ -2675,6 +2685,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The next export follows shortly."
+          }
+        }
+      }
+    },
+    "Designs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Designs"
           }
         }
       }
@@ -5895,6 +5915,16 @@
         }
       }
     },
+    "Petrol, Creme und Gold – inspiriert vom App-Icon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Petrol, cream and gold – inspired by the app icon."
+          }
+        }
+      }
+    },
     "Platte": {
       "localizations": {
         "en": {
@@ -6793,6 +6823,9 @@
         }
       }
     },
+    "Signature Designs": {
+      "shouldTranslate": false
+    },
     "So klein geht es gerade nicht: In den Fächern, die wegfallen würden, %@. Nimm sie zuerst heraus oder wähle eine größere Variante.": {
       "localizations": {
         "en": {
@@ -7105,6 +7138,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Search"
+          }
+        }
+      }
+    },
+    "Suchen (⌘F)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search (⌘F)"
+          }
+        }
+      }
+    },
+    "Synchronisieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync"
           }
         }
       }
@@ -7571,6 +7624,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Change since the last snapshot"
+          }
+        }
+      }
+    },
+    "Verwendet deine bisherigen Einstellungen für Modus, Akzent- und Ambient-Farbe.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses your existing mode, accent color and ambient color settings."
           }
         }
       }

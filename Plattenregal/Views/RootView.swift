@@ -73,16 +73,38 @@ struct RootView: View {
     /// no button: ⌘F reveals it.
     /// The settings are where a Mac app has them: Plattenregal menu and ⌘,.
     private var library: some View {
-        pages
+        VStack(spacing: 0) {
+            if AppStyle.isAtelier {
+                AtelierPageHeader(selection: destination, searchRequests: searchRequests) {
+                    Task { await statisticsModel.refresh(container: context.container) }
+                }
+            }
+            pages
+        }
             .environment(\.searchRequests, searchRequests)
             // Names the window in the Fenster menu and Mission Control; the
             // toolbar shows the page switch instead of a title.
             .navigationTitle("Plattenregal")
             .toolbar(removing: .title)
             .toolbar {
+                // Only in Atelier, so the current design gets no empty items.
+                if AppStyle.isAtelier {
+                    ToolbarItem(placement: .navigation) { AtelierBrand() }
+                        .sharedBackgroundVisibility(.hidden)
+                }
                 ToolbarItem(placement: .principal) { PagePicker(selection: destination) }
+                    .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
                 ToolbarItem(placement: .primaryAction) { LayoutSwitch(selection: destination) }
+                    .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
+                if AppStyle.isAtelier {
+                    ToolbarItem(placement: .secondaryAction) {
+                        SettingsLink { Image(systemName: "gearshape").accessibilityLabel(String(localized: "Einstellungen")) }
+                            .foregroundStyle(Color.white.opacity(0.85))
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                }
             }
+            .background { SignatureToolbarAppearance() }
             .background(pageShortcuts)
             .background(GlobalShortcuts(selection: destination))
             .background { AmbientGlow() }
@@ -127,6 +149,59 @@ struct RootView: View {
     private func showShelf(_ copy: RecordCopy) {
         shelfRequests.placing = copy.id
         destination.current = .shelf
+    }
+}
+
+private struct AtelierBrand: View {
+    var body: some View {
+        HStack(spacing: 7) {
+            if let icon = NSImage(named: NSImage.applicationIconName) {
+                Image(nsImage: icon).resizable().frame(width: 28, height: 28)
+            }
+            Text("Plattenregal").font(.callout.weight(.semibold)).foregroundStyle(.white)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Plattenregal")
+    }
+}
+
+/// A compact title and explicit existing actions, only in Atelier. The
+/// PageStack below remains the same instance when the design is switched.
+private struct AtelierPageHeader: View {
+    let selection: PageSelection<Destination>
+    let searchRequests: SearchRequests
+    let refreshStatistics: () -> Void
+    @Environment(\.modelContext) private var context
+    @State private var sync = DiscogsSyncService.shared
+    var body: some View {
+        HStack {
+            Text(selection.current.title).font(AppStyle.pageTitle).foregroundStyle(AtelierPalette.ink)
+            Spacer()
+            if selection.current.hasSearch {
+                Button { searchRequests.request() } label: {
+                    Image(systemName: "magnifyingglass").accessibilityLabel(String(localized: "Suchen"))
+                }
+                .appGlassButton().help(String(localized: "Suchen (⌘F)"))
+            }
+            if selection.current != .shelf {
+                Button {
+                    switch selection.current {
+                    case .collection: sync.start(.collection, container: context.container)
+                    case .wantlist: sync.start(.wantlist, container: context.container)
+                    case .statistics: refreshStatistics()
+                    case .shelf: break
+                    }
+                } label: {
+                    Label(selection.current == .statistics ? String(localized: "Aktualisieren") : String(localized: "Synchronisieren"),
+                          systemImage: "arrow.clockwise")
+                }
+                .appGlassButton().disabled(sync.busy || (DemoMode.isActive && selection.current != .statistics))
+            }
+        }
+        .padding(.horizontal, AppStyle.pagePadding + 4)
+        .padding(.top, AppStyle.pagePadding)
+        .padding(.bottom, 4)
+        .background(AtelierPalette.paper)
     }
 }
 

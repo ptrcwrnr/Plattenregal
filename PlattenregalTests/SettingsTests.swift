@@ -4,6 +4,66 @@ import Testing
 
 extension AllTests {
     @MainActor struct SettingsTests {
+        private func withSignatureDefaults(_ check: (UserDefaults) throws -> Void) throws {
+            let suite = "SignatureDesignTests-\(UUID().uuidString)"
+            let defaults = try #require(UserDefaults(suiteName: suite))
+            defer { defaults.removePersistentDomain(forName: suite) }
+            try check(defaults)
+        }
+
+        @Test func signatureDesignDefaultsAndUnknownValuesKeepCurrentAppearance() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.signatureDesign == .none)
+                #expect(preferences.appearance == .system)
+                #expect(preferences.accent == .system)
+                #expect(preferences.ambient == .blue)
+                // Loading the default does not migrate or rewrite stored choices.
+                #expect(defaults.object(forKey: AppPreferences.Key.signatureDesign) == nil)
+                defaults.set("future-design", forKey: AppPreferences.Key.signatureDesign)
+                #expect(AppPreferences(defaults: defaults).signatureDesign == .none)
+                #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "future-design")
+            }
+        }
+
+        @Test func signatureDesignPersistsAndReloadsInItsOwnSettingsStore() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                preferences.signatureDesign = .atelier
+                #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "atelier")
+                #expect(AppPreferences(defaults: defaults).signatureDesign == .atelier)
+                preferences.signatureDesign = .none
+                #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "none")
+                #expect(AppPreferences(defaults: defaults).signatureDesign == .none)
+            }
+        }
+
+        @Test func choosingAndLeavingAtelierPreservesExistingAppearanceChoices() throws {
+            try withSignatureDefaults { defaults in
+                defaults.set("shelf", forKey: AppPreferences.Key.startPage)
+                defaults.set("dark", forKey: AppPreferences.Key.appearance)
+                defaults.set("purple", forKey: AppPreferences.Key.accent)
+                defaults.set("yellow", forKey: AppPreferences.Key.ambient)
+                let preferences = AppPreferences(defaults: defaults)
+                for design in [SignatureDesign.atelier, .none] {
+                    preferences.signatureDesign = design
+                    #expect(preferences.startPage == .shelf)
+                    #expect(preferences.appearance == .dark)
+                    #expect(preferences.accent == .purple)
+                    #expect(preferences.ambient == .yellow)
+                    #expect(defaults.string(forKey: AppPreferences.Key.startPage) == "shelf")
+                    #expect(defaults.string(forKey: AppPreferences.Key.appearance) == "dark")
+                    #expect(defaults.string(forKey: AppPreferences.Key.accent) == "purple")
+                    #expect(defaults.string(forKey: AppPreferences.Key.ambient) == "yellow")
+                    let reloaded = AppPreferences(defaults: defaults)
+                    #expect(reloaded.signatureDesign == design)
+                    #expect(reloaded.appearance == .dark)
+                    #expect(reloaded.accent == .purple)
+                    #expect(reloaded.ambient == .yellow)
+                }
+            }
+        }
+
         @Test func overviewOrderShufflesStablyAndSortsNewestFirst() {
             let items = Array(1...50)
             let alphabetical: ([Int]) -> [Int] = { $0.sorted() }

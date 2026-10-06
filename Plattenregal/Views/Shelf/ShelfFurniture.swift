@@ -486,7 +486,20 @@ struct ShelfFurniture<Menu: View>: View {
             }
         }
         .padding(Self.gap)
-        .appGlassSurface(cornerRadius: Self.wellRadius + Self.gap)
+        .background {
+            if AppStyle.isAtelier {
+                RoundedRectangle(cornerRadius: Self.wellRadius + Self.gap)
+                    .fill(AtelierPalette.petrol)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: Self.wellRadius + Self.gap)
+                            .strokeBorder(AtelierPalette.gold.opacity(0.3), lineWidth: 1)
+                    }
+            }
+        }
+        .glassEffect(AppStyle.isAtelier ? .identity : .regular,
+                     in: .rect(cornerRadius: Self.wellRadius + Self.gap))
+        .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.12 : 0),
+                radius: AppStyle.isAtelier ? 10 : 0, y: AppStyle.isAtelier ? 4 : 0)
     }
 }
 
@@ -499,9 +512,12 @@ private struct ShelfWell: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
+        let fill = AppStyle.isAtelier ? AtelierPalette.soft : Self.fill
+        let shade = AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.18) : Self.shade
+        let rim = AppStyle.isAtelier ? AtelierPalette.surface.opacity(0.8) : Self.rim
         shape
-            .fill(Self.fill.shadow(.inner(color: Self.shade, radius: 2.5, y: 1.5)))
-            .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, Self.rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
+            .fill(fill.shadow(.inner(color: shade, radius: 2.5, y: 1.5)))
+            .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
     }
 }
 
@@ -522,7 +538,8 @@ private struct CompartmentAddButton: View {
                     .foregroundStyle(AppStyle.accent)
                     .frame(width: 24, height: 24)
                     .contentShape(Circle())
-                    .glassEffect(.regular.interactive(), in: .circle)
+                    .background(AppStyle.isAtelier ? AtelierPalette.surface : .clear, in: Circle())
+                    .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .circle)
             }
             .buttonStyle(.plain)
             .help("Platte hinzufügen")
@@ -543,7 +560,8 @@ private struct HoveredWell: View {
     private static let light = Color.adaptive(NSColor.white.withAlphaComponent(0.4), NSColor.white.withAlphaComponent(0.06))
 
     var body: some View {
-        RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius).fill(Self.light)
+        RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
+            .fill(AppStyle.isAtelier ? AtelierPalette.surface.opacity(0.55) : Self.light)
     }
 }
 
@@ -556,10 +574,19 @@ private struct RaisedPlate: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
+        let fill = AppStyle.isAtelier ? AtelierPalette.surface : Self.fill
+        let edge = AppStyle.isAtelier ? AtelierPalette.gold : Self.edge
         shape
-            .fill(Self.fill)
-            .overlay(shape.strokeBorder(LinearGradient(colors: [Self.edge, .clear], startPoint: .top, endPoint: .center), lineWidth: 1))
-            .shadow(color: Self.shadow, radius: 6, y: 2.5)
+            .fill(fill)
+            .overlay {
+                if AppStyle.isAtelier {
+                    shape.strokeBorder(edge, lineWidth: 1.5)
+                } else {
+                    shape.strokeBorder(LinearGradient(colors: [edge, .clear], startPoint: .top, endPoint: .center), lineWidth: 1)
+                }
+            }
+            .shadow(color: AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.15) : Self.shadow,
+                    radius: AppStyle.isAtelier ? 3 : 6, y: AppStyle.isAtelier ? 1 : 2.5)
     }
 }
 
@@ -568,9 +595,10 @@ private struct FrostedWell: View {
     private static let frost = Color.adaptive(NSColor.white.withAlphaComponent(0.55), NSColor.white.withAlphaComponent(0.07))
 
     var body: some View {
+        let frost = AppStyle.isAtelier ? AtelierPalette.paper.opacity(0.65) : Self.frost
         RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
-            .fill(LinearGradient(colors: [Self.frost, Self.frost.opacity(0.5)], startPoint: .top, endPoint: .bottom))
-            .overlay(RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius).strokeBorder(Self.frost, lineWidth: 1))
+            .fill(LinearGradient(colors: [frost, frost.opacity(0.5)], startPoint: .top, endPoint: .bottom))
+            .overlay(RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius).strokeBorder(frost, lineWidth: 1))
     }
 }
 

@@ -176,7 +176,13 @@ struct RecordPopover: View {
                             .font(.system(size: 11, weight: .bold))
                             .frame(width: 26, height: 26)
                             .contentShape(Circle())
-                            .glassEffect(.regular.interactive(), in: .circle)
+                            .background {
+                                if AppStyle.isAtelier {
+                                    Circle().fill(AtelierPalette.soft)
+                                        .overlay(Circle().strokeBorder(AtelierPalette.border, lineWidth: 1))
+                                }
+                            }
+                            .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .circle)
                     }
                     .buttonStyle(.plain)
                     .help("Auf Discogs öffnen")
@@ -205,6 +211,9 @@ struct RecordPopover: View {
         }
         .padding(AppStyle.cardPadding)
         .frame(width: 400)
+        .background {
+            if AppStyle.isAtelier { AtelierPalette.surface }
+        }
         .task(id: release?.persistentModelID) {
             // The demo is offline and has no tracklists; no attempt, no error.
             guard !DemoMode.isActive, let release, release.tracks.isEmpty else { return }
