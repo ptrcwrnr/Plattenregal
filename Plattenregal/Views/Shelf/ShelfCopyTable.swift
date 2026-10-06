@@ -410,21 +410,82 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
             view.state = .active
             return view
         }()
+        /// Klassisch: a petrol band like the toolbar instead of the frost.
+        private let band = PetrolBand()
         private var frameObserver: NSObjectProtocol?
+
+        final class PetrolBand: NSView {
+            override func draw(_ dirtyRect: NSRect) {
+                NSColor(AtelierPalette.petrol).setFill()
+                bounds.fill()
+            }
+        }
+
+        /// Vibrancy would darken the cream titles into the petrol.
+        override var allowsVibrancy: Bool { AppStyle.isAtelier ? false : super.allowsVibrancy }
+
+        override func viewWillDraw() {
+            super.viewWillDraw()
+            frost.isHidden = AppStyle.isAtelier
+            band.isHidden = !AppStyle.isAtelier
+        }
+
+        /// Klassisch: cream titles, sort arrow and dividers on the petrol band,
+        /// drawn here – the system header would bring its own gray.
+        private func drawOnBand(_ table: NSTableView, dividers: [CGFloat]) {
+            let cream = NSColor(srgbRed: 0xF4 / 255, green: 0xEF / 255, blue: 0xE5 / 255, alpha: 1)
+            let sortKey = table.sortDescriptors.first
+            for (index, column) in table.tableColumns.enumerated() where !column.title.isEmpty {
+                let cell = column.headerCell
+                let rect = cell.drawingRect(forBounds: headerRect(ofColumn: index))
+                let sorted = sortKey != nil && column.sortDescriptorPrototype?.key == sortKey?.key
+                let font = NSFont.systemFont(ofSize: cell.font?.pointSize ?? NSFont.systemFontSize,
+                                             weight: sorted ? .semibold : .regular)
+                let title = NSAttributedString(string: column.title, attributes: [
+                    .font: font, .foregroundColor: cream.withAlphaComponent(sorted ? 1 : 0.8),
+                ])
+                let size = title.size()
+                // Over the column's content, as the system header places its titles.
+                let origin = NSPoint(x: rect.minX + 10, y: rect.midY - size.height / 2)
+                title.draw(at: origin)
+                if sorted, let ascending = sortKey?.ascending,
+                   let arrow = NSImage(systemSymbolName: ascending ? "chevron.up" : "chevron.down", accessibilityDescription: nil)?
+                    .withSymbolConfiguration(.init(pointSize: font.pointSize * 0.75, weight: .semibold).applying(.init(paletteColors: [cream]))) {
+                    let arrowRect = NSRect(x: origin.x + size.width + 6, y: rect.midY - arrow.size.height / 2,
+                                           width: arrow.size.width, height: arrow.size.height)
+                    arrow.draw(in: arrowRect)
+                }
+            }
+            cream.withAlphaComponent(0.18).setFill()
+            for index in table.tableColumns.indices.dropLast() {
+                let x = headerRect(ofColumn: index).maxX
+                guard !dividers.contains(where: { abs($0 - x) < 1 }) else { continue }
+                NSRect(x: x - 0.5, y: bounds.midY - 7, width: 1, height: 14).fill()
+            }
+        }
 
         override func viewDidMoveToSuperview() {
             super.viewDidMoveToSuperview()
             if let frameObserver { NotificationCenter.default.removeObserver(frameObserver) }
             frameObserver = nil
-            guard let clip = superview, let scroll = clip.superview else { return frost.removeFromSuperview() }
+            guard let clip = superview, let scroll = clip.superview else {
+                frost.removeFromSuperview()
+                band.removeFromSuperview()
+                return
+            }
             // Sits in the scroll view right below the header's clip view, so it
             // covers the rows but never the column titles.
-            scroll.addSubview(frost, positioned: .below, relativeTo: clip)
-            frost.frame = clip.frame
+            for backdrop in [frost, band] {
+                scroll.addSubview(backdrop, positioned: .below, relativeTo: clip)
+                backdrop.frame = clip.frame
+            }
             clip.postsFrameChangedNotifications = true
             frameObserver = NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: clip, queue: .main) { [weak self, weak clip] _ in
                 guard let clip else { return }
-                MainActor.assumeIsolated { self?.frost.frame = clip.frame }
+                MainActor.assumeIsolated {
+                    self?.frost.frame = clip.frame
+                    self?.band.frame = clip.frame
+                }
             }
         }
 
@@ -451,6 +512,7 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
                 guard isIcon || beforeIcon || isLast else { continue }
                 edges.append(headerRect(ofColumn: index).maxX)
             }
+            if AppStyle.isAtelier { return drawOnBand(table, dividers: edges) }
             let gaps = edges.map { NSRect(x: $0 - 2, y: y, width: 3, height: height) }
             let clip = NSBezierPath(rect: bounds)
             clip.windingRule = .evenOdd

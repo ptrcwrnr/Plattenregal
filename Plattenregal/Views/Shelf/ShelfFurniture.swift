@@ -264,18 +264,20 @@ struct ShelfFurniture<Menu: View>: View {
         .padding(Self.gap)
         .background {
             if AppStyle.isAtelier {
+                // Klassisch: a light frame like the cabinet tabs above, the
+                // compartments set into it as cream sleeves.
                 RoundedRectangle(cornerRadius: Self.wellRadius + Self.gap)
-                    .fill(AtelierPalette.petrol)
+                    .fill(AtelierPalette.soft)
                     .overlay {
                         RoundedRectangle(cornerRadius: Self.wellRadius + Self.gap)
-                            .strokeBorder(AtelierPalette.gold.opacity(0.3), lineWidth: 1)
+                            .strokeBorder(AtelierPalette.border, lineWidth: 1)
                     }
             }
         }
         .glassEffect(AppStyle.isAtelier ? .identity : .regular,
                      in: .rect(cornerRadius: Self.wellRadius + Self.gap))
-        .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.12 : 0),
-                radius: AppStyle.isAtelier ? 10 : 0, y: AppStyle.isAtelier ? 4 : 0)
+        .shadow(color: AtelierPalette.shadow.opacity(AppStyle.isAtelier ? 1 : 0),
+                radius: AppStyle.isAtelier ? 8 : 0, y: AppStyle.isAtelier ? 2 : 0)
     }
 }
 
@@ -291,7 +293,7 @@ private struct ShelfWell: View {
         if AppStyle.isAtelier {
             // Klassisch: matte paper with a fine rim, like the sleeves and
             // cards – no glassy shading or light catching the edge.
-            shape.fill(AtelierPalette.paper)
+            shape.fill(AtelierPalette.surface)
                 .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
         } else {
             shape
@@ -341,7 +343,7 @@ private struct HoveredWell: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
-            .fill(AppStyle.isAtelier ? AtelierPalette.surface.opacity(0.55) : Self.light)
+            .fill(AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.06) : Self.light)
     }
 }
 
