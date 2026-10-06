@@ -154,7 +154,7 @@ struct ShelfPositionStrip: View {
     let selectedCopy: RecordCopy?
     /// 1-based index of `selectedCopy` among the drawn spines.
     let selectedSlot: Int?
-    /// Where a record being sorted in would go; drawn as a marker between spines.
+    /// Where a record being sorted in would go; named in the line below the spines.
     var insertionPosition: Int? = nil
     /// 1-based spines marked "Vermisst"; drawn as an outline.
     var missingSlots: Set<Int> = []
@@ -180,7 +180,6 @@ struct ShelfPositionStrip: View {
                 slots: slots,
                 palette: palette,
                 selectedPosition: selectedSlot,
-                insertionPosition: insertionPosition,
                 missingPositions: missingSlots,
                 selectable: true,
                 onSelect: select

@@ -1,3 +1,8 @@
+# Keine Einfüge-Linie mehr in der Rückenleiste · 06.10.2026
+
+- Beim Einsortieren stand in der Rückenleiste eine pulsierende blaue Linie an der Zielposition. Sie ist entfernt, samt Puls-Zeitgeber; `SpineRack` kennt keine `insertionPosition` mehr. Die Position nennt weiterhin die Zeile unter der Leiste („Neue Platte an Position 3 · …“) und die Einsortier-Karte.
+- Falls die Tour-Bilder der Seite „Einsortieren“ die Linie noch zeigen: `Scripts/tour-screenshots.sh` neu laufen lassen.
+
 # Tour beim ersten Start · 06.10.2026
 
 Beim ersten Start öffnet sich über dem Hauptfenster eine kurze Tour mit sechs Seiten: Willkommen, Discogs, Regal, Einsortieren, Statistik sowie Export und Sicherung. Jede Seite zeigt zwei versetzte Ausschnitte der echten App aus der Demo, einen Titel und zwei bis drei Sätze.

@@ -103,8 +103,6 @@ struct SpineRack: View {
     let slots: Int
     let palette: StylePalette
     var selectedPosition: Int? = nil
-    /// Draws a marker in front of this 1-based position (count + 1 = the end).
-    var insertionPosition: Int? = nil
     /// 1-based positions drawn as an outline only: listed there, but not found.
     var missingPositions: Set<Int> = []
     var selectable = false
@@ -117,21 +115,15 @@ struct SpineRack: View {
     @State private var width: CGFloat = 0
 
     var body: some View {
-        // The insertion gap breathes; the timeline only runs while there is one.
-        let pulsing = insertionPosition != nil && !AppStyle.reduceMotion
-        TimelineView(.animation(paused: !pulsing)) { timeline in
-            SpineCanvas(
-                styles: styles,
-                slots: max(slots, styles.count, 1),
-                palette: palette,
-                liftedPosition: liftedPosition,
-                lift: lift,
-                insertionPosition: insertionPosition,
-                missingPositions: missingPositions,
-                reservesHeadroom: selectable,
-                pulse: pulsing ? (sin(timeline.date.timeIntervalSinceReferenceDate * 2 * .pi / 1.6) + 1) / 2 : 0.6
-            )
-        }
+        SpineCanvas(
+            styles: styles,
+            slots: max(slots, styles.count, 1),
+            palette: palette,
+            liftedPosition: liftedPosition,
+            lift: lift,
+            missingPositions: missingPositions,
+            reservesHeadroom: selectable
+        )
         .contentShape(Rectangle())
         .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
         .onTapGesture { location in
@@ -160,11 +152,8 @@ private struct SpineCanvas: View, Animatable {
     let palette: StylePalette
     let liftedPosition: Int?
     var lift: Double
-    let insertionPosition: Int?
     let missingPositions: Set<Int>
     let reservesHeadroom: Bool
-    /// 0…1, how brightly the insertion gap glows right now.
-    let pulse: Double
 
     nonisolated var animatableData: Double {
         get { lift }
@@ -228,18 +217,6 @@ private struct SpineCanvas: View, Animatable {
                 let x = min(max(layout.midX(index) - width / 2, 0), size.width - width)
                 let rect = CGRect(x: x, y: usable - height, width: width, height: height)
                 drawSpine(rect, color: palette.color(for: style, solid: true), alpha: 1, in: context)
-            }
-            // The gap a new record goes into: a thin accent line standing
-            // between the spines, glowing softly around it.
-            if let position = insertionPosition, position >= 1 {
-                let x = min(max(layout.minX(position - 1) - layout.gap / 2, 1), size.width - 1)
-                let core = CGRect(x: x - 1, y: 0, width: 2, height: usable)
-                context.drawLayer { glow in
-                    glow.addFilter(.blur(radius: 4))
-                    glow.opacity = 0.3 + 0.5 * pulse
-                    glow.fill(Path(roundedRect: core.insetBy(dx: -3, dy: 2), cornerRadius: 4), with: .color(AppStyle.accent))
-                }
-                context.fill(Path(roundedRect: core, cornerRadius: 1), with: .color(AppStyle.accent))
             }
         }
     }
