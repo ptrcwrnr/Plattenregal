@@ -4127,12 +4127,12 @@
         }
       }
     },
-    "Gilt nur für Liquid Glass.": {
+    "Gilt nur für das Design „Modern“.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Only applies to Liquid Glass."
+            "value": "Only applies to the Modern design."
           }
         }
       }
@@ -7117,12 +7117,32 @@
         }
       }
     },
+    "Suche löschen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Search"
+          }
+        }
+      }
+    },
     "Suchen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Search"
+          }
+        }
+      }
+    },
+    "Suchen (⌘F)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search (⌘F)"
           }
         }
       }

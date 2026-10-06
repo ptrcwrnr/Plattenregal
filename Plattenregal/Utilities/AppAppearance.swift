@@ -100,8 +100,10 @@ enum AppStyle {
     static let controlHeight: CGFloat = 26
     /// Search bars (Liquid Glass capsule, see `searchBarChrome`).
     static let searchBarHeight: CGFloat = 34
-    /// The search field in the window's toolbar (see `ToolbarSearchField`).
+    /// The search field in the window's toolbar, opened (see `ToolbarSearchField`).
     static let toolbarSearchWidth: CGFloat = 240
+    /// The controls in the toolbar's bar (see `toolbarBar`).
+    static let toolbarBarHeight: CGFloat = 30
     /// Leaving a search: the hits fade out quickly, then the whole list fades
     /// in where it was before the search – timed like a page switch (see
     /// `PageStackView.show`). Gliding hundreds of covers back in looked busy.
@@ -595,6 +597,21 @@ extension View {
         .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
     }
 
+    /// The one bar in the middle of a window's toolbar that holds all its
+    /// controls: Liquid Glass in Modern, a darker band on the petrol in
+    /// Klassisch. Its controls bring no background of their own.
+    @ViewBuilder func toolbarBar() -> some View {
+        if AppStyle.isAtelier {
+            padding(.horizontal, 3)
+                .background {
+                    RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.16))
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
+                }
+        } else {
+            padding(.horizontal, 3).glassEffect(.regular, in: .capsule)
+        }
+    }
+
     /// The Liquid Glass capsule every search bar sits in.
     func searchBarChrome() -> some View {
         padding(.horizontal, 12)
@@ -755,8 +772,8 @@ enum InputSourceIndicator {
 
 /// A choice between a few options in the app's Liquid Glass look: no gray
 /// track and no gray pill behind the chosen option – it is marked by the
-/// accent color alone. In the toolbar the toolbar's own glass is the
-/// background (`glass: false`); anywhere else it brings its own capsule.
+/// accent color alone. In the toolbar the toolbar's bar is the background
+/// (`glass: false`, see `toolbarBar`); anywhere else it brings its own capsule.
 struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     @Binding var selection: Value
     let options: [Value]
@@ -812,9 +829,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                 }
                 .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
         } else {
-            row.background {
-                if AppStyle.isAtelier { RoundedRectangle(cornerRadius: 10).fill(AtelierPalette.petrol) }
-            }
+            row
         }
     }
 }

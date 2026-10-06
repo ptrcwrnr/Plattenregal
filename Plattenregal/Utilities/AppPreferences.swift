@@ -198,41 +198,28 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
     var color: Color? { AccentChoice(rawValue: rawValue)?.color }
 }
 
-/// The complete designs, in two categories. The appearance settings (mode,
-/// accent, ambient) stay stored independently, so returning to Liquid Glass
-/// restores them exactly. `liquidGlass` keeps the stored value "none" it had
-/// when it was the only, unnamed design.
+/// The complete designs. The appearance settings (mode, accent, ambient)
+/// stay stored independently, so returning to Modern restores them exactly.
+/// The stored values are those of the first names: "none" from when Modern
+/// (Liquid Glass) was the only, unnamed design, "atelier" for Klassisch.
 enum SignatureDesign: String, CaseIterable, Identifiable {
     case liquidGlass = "none", atelier
     var id: Self { self }
     var title: String {
         switch self {
-        case .liquidGlass: "Liquid Glass"
-        case .atelier: "Atelier"
+        case .liquidGlass: String(localized: "Modern")
+        case .atelier: String(localized: "Klassisch")
         }
     }
-    var category: DesignCategory {
-        switch self {
-        case .liquidGlass: .modern
-        case .atelier: .classic
-        }
-    }
-    /// Accent and ambient color only exist in Liquid Glass; Atelier brings its own.
+    /// Accent and ambient color only exist in Modern; Klassisch brings its own.
     var usesColorChoices: Bool { self == .liquidGlass }
-    var logName: String { title }
-}
-
-/// How the designs are grouped in the settings.
-enum DesignCategory: CaseIterable, Identifiable {
-    case modern, classic
-    var id: Self { self }
-    var title: String {
+    /// Not translated, so the protocol reads the same in every language.
+    var logName: String {
         switch self {
-        case .modern: String(localized: "Modern")
-        case .classic: String(localized: "Klassisch")
+        case .liquidGlass: "Modern"
+        case .atelier: "Klassisch"
         }
     }
-    var designs: [SignatureDesign] { SignatureDesign.allCases.filter { $0.category == self } }
 }
 
 /// The language of the app. `system` follows macOS (where Plattenregal can

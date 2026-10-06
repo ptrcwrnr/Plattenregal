@@ -1,4 +1,26 @@
-# Aktueller Stand · 06.10.2026 (Suche in der Toolbar, Designs in Gruppen, ohne Plattenrücken)
+# Aktueller Stand · 06.10.2026 (Toolbar-Leiste, ausklappbare Suche, Modern/Klassisch)
+
+## Vorgehen
+
+1. Build und alle Tests (`xcodebuild test`): 193 Tests, 0 Fehler.
+2. Demo gestartet (`--preview-page`, neu `--preview-search`, `-signatureDesign atelier`) und Fenster fotografiert, mit dem Stand davor verglichen.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Collection, Modern, Suche zu | ✅ eine Glas-Kapsel mittig: Rubriken · Raster/Liste · Lupe, kein Symbol und kein Name oben links |
+| Collection, Modern, Suche „Daft“ | ✅ Feld in der Leiste aufgeklappt, Text und Löschen-Knopf, Leiste wächst zu beiden Seiten |
+| Wantlist, Klassisch, Suche „a“ | ✅ dunkleres Band auf Petrol, „55 in der Collection“ klein und grau im Feld, Sync und Zahnrad rechts in der Leiste |
+| Regal, Klassisch | ✅ Rubriken · Lupe · Zahnrad, Umschalter an derselben Stelle wie auf der Collection |
+| Statistik, Modern | ✅ nur die Rubriken, links bündig im reservierten Platz (Umschalter wandert nicht) |
+
+## Nicht geprüft
+
+- **Klicks auf die Lupe, ⌘F, Esc und Fokuswechsel** nicht von Hand ausprobiert – nur der aufgeklappte Zustand über `--preview-search`.
+- **Einstellungsfenster** mit der neuen Leiste nicht fotografiert.
+
+# Vorheriger Stand · 06.10.2026 (Suche in der Toolbar, Designs in Gruppen, ohne Plattenrücken)
 
 Stand nach dem Umbau (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 

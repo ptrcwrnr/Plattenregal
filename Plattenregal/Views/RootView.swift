@@ -27,6 +27,8 @@ enum Destination: String, CaseIterable, Identifiable {
     }
     /// Pages with a search field in the toolbar (⌘F puts the cursor in it).
     var hasSearch: Bool { self != .statistics }
+    /// Pages with grid and list in the toolbar.
+    var hasLayoutSwitch: Bool { self == .collection || self == .wantlist }
 }
 
 struct RootView: View {
@@ -45,7 +47,16 @@ struct RootView: View {
     @State private var searchRequests = SearchRequests()
     /// One search for collection and wantlist, so a hit can be followed from
     /// one to the other.
-    @State private var search = LibrarySearch()
+    @State private var search = {
+        let search = LibrarySearch()
+        #if DEBUG
+        // Screenshots with a search typed in.
+        if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-search=") }) {
+            search.query = String(raw.dropFirst("--preview-search=".count))
+        }
+        #endif
+        return search
+    }()
     /// What is typed into the search field while the shelf page is shown.
     @State private var shelfSearch = ShelfSearch()
     /// "Im Regal anzeigen" from any page, for the shelf page.
@@ -70,47 +81,25 @@ struct RootView: View {
             .task { CoverCache.shared.pruneDisk() }
     }
 
-    /// No sidebar: the pages sit in a switch in the middle of the toolbar,
-    /// grid/list and the search field on the right, all in the toolbar, so
-    /// the pages start right below it. ⌘F puts the cursor in the field.
-    /// The settings are where a Mac app has them: Plattenregal menu and ⌘,.
+    /// No sidebar: every control sits in one bar in the middle of the
+    /// toolbar (see `MainToolbar`), so the pages start right below it. ⌘F
+    /// puts the cursor in the search field. The settings are where a Mac app
+    /// has them: Plattenregal menu and ⌘,.
     private var library: some View {
         pages
             .environment(\.searchRequests, searchRequests)
             // Names the window in the Fenster menu and Mission Control; the
-            // toolbar shows the page switch instead of a title.
+            // toolbar shows the bar instead of a title.
             .navigationTitle("Plattenregal")
             .toolbar(removing: .title)
             .toolbar {
-                // Only in Atelier, so the current design gets no empty items.
-                if AppStyle.isAtelier {
-                    ToolbarItem(placement: .navigation) { AtelierBrand() }
-                        .sharedBackgroundVisibility(.hidden)
+                ToolbarItem(placement: .principal) {
+                    MainToolbar(selection: destination, library: search, shelf: shelfSearch, requests: searchRequests) {
+                        Task { await statisticsModel.refresh(container: context.container) }
+                    }
                 }
-                ToolbarItem(placement: .principal) { PagePicker(selection: destination) }
-                    .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
-                ToolbarItem(placement: .primaryAction) { LayoutSwitch(selection: destination) }
-                    .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
-                // Brings its own capsule, like the search bars on the pages did.
-                ToolbarItem(placement: .primaryAction) {
-                    ToolbarSearchField(selection: destination, library: search, shelf: shelfSearch, requests: searchRequests)
-                }
+                // The bar brings its own background (see `toolbarBar`).
                 .sharedBackgroundVisibility(.hidden)
-                // Atelier: sync and settings at the right end of its toolbar.
-                if AppStyle.isAtelier {
-                    ToolbarItem(placement: .primaryAction) {
-                        AtelierSyncButton(selection: destination) {
-                            Task { await statisticsModel.refresh(container: context.container) }
-                        }
-                    }
-                    .sharedBackgroundVisibility(.hidden)
-                    ToolbarItem(placement: .primaryAction) {
-                        SettingsLink { Image(systemName: "gearshape").accessibilityLabel(String(localized: "Einstellungen")) }
-                            .foregroundStyle(Color.white.opacity(0.85))
-                            .help(String(localized: "Einstellungen (⌘,)"))
-                    }
-                    .sharedBackgroundVisibility(.hidden)
-                }
             }
             .background { SignatureToolbarAppearance() }
             .background(pageShortcuts)
@@ -160,21 +149,94 @@ struct RootView: View {
     }
 }
 
-private struct AtelierBrand: View {
+/// All controls of the main window in one bar, centered in the toolbar:
+/// page switch, grid/list, search and, in Klassisch, sync and settings.
+/// Controls a page doesn't have leave the bar, which then ends earlier: it is
+/// laid out from the left in the width of the fullest page (search closed),
+/// so the page switch keeps its place and never moves under the pointer.
+/// An opened search widens the bar to both sides.
+private struct MainToolbar: View {
+    let selection: PageSelection<Destination>
+    let library: LibrarySearch
+    let shelf: ShelfSearch
+    let requests: SearchRequests
+    let refreshStatistics: () -> Void
+
     var body: some View {
-        HStack(spacing: 7) {
-            if let icon = NSImage(named: NSImage.applicationIconName) {
-                Image(nsImage: icon).resizable().frame(width: 28, height: 28)
+        let page = selection.current
+        ZStack(alignment: .leading) {
+            // Reserves the width of the fullest page, search closed.
+            MainToolbarSizer().hidden()
+            HStack(spacing: 0) {
+                PagePicker(selection: selection)
+                if page.hasLayoutSwitch {
+                    ToolbarBarDivider()
+                    LayoutSwitch(selection: selection)
+                }
+                if page.hasSearch {
+                    ToolbarBarDivider()
+                    ToolbarSearchField(selection: selection, library: library, shelf: shelf, requests: requests)
+                }
+                if AppStyle.isAtelier {
+                    ToolbarBarDivider()
+                    AtelierSyncButton(selection: selection, refreshStatistics: refreshStatistics)
+                    SettingsLink { ToolbarBarIcon(systemImage: "gearshape", label: String(localized: "Einstellungen")) }
+                        .buttonStyle(.plain)
+                        .help(String(localized: "Einstellungen (⌘,)"))
+                }
             }
-            Text("Plattenregal").font(.callout.weight(.semibold)).foregroundStyle(.white)
+            .toolbarBar()
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Plattenregal")
+        .animation(AppStyle.quickAnimation, value: page)
+    }
+}
+
+/// `MainToolbar` with every control a page can have, only for its width.
+private struct MainToolbarSizer: View {
+    var body: some View {
+        HStack(spacing: 0) {
+            GlassSegmentedPicker(selection: .constant(Destination.collection), options: Destination.allCases, glass: false) { Text($0.title) }
+            ToolbarBarDivider()
+            OverviewLayoutPicker(selection: .constant(.grid), glass: false)
+            ToolbarBarDivider()
+            ToolbarBarIcon(systemImage: "magnifyingglass", label: "")
+            if AppStyle.isAtelier {
+                ToolbarBarDivider()
+                ToolbarBarIcon(systemImage: "arrow.clockwise", label: "")
+                ToolbarBarIcon(systemImage: "gearshape", label: "")
+            }
+        }
+        .toolbarBar()
+        .accessibilityHidden(true)
+    }
+}
+
+/// A faint line between the groups of the toolbar's bar.
+private struct ToolbarBarDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(AppStyle.isAtelier ? Color.white.opacity(0.18) : Color.primary.opacity(0.12))
+            .frame(width: 1, height: 16)
+            .padding(.horizontal, 3)
+    }
+}
+
+/// An icon button's label in the toolbar's bar, as wide as it is high.
+private struct ToolbarBarIcon: View {
+    static let width = AppStyle.toolbarBarHeight + 4
+    let systemImage: String
+    let label: String
+    var body: some View {
+        Image(systemName: systemImage)
+            .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(Color.white.opacity(0.85)) : AnyShapeStyle(.secondary))
+            .frame(width: Self.width, height: AppStyle.toolbarBarHeight)
+            .contentShape(Rectangle())
+            .accessibilityLabel(label)
     }
 }
 
 /// Sync (collection, wantlist) or refresh (statistics) as a button in the
-/// toolbar, only in Atelier; the same as ⌘R or pulling the page down.
+/// toolbar, only in Klassisch; the same as ⌘R or pulling the page down.
 private struct AtelierSyncButton: View {
     let selection: PageSelection<Destination>
     let refreshStatistics: () -> Void
@@ -192,9 +254,9 @@ private struct AtelierSyncButton: View {
                 case .shelf: break
                 }
             } label: {
-                Image(systemName: "arrow.clockwise").accessibilityLabel(title)
+                ToolbarBarIcon(systemImage: "arrow.clockwise", label: title)
             }
-            .foregroundStyle(Color.white.opacity(0.85))
+            .buttonStyle(.plain)
             .help(title + " (⌘R)")
             // Discogs is off in the demo; the statistics still recalculate.
             .disabled(sync.busy || (DemoMode.isActive && page != .statistics))
@@ -202,48 +264,111 @@ private struct AtelierSyncButton: View {
     }
 }
 
-/// The search field in the toolbar, always there on the pages that have a
-/// search (not on the statistics). Collection and wantlist share one query
+/// The search in the toolbar's bar, on the pages that have one (not on the
+/// statistics): a magnifying glass that opens into a field. A click on it or
+/// ⌘F opens it with the cursor inside; it closes again when it loses the
+/// focus empty, or on Esc in the empty field. While a query is active it stays
+/// open, so no filter works unseen. Collection and wantlist share one query
 /// (`LibrarySearch`), the shelf has its own (`ShelfSearch`); the pages read
-/// them and filter themselves. ⌘F puts the cursor in it; Esc clears it, a
-/// second Esc leaves it.
+/// them and filter themselves. Esc clears the query, a second Esc closes.
 private struct ToolbarSearchField: View {
     let selection: PageSelection<Destination>
     let library: LibrarySearch
     let shelf: ShelfSearch
     let requests: SearchRequests
     @FocusState private var focused: Bool
+    /// Opened by the magnifying glass or ⌘F.
+    @State private var opened = false
 
     var body: some View {
         let page = selection.current
-        HStack(spacing: AppStyle.itemSpacing) {
-            if let other = otherSection(for: page) {
-                // The other page's hits for the same query, one click away.
-                Button { selection.current = other.page } label: {
-                    Text("\(other.count.formatted()) in der \(other.page.title)")
-                        .monospacedDigit()
-                        .lineLimit(1)
+        let text = text(for: page)
+        let open = opened || !text.wrappedValue.isEmpty
+        HStack(spacing: 0) {
+            Button {
+                if open && text.wrappedValue.isEmpty {
+                    close()
+                } else if open {
+                    focused = true
+                } else {
+                    withAnimation(AppStyle.fadeAnimation) { opened = true }
+                    focused = true
                 }
-                .appGlassButton()
-                .fixedSize()
-                .help("Treffer in der \(other.page.title) anzeigen")
-                .accessibilityLabel("\(other.count) Treffer in der \(other.page.title) anzeigen")
-                .transition(.opacity)
+            } label: {
+                ToolbarBarIcon(systemImage: "magnifyingglass", label: String(localized: "Suchen"))
             }
-            if page.hasSearch {
-                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused)
-                    .frame(width: AppStyle.toolbarSearchWidth)
-                    .accessibilityLabel(String(localized: "Suchen"))
+            .buttonStyle(.plain)
+            .help(String(localized: "Suchen (⌘F)"))
+            HStack(spacing: 6) {
+                TextField(placeholder(for: page), text: text)
+                    .textFieldStyle(.plain)
+                    .noTextAutoFill()
+                    .focused($focused)
+                    .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(Color.white) : AnyShapeStyle(.primary))
+                    .onKeyPress(.escape) {
+                        if !text.wrappedValue.isEmpty { text.wrappedValue = ""; return .handled }
+                        focused = false
+                        return .handled
+                    }
+                if let other = otherSection(for: page) { otherButton(other) }
+                if !text.wrappedValue.isEmpty {
+                    Button { text.wrappedValue = "" } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "Suche löschen"))
+                }
             }
+            .padding(.trailing, 10)
+            // Closed, the field is there but has no width: ⌘F can put the
+            // cursor in it right away while it opens.
+            .frame(width: open ? AppStyle.toolbarSearchWidth - ToolbarBarIcon.width : 0, alignment: .leading)
+            .clipped()
+            .opacity(open ? 1 : 0)
+            .allowsHitTesting(open)
+            .accessibilityHidden(!open)
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(String(localized: "Suchen"))
         .animation(AppStyle.quickAnimation, value: otherSection(for: page)?.count)
         .onChange(of: requests.count) {
             guard selection.current.hasSearch else { return }
+            withAnimation(AppStyle.fadeAnimation) { opened = true }
             focused = true
         }
-        .onChange(of: focused) { _, new in requests.fieldFocused = new }
-        // The statistics have no field: it must not keep the focus there.
-        .onChange(of: page) { _, new in if !new.hasSearch { focused = false } }
+        .onChange(of: focused) { _, new in
+            requests.fieldFocused = new
+            if new { withAnimation(AppStyle.fadeAnimation) { opened = true } }
+            else if text.wrappedValue.isEmpty { close() }
+        }
+        // The shelf has its own query: its page opens only with one of its own.
+        .onChange(of: page) { if !focused && text.wrappedValue.isEmpty { close() } }
+        // Leaves the bar on the statistics, which have no search; the
+        // focus goes with it.
+        .onDisappear { requests.fieldFocused = false; opened = false }
+    }
+
+    private func close() {
+        focused = false
+        withAnimation(AppStyle.fadeAnimation) { opened = false }
+    }
+
+    /// The other page's hits for the same query, one click away; inside the
+    /// field, so the bar keeps its width.
+    private func otherButton(_ other: (page: Destination, count: Int)) -> some View {
+        Button { selection.current = other.page } label: {
+            // Quiet, like the placeholder: a hint, not a call to action.
+            Text("\(other.count.formatted()) in der \(other.page.title)")
+                .font(.caption)
+                .monospacedDigit()
+                .lineLimit(1)
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+        .fixedSize()
+        .help("Treffer in der \(other.page.title) anzeigen")
+        .accessibilityLabel("\(other.count) Treffer in der \(other.page.title) anzeigen")
+        .transition(.opacity)
     }
 
     private func text(for page: Destination) -> Binding<String> {
@@ -333,7 +458,7 @@ private struct PagePicker: View {
     }
 }
 
-/// Grid or list for collection and wantlist; absent on the other pages.
+/// Grid or list for collection and wantlist (see `hasLayoutSwitch`).
 private struct LayoutSwitch: View {
     let selection: PageSelection<Destination>
     @AppStorage(DisplaySettings.collectionLayoutKey) private var collectionLayout = OverviewLayout.grid

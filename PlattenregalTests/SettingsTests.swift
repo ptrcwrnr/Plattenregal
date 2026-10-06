@@ -38,7 +38,7 @@ extension AllTests {
             }
         }
 
-        @Test func choosingAndLeavingAtelierPreservesExistingAppearanceChoices() throws {
+        @Test func choosingAndLeavingKlassischPreservesExistingAppearanceChoices() throws {
             try withSignatureDefaults { defaults in
                 defaults.set("shelf", forKey: AppPreferences.Key.startPage)
                 defaults.set("dark", forKey: AppPreferences.Key.appearance)
@@ -64,12 +64,11 @@ extension AllTests {
             }
         }
 
-        @Test func everyDesignBelongsToExactlyOneCategory() {
-            #expect(DesignCategory.modern.designs == [.liquidGlass])
-            #expect(DesignCategory.classic.designs == [.atelier])
-            #expect(DesignCategory.allCases.flatMap(\.designs).count == SignatureDesign.allCases.count)
-            // The stored value from before the categories stays readable.
+        @Test func designsKeepTheirStoredValuesUnderTheNewNames() {
+            #expect(SignatureDesign.allCases.map(\.logName) == ["Modern", "Klassisch"])
+            // The stored values from before the renaming stay readable.
             #expect(SignatureDesign(rawValue: "none") == .liquidGlass)
+            #expect(SignatureDesign(rawValue: "atelier") == .atelier)
         }
 
         @Test func overviewOrderShufflesStablyAndSortsNewestFirst() {

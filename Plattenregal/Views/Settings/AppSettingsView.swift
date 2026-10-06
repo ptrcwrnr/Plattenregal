@@ -100,15 +100,17 @@ struct AppSettingsView: View {
         .navigationTitle(tab.title)
         .toolbar(removing: .title)
         // No separator line under the toolbar, not even on hover.
-        // Atelier shows its petrol toolbar instead (see `SignatureToolbarAppearance`).
+        // Klassisch shows its petrol toolbar instead (see `SignatureToolbarAppearance`).
         .toolbarBackgroundVisibility(AppStyle.isAtelier ? .visible : .hidden, for: .windowToolbar)
         .background { SignatureToolbarAppearance() }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.title) }
+                    .toolbarBar()
                     .accessibilityLabel("Bereich")
             }
-            .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
+            // The bar brings its own background, as in the main window.
+            .sharedBackgroundVisibility(.hidden)
         }
     }
 }
@@ -310,24 +312,18 @@ struct AppearanceSettingsView: View {
                 set: { storedCoverSize = DisplaySettings.coverSize($0) })
     }
 
-    /// Atelier brings its own colors; the choices stay stored for Liquid Glass.
+    /// Klassisch brings its own colors; the choices stay stored for Modern.
     private var colorHint: String? {
-        preferences.signatureDesign.usesColorChoices ? nil : String(localized: "Gilt nur für Liquid Glass.")
+        preferences.signatureDesign.usesColorChoices ? nil : String(localized: "Gilt nur für das Design „Modern“.")
     }
 
     var body: some View {
         @Bindable var preferences = preferences
         SettingsPage {
             SettingsCard(title: String(localized: "Design")) {
-                ForEach(DesignCategory.allCases) { category in
-                    if category != DesignCategory.allCases.first { Divider() }
-                    Text(category.title)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    ForEach(category.designs) { design in
-                        SignatureDesignOption(design: design, selected: preferences.signatureDesign == design) {
-                            withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = design }
-                        }
+                ForEach(SignatureDesign.allCases) { design in
+                    SignatureDesignOption(design: design, selected: preferences.signatureDesign == design) {
+                        withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = design }
                     }
                 }
             }
@@ -473,7 +469,7 @@ private struct SignatureDesignOption: View {
     }
 }
 
-/// Liquid Glass in miniature: a glass page switch over a soft ambient glow
+/// Modern (Liquid Glass) in miniature: a glass page switch over a soft ambient glow
 /// and a few colored sleeves.
 private struct LiquidGlassDesignPreview: View {
     @State private var preferences = AppPreferences.shared
