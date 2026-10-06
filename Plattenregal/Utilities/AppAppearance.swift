@@ -990,6 +990,9 @@ struct OverviewLayoutPicker: View {
 
 enum CoverGrid {
     static var spacing: CGFloat { AppStyle.isAtelier ? 18 : 8 }
+    /// Extra room above the grid's own padding, so the first covers start
+    /// 18 pt below the toolbar in both designs (Modern's spacing is tighter).
+    static var topSpace: CGFloat { max(0, 18 - spacing) }
 
     static func columnCount(available: CGFloat, minimum: CGFloat) -> Int {
         guard available.isFinite, minimum.isFinite, minimum > 0 else { return 1 }

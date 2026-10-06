@@ -1,3 +1,7 @@
+# Modern: Cover so nah unter der Toolbar wie in Klassisch · 06.10.2026
+
+- Im Raster von Collection und Wantlist beginnt die erste Cover-Reihe jetzt in beiden Designs 18 pt unter der Toolbar (gemessen: 36 px auf Retina, Modern und Klassisch gleich). Modern hatte zusätzlich den Seitenrand (24 pt) darüber, insgesamt rund 32 pt. Weil Modern enger rastert (8 statt 18 pt), gleicht `CoverGrid.topSpace` den Unterschied aus; Klassisch bleibt unverändert. Die Listenansicht behält ihren Rand.
+
 # Prüfung: Robustheit, Klassisch durchgehend, Doku nachgetragen · 06.10.2026
 
 - **Robustheit geprüft**: Discogs-Client und Abgleich (Taktung, Retry-After, Seitenprüfung, Kontowechsel, ein Speichervorgang), Tracklisten, Positionen und Regale, Sicherung und Wiederherstellen samt Aufbewahrung, Zurücksetzen, automatischer Export, Ordner-Lesezeichen, Schlüsselbund, Cover-Cache, Protokoll und Absturz-Handler, dazu die neuen Bausteine von Toolbar-Suche, Aktionsfächer und Tour. Keine Datenverlust- oder Absturzgefahr gefunden; Force-Unwraps sind alle abgesichert.

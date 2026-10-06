@@ -502,10 +502,9 @@ struct CollectionView: View {
         )
     }
 
-    /// Above the content, right under the toolbar. Atelier's toolbar is
-    /// opaque, so the grid's own padding is enough there: its covers start
-    /// as far from the toolbar as from the window's edge.
-    private var topSpace: CGFloat { AppStyle.isAtelier && layout == .grid ? 0 : AppStyle.pagePadding }
+    /// Above the content, right under the toolbar: the grid's covers start
+    /// the same 18 pt below it in both designs (see `CoverGrid.topSpace`).
+    private var topSpace: CGFloat { layout == .grid ? CoverGrid.topSpace : AppStyle.pagePadding }
 
     /// In the window the page has no header bar: page switch, grid/list and
     /// search are in the toolbar. The statistics panel has no toolbar, so

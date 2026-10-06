@@ -290,9 +290,9 @@ struct WantlistView: View {
                     .padding(.horizontal, pageMargin)
                     .padding(.top, AppStyle.pagePadding)
             }
-            // Atelier: right under its opaque toolbar (see CollectionView).
+            // The grid right under the toolbar (see CollectionView).
             Color.clear.frame(height: DemoMode.showsBanner ? AppStyle.sectionSpacing
-                              : AppStyle.isAtelier && layout == .grid ? 0 : AppStyle.pagePadding)
+                              : layout == .grid ? CoverGrid.topSpace : AppStyle.pagePadding)
             Group {
             if !loaded {
                 Color.clear
