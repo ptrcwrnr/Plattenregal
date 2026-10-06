@@ -18,10 +18,11 @@ Stand nach dem Umbau (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 | Übersetzungen | ✅ 11 verwaiste Texte entfernt, 7 neue übersetzt; Format des Katalogs unverändert |
 | Tests | ✅ 193 Tests, 0 Fehler |
 
+Nach dem Entsperren des Bildschirms nachgeholt: Atelier-Collection (Sync-Knopf und Zahnrad rechts in der Toolbar, Cover mit gleichem Abstand zur Toolbar wie zum Fensterrand) und die Design-Karte mit „Modern“/„Klassisch“, beiden Vorschauen und ausgegrauter Akzentfarbe ✅. Nebenbei: Nach einem harten Beenden (`kill`) öffnete die Demo beim nächsten Start kein Fenster von selbst (ein Klick aufs Dock-Symbol holte es); nach ⌘Q startete sie zweimal hintereinander normal mit Fenster.
+
 ## Nicht geprüft (dieser Durchgang)
 
-- **Nach den letzten Feinschliffen nicht mehr angesehen**, weil der Bildschirm inzwischen gesperrt war (macOS legt dann keine Fenster an): Sync-Knopf und Zahnrad rechts in der Atelier-Toolbar, der engere Abstand über den Covern in Atelier, die Design-Karte in den Einstellungen mit beiden Vorschauen, die Trefferliste der Regalsuche unter dem Feld.
-- **Tippen ins Suchfeld, ⌘F und Esc** nicht von Hand ausprobiert.
+- **Tippen ins Suchfeld, ⌘F und Esc** sowie die Trefferliste der Regalsuche nicht von Hand ausprobiert.
 - **Tour-Bilder** nicht neu aufgenommen.
 
 # Vorheriger Stand · 06.10.2026 (Signature Design „Atelier“)
