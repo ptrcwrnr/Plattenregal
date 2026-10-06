@@ -49,16 +49,24 @@ struct RootView: View {
     /// one to the other.
     @State private var search = {
         let search = LibrarySearch()
-        #if DEBUG
-        // Screenshots with a search typed in.
-        if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-search=") }) {
-            search.query = String(raw.dropFirst("--preview-search=".count))
-        }
-        #endif
+        search.query = Self.previewSearch
         return search
     }()
     /// What is typed into the search field while the shelf page is shown.
-    @State private var shelfSearch = ShelfSearch()
+    @State private var shelfSearch = {
+        let search = ShelfSearch()
+        search.text = Self.previewSearch
+        return search
+    }()
+    /// Debug only: screenshots with a search typed in (`--preview-search=…`).
+    private static var previewSearch: String {
+        #if DEBUG
+        if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-search=") }) {
+            return String(raw.dropFirst("--preview-search=".count))
+        }
+        #endif
+        return ""
+    }
     /// "Im Regal anzeigen" from any page, for the shelf page.
     @State private var shelfRequests = ShelfRequests()
     // Loaded once here, alongside collection startup, so the Statistik page is

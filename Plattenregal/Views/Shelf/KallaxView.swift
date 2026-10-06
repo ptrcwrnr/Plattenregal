@@ -272,9 +272,9 @@ struct KallaxView: View {
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
             .onExitCommand { if placement != nil { cancelPlacement() } else { deselect() } }
             .overlay(alignment: .bottom) { undoToast }
-            // The matches of the search in the toolbar, under its field at
-            // the top right, floating over the rack.
-            .overlay(alignment: .topTrailing) { searchResultsPanel }
+            // The matches of the search in the toolbar, centered under its
+            // bar, floating over the rack.
+            .overlay(alignment: .top) { searchResultsPanel }
         }
         .task(id: statsSignature) {
             shelfContent.refresh(allShelves, version: changes.libraryVersion)
@@ -497,7 +497,6 @@ struct KallaxView: View {
             .animation(AppStyle.quickAnimation, value: searchQuery == search.text)
             .frame(width: AppStyle.toolbarSearchWidth + 120)
             .padding(.top, 6)
-            .padding(.trailing, AppStyle.pagePadding + 4)
             .transition(.opacity)
         }
     }

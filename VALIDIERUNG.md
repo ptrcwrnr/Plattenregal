@@ -1,4 +1,31 @@
-# Aktueller Stand · 06.10.2026 (Statistik in Klassisch)
+# Aktueller Stand · 06.10.2026 (Durchsicht von Toolbar und Statistik)
+
+## Vorgehen
+
+1. Den Diff seit der Toolbar-Umstellung (14 Swift-Dateien) auf Logik, Randfälle und Nebenwirkungen durchgesehen: Auf- und Zuklappen der Suche (Fokus, Seitenwechsel, ⌘F, Esc, Verschwinden auf der Statistik), Breitenreserve der Leiste, Designwechsel zur Laufzeit, Statistik-Bereiche, neue Bausteine (`toolbarBar`, `statisticsTile`, `appLinkButton`).
+2. Korrigiert, mit Schnappschuss bzw. Bildschirmfoto nachgeprüft, Tests: 193, 0 Fehler (Bildschirm wieder entsperrt).
+
+## Korrigiert
+
+| Befund | Korrektur |
+|---|---|
+| Die Trefferliste der Regalsuche hing noch oben rechts („unter dem Feld“), das Feld sitzt aber jetzt in der zentrierten Leiste | Liste mittig unter der Leiste (`KallaxView`), im Bildschirmfoto direkt unter dem Feld ✅ |
+| Erster Statistik-Bereich in Klassisch mit negativem Innenabstand ausgeglichen | oberer Abstand direkt 0 statt Abstand plus Gegenabstand |
+| Palette des Klangbilds bei jedem Tortenstück neu gelesen | einmal gelesen |
+| Doku versprach „Klick daneben klappt die leere Suche zu“; auf dem Mac nimmt ein Klick auf Cover oder Knöpfe dem Feld den Cursor aber meist nicht | Doku sagt jetzt: Esc, Klick auf die Lupe oder Fokuswechsel bei leerem Feld |
+| `--snapshot` scheiterte still, wenn das Fenster später oder gar nicht kam | wartet bis 30 s auf ein sichtbares Fenster und schreibt Erfolg oder Fehler ins Protokoll; `--preview-search` belegt auch die Regalsuche vor |
+
+## Gefunden, nicht behoben
+
+- **Klassisch + vorbelegte Suche beim Start → kein Fenster.** Startet die Demo in Klassisch mit `--preview-search`, erzeugt SwiftUI kein Hauptfenster (in Modern schon, ohne Suche auch in Klassisch). Bestand schon vor dieser Sitzung (mit Commit b7061c2 nachgestellt). Für Nutzer nicht erreichbar, weil die Suche beim Start immer leer ist; als eigene Aufgabe vorgeschlagen.
+
+## Für robust befunden
+
+- Suche: offen = vom Nutzer geöffnet oder Text vorhanden, darum klappt sie bei aktiver Suche nie zu; beim Seitenwechsel schließt sie nur ohne Fokus und ohne Text der neuen Seite; auf der Statistik verschwindet sie samt Fokus-Meldung an `SearchRequests` (⌘Z der Regalseite bleibt richtig).
+- Leiste: Breitenreserve aus denselben Bausteinen wie die echte Leiste, ausgeblendet und ohne Bedienungshilfen; ein Designwechsel baut sie neu, weil `AppStyle.isAtelier` beobachtet wird.
+- Statistik: Modern unverändert (Bildschirmfoto mit Glas), Klassisch-Zweige nur über `AppStyle.isAtelier`.
+
+# Vorheriger Stand · 06.10.2026 (Statistik in Klassisch)
 
 ## Vorgehen
 

@@ -350,11 +350,11 @@ private struct StatisticsMovableArea<Content: View>: View {
             .frame(height: 28)
             content
         }
-        .padding(.vertical, StatisticsLayout.gutter)
         // Klassisch: on the paper, flush with the page margins; the first
         // title as far from the toolbar as the covers on the other pages.
         .padding(.horizontal, AppStyle.isAtelier ? 0 : StatisticsLayout.gutter)
-        .padding(.top, AppStyle.isAtelier && first ? -StatisticsLayout.gutter : 0)
+        .padding(.top, AppStyle.isAtelier && first ? 0 : StatisticsLayout.gutter)
+        .padding(.bottom, StatisticsLayout.gutter)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)

@@ -58,23 +58,44 @@ enum PreviewData {
 
 #if DEBUG
 /// `--snapshot=name.png`: draws the main window into a PNG in the app's
-/// temporary folder (in the container) after a few seconds and quits. Works
-/// while the screen is locked, where `screencapture` gets nothing; the
+/// temporary folder (in the container) and quits – a few seconds after the
+/// window is shown, or after 30 seconds without one (noted in the protocol).
+/// Works while the screen is locked, where `screencapture` gets nothing; the
 /// window's own glass and toolbar may look flatter than on screen.
 enum DebugSnapshot {
     static func scheduleIfRequested() {
         guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--snapshot=") }) else { return }
-        let name = String(raw.dropFirst("--snapshot=".count))
-        DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
-            let window = NSApp.windows.max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
-            if let view = window?.contentView?.superview ?? window?.contentView,
-               let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
-                view.cacheDisplay(in: view.bounds, to: rep)
-                let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
-                try? rep.representation(using: .png, properties: [:])?.write(to: url)
+        waitForWindow(name: String(raw.dropFirst("--snapshot=".count)), since: .now)
+    }
+
+    private static func waitForWindow(name: String, since start: Date) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let window = NSApp.windows.filter(\.isVisible).max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+            if let window {
+                // Time for covers and charts to come in.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) { capture(window, name: name, waited: Date.now.timeIntervalSince(start)) }
+            } else if Date.now.timeIntervalSince(start) > 30 {
+                AppLog.error("App", "Schnappschuss \(name): nach 30 s kein Fenster")
+                NSApp.terminate(nil)
+            } else {
+                waitForWindow(name: name, since: start)
             }
-            NSApp.terminate(nil)
         }
+    }
+
+    private static func capture(_ window: NSWindow, name: String, waited: TimeInterval) {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+        if let view = window.contentView?.superview ?? window.contentView,
+           let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
+            view.cacheDisplay(in: view.bounds, to: rep)
+            do {
+                try rep.representation(using: .png, properties: [:])?.write(to: url)
+                AppLog.info("App", "Schnappschuss \(name), Fenster nach \(Int(waited)) s")
+            } catch {
+                AppLog.error("App", "Schnappschuss \(name) nicht gespeichert: \(error)")
+            }
+        }
+        NSApp.terminate(nil)
     }
 }
 #endif

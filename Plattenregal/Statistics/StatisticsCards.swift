@@ -270,9 +270,10 @@ struct SoundDonut: View {
 
     private var slices: [Slice] {
         let groups = groups
-        let top = groups.prefix(StatisticsPalette.colors.count)
+        let colors = StatisticsPalette.colors
+        let top = groups.prefix(colors.count)
         var result = top.enumerated().map { index, group in
-            Slice(group: group, label: display(group.name), color: StatisticsPalette.colors[index])
+            Slice(group: group, label: display(group.name), color: colors[index])
         }
         let rest = groups.dropFirst(top.count)
         if !rest.isEmpty {

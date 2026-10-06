@@ -1,3 +1,11 @@
+# Durchsicht: Regal-Trefferliste unter der Leiste, Kleinigkeiten · 06.10.2026
+
+- **Regalsuche**: Die schwebende Trefferliste steht jetzt mittig unter der Toolbar-Leiste, also unter dem Suchfeld, statt oben rechts.
+- **Statistik in Klassisch**: Abstand des ersten Bereichs ohne Gegenrechnung, Diagrammpalette einmal gelesen.
+- **Debug**: `--snapshot` wartet bis zu 30 s auf das Fenster und protokolliert Erfolg oder Fehler; `--preview-search` gilt auch für die Regalsuche.
+- Doku zur Suche präzisiert (zuklappen per Esc, Lupe oder Fokuswechsel bei leerem Feld).
+- Gefunden, nicht behoben: In Klassisch mit vorbelegter Suche (nur per Debug-Argument) entsteht beim Start kein Fenster – schon vor diesen Änderungen so, siehe VALIDIERUNG.md.
+
 # Statistik im Design „Klassisch“ · 06.10.2026
 
 - **Auf dem Papier statt in Karten**: In Klassisch liegen die Bereiche der Statistik wie die Cover in Collection und Wantlist direkt auf dem cremefarbenen Grund, getrennt durch feine Linien und bündig mit dem Seitenrand; der erste Titel steht so weit unter der Toolbar wie die Cover auf den anderen Seiten. Modern bleibt unverändert (Glas-Karten).
@@ -10,7 +18,7 @@
 # Toolbar aus einem Guss, ausklappbare Suche, Designs „Modern“ und „Klassisch“ · 06.10.2026
 
 - **Eine zentrierte Leiste**: App-Symbol und Name oben links sind weg. Rubriken, Raster/Liste, Suche und (in Klassisch) Synchronisieren und Zahnrad stehen gemeinsam in einer Leiste mitten in der Toolbar – in Modern eine Glas-Kapsel, in Klassisch ein etwas dunkleres Band auf dem Petrol, getrennt durch feine Striche. Die Leiste ist so breit wie auf der vollsten Seite und beginnt immer an derselben Stelle: Der Rubriken-Umschalter wandert beim Seitenwechsel nicht unter dem Mauszeiger weg. Das Einstellungsfenster nutzt dieselbe Leiste.
-- **Suche als Lupe**: Statt eines immer offenen Felds steht in der Leiste eine Lupe. Klick oder ⌘F klappt das Feld animiert auf und setzt den Cursor hinein; Esc leert es, ein zweites Esc oder ein Klick daneben bei leerem Feld klappt es zu, ebenso ein Klick auf die Lupe bei leerem Feld. Solange eine Suche aktiv ist, bleibt das Feld offen (ein Klick auf die Lupe holt dann nur den Cursor zurück), damit kein Filter unsichtbar wirkt. Das Feld hat keine eigene Fläche mehr, es sieht aus wie der Rest der Leiste.
+- **Suche als Lupe**: Statt eines immer offenen Felds steht in der Leiste eine Lupe. Klick oder ⌘F klappt das Feld animiert auf und setzt den Cursor hinein; Esc leert es, ein zweites Esc klappt es zu, ebenso ein Klick auf die Lupe oder ein Fokuswechsel, solange das Feld leer ist. Solange eine Suche aktiv ist, bleibt das Feld offen (ein Klick auf die Lupe holt dann nur den Cursor zurück), damit kein Filter unsichtbar wirkt. Das Feld hat keine eigene Fläche mehr, es sieht aus wie der Rest der Leiste.
 - **Treffer-Hinweis dezent**: „3 in der Wantlist“ bzw. „… in der Collection“ steht jetzt klein und grau im Feld statt farbig daneben; ein Klick wechselt weiter dorthin.
 - **Designs umbenannt**: „Liquid Glass“ heißt jetzt **Modern**, „Atelier“ heißt **Klassisch**; die Gruppenüberschriften in den Einstellungen entfallen. Die gespeicherten Werte bleiben („none“, „atelier“), eine vorhandene Wahl gilt also weiter. Protokoll: „Design Klassisch“ in der Startzeile, „Design: Klassisch statt Modern“ beim Wechsel.
 - Debug: `--preview-search=…` startet mit einer Suche (für Screenshots).
