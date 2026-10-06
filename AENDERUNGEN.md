@@ -1,3 +1,15 @@
+# Prüfung: Robustheit, Klassisch durchgehend, Doku nachgetragen · 06.10.2026
+
+- **Robustheit geprüft**: Discogs-Client und Abgleich (Taktung, Retry-After, Seitenprüfung, Kontowechsel, ein Speichervorgang), Tracklisten, Positionen und Regale, Sicherung und Wiederherstellen samt Aufbewahrung, Zurücksetzen, automatischer Export, Ordner-Lesezeichen, Schlüsselbund, Cover-Cache, Protokoll und Absturz-Handler, dazu die neuen Bausteine von Toolbar-Suche, Aktionsfächer und Tour. Keine Datenverlust- oder Absturzgefahr gefunden; Force-Unwraps sind alle abgesichert.
+- **Behoben – Tabellenkopf beim Designwechsel**: Der Kopf der Tabellen ist eine AppKit-Ansicht und zeichnete nach einem Wechsel zwischen Modern und Klassisch erst beim nächsten Scrollen oder Ändern der Fenstergröße neu (Petrol-Band bzw. Milchglas blieben stehen). Jetzt sofort (`QuietIconColumnHeaders`).
+- **Klassisch durchgehend** (alle Seiten, Einstellungs-Tabs, Tour und Panels per Schnappschuss in Hell und Dunkel durchgesehen):
+  - Auswahl überall gleich: Goldrand auf dem tieferen Creme der Palette (`AtelierPalette.soft`). Die Design-Karte in den Einstellungen hatte als einzige einen Petrol-Rand, gewählte Regal-Karten einen grünlich-grauen Grund (Petrol-Tönung auf Creme).
+  - Signalfarben gedeckt statt System-Grün/-Orange/-Rot: Moos, Ocker, Ziegel (`AtelierPalette.success/warning/error`, in Hell und Dunkel). Betrifft u. a. die Wertveränderung in der Statistik, den Aktiv-Punkt der Regale, „Vermisst“, „Nicht in der Collection“, Fehlertexte und Häkchen in „Sortierung prüfen“. Modern unverändert.
+  - Creme im Tabellenkopf kommt aus der Palette statt als eigener Farbwert.
+- **Nachgetragen** (Commits ohne Eintrag): Klassisch ohne Glas (Treffer-Plaketten, Stepper, Toast, Rundknöpfe, Popover und Hinweisbanner auf Papier, Treffer-Hinweis im Suchfeld als Petrol-Schild, Regalfächer matt, Titelzeile über der Fach-Tabelle entfernt); Tabellenkopf als Petrol-Band mit cremefarbenen Titeln, Regalkorpus hell wie die Regal-Reiter; Cover als Plattenhülle statt Passepartout (alter Rahmen per `atelierCoverFrame=passepartout`); Auswahlkapsel der Regal-Reiter gleitet zum neuen Regal; veraltete Texte im String-Katalog markiert.
+- **Doku**: README (Fach-Tabelle ohne Titelzeile, Klassisch-Merkmale, Debug-Argumente `--preview-search`, `--preview-actions`, `--snapshot`, Design per Startargument), STATISTIK.md (kein Aktualisieren-Knopf mehr in der Toolbar, Signalfarben). Fehlermeldungen und Protokoll ohne Befund: keine neuen Meldungen seit der letzten Prüfung, alle deutsch mit Ursache und nächstem Schritt.
+- **Offen**: Die Bilder der Tour zeigen immer das Design Modern, auch wenn Klassisch gewählt ist.
+
 # Aktionsknopf nur in Collection/Wantlist, Suche wieder oben, Statistik bündig · 06.10.2026
 
 - **Runder Knopf** (`FloatingControls`) nur noch in Collection und Wantlist; Aktionen dort: Raster/Liste, Synchronisieren, Einstellungen. In Regal und Statistik verschwindet er (die Statistik aktualisiert weiter mit ⌘R oder Herunterziehen, Einstellungen über ⌘,). Platz unten (`floatingClearance`) nur noch auf diesen beiden Seiten.

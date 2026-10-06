@@ -1,3 +1,27 @@
+# Aktueller Stand · 06.10.2026 (Prüfung Robustheit, Klassisch durchgehend)
+
+## Vorgehen
+
+1. Build und alle Tests vor und nach den Änderungen: 193 Tests, 0 Fehler.
+2. Kern-Code gelesen (Discogs-Client und Abgleich, Positionen, Regale, Sicherung, Zurücksetzen, Export, Schlüsselbund, Ordnerzugriff, Cover-Cache, Protokoll) und die Diffs seit der letzten Prüfung (Toolbar-Suche, Aktionsfächer, Tour, Klassisch).
+3. Demo in **Klassisch** per `--snapshot` aufgenommen (Design per Startargument `-signatureDesign atelier`): Collection (Raster, Liste mit Suche), Wantlist dunkel mit aufgefächerten Aktionen, Regal, „Platte hinzufügen“, Einsortier-Karte dunkel, Statistik, alle Einstellungs-Tabs, Tour. Nach den Farbänderungen Darstellung, Regal (dunkel) und Statistik erneut.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Robustheit | ✅ keine Datenverlust- oder Absturzgefahr; ein Darstellungsfehler (Tabellenkopf beim Designwechsel) behoben |
+| Auswahl | ✅ Goldrand auf tieferem Creme bei Fach, Regal-Karte und Design-Karte |
+| Signalfarben | ✅ Wertveränderung moosgrün, Aktiv-Punkte moosgrün, in Hell und Dunkel lesbar |
+| Glas in Klassisch | ✅ keine ungeschützte Glas-Stelle mehr im Code (alle über `AppStyle.isAtelier`) |
+| Vorbelegte Suche in Klassisch | ✅ Fenster erscheint (`--preview-search=da`), der früher notierte Fehler trat nicht auf |
+
+## Nicht geprüft
+
+- **Designwechsel zur Laufzeit** mit offener Fach-Tabelle nicht von Hand ausprobiert; die Korrektur folgt dem dokumentierten AppKit-Weg (`needsDisplay`).
+- **Tour-Bilder** zeigen Modern, auch in Klassisch (offen, siehe AENDERUNGEN.md).
+- Dreimal erschien bei `--snapshot` innerhalb von 30 s kein Fenster (Statistik, Allgemein, Darstellung); beim zweiten Versuch jeweils schon. Wie der Hinweis im vorigen Stand: Startverhalten der Demo direkt nach dem Beenden der vorigen Instanz, kein Absturz (Protokoll ohne Absturz-Block).
+
 # Aktueller Stand · 06.10.2026 (Aktionsknopf nur Collection/Wantlist, Suche oben, Statistik bündig)
 
 ## Vorgehen
