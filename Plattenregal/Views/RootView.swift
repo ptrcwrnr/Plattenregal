@@ -25,7 +25,7 @@ enum Destination: String, CaseIterable, Identifiable {
         case .statistics: "4"
         }
     }
-    /// Pages with a search that ⌘F reveals.
+    /// Pages with a search field in the toolbar (⌘F puts the cursor in it).
     var hasSearch: Bool { self != .statistics }
 }
 
@@ -41,11 +41,13 @@ struct RootView: View {
         #endif
         return AppPreferences.shared.startPage.destination
     }())
-    /// ⌘F / the search button; see `SearchRequests`.
+    /// ⌘F and the focus of the search field; see `SearchRequests`.
     @State private var searchRequests = SearchRequests()
     /// One search for collection and wantlist, so a hit can be followed from
     /// one to the other.
     @State private var search = LibrarySearch()
+    /// What is typed into the search field while the shelf page is shown.
+    @State private var shelfSearch = ShelfSearch()
     /// "Im Regal anzeigen" from any page, for the shelf page.
     @State private var shelfRequests = ShelfRequests()
     // Loaded once here, alongside collection startup, so the Statistik page is
@@ -69,18 +71,11 @@ struct RootView: View {
     }
 
     /// No sidebar: the pages sit in a switch in the middle of the toolbar,
-    /// grid/list on the right, all in the toolbar's Liquid Glass. Search has
-    /// no button: ⌘F reveals it.
+    /// grid/list and the search field on the right, all in the toolbar, so
+    /// the pages start right below it. ⌘F puts the cursor in the field.
     /// The settings are where a Mac app has them: Plattenregal menu and ⌘,.
     private var library: some View {
-        VStack(spacing: 0) {
-            if AppStyle.isAtelier {
-                AtelierPageHeader(selection: destination, searchRequests: searchRequests) {
-                    Task { await statisticsModel.refresh(container: context.container) }
-                }
-            }
-            pages
-        }
+        pages
             .environment(\.searchRequests, searchRequests)
             // Names the window in the Fenster menu and Mission Control; the
             // toolbar shows the page switch instead of a title.
@@ -96,10 +91,23 @@ struct RootView: View {
                     .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
                 ToolbarItem(placement: .primaryAction) { LayoutSwitch(selection: destination) }
                     .sharedBackgroundVisibility(AppStyle.isAtelier ? .hidden : .automatic)
+                // Brings its own capsule, like the search bars on the pages did.
+                ToolbarItem(placement: .primaryAction) {
+                    ToolbarSearchField(selection: destination, library: search, shelf: shelfSearch, requests: searchRequests)
+                }
+                .sharedBackgroundVisibility(.hidden)
+                // Atelier: sync and settings at the right end of its toolbar.
                 if AppStyle.isAtelier {
-                    ToolbarItem(placement: .secondaryAction) {
+                    ToolbarItem(placement: .primaryAction) {
+                        AtelierSyncButton(selection: destination) {
+                            Task { await statisticsModel.refresh(container: context.container) }
+                        }
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                    ToolbarItem(placement: .primaryAction) {
                         SettingsLink { Image(systemName: "gearshape").accessibilityLabel(String(localized: "Einstellungen")) }
                             .foregroundStyle(Color.white.opacity(0.85))
+                            .help(String(localized: "Einstellungen (⌘,)"))
                     }
                     .sharedBackgroundVisibility(.hidden)
                 }
@@ -110,8 +118,8 @@ struct RootView: View {
             .background { AmbientGlow() }
     }
 
-    /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window; ⌘F toggles
-    /// the search of the page shown, where it has one.
+    /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window; ⌘F puts the
+    /// cursor in the search field, where the page has one.
     private var pageShortcuts: some View {
         Group {
             ForEach(Destination.allCases) { page in
@@ -141,7 +149,7 @@ struct RootView: View {
         case .collection: CollectionView(pages: destination, search: search, showShelf: showShelf)
         case .wantlist: WantlistView(search: search, pages: destination)
         case .statistics: StatisticsView(model: statisticsModel, showShelf: showShelf)
-        case .shelf: KallaxView(requests: shelfRequests)
+        case .shelf: KallaxView(requests: shelfRequests, search: shelfSearch)
         }
     }
     /// Opens the shelf page with the card for this record: where it stands
@@ -165,43 +173,98 @@ private struct AtelierBrand: View {
     }
 }
 
-/// A compact title and explicit existing actions, only in Atelier. The
-/// PageStack below remains the same instance when the design is switched.
-private struct AtelierPageHeader: View {
+/// Sync (collection, wantlist) or refresh (statistics) as a button in the
+/// toolbar, only in Atelier; the same as ⌘R or pulling the page down.
+private struct AtelierSyncButton: View {
     let selection: PageSelection<Destination>
-    let searchRequests: SearchRequests
     let refreshStatistics: () -> Void
     @Environment(\.modelContext) private var context
     @State private var sync = DiscogsSyncService.shared
     var body: some View {
-        HStack {
-            Text(selection.current.title).font(AppStyle.pageTitle).foregroundStyle(AtelierPalette.ink)
-            Spacer()
-            if selection.current.hasSearch {
-                Button { searchRequests.request() } label: {
-                    Image(systemName: "magnifyingglass").accessibilityLabel(String(localized: "Suchen"))
+        let page = selection.current
+        if page != .shelf {
+            let title = page == .statistics ? String(localized: "Aktualisieren") : String(localized: "Synchronisieren")
+            Button {
+                switch page {
+                case .collection: sync.start(.collection, container: context.container)
+                case .wantlist: sync.start(.wantlist, container: context.container)
+                case .statistics: refreshStatistics()
+                case .shelf: break
                 }
-                .appGlassButton().help(String(localized: "Suchen (⌘F)"))
+            } label: {
+                Image(systemName: "arrow.clockwise").accessibilityLabel(title)
             }
-            if selection.current != .shelf {
-                Button {
-                    switch selection.current {
-                    case .collection: sync.start(.collection, container: context.container)
-                    case .wantlist: sync.start(.wantlist, container: context.container)
-                    case .statistics: refreshStatistics()
-                    case .shelf: break
-                    }
-                } label: {
-                    Label(selection.current == .statistics ? String(localized: "Aktualisieren") : String(localized: "Synchronisieren"),
-                          systemImage: "arrow.clockwise")
+            .foregroundStyle(Color.white.opacity(0.85))
+            .help(title + " (⌘R)")
+            // Discogs is off in the demo; the statistics still recalculate.
+            .disabled(sync.busy || (DemoMode.isActive && page != .statistics))
+        }
+    }
+}
+
+/// The search field in the toolbar, always there on the pages that have a
+/// search (not on the statistics). Collection and wantlist share one query
+/// (`LibrarySearch`), the shelf has its own (`ShelfSearch`); the pages read
+/// them and filter themselves. ⌘F puts the cursor in it; Esc clears it, a
+/// second Esc leaves it.
+private struct ToolbarSearchField: View {
+    let selection: PageSelection<Destination>
+    let library: LibrarySearch
+    let shelf: ShelfSearch
+    let requests: SearchRequests
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        let page = selection.current
+        HStack(spacing: AppStyle.itemSpacing) {
+            if let other = otherSection(for: page) {
+                // The other page's hits for the same query, one click away.
+                Button { selection.current = other.page } label: {
+                    Text("\(other.count.formatted()) in der \(other.page.title)")
+                        .monospacedDigit()
+                        .lineLimit(1)
                 }
-                .appGlassButton().disabled(sync.busy || (DemoMode.isActive && selection.current != .statistics))
+                .appGlassButton()
+                .fixedSize()
+                .help("Treffer in der \(other.page.title) anzeigen")
+                .accessibilityLabel("\(other.count) Treffer in der \(other.page.title) anzeigen")
+                .transition(.opacity)
+            }
+            if page.hasSearch {
+                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused)
+                    .frame(width: AppStyle.toolbarSearchWidth)
+                    .accessibilityLabel(String(localized: "Suchen"))
             }
         }
-        .padding(.horizontal, AppStyle.pagePadding + 4)
-        .padding(.top, AppStyle.pagePadding)
-        .padding(.bottom, 4)
-        .background(AtelierPalette.paper)
+        .animation(AppStyle.quickAnimation, value: otherSection(for: page)?.count)
+        .onChange(of: requests.count) {
+            guard selection.current.hasSearch else { return }
+            focused = true
+        }
+        .onChange(of: focused) { _, new in requests.fieldFocused = new }
+        // The statistics have no field: it must not keep the focus there.
+        .onChange(of: page) { _, new in if !new.hasSearch { focused = false } }
+    }
+
+    private func text(for page: Destination) -> Binding<String> {
+        page == .shelf ? Bindable(shelf).text : Bindable(library).query
+    }
+
+    private func placeholder(for page: Destination) -> String {
+        switch page {
+        case .collection: String(localized: "Collection durchsuchen")
+        case .wantlist: String(localized: "Wantlist durchsuchen")
+        case .shelf, .statistics: String(localized: "Platte im Regal suchen …")
+        }
+    }
+
+    private func otherSection(for page: Destination) -> (page: Destination, count: Int)? {
+        guard !library.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        switch page {
+        case .collection: return library.wantlistMatches > 0 ? (.wantlist, library.wantlistMatches) : nil
+        case .wantlist: return library.collectionMatches > 0 ? (.collection, library.collectionMatches) : nil
+        case .shelf, .statistics: return nil
+        }
     }
 }
 
@@ -289,6 +352,8 @@ private struct LayoutSwitch: View {
 /// handed in would keep the value it had then.
 @Observable final class LibrarySearch {
     var query = ""
-    /// Revealed by ⌘F (see `SearchReveal`).
-    var isPresented = false
+    /// Hits of `query` on the other page, for the button beside the search
+    /// field: the collection counts the wantlist's, the wantlist the collection's.
+    var wantlistMatches = 0
+    var collectionMatches = 0
 }

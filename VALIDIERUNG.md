@@ -1,4 +1,30 @@
-# Aktueller Stand · 06.10.2026 (Signature Design „Atelier“)
+# Aktueller Stand · 06.10.2026 (Suche in der Toolbar, Designs in Gruppen, ohne Plattenrücken)
+
+Stand nach dem Umbau (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
+
+## Vorgehen
+
+1. Debug-Build mit `xcodebuild` im Projektordner, ohne Warnungen.
+2. Demo gestartet und Fenster fotografiert (`screencapture`), jeweils mit dem Stand davor verglichen: Collection und Regal in Liquid Glass, Collection in Atelier.
+3. Tests ausgeführt.
+
+## Ergebnis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Collection, Liquid Glass | ✅ Suchfeld rechts neben Raster/Liste in der Toolbar, Cover beginnen auf derselben Höhe wie vorher ohne Suchleiste |
+| Regal, Liquid Glass | ✅ Suchfeld in der Toolbar, keine Rückenleiste und keine Legende mehr, Fach-Tabelle direkt unter dem Fachtitel |
+| Collection, Atelier | ✅ kein Seitentitel mehr, Cover direkt unter der petrolfarbenen Toolbar, Suchfeld dunkel passend zur Toolbar |
+| Übersetzungen | ✅ 11 verwaiste Texte entfernt, 7 neue übersetzt; Format des Katalogs unverändert |
+| Tests | ✅ 193 Tests, 0 Fehler |
+
+## Nicht geprüft (dieser Durchgang)
+
+- **Nach den letzten Feinschliffen nicht mehr angesehen**, weil der Bildschirm inzwischen gesperrt war (macOS legt dann keine Fenster an): Sync-Knopf und Zahnrad rechts in der Atelier-Toolbar, der engere Abstand über den Covern in Atelier, die Design-Karte in den Einstellungen mit beiden Vorschauen, die Trefferliste der Regalsuche unter dem Feld.
+- **Tippen ins Suchfeld, ⌘F und Esc** nicht von Hand ausprobiert.
+- **Tour-Bilder** nicht neu aufgenommen.
+
+# Vorheriger Stand · 06.10.2026 (Signature Design „Atelier“)
 
 Stand nach dem neuen wählbaren Design (Details in [AENDERUNGEN.md](AENDERUNGEN.md)).
 

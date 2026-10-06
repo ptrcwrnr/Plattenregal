@@ -198,19 +198,41 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
     var color: Color? { AccentChoice(rawValue: rawValue)?.color }
 }
 
-/// Optional complete designs. The existing appearance settings stay stored
-/// independently, so returning to the current design restores them exactly.
+/// The complete designs, in two categories. The appearance settings (mode,
+/// accent, ambient) stay stored independently, so returning to Liquid Glass
+/// restores them exactly. `liquidGlass` keeps the stored value "none" it had
+/// when it was the only, unnamed design.
 enum SignatureDesign: String, CaseIterable, Identifiable {
-    case none, atelier
+    case liquidGlass = "none", atelier
     var id: Self { self }
     var title: String {
         switch self {
-        case .none: String(localized: "Aktuelle Gestaltung")
+        case .liquidGlass: "Liquid Glass"
         case .atelier: "Atelier"
         }
     }
-    /// For the protocol, which stays German.
-    var logName: String { self == .atelier ? "Atelier" : "aktuelle Gestaltung" }
+    var category: DesignCategory {
+        switch self {
+        case .liquidGlass: .modern
+        case .atelier: .classic
+        }
+    }
+    /// Accent and ambient color only exist in Liquid Glass; Atelier brings its own.
+    var usesColorChoices: Bool { self == .liquidGlass }
+    var logName: String { title }
+}
+
+/// How the designs are grouped in the settings.
+enum DesignCategory: CaseIterable, Identifiable {
+    case modern, classic
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .modern: String(localized: "Modern")
+        case .classic: String(localized: "Klassisch")
+        }
+    }
+    var designs: [SignatureDesign] { SignatureDesign.allCases.filter { $0.category == self } }
 }
 
 /// The language of the app. `system` follows macOS (where Plattenregal can
@@ -284,7 +306,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         appearance = defaults.string(forKey: Key.appearance).flatMap(AppearanceMode.init) ?? .system
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .system
         ambient = defaults.string(forKey: Key.ambient).flatMap(AmbientChoice.init) ?? .blue
-        signatureDesign = defaults.string(forKey: Key.signatureDesign).flatMap(SignatureDesign.init) ?? .none
+        signatureDesign = defaults.string(forKey: Key.signatureDesign).flatMap(SignatureDesign.init) ?? .liquidGlass
         language = languageAtLaunch
     }
 
@@ -299,7 +321,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         appearance = .system
         accent = .system
         ambient = .blue
-        signatureDesign = .none
+        signatureDesign = .liquidGlass
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }
     }

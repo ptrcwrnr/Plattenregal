@@ -14,14 +14,14 @@ extension AllTests {
         @Test func signatureDesignDefaultsAndUnknownValuesKeepCurrentAppearance() throws {
             try withSignatureDefaults { defaults in
                 let preferences = AppPreferences(defaults: defaults)
-                #expect(preferences.signatureDesign == .none)
+                #expect(preferences.signatureDesign == .liquidGlass)
                 #expect(preferences.appearance == .system)
                 #expect(preferences.accent == .system)
                 #expect(preferences.ambient == .blue)
                 // Loading the default does not migrate or rewrite stored choices.
                 #expect(defaults.object(forKey: AppPreferences.Key.signatureDesign) == nil)
                 defaults.set("future-design", forKey: AppPreferences.Key.signatureDesign)
-                #expect(AppPreferences(defaults: defaults).signatureDesign == .none)
+                #expect(AppPreferences(defaults: defaults).signatureDesign == .liquidGlass)
                 #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "future-design")
             }
         }
@@ -32,9 +32,9 @@ extension AllTests {
                 preferences.signatureDesign = .atelier
                 #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "atelier")
                 #expect(AppPreferences(defaults: defaults).signatureDesign == .atelier)
-                preferences.signatureDesign = .none
+                preferences.signatureDesign = .liquidGlass
                 #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "none")
-                #expect(AppPreferences(defaults: defaults).signatureDesign == .none)
+                #expect(AppPreferences(defaults: defaults).signatureDesign == .liquidGlass)
             }
         }
 
@@ -45,7 +45,7 @@ extension AllTests {
                 defaults.set("purple", forKey: AppPreferences.Key.accent)
                 defaults.set("yellow", forKey: AppPreferences.Key.ambient)
                 let preferences = AppPreferences(defaults: defaults)
-                for design in [SignatureDesign.atelier, .none] {
+                for design in [SignatureDesign.atelier, .liquidGlass] {
                     preferences.signatureDesign = design
                     #expect(preferences.startPage == .shelf)
                     #expect(preferences.appearance == .dark)
@@ -62,6 +62,14 @@ extension AllTests {
                     #expect(reloaded.ambient == .yellow)
                 }
             }
+        }
+
+        @Test func everyDesignBelongsToExactlyOneCategory() {
+            #expect(DesignCategory.modern.designs == [.liquidGlass])
+            #expect(DesignCategory.classic.designs == [.atelier])
+            #expect(DesignCategory.allCases.flatMap(\.designs).count == SignatureDesign.allCases.count)
+            // The stored value from before the categories stays readable.
+            #expect(SignatureDesign(rawValue: "none") == .liquidGlass)
         }
 
         @Test func overviewOrderShufflesStablyAndSortsNewestFirst() {

@@ -90,16 +90,6 @@
         }
       }
     },
-    " · %lld vermisst": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": " · %lld missing"
-          }
-        }
-      }
-    },
     " · inaktiv": {
       "localizations": {
         "en": {
@@ -1309,16 +1299,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Current"
-          }
-        }
-      }
-    },
-    "Aktuelle Gestaltung": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Current appearance"
           }
         }
       }
@@ -2689,12 +2669,12 @@
         }
       }
     },
-    "Designs": {
+    "Design": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Designs"
+            "value": "Design"
           }
         }
       }
@@ -3569,6 +3549,16 @@
         }
       }
     },
+    "Einstellungen (⌘,)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings (⌘,)"
+          }
+        }
+      }
+    },
     "Einstellungen nicht verfügbar": {
       "localizations": {
         "en": {
@@ -4137,12 +4127,32 @@
         }
       }
     },
+    "Gilt nur für Liquid Glass.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only applies to Liquid Glass."
+          }
+        }
+      }
+    },
     "Gilt nur für Plattenregal, unabhängig von macOS.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Applies only to Plattenregal, regardless of macOS."
+          }
+        }
+      }
+    },
+    "Glas wie in macOS, mit deiner Akzent- und Ambient-Farbe.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glass like macOS, with your accent and ambient color."
           }
         }
       }
@@ -4837,6 +4847,16 @@
         }
       }
     },
+    "Klassisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Classic"
+          }
+        }
+      }
+    },
     "Klicke auf ein Fach, um es zu sperren oder zu entsperren – z. B. für Deko oder andere Dinge. Gesperrte Fächer werden beim Einsortieren übersprungen.": {
       "localizations": {
         "en": {
@@ -5153,6 +5173,16 @@
         }
       }
     },
+    "Modern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modern"
+          }
+        }
+      }
+    },
     "Modus": {
       "localizations": {
         "en": {
@@ -5329,22 +5359,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restart"
-          }
-        }
-      }
-    },
-    "Neue Platte an Position %lld · %@ im Fach": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Neue Platte an Position %1$lld · %2$@ im Fach"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New record at position %lld · %@ in the compartment"
           }
         }
       }
@@ -5905,22 +5919,22 @@
         }
       }
     },
+    "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Flächen, Angaben unter jedem Cover.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Petrol, cream and gold – inspired by the app icon. Matte surfaces, details under every cover."
+          }
+        }
+      }
+    },
     "Pink": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Pink"
-          }
-        }
-      }
-    },
-    "Petrol, Creme und Gold – inspiriert vom App-Icon.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Petrol, cream and gold – inspired by the app icon."
           }
         }
       }
@@ -6253,22 +6267,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Position %lld"
-          }
-        }
-      }
-    },
-    "Position %lld von %lld · %@ – %@": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Position %1$lld von %2$lld · %3$@ – %4$@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Position %lld of %lld · %@ – %@"
           }
         }
       }
@@ -6823,25 +6821,12 @@
         }
       }
     },
-    "Signature Designs": {
-      "shouldTranslate": false
-    },
     "So klein geht es gerade nicht: In den Fächern, die wegfallen würden, %@. Nimm sie zuerst heraus oder wähle eine größere Variante.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "It can’t be made that small right now: the compartments that would be dropped still hold %@. Take them out first or choose a larger variant."
-          }
-        }
-      }
-    },
-    "Sonstige": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Other"
           }
         }
       }
@@ -7138,16 +7123,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Search"
-          }
-        }
-      }
-    },
-    "Suchen (⌘F)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search (⌘F)"
           }
         }
       }
@@ -7624,26 +7599,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Change since the last snapshot"
-          }
-        }
-      }
-    },
-    "Verwendet deine bisherigen Einstellungen für Modus, Akzent- und Ambient-Farbe.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uses your existing mode, accent color and ambient color settings."
-          }
-        }
-      }
-    },
-    "Von links nach rechts": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "From left to right"
           }
         }
       }

@@ -10,9 +10,17 @@ import SwiftData
     var placing: UUID?
 }
 
-/// The shelf page as one calm column: a slim header bar (search after ⌘F, status), the
-/// KALLAX drawn as a single piece of furniture, and the selected compartment
-/// underneath at full width (spine strip, then a compact table of its records).
+/// What is typed into the search field in the toolbar while the shelf page is
+/// shown (see `ToolbarSearchField`). An object, read by the page itself: the
+/// page is built once (see `PageStack`).
+@Observable final class ShelfSearch {
+    var text = ""
+}
+
+/// The shelf page as one calm column: the KALLAX drawn as a single piece of
+/// furniture and the selected compartment underneath at full width (title,
+/// then a compact table of its records). The search sits in the toolbar; its
+/// matches float over the top of the page.
 struct KallaxView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Shelf.number) private var allShelves: [Shelf]
@@ -27,6 +35,9 @@ struct KallaxView: View {
     /// "Im Regal anzeigen" / "Platz im Regal finden" from other pages; taken
     /// over into `placement` right away.
     let requests: ShelfRequests
+    /// The text of the search field in the toolbar.
+    let search: ShelfSearch
+    @Environment(\.searchRequests) private var searchRequests
     /// The record being sorted in and the spots it fits alphabetically.
     @State private var placement: Placement?
     /// "Namen ändern …" from a locked compartment's menu.
@@ -50,16 +61,16 @@ struct KallaxView: View {
     /// the whole collection and must not run on every rebuild of the page.
     @State private var soldToRemove = 0
     /// `soldInShelves.count`, taken whenever records, places or the account
-    /// change – not on every click on a spine.
+    /// change – not on every click in the table.
     @State private var soldCount = 0
     /// The open "Sortierung prüfen".
     @State private var sortCheck: ShelfSortCheckRequest?
     @State private var error: String?
 
     // Search inside the shelf view only lists matches with their location; it
-    // never changes the selection below. `focusCopy` is the spine picked in the
-    // strip.
-    /// The committed (debounced) query; the field keeps its own text while typing.
+    // never changes the selection below. `focusCopy` is the record picked in
+    // the table.
+    /// The committed (debounced) query; `search.text` is what is being typed.
     @State private var searchQuery = ""
     @State private var searchResults = ShelfSearchResults()
     @State private var searchIndex = SearchIndex<UUID>()
@@ -69,12 +80,7 @@ struct KallaxView: View {
     @State private var focusCopy: RecordCopy?
     /// While the search field has focus, ⌘Z belongs to its text, not to the
     /// "Aus Fach entfernt" toast.
-    @FocusState private var searchFocused: Bool
-    /// Whether ⌘F has revealed the search bar (see `SearchReveal`).
-    @State private var searchPresented = false
-    /// Width of the sold-records note beside the search bar.
-    @State private var statusWidth: CGFloat = 0
-    private var showsSearchBar: Bool { searchPresented || !searchQuery.isEmpty }
+    private var searchFocused: Bool { searchRequests?.fieldFocused ?? false }
 
     /// The account the collection shows (see `DiscogsAccount.current`).
     private var owner: String? { DiscogsAccount.current(in: accounts)?.username }
@@ -86,7 +92,6 @@ struct KallaxView: View {
     /// Per-shelf results behind `shelfStats` and `rangeLabels`; only shelves
     /// whose records changed are computed again.
     @State private var shelfContent = ShelfContentCache()
-    @State private var palette = StylePalette()
     @State private var settingsTab: AppSettingsView.Tab?
     /// The side the next cabinet slides in from (see `show(_:)`).
     @State private var cabinetEdge: Edge = .trailing
@@ -103,7 +108,7 @@ struct KallaxView: View {
     private var committedShelf: Shelf? { shelves.first { $0.id == highlight } }
     private var detailShelf: Shelf? { committedShelf }
 
-    /// Evaluated on every render of this page (a click on a spine, too), so
+    /// Evaluated on every render of this page (a click in the table, too), so
     /// it must not walk the records. Every write reports itself in
     /// `LibraryChanges`: positions, locks and names via `PositionService.save`,
     /// cabinets via `CabinetService`, metadata via the sync and Discogs
@@ -217,15 +222,8 @@ struct KallaxView: View {
         )
     }
 
-    /// Shared slot count for every spine row, so a sleeve has the same width in
-    /// each compartment and the rows simply show how many records stand there —
-    /// not a fill level.
     /// Space between the page's big blocks: banners, header, rack, compartment.
     private static let blockSpacing: CGFloat = 28
-
-    private var spineSlots: Int {
-        max(40, shelfStats.values.map(\.count).max() ?? 0)
-    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -241,8 +239,6 @@ struct KallaxView: View {
                 // header leaves no gap (see `header`).
                 VStack(alignment: .leading, spacing: 0) {
                     header
-                        // The search results float over the rack below.
-                        .zIndex(1)
                     VStack(alignment: .leading, spacing: Self.blockSpacing) {
                         if activeCabinets.count > 1 { cabinetSwitcher }
                         ShelfFurniture(
@@ -251,7 +247,6 @@ struct KallaxView: View {
                             columns: shownCabinet?.columns ?? ShelfGeometry.columns,
                             stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
                             rangeLabel: { rangeLabels[$0.id] },
-                            palette: palette,
                             selectedID: detailShelf?.id,
                             litIDs: lit,
                             lockPreview: lockPreview,
@@ -277,6 +272,9 @@ struct KallaxView: View {
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
             .onExitCommand { if placement != nil { cancelPlacement() } else { deselect() } }
             .overlay(alignment: .bottom) { undoToast }
+            // The matches of the search in the toolbar, under its field at
+            // the top right, floating over the rack.
+            .overlay(alignment: .topTrailing) { searchResultsPanel }
         }
         .task(id: statsSignature) {
             shelfContent.refresh(allShelves, version: changes.libraryVersion)
@@ -288,10 +286,22 @@ struct KallaxView: View {
             searchIndexStale = true
             if !searchQuery.isEmpty { applySearch() }
         }
-        .onChange(of: searchQuery) { applySearch() }
+        // Clearing is immediate; typing waits for a short pause, so the page
+        // isn't searched on every keystroke.
+        .task(id: search.text) {
+            let text = search.text
+            if !text.isEmpty {
+                try? await Task.sleep(for: .milliseconds(120))
+                guard !Task.isCancelled else { return }
+            }
+            if searchQuery != text { searchQuery = text }
+        }
+        .onChange(of: searchQuery) { _, new in
+            applySearch()
+            // Cleared here (a match picked, another compartment chosen): the field follows.
+            if new.isEmpty && !search.text.isEmpty { search.text = "" }
+        }
         .settingsOpener($settingsTab)
-        .searchReveal(isPresented: $searchPresented, focus: $searchFocused, query: $searchQuery)
-        .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         // Another account synced: other records count as in the collection.
         .onChange(of: owner) {
             soldCount = soldInShelves.count
@@ -458,54 +468,43 @@ struct KallaxView: View {
         withAnimation(AppStyle.layoutAnimation ?? AppStyle.fadeAnimation) { selectShelf(shelf) }
     }
 
-    /// The search bar (only after ⌘F) and the status controls beside it;
-    /// collapsed when neither is there, so the rack moves up. Always
-    /// mounted, see `searchBarSlot`.
+    /// The status controls (sold records still in the rack), right-aligned
+    /// above the rack; absent when there are none, so the rack moves up.
     @ViewBuilder private var header: some View {
         let sold = soldCount
-        let hasStatus = sold > 0
-        // The bar centered under the page switch in the toolbar, the status
-        // on the right; the bar keeps clear of the status on both sides,
-        // so it stays centered without running into it.
-        ZStack {
-            ShelfSearchField(
-                query: $searchQuery,
-                focused: $searchFocused,
+        if sold > 0 {
+            ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
+                .frame(height: AppStyle.controlHeight)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.bottom, Self.blockSpacing)
+        }
+    }
+
+    /// Only while the committed query has words, so a field of spaces lists nothing.
+    @ViewBuilder private var searchResultsPanel: some View {
+        let typed = !SearchIndex<UUID>.words(search.text).isEmpty
+        if typed && !SearchIndex<UUID>.words(searchQuery).isEmpty {
+            ShelfSearchResultsPanel(
                 matches: searchResults.placed,
                 unplaced: searchResults.unplaced,
                 hidden: searchResults.hidden,
                 labels: rangeLabels,
                 missing: missingIDs,
-                onClear: { searchQuery = "" },
                 place: startPlacement
             )
-            .frame(maxWidth: AppStyle.searchBarMaxWidth)
-            .padding(.horizontal, statusWidth > 0 ? statusWidth + AppStyle.rowSpacing : 0)
-            .searchBarSlot(shown: showsSearchBar)
-            HStack(spacing: AppStyle.rowSpacing) {
-                if sold > 0 {
-                    ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
-                        .frame(height: AppStyle.controlHeight)
-                }
-            }
-            .onGeometryChange(for: CGFloat.self, of: \.size.width) { statusWidth = $0 }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            // Still the previous query's matches while typing pauses.
+            .opacity(searchQuery == search.text ? 1 : 0.6)
+            .animation(AppStyle.quickAnimation, value: searchQuery == search.text)
+            .frame(width: AppStyle.toolbarSearchWidth + 120)
+            .padding(.top, 6)
+            .padding(.trailing, AppStyle.pagePadding + 4)
+            .transition(.opacity)
         }
-        // The page's block spacing, collapsed along with the bar.
-        .padding(.bottom, Self.blockSpacing)
-        .searchBarSlot(shown: showsSearchBar || hasStatus)
     }
 
     @ViewBuilder private var shelfDetail: some View {
         if let shown = detailShelf {
             let stats = shelfStats[shown.id] ?? ShelfStatistics(shelf: shown)
-            let selectedCopy = focusCopy.flatMap { $0.shelf?.id == shown.id ? $0 : nil }
-            // Spines are drawn in this order; a click maps to the copy at its
-            // index, never by `positionInShelf` (which may have gaps or doubles).
-            let ordered = PositionService(context: context).ordered(shown)
-            let spot = placement.flatMap { !$0.found && $0.spot?.shelf.id == shown.id ? $0.spot : nil }
-            let missing = missingIDs
-            let missingSlots = Set(ordered.indices.filter { missing.contains(ordered[$0].id) }.map { $0 + 1 })
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 if let placement {
                     PlacementCard(
@@ -518,16 +517,7 @@ struct KallaxView: View {
                     )
                     .transition(AppStyle.funnelTransition())
                 }
-                VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                    detailHeader(for: shown, stats: stats)
-                    if !shown.isReserved && stats.count > 0 {
-                        ShelfPositionStrip(stats: stats, slots: spineSlots, palette: palette, selectedCopy: selectedCopy,
-                                           selectedSlot: selectedCopy.flatMap { copy in ordered.firstIndex { $0.id == copy.id } }.map { $0 + 1 },
-                                           insertionPosition: spot?.position, missingSlots: missingSlots, copies: ordered) { slot in
-                            if ordered.indices.contains(slot - 1) { toggleSelection(ordered[slot - 1]) }
-                        }
-                    }
-                }
+                detailHeader(for: shown, stats: stats)
                 if shown.isReserved || shown.copies.isEmpty {
                     ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                         if locked {
@@ -706,11 +696,7 @@ struct KallaxView: View {
         focusCopy = copy
     }
 
-    private func toggleSelection(_ copy: RecordCopy) {
-        if focusCopy?.id == copy.id { deselect() } else { focusCopy = copy }
-    }
-
-    // Returns the strip to its resting state; the shelf itself stays selected.
+    // Lets go of the picked record; the shelf itself stays selected.
     private func deselect() {
         guard focusCopy != nil else { return }
         focusCopy = nil

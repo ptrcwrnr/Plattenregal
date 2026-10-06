@@ -1,54 +1,18 @@
 import Foundation
 
-/// One style family's share of a shelf's copies (see `StylePalette.family`),
-/// used for the compartment's dot and the legend in the shelf detail view.
-struct ShelfStyleShare: Identifiable, Hashable {
-    var id: String { style }
-    /// Family name, or the style itself when "Sonstige" holds just one.
-    let style: String
-    /// A style with the family's color, for `StylePalette.color(for:)`.
-    let colorStyle: String
-    /// The styles counted here, most frequent first.
-    let members: [String]
-    let count: Int
-    let fraction: Double
-}
-
-/// Count and style-distribution statistics for one shelf, derived from its
-/// current copies. Never persisted — always recomputed from the live collection
-/// so it can't drift from the actual shelf contents.
+/// The count of one shelf, derived from its current copies. Never persisted —
+/// always recomputed from the live collection so it can't drift from the
+/// actual shelf contents. Reads only the copies, never their releases.
 struct ShelfStatistics {
     let shelfID: UUID
     let count: Int
     /// Reserved compartments hold no records (e.g. a named slot for something else).
     let isReserved: Bool
-    let styleShares: [ShelfStyleShare]
-    /// Primary style of every copy in physical order (left → right), "" when unknown.
-    /// Drives the spine rendering on shelf cards and in the detail pane.
-    let spineStyles: [String]
 
     init(shelf: Shelf) {
         shelfID = shelf.id
         count = shelf.copies.count
         isReserved = shelf.isReserved
-        spineStyles = PositionService.inShelfOrder(shelf.copies).map { $0.release?.primaryStyle ?? "" }
-        // Same styles, without decoding each record's style list a second time.
-        let styles = spineStyles.filter { !$0.isEmpty }
-        let total = styles.count
-        styleShares = Dictionary(grouping: styles, by: { StylePalette.family(of: $0).name })
-            .map { name, styles in
-                let members = Dictionary(grouping: styles, by: { $0 }).mapValues(\.count)
-                    .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key.localizedStandardCompare($1.key) == .orderedAscending }
-                    .map(\.key)
-                // "Sonstige" is only a name for several unrelated styles; a single one keeps its own.
-                let label = name == StylePalette.otherFamily && members.count == 1 ? members[0] : name
-                return ShelfStyleShare(style: label, colorStyle: StylePalette.family(of: styles[0]).colorStyle, members: members,
-                                       count: styles.count, fraction: total > 0 ? Double(styles.count) / Double(total) : 0)
-            }
-            .sorted {
-                if $0.count != $1.count { return $0.count > $1.count }
-                return $0.style.localizedStandardCompare($1.style) == .orderedAscending
-            }
     }
 }
 
@@ -77,7 +41,7 @@ struct ShelfLabels {
 }
 
 /// Statistics and alphabetical ends per shelf, kept while the shelf's records
-/// stay the same. Both read every record's release, and after each save the
+/// stay the same. The ends read every record's release, and after each save the
 /// shelf page's query hands back records whose releases SwiftData loads one
 /// by one again (~0.1 s for 850 records). Sorting a record in changes one
 /// shelf, so only that one is read again. Release metadata is followed via

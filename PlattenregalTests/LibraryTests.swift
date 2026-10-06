@@ -100,7 +100,7 @@ extension AllTests {
                 let full = ShelfRangeLabels.compute(for: shelves)
                 return shelves.allSatisfy { shelf in
                     let stats = cache.stats(for: shelf), fresh = ShelfStatistics(shelf: shelf)
-                    return cached[shelf.id] == full[shelf.id] && stats.count == fresh.count && stats.spineStyles == fresh.spineStyles
+                    return cached[shelf.id] == full[shelf.id] && stats.count == fresh.count && stats.isReserved == fresh.isReserved
                 }
             }
             #expect(matchesFullRecompute())
@@ -725,20 +725,6 @@ extension AllTests.LibraryTests {
         #expect(labels[shelves[1].id] == "Th · 2")
         #expect(labels[shelves[2].id] == "Th · 3")
         #expect(labels[shelves[3].id] == "U")
-    }
-    @Test func styleSharesCountFamilies() throws {
-        let (container, shelves, service) = try fixture(); _ = container
-        for (artist, style) in [("A", "Trance"), ("B", "Trance"), ("C", "Progressive Trance"), ("D", "Disco")] {
-            try add(service, shelves[0], artist).release?.styles = [style]
-        }
-        let shares = ShelfStatistics(shelf: shelves[0]).styleShares
-        #expect(shares.map(\.style) == ["Trance", "Disco"])
-        #expect(shares[0].count == 3 && shares[0].members == ["Trance", "Progressive Trance"])
-        #expect(shares[1].colorStyle == "")
-
-        try add(service, shelves[0], "E").release?.styles = ["Funk"]
-        let other = try #require(ShelfStatistics(shelf: shelves[0]).styleShares.first { $0.style == StylePalette.otherFamily })
-        #expect(other.count == 2 && Set(other.members) == ["Disco", "Funk"])
     }
 }
 

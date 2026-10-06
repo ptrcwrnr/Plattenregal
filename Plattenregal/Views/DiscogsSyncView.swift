@@ -234,14 +234,10 @@ struct WantlistView: View {
     /// handed in would keep the value it had then.
     let search: LibrarySearch
     private var query: String { search.query }
-    @FocusState private var searchFocused: Bool
-    private var showsSearchBar: Bool { search.isPresented || !search.query.isEmpty }
     @Query private var copies: [RecordCopy]
     @Query private var accounts: [DiscogsAccount]
     /// Shown or not, without re-rendering the list on every page switch.
     @State private var activity = PageActivity()
-    /// Search hits in the collection, for the hint next to the count.
-    @State private var collectionMatches = 0
     // Same two stages as the collection: sort on data changes, cheap
     // filtering per (debounced) keystroke with the shared search texts.
     @State private var sortedEntries: [WantlistEntry] = []
@@ -297,17 +293,9 @@ struct WantlistView: View {
                     .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
-            OverviewSearchControl(
-                placeholder: String(localized: "Wantlist durchsuchen"),
-                query: Bindable(search).query,
-                focus: $searchFocused,
-                otherCount: collectionMatches,
-                otherSection: .collection
-            ) { pages.current = .collection }
-            .padding(.horizontal, pageMargin)
-            .padding(.top, DemoMode.showsBanner ? AppStyle.rowSpacing : AppStyle.pagePadding)
-            .searchBarSlot(shown: showsSearchBar, topPadding: DemoMode.showsBanner ? AppStyle.rowSpacing : AppStyle.pagePadding)
-            Color.clear.frame(height: showsSearchBar || DemoMode.showsBanner ? AppStyle.sectionSpacing : AppStyle.pagePadding)
+            // Atelier: right under its opaque toolbar (see CollectionView).
+            Color.clear.frame(height: DemoMode.showsBanner ? AppStyle.sectionSpacing
+                              : AppStyle.isAtelier && layout == .grid ? 0 : AppStyle.pagePadding)
             Group {
             if !loaded {
                 Color.clear
@@ -353,8 +341,6 @@ struct WantlistView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.release?.coverURL }.prefix(3))) }
-        .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
-        .searchReveal(isPresented: Bindable(search).isPresented, focus: $searchFocused, query: Bindable(search).query)
         .settingsOpener($settingsTab)
         .onChange(of: order) { _, _ in scrollPosition = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
@@ -427,12 +413,12 @@ struct WantlistView: View {
         let visible: [WantlistEntry]
         if words.isEmpty {
             visible = sortedEntries
-            collectionMatches = 0
+            search.collectionMatches = 0
         } else {
             let index = LibrarySearchIndexes.shared.wantlist(entries)
             visible = sortedEntries.filter { index.matches($0.persistentModelID, words) }
             let collection = LibrarySearchIndexes.shared.collection(copies)
-            collectionMatches = Set(activeCopies.filter { collection.matches($0.id, words) }.map(\.group)).count
+            search.collectionMatches = Set(activeCopies.filter { collection.matches($0.id, words) }.map(\.group)).count
         }
         let searchEnded = !appliedQuery.isEmpty && words.isEmpty
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {

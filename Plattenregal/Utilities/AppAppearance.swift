@@ -100,12 +100,8 @@ enum AppStyle {
     static let controlHeight: CGFloat = 26
     /// Search bars (Liquid Glass capsule, see `searchBarChrome`).
     static let searchBarHeight: CGFloat = 34
-    /// Wide enough for any query; wider only looks empty.
-    static let searchBarMaxWidth: CGFloat = 480
-    /// A search bar sliding down out of the toolbar and back up, fading as it
-    /// goes; the page below follows with the same curve. Only a fade with
-    /// "Bewegung reduzieren".
-    static var searchBarAnimation: Animation { reduceMotion ? fadeAnimation : .smooth(duration: 0.35) }
+    /// The search field in the window's toolbar (see `ToolbarSearchField`).
+    static let toolbarSearchWidth: CGFloat = 240
     /// Leaving a search: the hits fade out quickly, then the whole list fades
     /// in where it was before the search – timed like a page switch (see
     /// `PageStackView.show`). Gliding hundreds of covers back in looked busy.
@@ -502,7 +498,7 @@ struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
     var onSubmit: (() -> Void)?
-    /// Focus of the text field, for fields that ⌘F reveals (see `searchReveal`).
+    /// Focus of the text field, for the search field in the toolbar (⌘F).
     var focus: FocusState<Bool>.Binding?
     var body: some View {
         HStack(spacing: 6) {
@@ -554,11 +550,14 @@ struct GlassTextField: View {
     }
 }
 
-/// ⌘F presses (and the search button in the toolbar), counted. One object
-/// for the window, handed to every page (see `PageStack`); the page shown
-/// answers each request by revealing its search (see `SearchReveal`).
+/// ⌘F presses, counted, and whether the search field in the toolbar has the
+/// focus. One object for the window, handed to every page (see `PageStack`):
+/// the field answers each request by taking the focus (see
+/// `ToolbarSearchField`); pages ask whether typing goes into it (the shelf's
+/// ⌘Z, for example, belongs to the field's text then).
 @Observable final class SearchRequests {
     private(set) var count = 0
+    var fieldFocused = false
     func request() { count += 1 }
 }
 
@@ -569,98 +568,6 @@ extension EnvironmentValues {
     var searchRequests: SearchRequests? {
         get { self[SearchRequestsKey.self] }
         set { self[SearchRequestsKey.self] = newValue }
-    }
-}
-
-/// How a page's search appears: hidden until ⌘F (or the search button in the
-/// toolbar), then it slides in at the top with the cursor in it. It stays while
-/// it holds a query and goes away again once it is empty and loses the focus
-/// (Esc, clicking elsewhere, another page). ⌘F toggles: pressed again while
-/// typing in it, it clears the query and closes the search; shown but not
-/// focused, it puts the cursor back in first.
-struct SearchReveal: ViewModifier {
-    @Environment(\.pageVisibility) private var visibility
-    @Environment(\.searchRequests) private var searchRequests
-    @Binding var isPresented: Bool
-    var focus: FocusState<Bool>.Binding
-    @Binding var query: String
-
-    func body(content: Content) -> some View {
-        let pageShown = visibility?.isShown ?? true
-        return content
-            .onChange(of: searchRequests?.count ?? 0) {
-                // Every page hears the request; only the visible one answers.
-                guard pageShown else { return }
-                if (isPresented || !query.isEmpty) && focus.wrappedValue {
-                    withAnimation(AppStyle.searchBarAnimation) {
-                        query = ""
-                        isPresented = false
-                    }
-                    focus.wrappedValue = false
-                    return
-                }
-                withAnimation(AppStyle.searchBarAnimation) { isPresented = true }
-                // The field is inserted by this update; focus it once it exists.
-                DispatchQueue.main.async { focus.wrappedValue = true }
-            }
-            .onChange(of: focus.wrappedValue) { _, focused in if !focused { hideIfEmpty() } }
-            // Cleared from outside (e.g. picking a result) while not typing.
-            .onChange(of: query) { _, new in if new.isEmpty && !focus.wrappedValue { hideIfEmpty() } }
-            .onChange(of: pageShown) { _, shown in if !shown { hideIfEmpty() } }
-    }
-
-    private func hideIfEmpty() {
-        guard isPresented, query.isEmpty else { return }
-        withAnimation(AppStyle.searchBarAnimation) { isPresented = false }
-    }
-}
-
-/// A search bar that is always there and only faded, slid and collapsed.
-/// Inserted on the first ⌘F it popped in at full strength instead of fading:
-/// its glass and text field were being set up in that very frame and the
-/// insert transition skipped ahead. Mounted from the start, revealing it is
-/// a plain animation of a view that already exists.
-///
-/// Collapsed it is 0 high, but a stack still puts its spacing on both sides:
-/// give it no stack spacing and pad the content instead, so the padding
-/// collapses with it (a negative padding can't take the spacing back).
-private struct SearchBarSlot: ViewModifier {
-    let shown: Bool
-    /// Space inside the slot above the bar (its top padding): the fade
-    /// described below ends where the bar begins.
-    let topPadding: CGFloat
-    /// Height of that fade; no more than the page padding, so it stays
-    /// below the toolbar.
-    private let fade: CGFloat = AppStyle.pagePadding
-    func body(content: Content) -> some View {
-        content
-            .opacity(shown ? 1 : 0)
-            .offset(y: shown || AppStyle.reduceMotion ? 0 : -AppStyle.searchBarHeight)
-            .frame(height: shown ? nil : 0, alignment: .bottom)
-            // Faded out softly above the bar, so sliding up it melts away
-            // before the page's edge instead of running into the page switch
-            // in the toolbar. Open to the sides and below for the glass and
-            // the results list hanging under the shelf search.
-            .mask(alignment: .top) {
-                VStack(spacing: 0) {
-                    LinearGradient(stops: Self.fadeStops, startPoint: .top, endPoint: .bottom)
-                        .frame(height: fade)
-                    Rectangle()
-                }
-                .padding(.top, topPadding - fade)
-                .padding(.horizontal, -100)
-                .padding(.bottom, -2000)
-            }
-            .allowsHitTesting(shown)
-            // Not reachable with Tab while hidden.
-            .disabled(!shown)
-            .accessibilityHidden(!shown)
-    }
-
-    /// Smoothstep from clear to opaque: no visible start or end of the fade.
-    private static let fadeStops: [Gradient.Stop] = (0...8).map {
-        let t = Double($0) / 8
-        return .init(color: .black.opacity(t * t * (3 - 2 * t)), location: t)
     }
 }
 
@@ -701,13 +608,6 @@ extension View {
             .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
     }
 
-    /// Keeps a search bar (or a row holding one) mounted while hidden; see
-    /// `SearchBarSlot`.
-    /// `topPadding`: the padding above the bar inside the slot.
-    func searchBarSlot(shown: Bool, topPadding: CGFloat = 0) -> some View {
-        modifier(SearchBarSlot(shown: shown, topPadding: topPadding))
-    }
-
     /// Marks a text field as not an AutoFill target. Without a content type
     /// macOS treats a field as "unannotated" and, the first time one gets the
     /// focus after launch, prepares its offer of received one-time codes
@@ -716,11 +616,6 @@ extension View {
     /// know keeps it out; typing, spelling and the rest are unaffected.
     func noTextAutoFill() -> some View {
         textContentType(NSTextContentType(rawValue: "de.private.Plattenregal.noAutoFill"))
-    }
-
-    /// See `SearchReveal`. Show the search while `isPresented || !query.isEmpty`.
-    func searchReveal(isPresented: Binding<Bool>, focus: FocusState<Bool>.Binding, query: Binding<String>) -> some View {
-        modifier(SearchReveal(isPresented: isPresented, focus: focus, query: query))
     }
 }
 

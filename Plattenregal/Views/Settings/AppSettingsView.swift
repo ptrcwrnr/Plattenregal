@@ -310,19 +310,25 @@ struct AppearanceSettingsView: View {
                 set: { storedCoverSize = DisplaySettings.coverSize($0) })
     }
 
+    /// Atelier brings its own colors; the choices stay stored for Liquid Glass.
+    private var colorHint: String? {
+        preferences.signatureDesign.usesColorChoices ? nil : String(localized: "Gilt nur für Liquid Glass.")
+    }
+
     var body: some View {
         @Bindable var preferences = preferences
         SettingsPage {
-            SettingsCard(title: String(localized: "Designs")) {
-                SignatureDesignOption(design: .none, selected: preferences.signatureDesign == .none) {
-                    withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = .none }
-                }
-                Divider()
-                Text("Signature Designs")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                SignatureDesignOption(design: .atelier, selected: preferences.signatureDesign == .atelier) {
-                    withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = .atelier }
+            SettingsCard(title: String(localized: "Design")) {
+                ForEach(DesignCategory.allCases) { category in
+                    if category != DesignCategory.allCases.first { Divider() }
+                    Text(category.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    ForEach(category.designs) { design in
+                        SignatureDesignOption(design: design, selected: preferences.signatureDesign == design) {
+                            withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = design }
+                        }
+                    }
                 }
             }
             SettingsCard(title: String(localized: "Erscheinungsbild")) {
@@ -331,7 +337,7 @@ struct AppearanceSettingsView: View {
                         .accessibilityLabel("Modus")
                 }
                 Divider()
-                SettingsRow(title: String(localized: "Akzentfarbe")) {
+                SettingsRow(title: String(localized: "Akzentfarbe"), hint: colorHint) {
                     HStack(spacing: 6) {
                         ForEach(AccentChoice.allCases) { choice in
                             ColorSwatch(title: choice.title, color: choice.color, rainbow: choice == .system,
@@ -340,9 +346,11 @@ struct AppearanceSettingsView: View {
                             }
                         }
                     }
+                    .disabled(!preferences.signatureDesign.usesColorChoices)
+                    .opacity(preferences.signatureDesign.usesColorChoices ? 1 : 0.4)
                 }
                 Divider()
-                SettingsRow(title: String(localized: "Ambient-Farbe")) {
+                SettingsRow(title: String(localized: "Ambient-Farbe"), hint: colorHint) {
                     HStack(spacing: 6) {
                         ForEach(AmbientChoice.allCases) { choice in
                             ColorSwatch(title: choice.title, color: choice.color ?? .secondary, off: choice == .off,
@@ -351,6 +359,8 @@ struct AppearanceSettingsView: View {
                             }
                         }
                     }
+                    .disabled(!preferences.signatureDesign.usesColorChoices)
+                    .opacity(preferences.signatureDesign.usesColorChoices ? 1 : 0.4)
                 }
             }
             SettingsCard(title: String(localized: "Übersicht"),
@@ -395,6 +405,7 @@ struct AppearanceSettingsView: View {
                 }
             }
         }
+        .animation(AppStyle.quickAnimation, value: preferences.signatureDesign)
         // Changes every page's look: worth a line in the protocol for bug reports.
         .onChange(of: preferences.signatureDesign) { old, new in
             AppLog.info("Einstellungen", "Design: \(new.logName) statt \(old.logName)")
@@ -412,16 +423,19 @@ private struct SignatureDesignOption: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                if design == .atelier {
-                    AtelierDesignPreview()
-                        .frame(width: 112, height: 72)
+                Group {
+                    switch design {
+                    case .liquidGlass: LiquidGlassDesignPreview()
+                    case .atelier: AtelierDesignPreview()
+                    }
                 }
+                .frame(width: 112, height: 72)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(design.title).font(.body.weight(.semibold))
                         .foregroundStyle(.primary)
                     Text(design == .atelier
-                         ? String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon.")
-                         : String(localized: "Verwendet deine bisherigen Einstellungen für Modus, Akzent- und Ambient-Farbe."))
+                         ? String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Flächen, Angaben unter jedem Cover.")
+                         : String(localized: "Glas wie in macOS, mit deiner Akzent- und Ambient-Farbe."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -456,6 +470,38 @@ private struct SignatureDesignOption: View {
         .buttonStyle(.plain)
         .accessibilityLabel(design.title)
         .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
+/// Liquid Glass in miniature: a glass page switch over a soft ambient glow
+/// and a few colored sleeves.
+private struct LiquidGlassDesignPreview: View {
+    @State private var preferences = AppPreferences.shared
+    var body: some View {
+        let glow = preferences.ambient.color ?? .secondary
+        ZStack(alignment: .top) {
+            Color(nsColor: .windowBackgroundColor)
+            RadialGradient(colors: [glow.opacity(0.35), .clear], center: .top, startRadius: 0, endRadius: 80)
+            VStack(spacing: 7) {
+                Capsule().fill(.white.opacity(0.55))
+                    .overlay(Capsule().strokeBorder(.white.opacity(0.8), lineWidth: 0.5))
+                    .overlay(Capsule().fill(preferences.accent.color.opacity(0.9)).frame(width: 12, height: 3))
+                    .frame(width: 46, height: 10)
+                    .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
+                HStack(spacing: 5) {
+                    ForEach([Color.pink, .teal, .indigo], id: \.self) { color in
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(LinearGradient(colors: [color.opacity(0.75), color.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    }
+                }
+                .frame(height: 26)
+                .padding(.horizontal, 9)
+            }
+            .padding(.top, 6)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))
+        .accessibilityHidden(true)
     }
 }
 

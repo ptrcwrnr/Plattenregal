@@ -22,19 +22,10 @@ struct CollectionView: View {
     // built once (see `PageStack`), and a binding handed in would keep the
     // value it had then.
     private let search: LibrarySearch?
-    @State private var localQuery = ""
-    @FocusState private var searchFocused: Bool
-    /// The search bar ⌘F reveals; the statistics panel has none.
-    private var showsSearchBar: Bool {
-        guard let search else { return false }
-        return search.isPresented || !search.query.isEmpty
-    }
-    private var queryBinding: Binding<String> { search.map { Bindable($0).query } ?? $localQuery }
-    private var query: String { search?.query ?? localQuery }
+    /// The query typed into the search field in the toolbar (see `ToolbarSearchField`).
+    private var query: String { search?.query ?? "" }
 
     @Query private var wantlistEntries: [WantlistEntry]
-    /// Search hits in the wantlist, for the hint next to the count.
-    @State private var wantlistMatches = 0
     let showShelf: (RecordCopy) -> Void
     var analyticsFilter: StatisticGroup? = nil
     /// Kept for as long as the page lives (see `PageStack`), so a section
@@ -181,9 +172,12 @@ struct CollectionView: View {
         }
         normalizeGridScrollPosition(in: grouped)
         alphabetIndex = showsAlphabetIndex ? alphabetAnchors(for: items) : [:]
-        if pages == nil || words.isEmpty { wantlistMatches = 0 } else {
-            let index = LibrarySearchIndexes.shared.wantlist(wantlistEntries)
-            wantlistMatches = currentWantlist.reduce(0) { $0 + (index.matches($1.persistentModelID, words) ? 1 : 0) }
+        // For the button beside the search field that jumps to the wantlist's hits.
+        if let search, pages != nil {
+            if words.isEmpty { search.wantlistMatches = 0 } else {
+                let index = LibrarySearchIndexes.shared.wantlist(wantlistEntries)
+                search.wantlistMatches = currentWantlist.reduce(0) { $0 + (index.matches($1.persistentModelID, words) ? 1 : 0) }
+            }
         }
     }
 
@@ -224,7 +218,6 @@ struct CollectionView: View {
 
     var body: some View {
         let visibleIDs = items.map(\.id)
-        let searchTopPadding = DemoMode.showsBanner && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding
         VStack(spacing: 0) {
             // Not in the drill-down sheets of the statistics: only on the page itself.
             if DemoMode.showsBanner && analyticsFilter == nil {
@@ -233,27 +226,15 @@ struct CollectionView: View {
                     .padding(.trailing, alphabetGutter)
                     .padding(.top, AppStyle.pagePadding)
             }
-            if let pages {
-                OverviewSearchControl(
-                    placeholder: String(localized: "Collection durchsuchen"),
-                    query: queryBinding,
-                    focus: $searchFocused,
-                    otherCount: wantlistMatches,
-                    otherSection: .wantlist
-                ) { pages.current = .wantlist }
-                .padding(.horizontal, AppStyle.pagePadding + 4)
-                .padding(.top, searchTopPadding)
-                .searchBarSlot(shown: showsSearchBar, topPadding: searchTopPadding)
-            }
             if showsControls {
                 collectionControls(items: items)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, AppStyle.pagePadding + 4)
                     .padding(.trailing, alphabetGutter)
-                    .padding(.top, showsSearchBar || (DemoMode.showsBanner && analyticsFilter == nil) ? AppStyle.rowSpacing : AppStyle.pagePadding)
+                    .padding(.top, DemoMode.showsBanner && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
                     .transition(AppStyle.funnelTransition())
             }
-            Color.clear.frame(height: showsSearchBar || showsControls || DemoMode.showsBanner ? AppStyle.sectionSpacing : AppStyle.pagePadding)
+            Color.clear.frame(height: showsControls || DemoMode.showsBanner ? AppStyle.sectionSpacing : topSpace)
             Group {
             if !loaded {
                 Color.clear
@@ -417,10 +398,7 @@ struct CollectionView: View {
             .overlay(alignment: .top) { if analyticsFilter == nil { DiscogsSyncPill() } }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // The sync status line slides in/out and the content below follows smoothly.
-        .animation(AppStyle.searchBarAnimation, value: showsSearchBar)
         .animation(AppStyle.standardAnimation, value: showsControls)
-        .searchReveal(isPresented: search.map { Bindable($0).isPresented } ?? .constant(false), focus: $searchFocused, query: queryBinding)
         .background { if analyticsFilter == nil { AmbientBackdrop(covers: ambientCovers) } }
         .settingsOpener($settingsTab)
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
@@ -561,6 +539,11 @@ struct CollectionView: View {
             }
         )
     }
+
+    /// Above the content, right under the toolbar. Atelier's toolbar is
+    /// opaque, so the grid's own padding is enough there: its covers start
+    /// as far from the toolbar as from the window's edge.
+    private var topSpace: CGFloat { AppStyle.isAtelier && layout == .grid ? 0 : AppStyle.pagePadding }
 
     /// In the window the page has no header bar: page switch, grid/list and
     /// search are in the toolbar. The statistics panel has no toolbar, so
@@ -744,54 +727,6 @@ struct MatchedTrackLine: View {
         .foregroundStyle(.tint)
         .lineLimit(1)
         .help("Gefunden über den Track „\(track.title)“")
-    }
-}
-
-/// The search bar of collection and wantlist, centered under the page switch
-/// in the toolbar. The button for the other page's hits hangs off its right
-/// end, so it never pushes the bar off center.
-struct OverviewSearchControl: View {
-    let placeholder: String
-    @Binding var query: String
-    var focus: FocusState<Bool>.Binding
-    let otherCount: Int
-    let otherSection: Destination
-    let openOtherSection: () -> Void
-
-    private var showsOtherSection: Bool {
-        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && otherCount > 0
-    }
-
-    var body: some View {
-        AppSearchField(placeholder: placeholder, text: $query, focus: focus)
-            .frame(maxWidth: AppStyle.searchBarMaxWidth)
-            // A zero-width anchor on the bar's right edge; the button starts
-            // there and extends outward, so the bar stays centered.
-            .overlay(alignment: .trailing) {
-                Color.clear.frame(width: 0).overlay(alignment: .leading) {
-                    if showsOtherSection {
-                        Button(action: openOtherSection) {
-                            Text("\(otherCount.formatted()) in der \(otherSection.title)")
-                                .monospacedDigit()
-                                .lineLimit(1)
-                                .padding(.horizontal, 14)
-                                .frame(height: AppStyle.searchBarHeight)
-                                .foregroundStyle(.secondary)
-                                .contentShape(Capsule())
-                                .glassEffect(.regular.interactive(), in: .capsule)
-                        }
-                        .buttonStyle(.plain)
-                        .fixedSize()
-                        .padding(.leading, AppStyle.itemSpacing)
-                        .help("Treffer in der \(otherSection.title) anzeigen")
-                        .accessibilityLabel("\(otherCount) Treffer in der \(otherSection.title) anzeigen")
-                        .transition(.opacity)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .font(.callout)
-            .animation(AppStyle.fadeAnimation, value: showsOtherSection)
     }
 }
 

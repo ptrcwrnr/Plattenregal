@@ -53,5 +53,5 @@ enum PreviewData {
     }
 }
 #Preview("Hauptfenster") { RootView().modelContainer(PreviewData.container).frame(width: 1250, height: 850) }
-#Preview("KALLAX") { KallaxView(requests: ShelfRequests()).modelContainer(PreviewData.container).frame(width: 1000, height: 800) }
+#Preview("KALLAX") { KallaxView(requests: ShelfRequests(), search: ShelfSearch()).modelContainer(PreviewData.container).frame(width: 1000, height: 800) }
 #endif

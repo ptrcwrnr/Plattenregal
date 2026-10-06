@@ -3,13 +3,10 @@ import SwiftData
 
 // MARK: - Search
 
-/// Slim search field; matches float over the rack like a popover so the page
-/// layout never shifts while typing.
-struct ShelfSearchField: View {
-    /// Committed query, updated after a short pause in typing so the page
-    /// behind the field isn't rebuilt on every keystroke.
-    @Binding var query: String
-    var focused: FocusState<Bool>.Binding
+/// The matches of the shelf search (typed into the field in the toolbar),
+/// floating over the rack like a popover so the page layout never shifts
+/// while typing.
+struct ShelfSearchResultsPanel: View {
     let matches: [RecordCopy]
     /// Records without a shelf; picking one shows where it belongs, picking
     /// a placed match shows where it stands.
@@ -19,56 +16,9 @@ struct ShelfSearchField: View {
     let labels: ShelfLabels
     /// Copies marked "Vermisst".
     let missing: Set<UUID>
-    let onClear: () -> Void
     let place: (RecordCopy) -> Void
-    @State private var text = ""
 
-    /// Only words count: a field of spaces searches nothing.
-    private static func hasWords(_ value: String) -> Bool { !SearchIndex<UUID>.words(value).isEmpty }
-
-    private func clear() {
-        text = ""
-        onClear()
-    }
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            TextField("Platte im Regal suchen …", text: $text)
-                .textFieldStyle(.plain)
-                .noTextAutoFill()
-                .focused(focused)
-                // Esc clears the query; with an empty field it gives up the
-                // focus, which hides the search bar again (see `SearchReveal`).
-                .onExitCommand { if text.isEmpty { focused.wrappedValue = false } else { clear() } }
-            if !text.isEmpty {
-                Button(action: clear) {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .font(.callout)
-        .searchBarChrome()
-        .overlay(alignment: .topLeading) {
-            if Self.hasWords(text) && Self.hasWords(query) {
-                results.offset(y: AppStyle.searchBarHeight + 6)
-                    // Still the previous query's matches while typing pauses.
-                    .opacity(query == text ? 1 : 0.6)
-                    .animation(AppStyle.quickAnimation, value: query == text)
-            }
-        }
-        .task(id: text) {
-            // Clearing is immediate; typing waits for a short pause.
-            if !text.isEmpty {
-                try? await Task.sleep(for: .milliseconds(120))
-                guard !Task.isCancelled else { return }
-            }
-            if query != text { query = text }
-        }
-        // Cleared from outside (picking a shelf or a result).
-        .onChange(of: query) { _, new in if new.isEmpty { text = "" } }
-    }
+    var body: some View { results }
 
     @ViewBuilder private var results: some View {
         Group {
@@ -139,128 +89,6 @@ private struct SearchResultRow: View {
         .contentShape(Rectangle())
         .appHoverable(hovering, cornerRadius: 8)
         .onHover { hovering = $0 }
-    }
-}
-
-/// Full-width strip of the selected compartment: an abstracted row of record
-/// spines standing left to right, matching how the physical copies sit in the
-/// shelf. Clicking a spine pulls it out; the line underneath carries both the
-/// selection and the genre legend so the colors are explained right where
-/// they're used.
-struct ShelfPositionStrip: View {
-    let stats: ShelfStatistics
-    let slots: Int
-    let palette: StylePalette
-    let selectedCopy: RecordCopy?
-    /// 1-based index of `selectedCopy` among the drawn spines.
-    let selectedSlot: Int?
-    /// Where a record being sorted in would go; named in the line below the spines.
-    var insertionPosition: Int? = nil
-    /// 1-based spines marked "Vermisst"; drawn as an outline.
-    var missingSlots: Set<Int> = []
-    /// The records in spine order, for the cover shown on hover.
-    let copies: [RecordCopy]
-    let select: (Int) -> Void
-
-    /// The spine under the pointer (1-based), once the cover is shown.
-    @State private var hoveredSlot: Int?
-    /// The cover appears only after the pointer rested a moment, so passing
-    /// over the strip on the way to the table doesn't flash it; from then on
-    /// it follows the pointer at once, until it leaves the strip.
-    @State private var armed = false
-    @State private var arming: Task<Void, Never>?
-    /// Where the pointer is while the delay runs.
-    @State private var pendingSlot: Int?
-    @State private var rackWidth: CGFloat = 0
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            SpineRack(
-                styles: stats.spineStyles,
-                slots: slots,
-                palette: palette,
-                selectedPosition: selectedSlot,
-                missingPositions: missingSlots,
-                selectable: true,
-                onSelect: select
-            )
-            .frame(height: 46)
-            .onGeometryChange(for: CGFloat.self, of: \.size.width) { rackWidth = $0 }
-            .onContinuousHover { phase in
-                switch phase {
-                case .active(let point): hover(at: point.x)
-                case .ended:
-                    arming?.cancel(); arming = nil
-                    armed = false; hoveredSlot = nil
-                }
-            }
-            .overlay { hoverCover }
-            HStack(spacing: AppStyle.rowSpacing) {
-                Group {
-                    if let insertionPosition {
-                        Text("Neue Platte an Position \(insertionPosition) · \(AppStyle.records(stats.count)) im Fach")
-                            .foregroundStyle(AppStyle.accent)
-                    } else if let copy = selectedCopy {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(palette.color(for: copy.release?.primaryStyle ?? "", solid: true))
-                                .frame(width: 7, height: 7)
-                            Text("Position \(selectedSlot ?? copy.positionInShelf) von \(stats.count) · \(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")")
-                                .foregroundStyle(.primary)
-                            if let slot = selectedSlot, missingSlots.contains(slot) { MissingBadge() }
-                        }
-                    } else {
-                        // The count is in the header right above.
-                        Text(String(localized: "Von links nach rechts")
-                             + (missingSlots.isEmpty ? "" : String(localized: " · \(missingSlots.count) vermisst")))
-                    }
-                }
-                .lineLimit(1)
-                .truncationMode(.tail)
-                Spacer(minLength: AppStyle.rowSpacing)
-                ShelfStyleLegend(stats: stats, palette: palette)
-                    .layoutPriority(-1)
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
-    }
-
-    private var layout: SpineLayout { SpineLayout(width: rackWidth, slots: max(slots, stats.spineStyles.count, 1)) }
-
-    private func hover(at x: CGFloat) {
-        guard rackWidth > 0 else { return }
-        let index = layout.index(at: x)
-        let slot = copies.indices.contains(index) ? index + 1 : nil
-        if armed { hoveredSlot = slot; return }
-        guard arming == nil else { pendingSlot = slot; return }
-        pendingSlot = slot
-        arming = Task {
-            try? await Task.sleep(for: .milliseconds(450))
-            guard !Task.isCancelled else { return }
-            armed = true
-            hoveredSlot = pendingSlot
-            arming = nil
-        }
-    }
-    /// The hovered record's cover on a small glass card beside its spine, on
-    /// whichever side has room. Purely visual: clicks reach the spines.
-    private var hoverCover: some View {
-        GeometryReader { geometry in
-            if let slot = hoveredSlot, copies.indices.contains(slot - 1) {
-                let card: CGFloat = 52
-                let spine = layout.midX(slot - 1)
-                let offset = max(layout.pitch, 3) + 8 + card / 2
-                let x = spine + offset + card / 2 <= geometry.size.width ? spine + offset : spine - offset
-                CoverView(url: copies[slot - 1].release?.coverURL, size: card - 8)
-                    .padding(4)
-                    .glassEffect(.regular, in: .rect(cornerRadius: 10))
-                    .position(x: x, y: geometry.size.height - card / 2)
-                    .transition(AppStyle.reduceMotion ? .opacity : .scale(scale: 0.8, anchor: .bottom).combined(with: .opacity))
-            }
-        }
-        .allowsHitTesting(false)
-        .animation(AppStyle.quickAnimation, value: hoveredSlot)
     }
 }
 
