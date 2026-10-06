@@ -864,6 +864,8 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     /// Right-click on an option, with the click position (see `onSecondaryClick`).
     var secondaryClick: ((Value, UnitPoint) -> Void)? = nil
     @ViewBuilder let label: (Value) -> Label
+    /// The selection pill is one view sliding between the options.
+    @Namespace private var pill
 
     var body: some View {
         let row = HStack(spacing: 0) {
@@ -887,6 +889,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                             if AppStyle.isAtelier && selected {
                                 RoundedRectangle(cornerRadius: 7).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
                                     .padding(.vertical, 3)
+                                    .matchedGeometryEffect(id: "pill", in: pill)
                             }
                         }
                         .contentShape(Capsule())
@@ -897,7 +900,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
             }
         }
         .font(small ? .callout : .body)
-        .animation(AppStyle.quickAnimation, value: selection)
+        .animation(.smooth(duration: 0.3), value: selection)
         .fixedSize()
         if glass {
             row.padding(.horizontal, 3)
