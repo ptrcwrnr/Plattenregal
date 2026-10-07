@@ -6870,6 +6870,16 @@
         }
       }
     },
+    "Position %lld von %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Position unter den Reitern der Regalseite." : {
       "localizations" : {
         "en" : {

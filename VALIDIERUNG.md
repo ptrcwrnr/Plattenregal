@@ -44,6 +44,13 @@ Testnachweis: `/tmp/Plattenregal-Doku-20261007/Logs/Test/Test-Plattenregal-2026.
 - Prüfung mit echten Fensterfotos (`screencapture -l` auf das Demo-Fenster, da `--snapshot` kein Liquid Glass zeichnet): Collection mit Suche, Wantlist, Regal und Statistik in Modern hell/dunkel sowie Klassisch hell. 196 Tests bestanden, 0 Compilerwarnungen.
 - Nicht geprüft: die unteren Statistik-Bereiche (Künstler, Zufallsfund, Labels) im Bild, die gleitende Kapsel in Bewegung (nur Endzustand), das Einstellungsfenster in Modern.
 
+## Nachprüfung mit echten Fensterfotos (07.10.2026, später)
+
+- Vorgehen: Demo starten, Fenster über seine Prozess-ID finden, Scrollen und Klicks als Ereignisse an das Demo-Fenster, Fotos mit `screencapture -l`. So sind auch Glas, Popover und Zwischenstände einer Animation sichtbar.
+- Geprüft: Statistik vollständig (beide Designs), Listen von Collection, Wantlist und Fach, Popover und Rechtsklick-Menü, Einstellungen, Klassisch dunkel, Regalsuche, Positionsregler, Auswahlkapsel in Bewegung. Befunde und Korrekturen in AENDERUNGEN.md.
+- Die im Abschnitt darunter als offen vermerkten **Tour-Bilder sind erneuert** (Deutsch/Englisch, hell/dunkel) und zeigen den aktuellen Aufbau.
+- 196 Tests bestanden, 0 Compilerwarnungen.
+
 ## Grenzen dieser Prüfung
 
 - Keine visuelle oder interaktive Prüfung der Fehlerseiten, kein absichtlich ausgelöster Absturz und kein echter Schlüsselbundfehler. Automatisierte Tests laufen mit lokalen Attrappen und Datenbanken im Arbeitsspeicher.
