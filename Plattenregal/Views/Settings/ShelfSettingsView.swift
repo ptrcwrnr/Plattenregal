@@ -36,17 +36,8 @@ struct ShelfSettingsView: View {
             Button("Namen ändern …") { namingID = shelf.id }
             Button("Fach entsperren") { setLocked(shelf, false) }
         } else {
-            Button {
-                setLocked(shelf, true)
-            } label: {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Fach sperren")
-                    if !shelf.copies.isEmpty {
-                        Text("Nur leere Fächer lassen sich sperren").font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .disabled(!shelf.copies.isEmpty)
+            Button("Fach sperren") { setLocked(shelf, true) }
+                .disabled(!shelf.copies.isEmpty)
         }
     }
 

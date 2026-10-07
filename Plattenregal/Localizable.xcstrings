@@ -131,36 +131,6 @@
         }
       }
     },
-    "Beim Einsortieren nicht gefunden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not found while placing"
-          }
-        }
-      }
-    },
-    "Exemplar bearbeiten" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit Copy"
-          }
-        }
-      }
-    },
-    "Vermutlich noch in einem anderen Fach" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Probably still in another compartment"
-          }
-        }
-      }
-    },
     "·" : {
       "shouldTranslate" : false
     },
@@ -1143,6 +1113,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld missing"
+          }
+        }
+      }
+    },
+    "%lld von %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld"
           }
         }
       }
@@ -2296,6 +2276,16 @@
         }
       }
     },
+    "Beim Einsortieren nicht gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not found while placing"
+          }
+        }
+      }
+    },
     "Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht" : {
       "localizations" : {
         "en" : {
@@ -3414,6 +3404,16 @@
         }
       }
     },
+    "Die technischen Details stehen im Protokoll." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The technical details are in the log."
+          }
+        }
+      }
+    },
     "Die Tracklist konnte nicht geladen werden. %@" : {
       "localizations" : {
         "en" : {
@@ -3530,16 +3530,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This compartment is locked and doesn’t take records. It can be unlocked by right-clicking the compartment."
-          }
-        }
-      }
-    },
-    "Die technischen Details stehen im Protokoll." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The technical details are in the log."
           }
         }
       }
@@ -4134,6 +4124,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copy %lld · %@"
+          }
+        }
+      }
+    },
+    "Exemplar bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Copy"
           }
         }
       }
@@ -4975,6 +4975,26 @@
         }
       }
     },
+    "In der %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@"
+          }
+        }
+      }
+    },
+    "In der %@ anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show in %@"
+          }
+        }
+      }
+    },
     "In der Demo liegt die Sammlung nur im Arbeitsspeicher." : {
       "localizations" : {
         "en" : {
@@ -5056,26 +5076,6 @@
         }
       }
     },
-    "In der %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In %@"
-          }
-        }
-      }
-    },
-    "In der %@ anzeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show in %@"
-          }
-        }
-      }
-    },
     "Inhalt" : {
       "localizations" : {
         "en" : {
@@ -5087,6 +5087,7 @@
       }
     },
     "Inhalt anzeigen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5555,16 +5556,6 @@
         }
       }
     },
-    "%lld von %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld of %2$lld"
-          }
-        }
-      }
-    },
     "Los geht’s" : {
       "localizations" : {
         "en" : {
@@ -5995,6 +5986,16 @@
         }
       }
     },
+    "Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No longer in your Discogs collection – right-click to remove it from the compartment"
+          }
+        }
+      }
+    },
     "Nicht (mehr) in deiner Discogs-Collection – über den Papierkorb aus dem Fach nehmen" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6032,16 +6033,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not in the collection"
-          }
-        }
-      }
-    },
-    "Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No longer in your Discogs collection – right-click to remove it from the compartment"
           }
         }
       }
@@ -6298,6 +6289,7 @@
       }
     },
     "Nur leere Fächer lassen sich sperren" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6358,6 +6350,7 @@
       }
     },
     "Ohne Fach · Platz finden" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6799,7 +6792,6 @@
       }
     },
     "Platz finden" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6859,22 +6851,22 @@
         }
       }
     },
-    "Position 1 bis %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position 1 to %lld"
-          }
-        }
-      }
-    },
     "Position %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Position %lld"
+          }
+        }
+      }
+    },
+    "Position %lld · %@ · %@\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position %1$lld · %2$@ · %3$@\nClick: edit copy. Right-click: more actions."
           }
         }
       }
@@ -6889,12 +6881,12 @@
         }
       }
     },
-    "Position %lld · %@ · %@\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen." : {
+    "Position 1 bis %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Position %1$lld · %2$@ · %3$@\nClick: edit copy. Right-click: more actions."
+            "value" : "Position 1 to %lld"
           }
         }
       }
@@ -8355,6 +8347,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expand missing list"
+          }
+        }
+      }
+    },
+    "Vermutlich noch in einem anderen Fach" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probably still in another compartment"
           }
         }
       }

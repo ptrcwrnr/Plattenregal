@@ -606,7 +606,6 @@ struct KallaxView: View {
     /// The compartment's right-click menu (an `AppMenu`, like the collection's).
     @ViewBuilder private func shelfMenu(for shelf: Shelf) -> some View {
         let locked = lockPreview.isLocked(shelf)
-        Button("Inhalt anzeigen") { selectShelf(shelf) }
         Button("Platte hinzufügen") { selectShelf(shelf); startAssignment(shelf) }
             .disabled(locked)
         Button("Sortierung prüfen") { selectShelf(shelf); sortCheck = ShelfSortCheckRequest(shelf: shelf) }
@@ -615,17 +614,8 @@ struct KallaxView: View {
             Button("Namen ändern …") { selectShelf(shelf); showsNameEditor = true }
             Button("Fach entsperren") { setLocked(shelf, false) }
         } else {
-            Button {
-                setLocked(shelf, true)
-            } label: {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Fach sperren")
-                    if !shelf.copies.isEmpty {
-                        Text("Nur leere Fächer lassen sich sperren").font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .disabled(!shelf.copies.isEmpty)
+            Button("Fach sperren") { setLocked(shelf, true) }
+                .disabled(!shelf.copies.isEmpty)
         }
     }
 
