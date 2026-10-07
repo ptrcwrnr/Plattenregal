@@ -371,12 +371,15 @@ enum ShelfSortCheck {
         }
     }
 
-    /// Like `SortingService.sorted`, by the given order.
+    /// Like `SortingService.sorted`, by the given order. Records with the same
+    /// key (two copies of one album) keep their order in the shelf: either
+    /// order is right, so neither the check nor sorting asks to swap them.
     static func sortedCopies(_ copies: [RecordCopy], by order: ShelfSecondaryOrder) -> [RecordCopy] {
-        copies.map { (copy: $0, key: SortingService.sortKey($0, by: order), tie: $0.id.uuidString) }
+        copies.map { (copy: $0, key: SortingService.sortKey($0, by: order), position: $0.positionInShelf, tie: $0.id.uuidString) }
             .sorted { a, b in
                 let comparison = a.key.localizedStandardCompare(b.key)
                 if comparison != .orderedSame { return comparison == .orderedAscending }
+                if a.position != b.position { return a.position < b.position }
                 return a.tie < b.tie
             }
             .map(\.copy)

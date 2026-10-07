@@ -495,6 +495,19 @@ extension AllTests {
             try service.sortAlphabetically(shelves[0], by: .title)
             #expect(ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title).isEmpty)
         }
+        /// Two copies of one album: either order is right, whatever their IDs.
+        @Test func sortCheckKeepsEqualRecordsInPlace() throws {
+            for _ in 0..<8 {
+                let (container, shelves, service) = try fixture(); _ = container
+                let first = try add(service, shelves[0], "Moby", "Play")
+                let second = try add(service, shelves[0], "Moby", "Play")
+                let air = try add(service, shelves[0], "Air")
+                let steps = ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title)
+                #expect(steps.map(\.copy.id) == [air.id])
+                try service.sortAlphabetically(shelves[0], by: .title)
+                #expect(service.ordered(shelves[0]).map(\.id) == [air.id, first.id, second.id])
+            }
+        }
         @Test func sortCheckByYearWithinArtist() throws {
             let (container, shelves, service) = try fixture(); _ = container
             let newer = try add(service, shelves[0], "Kraftwerk", "Autobahn")

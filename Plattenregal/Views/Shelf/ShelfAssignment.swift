@@ -856,11 +856,7 @@ private struct SortStepRow: View {
                         Image(systemName: "arrow.right").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                         if let neighbour = step.before ?? step.after {
                             CoverView(url: neighbour.release?.coverURL, size: 16)
-                            (Text(step.before == nil ? String(localized: "ganz vorn, vor") : String(localized: "hinter"))
-                             + Text(verbatim: " ")
-                             + Text(verbatim: neighbour.release?.displayArtist ?? "—").fontWeight(.semibold)
-                             + Text(verbatim: " – \(neighbour.release?.displayTitle ?? "—")"))
-                                .lineLimit(1).truncationMode(.middle)
+                            Text(target(neighbour)).lineLimit(1).truncationMode(.middle)
                         }
                     }
                     .font(.caption)
@@ -883,6 +879,14 @@ private struct SortStepRow: View {
         .animation(AppStyle.quickAnimation, value: done)
         .animation(AppStyle.standardAnimation, value: current)
         .help(done ? "Doch noch nicht umgestellt" : "Als umgestellt abhaken")
+    }
+
+    /// "hinter **Artist** – Title" (or "ganz vorn, vor …"): the artist in bold.
+    private func target(_ neighbour: RecordCopy) -> AttributedString {
+        var artist = AttributedString(neighbour.release?.displayArtist ?? "—")
+        artist.inlinePresentationIntent = .stronglyEmphasized
+        return AttributedString((step.before == nil ? String(localized: "ganz vorn, vor") : String(localized: "hinter")) + " ")
+            + artist + AttributedString(" – \(neighbour.release?.displayTitle ?? "—")")
     }
 }
 
