@@ -552,6 +552,17 @@ extension AllTests {
             #expect(index.matches(copy.id, SearchIndex<UUID>.words("Straße 1979")))
             #expect(!index.matches(copy.id, SearchIndex<UUID>.words("1980")))
         }
+        /// Letters without a decomposable accent are found with the plain one.
+        @Test func searchFoldsLatinLettersWithoutAccentMarks() throws {
+            let (container, shelves, service) = try fixture(); _ = container
+            let mo = try add(service, shelves[0], "MØ", "Forever Neverland")
+            let lona = try add(service, shelves[0], "Łona", "Album")
+            let index = SearchIndex([mo, lona], id: \.id, text: SortingService.searchText)
+            #expect(index.matches(mo.id, SearchIndex<UUID>.words("mo forever")))
+            #expect(index.matches(mo.id, SearchIndex<UUID>.words("Mø")))
+            #expect(index.matches(lona.id, SearchIndex<UUID>.words("lona")))
+            #expect(!index.matches(lona.id, SearchIndex<UUID>.words("mo")))
+        }
         @Test func discogsMappingWithOptionalFields() throws {
             let data = Data(#"{"id":123,"title":"Computerwelt","year":1981,"artists":[{"name":"Kraftwerk (2)","anv":"Kraftwerk"}],"labels":[{"name":"EMI","catno":"1C 064"}],"formats":[{"name":"Vinyl","qty":"1","descriptions":["LP"]}],"genres":["Electronic"],"tracklist":[{"position":"A1","title":"Computerwelt","duration":"5:05"}],"images":[{"type":"primary","uri":"https://example.com/cover.jpg"}]}"#.utf8)
             let release = try JSONDecoder().decode(DiscogsReleaseDTO.self, from: data).mappedRelease()

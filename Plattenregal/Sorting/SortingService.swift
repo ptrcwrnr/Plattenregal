@@ -94,8 +94,15 @@ struct SearchIndex<ID: Hashable> {
 
     nonisolated static func fold(_ value: String) -> String {
         // Case folding keeps "ß", so "Strasse" would miss "Straße".
-        value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+        let folded = value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
             .replacingOccurrences(of: "ß", with: "ss")
+        // Letters without a decomposable accent stay as they are ("Mø",
+        // "Øystein", "Łona", "Æther"); Latin-ASCII maps them like the alphabet
+        // sections do. Only where such a letter is left: the transform is
+        // slow, and most texts (tracklists included) are plain ASCII by now.
+        guard folded.unicodeScalars.contains(where: { (0x00C0...0x024F).contains($0.value) }),
+              let latin = folded.applyingTransform(StringTransform("Latin-ASCII"), reverse: false) else { return folded }
+        return latin.lowercased()
     }
 }
 
