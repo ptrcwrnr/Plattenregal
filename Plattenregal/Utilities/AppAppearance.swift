@@ -1214,7 +1214,7 @@ private struct PullToRefresh: ViewModifier {
     let action: () -> Void
     /// The trackpad's rubber band is damped, so a few points more threshold
     /// already take a noticeably longer swipe.
-    private let trackpadThreshold: CGFloat = 38
+    private let trackpadThreshold: CGFloat = 45
     private let mouseThreshold: CGFloat = 70
     @State private var overscroll: CGFloat = 0
     @State private var armed = true
