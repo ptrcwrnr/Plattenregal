@@ -674,11 +674,19 @@ struct ShelfSortCheckView: View {
                 Text("\(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")) · \(AppStyle.records(copies.count)) · Plätze von links gezählt")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            HStack(spacing: AppStyle.rowSpacing) {
-                Text("Nach Interpret, bei gleichem Interpreten nach").font(.callout).foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                GlassSegmentedPicker(selection: $order, options: ShelfSecondaryOrder.allCases, small: true) { Text($0.title) }
-                    .accessibilityLabel("Bei gleichem Interpreten nach")
+            VStack(alignment: .trailing, spacing: 4) {
+                HStack(spacing: AppStyle.rowSpacing) {
+                    Text("Nach Interpret, bei gleichem Interpreten nach").font(.callout).foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                    GlassSegmentedPicker(selection: $order, options: ShelfSecondaryOrder.allCases, small: true) { Text($0.title) }
+                        .accessibilityLabel("Bei gleichem Interpreten nach")
+                }
+                // Said where it arises instead of next to the button.
+                if order != savedOrder && !steps.isEmpty {
+                    Text("Übernimmt „\(order.title)“ auch für Platzsuche und Hinzufügen in allen Fächern.")
+                        .font(.caption).foregroundStyle(AppStyle.accent)
+                        .transition(.opacity)
+                }
             }
             if steps.isEmpty {
                 inOrder(count: copies.count)
@@ -686,8 +694,9 @@ struct ShelfSortCheckView: View {
                 summary(steps)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
+                        let current = steps.first { !done.contains($0.id) }?.id
                         ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                            SortStepRow(number: index + 1, step: step, done: done.contains(step.id)) {
+                            SortStepRow(number: index + 1, step: step, done: done.contains(step.id), current: step.id == current) {
                                 if done.contains(step.id) { done.remove(step.id) } else { done.insert(step.id) }
                             }
                         }
@@ -705,7 +714,16 @@ struct ShelfSortCheckView: View {
         .animation(AppStyle.standardAnimation, value: error)
         // Another order is another list of moves.
         .onChange(of: order) { done = []; logCheck() }
-        .onAppear { logCheck() }
+        .onAppear {
+            logCheck()
+            #if DEBUG
+            // Screenshots: --preview-sortcheck-done=N ticks off the first N moves.
+            if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-sortcheck-done=") }),
+               let count = Int(raw.dropFirst("--preview-sortcheck-done=".count)) {
+                done = Set(steps.prefix(count).map(\.id))
+            }
+            #endif
+        }
     }
 
     private func inOrder(count: Int) -> some View {
@@ -735,38 +753,48 @@ struct ShelfSortCheckView: View {
         }
     }
 
+    /// What is left to move: count, progress, and once everything is ticked
+    /// off "Alles umgestellt" – then the button below turns into the main action.
     private func summary(_ steps: [ShelfSortCheck.Step]) -> some View {
         let finished = steps.filter { done.contains($0.id) }.count
-        return HStack(spacing: AppStyle.rowSpacing) {
-            Image(systemName: "arrow.left.arrow.right").font(.system(size: 22)).foregroundStyle(AppStyle.accent)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(steps.count == 1 ? "1 Platte umstellen" : "\(steps.count) Platten umstellen").font(.headline)
-                Text("Der Reihe nach herausnehmen und an die neue Stelle stellen. Die übrigen bleiben, wo sie sind.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+        let complete = finished == steps.count
+        return VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            HStack(spacing: AppStyle.rowSpacing) {
+                Image(systemName: complete ? "checkmark.circle.fill" : "arrow.left.arrow.right")
+                    .font(.system(size: 22))
+                    .foregroundStyle(complete ? AppStyle.successColor : AppStyle.accent)
+                    .contentTransition(.symbolEffect(.replace))
+                    .frame(width: 26)
+                Text(complete ? String(localized: "Alles umgestellt")
+                     : steps.count == 1 ? String(localized: "1 Platte umstellen") : String(localized: "\(steps.count) Platten umstellen"))
+                    .font(.headline)
+                Spacer(minLength: AppStyle.itemSpacing)
+                Text("\(finished) von \(steps.count)")
+                    .font(.callout.weight(.medium)).monospacedDigit()
+                    .foregroundStyle(complete ? AppStyle.successColor : AppStyle.accent)
+                    .contentTransition(.numericText())
             }
-            Spacer(minLength: AppStyle.itemSpacing)
-            Text("\(finished) / \(steps.count)")
-                .font(.callout.weight(.medium)).monospacedDigit()
-                .foregroundStyle(finished == steps.count ? AppStyle.successColor : .secondary)
-                .contentTransition(.numericText())
+            SortProgressBar(fraction: Double(finished) / Double(max(steps.count, 1)), complete: complete)
         }
         .padding(.horizontal, AppStyle.cardPadding)
         .padding(.vertical, AppStyle.rowSpacing)
         .accentGlassCard()
-        .animation(AppStyle.quickAnimation, value: finished)
+        .animation(AppStyle.standardAnimation, value: finished)
     }
 
+    /// Only the button: a quiet one while moves are open, the main action
+    /// once all are ticked off. Saving early stays possible.
     private func footer(_ steps: [ShelfSortCheck.Step]) -> some View {
-        HStack(spacing: AppStyle.rowSpacing) {
-            Text(order == savedOrder
-                 ? "Wenn alles umgestellt ist, die neue Reihenfolge übernehmen."
-                 : "Übernimmt „\(order.title)“ auch für Platzsuche und Hinzufügen in allen Fächern.")
-                .font(.caption).foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: AppStyle.itemSpacing)
-            PrimaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
+        let complete = steps.allSatisfy { done.contains($0.id) }
+        return HStack {
+            Spacer(minLength: 0)
+            if complete {
+                PrimaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
+            } else {
+                SecondaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
+            }
         }
+        .animation(AppStyle.standardAnimation, value: complete)
     }
 
     /// For the protocol: which compartment was checked, by what, and the result.
@@ -799,6 +827,8 @@ private struct SortStepRow: View {
     let number: Int
     let step: ShelfSortCheck.Step
     let done: Bool
+    /// The next open move: framed like every selection (gold in Klassisch).
+    let current: Bool
     let toggle: () -> Void
     @State private var hovering = false
 
@@ -819,27 +849,56 @@ private struct SortStepRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("\(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
                         .font(.callout.weight(.medium)).lineLimit(1).truncationMode(.middle)
+                    // Where it goes is what matters at the shelf: in the text's
+                    // own color, only the current place muted.
                     HStack(spacing: 5) {
-                        Text("Platz \(step.position)").monospacedDigit()
-                        Image(systemName: "arrow.right").font(.caption2.weight(.semibold))
+                        Text("Platz \(step.position)").monospacedDigit().foregroundStyle(.secondary)
+                        Image(systemName: "arrow.right").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                         if let neighbour = step.before ?? step.after {
                             CoverView(url: neighbour.release?.coverURL, size: 16)
-                            Text("\(step.before == nil ? String(localized: "ganz vorn, vor") : String(localized: "hinter")) „\(neighbour.release?.displayArtist ?? "—") – \(neighbour.release?.displayTitle ?? "—")“")
+                            (Text(step.before == nil ? String(localized: "ganz vorn, vor") : String(localized: "hinter"))
+                             + Text(verbatim: " ")
+                             + Text(verbatim: neighbour.release?.displayArtist ?? "—").fontWeight(.semibold)
+                             + Text(verbatim: " – \(neighbour.release?.displayTitle ?? "—")"))
                                 .lineLimit(1).truncationMode(.middle)
                         }
                     }
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption)
                 }
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
             .opacity(done ? 0.45 : 1)
             .contentShape(Rectangle())
-            .appHoverable(hovering, cornerRadius: 8)
+            .appHoverable(hovering && !current, cornerRadius: 8)
+            .background {
+                if current {
+                    RoundedRectangle(cornerRadius: 8).fill(AppStyle.selectedBackground)
+                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppStyle.selectedBorder, lineWidth: 1.5))
+                }
+            }
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .animation(AppStyle.quickAnimation, value: done)
+        .animation(AppStyle.standardAnimation, value: current)
         .help(done ? "Doch noch nicht umgestellt" : "Als umgestellt abhaken")
+    }
+}
+
+/// Thin bar under the count: the accent filling up, green when complete.
+private struct SortProgressBar: View {
+    let fraction: Double
+    let complete: Bool
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule().fill(AppStyle.borderColor)
+                Capsule().fill(complete ? AppStyle.successColor : AppStyle.accent)
+                    .frame(width: geometry.size.width * fraction)
+            }
+        }
+        .frame(height: 4)
     }
 }

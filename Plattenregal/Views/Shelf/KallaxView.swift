@@ -319,7 +319,8 @@ struct KallaxView: View {
         #if DEBUG
         // Screenshots for the tour without clicking: --preview-add opens
         // "Platte hinzufügen" for the selected compartment,
-        // --preview-place=Artist the placement card of that artist's record.
+        // --preview-place=Artist the placement card of that artist's record,
+        // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment.
         .task {
             let arguments = ProcessInfo.processInfo.arguments
             try? await Task.sleep(for: .seconds(1))
@@ -329,6 +330,11 @@ struct KallaxView: View {
             } else if let raw = arguments.first(where: { $0.hasPrefix("--preview-place=") }) {
                 let artist = String(raw.dropFirst("--preview-place=".count))
                 if let copy = allCopies.first(where: { $0.release?.artist == artist }) { startPlacement(copy) }
+            } else if arguments.contains("--preview-sortcheck") {
+                let shelves = cabinets.flatMap(\.shelves)
+                if let shelf = shelves.first(where: { !ShelfSortCheck.steps(PositionService.inShelfOrder($0.copies), by: .current).isEmpty }) {
+                    sortCheck = ShelfSortCheckRequest(shelf: shelf)
+                }
             }
         }
         #endif
