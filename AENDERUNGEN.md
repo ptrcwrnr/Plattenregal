@@ -1,4 +1,4 @@
-# Nachprüfung mit echten Fensterfotos: Statistik, Popover, Tour, Positionsregler · 07.10.2026
+# Nachprüfung mit echten Fensterfotos: Statistik, Popover, Tour · 07.10.2026
 
 Bisher Ungeprüftes in beiden Designs angesehen (echte Fensterfotos der Demo, Scrollen und Klicken per Ereignis): untere Statistik-Bereiche, Listenansichten, Popover und Rechtsklick-Menüs, Einstellungen, Klassisch dunkel, Regalsuche, Positionsregler und die gleitende Auswahlkapsel in Bewegung.
 
@@ -6,7 +6,7 @@ Bisher Ungeprüftes in beiden Designs angesehen (echte Fensterfotos der Demo, Sc
 - **Top-Künstler**: Das Cover war „das Exemplar mit der kleinsten ID“ – nach einem neuen Abgleich oder in der Demo bei jedem Start ein anderes Album. Jetzt das älteste Release des Künstlers, dann nach Titel.
 - **Popover und Rechtsklick-Menüs in Modern**: klares Glas, auf bunten Covern kaum lesbar. Jetzt zur Fensterfarbe getönt wie die Glasfenster über der Seite und die Sync-Kapsel (`appPopoverSurface`).
 - **Style-Plaketten** (Zufallsfund, Detailansicht): eigene graue Füllung statt des gemeinsamen Plaketten-Bausteins; jetzt `appChipSurface` (Glas bzw. Papier mit Rand).
-- **Positionsregler**: Das Popover zeigte nirgends die aktuelle Position und die Zahl der Plätze. Jetzt „Position 1 von 4“ unter dem Titel, folgt dem Regler.
+- **Positionsregler**: Eine feste Anzeige „Position x von y“ unter dem Titel wurde kurz ergänzt und auf Wunsch wieder entfernt – die Zahl erscheint bewusst nur beim Ziehen über dem Knopf.
 - **Einstellungen › Darstellung**: Die Beschreibung von Klassisch nannte „Angaben unter jedem Cover“ als Besonderheit – das hat Modern jetzt auch. Jetzt „Matte Papierflächen statt Glas“. Die kleine Modern-Vorschau zeigt wie die Klassisch-Vorschau eine Beschriftungszeile.
 - **Tour-Bilder** neu aufgenommen: „Regal“ zeigte noch die entfernte Titelzeile mit Plattenrücken und die alte Tabelle, die Collection das alte enge Raster ohne Beschriftung. Ausschnitt des Fachbilds auf das Cover-Raster, Collection und Wantlist 30 px höher, damit die Coverkanten nicht angeschnitten sind. Das Skript fotografiert nur noch das Fenster der gestarteten Demo (`Scripts/winid.swift <PID>`), nie eine gleichzeitig offene eigene Sammlung.
 - Ohne Befund: Listen in beiden Designs, Klassisch dunkel, Regalsuche mit Trefferliste, Einstellungen, Zufallsfund, Labels, Zeitreise; die Auswahlkapsel gleitet sichtbar und der Text blendet weich um. Bewusst gelassen: Tabellenkarten reichen bei wenigen Zeilen bis zum Fensterende (Verhalten der System-Tabelle); das gewählte Blau in Modern dunkel ist etwas kontrastärmer, aber lesbar.

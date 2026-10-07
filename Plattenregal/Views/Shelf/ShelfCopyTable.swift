@@ -688,11 +688,6 @@ private struct ShelfCopyQuickEditor: View {
                     Text(copy.release?.displayTitle ?? "—")
                         .font(.headline).lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
-                    // Where it stands now; follows the slider while dragging.
-                    Text("Position \(position) von \(maxPosition)")
-                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                        .contentTransition(.numericText(value: Double(position)))
-                        .animation(AppStyle.quickAnimation, value: position)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
