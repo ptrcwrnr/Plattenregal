@@ -111,7 +111,7 @@ nonisolated enum CollectionAnalyticsService {
                     result[value.id]?.copyIDs.insert(item.id)
                 }
             }
-            return result.values.sorted { $0.count == $1.count ? $0.name.localizedStandardCompare($1.name) == .orderedAscending : $0.count > $1.count }
+            return ranked(Array(result.values))
         }
         func named(_ values: [String]) -> [AnalyticsItem.Named] { values.map { .init(id: $0, name: $0) } }
         var s = CollectionStatistics(); s.totalItems = items.count; s.uniqueReleases = Set(items.map(\.releaseKey)).count
@@ -145,6 +145,17 @@ nonisolated enum CollectionAnalyticsService {
         return s
     }
 
+    /// Most records first, then by name; the ID settles what is still equal
+    /// (two Discogs artists both called "Moby", "Rock" and "rock"), so the
+    /// rankings don't reshuffle on every refresh.
+    static func ranked(_ groups: [StatisticGroup]) -> [StatisticGroup] {
+        groups.sorted { a, b in
+            if a.count != b.count { return a.count > b.count }
+            let name = a.name.localizedStandardCompare(b.name)
+            return name == .orderedSame ? a.id < b.id : name == .orderedAscending
+        }
+    }
+
     /// Records without stored Discogs data count under their name only
     /// ("legacy:Moby"). Where exactly one Discogs-ID group has that name,
     /// they belong to it — otherwise Moby would be listed twice.
@@ -159,6 +170,6 @@ nonisolated enum CollectionAnalyticsService {
                 result.append(legacy)
             }
         }
-        return result.sorted { $0.count == $1.count ? $0.name.localizedStandardCompare($1.name) == .orderedAscending : $0.count > $1.count }
+        return ranked(result)
     }
 }

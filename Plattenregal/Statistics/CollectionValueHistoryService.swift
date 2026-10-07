@@ -48,13 +48,24 @@ final class CollectionValueHistoryService {
         func activeCopies() throws -> [RecordCopy] {
             try context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.discogsOwner == owner && $0.discogsActive == true }))
         }
-        let copies = try activeCopies(), signature = Self.signature(copies)
+        var copies = try activeCopies(), signature = Self.signature(copies)
         let last = try Self.latest(owner: owner, in: context)
         if !force, let last, Calendar.current.isDateInToday(last.date), last.collectionSignature == signature { return }
-        let value = try await api.fetchCollectionValue(username: owner)
-        try Task.checkCancellation()
-        guard try await api.credentialFingerprint() == fingerprint, Self.signature(try activeCopies()) == signature else { throw DiscogsError.accountChanged }
-        try Self.store(value: value, owner: owner, copies: copies, context: context)
+        // A sync saving meanwhile changes the collection under the request
+        // (and skips its own refresh while this one runs): ask once more for
+        // the new collection instead of storing a value that fits neither.
+        for attempt in 1...2 {
+            let value = try await api.fetchCollectionValue(username: owner)
+            try Task.checkCancellation()
+            guard try await api.credentialFingerprint() == fingerprint else { throw DiscogsError.accountChanged }
+            let now = try activeCopies()
+            if Self.signature(now) == signature {
+                try Self.store(value: value, owner: owner, copies: copies, context: context)
+                return
+            }
+            AppLog.info("Statistik", "Sammlung hat sich beim Laden des Werts geändert\(attempt == 1 ? " – neuer Versuch" : ", Wert diesmal nicht gespeichert")")
+            copies = now; signature = Self.signature(now)
+        }
     }
     static func change(current: Decimal, previous: Decimal) -> (amount: Decimal, percent: Decimal?) {
         (current - previous, previous == 0 ? nil : (current - previous) / abs(previous) * 100)
