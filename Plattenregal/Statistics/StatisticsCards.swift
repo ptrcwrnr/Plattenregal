@@ -104,7 +104,7 @@ struct StatisticsHero: View {
         }
         .padding(StatisticsLayout.tilePadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .statisticsTile(.background.opacity(0.6))
+        .statisticsTile()
     }
 }
 
@@ -210,8 +210,7 @@ struct StatisticsFacts: View {
                 }
                 .padding(StatisticsLayout.tilePadding)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
-                .statisticsTile(hovering && fact.group != nil ? fact.color.opacity(0.08) : Color.primary.opacity(0.03),
-                                hovering: hovering && fact.group != nil)
+                .statisticsTile(hovering: hovering && fact.group != nil)
                 .contentShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius))
             }
             .buttonStyle(.plain)
@@ -552,7 +551,6 @@ struct RandomRecordCard: View {
                 .id(pick.id)
                 .transition(AppStyle.reduceMotion ? .opacity : .asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
                                                                            removal: .move(edge: .leading).combined(with: .opacity)))
-                .preference(key: StatisticsBackdropKey.self, value: release.coverURL)
             } else {
                 Text("Noch keine Platten zum Ziehen.").font(.callout).foregroundStyle(.secondary)
             }
@@ -694,7 +692,7 @@ struct LabelBoard: View {
                 }
                 .padding(StatisticsLayout.tilePadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .statisticsTile(hovering ? AppStyle.accent.opacity(0.08) : Color.primary.opacity(0.03), hovering: hovering)
+                .statisticsTile(hovering: hovering)
                 .contentShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius))
             }
             .buttonStyle(.plain)

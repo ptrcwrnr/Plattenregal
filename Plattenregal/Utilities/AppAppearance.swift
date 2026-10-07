@@ -39,29 +39,34 @@ enum AtelierPalette {
     }
 }
 
-/// Small real release captions below Atelier's sleeves; cover loading and
-/// the existing track-search result remain in their original views.
-struct AtelierRecordCaption: View {
+/// The caption under a cover in every cover grid (Collection, Wantlist,
+/// compartment), the same in both designs: artist, title (or the track a
+/// search found it by), year · label. Only the colors follow the design.
+struct RecordCaption: View {
     let release: Release?
     var matchedTrack: Track? = nil
     /// Shown while the release is missing, as in the current design.
     var fallbackArtist = String(localized: "Unbekannt")
     var fallbackTitle = "—"
+    /// The selected copy in a compartment: its artist in the accent.
+    var emphasized = false
     var body: some View {
+        let ink = AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary)
+        let muted = AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary)
         VStack(alignment: .leading, spacing: 2) {
             Text(release?.displayArtist ?? fallbackArtist)
-                .font(.callout.weight(.medium)).foregroundStyle(AtelierPalette.ink)
+                .font(.callout.weight(.medium)).foregroundStyle(emphasized ? AnyShapeStyle(AppStyle.accent) : ink)
                 .lineLimit(1)
             if let matchedTrack {
                 MatchedTrackLine(track: matchedTrack)
             } else {
                 Text(release?.displayTitle ?? fallbackTitle)
-                    .font(.caption).foregroundStyle(AtelierPalette.muted).lineLimit(1)
+                    .font(.caption).foregroundStyle(muted).lineLimit(1)
             }
             let metadata = [release?.year.map(String.init), release.flatMap { $0.label.isEmpty ? nil : $0.displayLabel }]
                 .compactMap { $0 }.joined(separator: " · ")
             if !metadata.isEmpty {
-                Text(metadata).font(.caption2).foregroundStyle(AtelierPalette.muted).lineLimit(1)
+                Text(metadata).font(.caption2).foregroundStyle(muted).lineLimit(1)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -858,9 +863,10 @@ enum InputSourceIndicator {
     }
 }
 
-/// A choice between a few options in the app's Liquid Glass look: no gray
-/// track and no gray pill behind the chosen option – it is marked by the
-/// accent color alone. In the toolbar the toolbar's bar is the background
+/// A choice between a few options. The chosen one sits on a pill that glides
+/// to a new choice, the same in both designs: in Modern a Liquid Glass lens
+/// (never a gray or blue fill) with the label in the accent, in Klassisch
+/// cream paper. In the toolbar the toolbar's bar is the background
 /// (`glass: false`, see `toolbarBar`); anywhere else it brings its own capsule.
 struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     @Binding var selection: Value
@@ -877,12 +883,16 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
 
     var body: some View {
         let row = HStack(spacing: 0) {
-            ForEach(options, id: \.self) { option in
+            ForEach(Array(options.enumerated()), id: \.element) { index, option in
                 let selected = option == selection
-                if separators && option != options.first {
+                if separators && index > 0 {
+                    // Not beside the pill: it marks its own edges, and the
+                    // line would touch it.
+                    let besidePill = selected || options[index - 1] == selection
                     Rectangle()
                         .fill(Color.primary.opacity(0.12))
                         .frame(width: 1, height: small ? 12 : 14)
+                        .opacity(besidePill ? 0 : 1)
                 }
                 Button { selection = option } label: {
                     label(option)
@@ -894,10 +904,17 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                         .padding(.horizontal, small ? 9 : 12)
                         .frame(height: small ? 24 : 30)
                         .background {
-                            if AppStyle.isAtelier && selected {
-                                RoundedRectangle(cornerRadius: 7).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
-                                    .padding(.vertical, 3)
-                                    .matchedGeometryEffect(id: "pill", in: pill)
+                            if selected {
+                                if AppStyle.isAtelier {
+                                    RoundedRectangle(cornerRadius: 7).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
+                                        .padding(.vertical, 3)
+                                        .matchedGeometryEffect(id: "pill", in: pill)
+                                } else {
+                                    Capsule().fill(.clear)
+                                        .glassEffect(.regular, in: .capsule)
+                                        .padding(.vertical, 3)
+                                        .matchedGeometryEffect(id: "pill", in: pill)
+                                }
                             }
                         }
                         .contentShape(Capsule())
@@ -989,9 +1006,12 @@ struct OverviewLayoutPicker: View {
 }
 
 enum CoverGrid {
-    static var spacing: CGFloat { AppStyle.isAtelier ? 18 : 8 }
-    /// Extra room above the grid's own padding, so the first covers start
-    /// 18 pt below the toolbar in both designs (Modern's spacing is tighter).
+    /// The same in both designs (Modern used to be tighter, 8 pt).
+    static let spacing: CGFloat = 18
+    /// Space between a cover and its caption.
+    static let captionSpacing: CGFloat = 9
+    /// Extra room above the grid's own padding (`spacing`), so the first
+    /// covers start 18 pt below the toolbar.
     static var topSpace: CGFloat { max(0, 18 - spacing) }
     /// How far a cover's shadow reaches beyond it (`atelierRecordSleeve`).
     static let shadowRoom: CGFloat = 16

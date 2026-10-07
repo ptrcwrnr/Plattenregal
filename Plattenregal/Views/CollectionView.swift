@@ -105,7 +105,7 @@ struct CollectionView: View {
     /// follow this, not the raw field (whitespace, debounce).
     @State private var searching = false
     /// The query the visible items were filtered with, for the matched track
-    /// under a cover (Klassisch) – as in the wantlist.
+    /// under a cover – as in the wantlist.
     @State private var appliedQuery = ""
     /// Where the page was scrolled when the search began, to go back there
     /// when it ends (see `leaveSearch`).
@@ -268,8 +268,8 @@ struct CollectionView: View {
                                                 showQuickLook(copy)
                                             } label: {
                                                 RecordCard(copy: copy, copyCount: group.copies.count,
-                                                           matchedTrack: AppStyle.isAtelier && !appliedQuery.isEmpty
-                                                               ? copy.release?.track(matching: appliedQuery) : nil)
+                                                           matchedTrack: appliedQuery.isEmpty
+                                                               ? nil : copy.release?.track(matching: appliedQuery))
                                             }
                                             .buttonStyle(.plain)
                                             .help("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")) · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: " · \(group.copies.count) Exemplare") : "")")
@@ -596,11 +596,9 @@ struct RecordCard: View {
     /// Found by one of its tracks while searching: shown instead of the title.
     var matchedTrack: Track? = nil
     var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 0) {
+        VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
             cover
-            if AppStyle.isAtelier {
-                AtelierRecordCaption(release: copy.release, matchedTrack: matchedTrack)
-            }
+            RecordCaption(release: copy.release, matchedTrack: matchedTrack)
         }
         .contentShape(Rectangle())
     }
@@ -632,10 +630,10 @@ enum AtelierCoverFrame: String {
     static var current: AtelierCoverFrame {
         UserDefaults.standard.string(forKey: "atelierCoverFrame").flatMap(Self.init) ?? .sleeve
     }
-    /// Distance of the tags on a cover from its edge, the mat included.
+    /// Distance of the tags on a cover from its edge, the mat included –
+    /// Modern as far in as the sleeve.
     static var badgeInset: CGFloat {
-        guard AppStyle.isAtelier else { return 6 }
-        return current == .sleeve ? 8 : 11
+        AppStyle.isAtelier && current == .passepartout ? 11 : 8
     }
 }
 
@@ -717,8 +715,8 @@ struct PlacementBadge: View {
         Text(destination.title)
             .font(.caption2.weight(.medium))
             // The link's color only where a click leads somewhere.
-            .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(interactive ? AtelierPalette.accent : AtelierPalette.ink)
-                                                : AnyShapeStyle(.secondary))
+            .foregroundStyle(interactive ? AnyShapeStyle(AppStyle.accent)
+                                         : AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
             .padding(.horizontal, 7)
             .padding(.vertical, 3)
             .appChipSurface(in: Capsule(), interactive: interactive)

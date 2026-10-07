@@ -38,6 +38,12 @@ Testnachweis: `/tmp/Plattenregal-Doku-20261007/Logs/Test/Test-Plattenregal-2026.
 - Schnappschüsse der Demo (Klassisch hell, Hülle): Collection-Suche „Radiohead“ und Fachraster vor/nach der Korrektur verglichen; Schatten vollständig, Cover weiter bündig mit dem Regal.
 - 196 Tests bestanden, 0 Compilerwarnungen. Nicht geprüft: Modern im Bild, Überblendungen in Bewegung (nur am Aufbau der Ansichten).
 
+## Modern an Klassisch angeglichen (07.10.2026)
+
+- Alle Design-Weichen im Code durchgesehen und Aufbau, Abstände, Beschriftung, Auswahlmarkierung und Animationen vereinheitlicht (Einzelheiten in AENDERUNGEN.md).
+- Prüfung mit echten Fensterfotos (`screencapture -l` auf das Demo-Fenster, da `--snapshot` kein Liquid Glass zeichnet): Collection mit Suche, Wantlist, Regal und Statistik in Modern hell/dunkel sowie Klassisch hell. 196 Tests bestanden, 0 Compilerwarnungen.
+- Nicht geprüft: die unteren Statistik-Bereiche (Künstler, Zufallsfund, Labels) im Bild, die gleitende Kapsel in Bewegung (nur Endzustand), das Einstellungsfenster in Modern.
+
 ## Grenzen dieser Prüfung
 
 - Keine visuelle oder interaktive Prüfung der Fehlerseiten, kein absichtlich ausgelöster Absturz und kein echter Schlüsselbundfehler. Automatisierte Tests laufen mit lokalen Attrappen und Datenbanken im Arbeitsspeicher.

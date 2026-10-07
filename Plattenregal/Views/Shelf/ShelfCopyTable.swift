@@ -391,7 +391,7 @@ struct ShelfContentsView: View {
 
     private func tile(_ item: ShelfCopyItem) -> some View {
         let selected = focusCopy?.id == item.id
-        return VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 6) {
+        return VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
             CoverView(url: item.copy.release?.coverURL, size: nil)
                 .atelierRecordSleeve()
                 .overlay {
@@ -406,12 +406,8 @@ struct ShelfContentsView: View {
                         .appChipSurface(in: Capsule())
                         .padding(AtelierCoverFrame.badgeInset)
                 }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.artist).font(.callout.weight(.semibold)).lineLimit(1)
-                    .foregroundStyle(selected ? AppStyle.accent : .primary)
-                Text(item.title).font(.caption).lineLimit(1).foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            // The same caption as in Collection and Wantlist.
+            RecordCaption(release: item.copy.release, emphasized: selected)
             VStack(alignment: .leading, spacing: 3) {
                 if item.missing { MissingBadge() }
                 if item.sold {

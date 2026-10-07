@@ -227,9 +227,10 @@ struct StatisticsView: View {
         .foregroundStyle(.tertiary)
     }
 
-    /// Content width of a full-width card for a page `width` wide.
+    /// Content width of a full-width section for a page `width` wide: the
+    /// sections lie flush with the page margins (no card padding).
     private func cardContentWidth(for width: CGFloat) -> CGFloat {
-        min(max(0, width - 2 * (AppStyle.pagePadding + 4)), StatisticsLayout.maxWidth) - 2 * StatisticsLayout.gutter
+        min(max(0, width - 2 * (AppStyle.pagePadding + 4)), StatisticsLayout.maxWidth)
     }
     private var orderedSections: [StatisticsSection] { StatisticsSection.ordered(from: savedSectionOrder) }
     private var visibleSections: [StatisticsSection] {
@@ -249,7 +250,7 @@ struct StatisticsView: View {
         return true
     }
     private func movableSection(_ section: StatisticsSection) -> some View {
-        StatisticsMovableArea(section: section, prominent: section == .overview, first: section == visibleSections.first,
+        StatisticsMovableArea(section: section, first: section == visibleSections.first,
                               accessory: accessory(for: section), move: moveSection) {
             sectionContent(section)
         }
@@ -304,15 +305,13 @@ struct StatisticsView: View {
 
 // MARK: - Card chrome
 
-/// A card on the statistics page: its title (also the drag handle for
-/// reordering) and content on a Liquid Glass surface. In Klassisch there is
-/// no card: the section lies on the paper like the covers of Collection and
-/// Wantlist, a fine rule above it, and only its tiles are cream sleeves (see
-/// `statisticsTile`).
+/// A section of the statistics page: its title (also the drag handle for
+/// reordering) and content. In both designs it lies on the page like the
+/// covers of Collection and Wantlist, a fine rule above it; only its tiles
+/// bring a surface (see `statisticsTile`).
 private struct StatisticsMovableArea<Content: View>: View {
     let section: StatisticsSection
-    var prominent = false
-    /// The topmost section: in Klassisch without the rule above it.
+    /// The topmost section: without the rule above it.
     var first = false
     var accessory: AnyView?
     let move: (String, StatisticsSection) -> Bool
@@ -337,36 +336,18 @@ private struct StatisticsMovableArea<Content: View>: View {
             .frame(height: 28)
             content
         }
-        // Klassisch: on the paper, flush with the page margins; the first
-        // title as far from the toolbar as the covers on the other pages.
-        .padding(.horizontal, AppStyle.isAtelier ? 0 : StatisticsLayout.gutter)
-        .padding(.top, AppStyle.isAtelier && first ? 0 : StatisticsLayout.gutter)
+        // Flush with the page margins; the first title as far from the
+        // toolbar as the covers on the other pages.
+        .padding(.top, first ? 0 : StatisticsLayout.gutter)
         .padding(.bottom, StatisticsLayout.gutter)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background {
-            RoundedRectangle(cornerRadius: AppStyle.controlRadius)
-                .fill(prominent && !AppStyle.isAtelier
-                      ? AnyShapeStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.07), AppStyle.accent.opacity(0.0)],
-                                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                      : AnyShapeStyle(Color.clear))
-        }
-        .backgroundPreferenceValue(StatisticsBackdropKey.self) { url in
-            // A card's content can ask for a blurred cover behind the whole
-            // card; Klassisch stays matte.
-            if let url, !AppStyle.isAtelier {
-                GeometryReader { geometry in
-                    let edge = max(geometry.size.width, geometry.size.height)
-                    CoverView(url: url, size: edge)
-                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                        .blur(radius: 60)
-                        .opacity(0.35)
-                }
-                .transition(.opacity)
-                .id(url)
+        .overlay(alignment: .top) {
+            if !first {
+                Rectangle().fill(AppStyle.borderColor).frame(height: 1)
+                    .offset(y: -StatisticsLayout.gutter / 2)
             }
         }
-        .modifier(SectionSurface(first: first))
-        // The glass brings its own edge; a frame only marks the drop target.
+        // A frame only marks the drop target.
         .overlay {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
                 .strokeBorder(AppStyle.selectedBorder.opacity(isTargeted ? 1 : 0), lineWidth: 2)
@@ -379,31 +360,13 @@ private struct StatisticsMovableArea<Content: View>: View {
     }
 }
 
-/// Glass card in Modern; in Klassisch the paper itself with a fine rule
-/// above every section but the first, unclipped so the tiles keep their shadows.
-private struct SectionSurface: ViewModifier {
-    let first: Bool
-    func body(content: Content) -> some View {
-        if AppStyle.isAtelier {
-            content.overlay(alignment: .top) {
-                if !first {
-                    Rectangle().fill(AtelierPalette.border).frame(height: 1)
-                        .offset(y: -StatisticsLayout.gutter / 2)
-                }
-            }
-        } else {
-            // Clipped for the blurred cover behind the card.
-            content.clipShape(RoundedRectangle(cornerRadius: AppStyle.controlRadius))
-                .appCardSurface()
-        }
-    }
-}
-
 extension View {
-    /// A tile inside a statistics section (figures, facts, labels): `modern`
-    /// as its fill in Modern; in Klassisch a cream sleeve with a fine rim and
-    /// a soft shadow like the record covers, its rim gold under the pointer.
-    func statisticsTile(_ modern: some ShapeStyle, hovering: Bool = false) -> some View {
+    /// A tile inside a statistics section (figures, facts, labels), the same
+    /// in both designs: one fill for every tile, a fine rim that takes the
+    /// selection color under the pointer and a shadow that grows with it.
+    /// Klassisch: a cream sleeve with a gold rim; Modern: a light tile, the
+    /// rim in the accent.
+    func statisticsTile(hovering: Bool = false) -> some View {
         let shape = RoundedRectangle(cornerRadius: AppStyle.cardRadius)
         return background {
             if AppStyle.isAtelier {
@@ -411,16 +374,12 @@ extension View {
                     .overlay(shape.strokeBorder(hovering ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
                     .shadow(color: AtelierPalette.shadow, radius: hovering ? 8 : 5, y: hovering ? 3 : 2)
             } else {
-                shape.fill(modern)
+                shape.fill(.background.opacity(0.6))
+                    .overlay(shape.strokeBorder(hovering ? AppStyle.selectedBorder.opacity(0.6) : AppStyle.borderColor, lineWidth: 1))
+                    .shadow(color: .black.opacity(hovering ? 0.12 : 0.05), radius: hovering ? 8 : 5, y: hovering ? 3 : 2)
             }
         }
     }
-}
-
-/// Cover URL a card's content wants blurred behind the card.
-struct StatisticsBackdropKey: PreferenceKey {
-    static let defaultValue: String? = nil
-    static func reduce(value: inout String?, nextValue: () -> String?) { value = value ?? nextValue() }
 }
 
 /// Categorical colors for the donut; the last slot is reserved for "Weitere".

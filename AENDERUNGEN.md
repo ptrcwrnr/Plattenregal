@@ -1,3 +1,14 @@
+# Modern im Aufbau wie Klassisch: Abstände, Beschriftung, Auswahl, Animationen · 07.10.2026
+
+Modern und Klassisch unterscheiden sich jetzt nur noch in Flächen und Farben (Glas statt Papier, Akzent statt Petrol/Gold), nicht mehr in Aufbau, Abständen oder Bewegung. Alle Weichen auf das Design (`AppStyle.isAtelier`) durchgesehen; reine Flächen- und Farbweichen bleiben.
+
+- **Cover-Raster** (Collection, Wantlist, Fach): Abstand in Modern 18 pt wie in Klassisch (vorher 8 bzw. 16 in der Wantlist), Abstand Cover–Text 9 pt (`CoverGrid.spacing`, `CoverGrid.captionSpacing`). Unter jedem Cover in beiden Designs dieselbe Beschriftung: Interpret, Titel (oder der gefundene Track), Jahr · Label (`RecordCaption`, vorher `AtelierRecordCaption` nur in Klassisch; Modern zeigte in der Collection gar keinen Text, in der Wantlist nur zwei Zeilen). Plaketten 8 pt vom Coverrand wie bei der Hülle.
+- **Umschalter** (`GlassSegmentedPicker`: Rubriken, Regal-Reiter, Raster/Liste, Einstellungen, Statistik-Optionen): In Modern gleitet jetzt wie in Klassisch eine Auswahlkapsel animiert zur neuen Wahl – als Glaslinse, nicht grau oder blau gefüllt. Trennstriche zwischen Regal-Reitern verschwinden in beiden Designs neben der Kapsel, statt an sie zu stoßen.
+- **Auswahl**: Das aktive Regalfach trägt in Modern einen feinen Akzentrand (Gegenstück zum Goldrand), wie die gewählte Design-Karte.
+- **Suchplaketten**: In Modern Primärtext für die aktuelle Rubrik und Akzent für den Link, wie Tinte/Petrol in Klassisch; vorher grau und auf bunten Covern schlecht lesbar.
+- **Statistik**: Modern ohne Glaskarten, wie Klassisch flach auf der Seite mit feinen Trennlinien und bündig mit dem Seitenrand; Farbverlauf der Sammlungskarte und verschwommenes Cover hinter dem Zufallsfund entfallen (`SectionSurface`, `StatisticsBackdropKey` entfernt). Alle Kacheln einheitlich hell; beim Überfahren wie in Klassisch Rand in der Auswahlfarbe und wachsender Schatten statt einer Farbtönung. Die Spaltenzahl rechnete noch mit dem Innenabstand der Karten (auch in Klassisch, das keine hat); jetzt mit der tatsächlichen Breite.
+- Geprüft mit echten Fensterfotos der Demo (Modern hell/dunkel, Klassisch hell): Collection, Suche, Wantlist, Regal, Statistik. Debug-Build und 196 Tests erfolgreich, keine Compilerwarnungen.
+
 # Collection, Wantlist und Regal geprüft: Schatten, Überblendungen, Suchplaketten · 07.10.2026
 
 - **Schatten am Rasterrand**: `coverGridMotion` schnitt das Raster an seinen eigenen Grenzen ab. In Klassisch endete der Schatten der Hüllen in der linken (und rechten) Spalte deshalb in einer harten senkrechten Kante – in Collection, Wantlist und im Fachraster. Der Clip liegt jetzt um `CoverGrid.shadowRoom` (16 pt) außerhalb; das Fachraster bekommt denselben Platz innerhalb seiner ScrollView, die Cover bleiben bündig mit dem Regal.

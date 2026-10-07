@@ -364,7 +364,10 @@ private struct RaisedPlate: View {
                 if AppStyle.isAtelier {
                     shape.strokeBorder(edge, lineWidth: 1.5)
                 } else {
+                    // A selection carries a rim in both designs (Klassisch:
+                    // gold); here the accent, as on the chosen design card.
                     shape.strokeBorder(LinearGradient(colors: [edge, .clear], startPoint: .top, endPoint: .center), lineWidth: 1)
+                    shape.strokeBorder(AppStyle.selectedBorder.opacity(0.5), lineWidth: 1)
                 }
             }
             .shadow(color: AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.15) : Self.shadow,
