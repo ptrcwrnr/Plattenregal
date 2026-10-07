@@ -4,6 +4,7 @@
 - **Ring beim Ziehen** 8 pt unter dem oberen Seitenrand statt direkt daran; von dort folgt er dem Zug wie bisher.
 - **Sync-Kapsel** (`DiscogsSyncPill`): Jeder Schritt bleibt mindestens 0,9 s stehen, schnelle Zwischenschritte werden übersprungen, und Text, Symbol und Größe wechseln in einer gemeinsamen Animation (vorher drei getrennte mit unterschiedlicher Dauer) – beim Nachladen der Tracklisten nach dem Start springt sie nicht mehr. Inhalt und Kapsel bewegen sich beim Größerwerden als ein Stück (`geometryGroup`), ebenso in der Kapsel der Statistik.
 - **Zweite Zeile der Sync-Kapsel** („Nichts hinzugefügt“, „x von y“) in der Akzentfarbe wie Ring und Haken (Klassisch Petrol, Modern der gewählte Akzent) statt grau; die Titelzeile beider Kapseln in Klassisch in der Tinte des Designs.
+- **Suchfeld auf der Regalseite**: Platzhalter „Regal durchsuchen“ statt „Platte im Regal suchen …“ (englisch „Search shelf“, alter Text als veraltet markiert).
 - Debug-Build erfolgreich.
 
 # Platte hinzufügen, Vermisst und Rechtsklick-Menüs ruhiger · 07.10.2026

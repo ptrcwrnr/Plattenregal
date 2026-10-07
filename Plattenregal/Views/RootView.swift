@@ -350,7 +350,7 @@ private struct ToolbarSearchField: View {
         switch page {
         case .collection: String(localized: "Collection durchsuchen")
         case .wantlist: String(localized: "Wantlist durchsuchen")
-        case .shelf, .statistics: String(localized: "Platte im Regal suchen …")
+        case .shelf, .statistics: String(localized: "Regal durchsuchen")
         }
     }
 }

@@ -6534,6 +6534,7 @@
       }
     },
     "Platte im Regal suchen …" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7034,6 +7035,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show Shelf"
+          }
+        }
+      }
+    },
+    "Regal durchsuchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search shelf"
           }
         }
       }
