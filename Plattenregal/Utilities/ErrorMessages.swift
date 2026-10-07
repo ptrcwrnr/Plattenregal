@@ -22,9 +22,9 @@ extension Error {
     /// database saves and network hiccups — gets a sentence that says what
     /// happened and what to do. Technical details belong in the log.
     nonisolated var userMessage: String {
+        if isUserCancellation { return String(localized: "Der Vorgang wurde abgebrochen.") }
         switch self {
         case let error as any UserFacingError: return error.errorDescription ?? ErrorMessages.generic
-        case is CancellationError: return String(localized: "Der Vorgang wurde abgebrochen.")
         case let error as URLError where error.code == .timedOut:
             return String(localized: "Discogs hat nicht rechtzeitig geantwortet. Prüfe deine Internetverbindung und versuche es noch einmal.")
         case is URLError: return DiscogsError.offline.errorDescription ?? ErrorMessages.generic
@@ -45,7 +45,7 @@ extension Error {
     /// isn't an error and isn't logged.
     nonisolated func reportedMessage(file: String = #fileID, line: Int = #line) -> String {
         let text = userMessage
-        if !(self is CancellationError) {
+        if !isUserCancellation {
             let name = String(file.split(separator: "/").last ?? Substring(file))
             AppLog.error(name.replacingOccurrences(of: ".swift", with: ""),
                          "\(text) · Technisch: \(String(describing: self)) · \(name):\(line)")
@@ -100,7 +100,7 @@ nonisolated enum ReadError: LocalizedError, CustomStringConvertible {
 
     /// `error` itself when it already speaks for itself, otherwise wrapped.
     static func wrapping(_ error: any Error) -> any Error {
-        error is any UserFacingError || error is CancellationError ? error : ReadError.failed(error)
+        error is any UserFacingError || error.isUserCancellation ? error : ReadError.failed(error)
     }
 
     var errorDescription: String? {
@@ -112,10 +112,12 @@ nonisolated enum ReadError: LocalizedError, CustomStringConvertible {
 }
 
 extension Error {
-    /// The user closed a save or open panel – not an error.
+    /// Cancelling a task, request or file panel is not a failure.
     nonisolated var isUserCancellation: Bool {
         let error = self as NSError
-        return error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError
+        return self is CancellationError
+            || (error.domain == NSURLErrorDomain && error.code == URLError.cancelled.rawValue)
+            || (error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError)
     }
 }
 

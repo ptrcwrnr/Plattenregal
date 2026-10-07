@@ -12,7 +12,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 @main struct PlattenregalApp: App {
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     private let container: ModelContainer?
-    private let startupError: String?
     /// Another instance has the collection open; not a problem with the data.
     private let openElsewhere: Bool
     init() {
@@ -46,7 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 container = try LibraryStorage.makeContainer()
                 #endif
             }
-            startupError = nil; openElsewhere = false
+            openElsewhere = false
             if let context = container?.mainContext {
                 let copies = (try? context.fetchCount(FetchDescriptor<RecordCopy>())) ?? -1
                 let wants = (try? context.fetchCount(FetchDescriptor<WantlistEntry>())) ?? -1
@@ -56,7 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let container { ShelfAutoBackup.shared.scheduleBackup(of: container) }
         }
         catch StorageError.alreadyOpen {
-            container = nil; startupError = nil; openElsewhere = true
+            container = nil; openElsewhere = true
             let own = ProcessInfo.processInfo.processIdentifier
             if let other = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
                 .first(where: { $0.processIdentifier != own && !$0.isTerminated }) {
@@ -64,7 +63,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         catch {
-            container = nil; startupError = error.localizedDescription; openElsewhere = false
+            container = nil; openElsewhere = false
             AppLog.error("Datenbank", "Öffnen fehlgeschlagen, App zeigt die Fehlerseite: \(error)")
         }
     }
@@ -92,7 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         Label("Die Demo konnte nicht gestartet werden", systemImage: "exclamationmark.triangle")
                     } description: {
                         Text("Die Beispielsammlung ließ sich nicht aufbauen. Deine eigene Sammlung ist davon nicht betroffen.")
-                        if let startupError { Text("Technische Details: \(startupError)").font(.caption).foregroundStyle(.secondary) }
+                        Text("Die technischen Details stehen im Protokoll.").font(.caption).foregroundStyle(.secondary)
                     } actions: {
                         Button("Demo beenden") { DemoMode.end() }.appGlassButton()
                     }.padding().frame(width: 650, height: 320)
@@ -108,10 +107,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 ContentUnavailableView {
                     Label("Sammlung konnte nicht geöffnet werden", systemImage: "externaldrive.badge.exclamationmark")
                 } description: {
-                    Text("Plattenregal konnte deine gespeicherte Sammlung beim Start nicht laden. Deine Daten sind noch da – es wurde nichts gelöscht.")
+                    Text("Plattenregal konnte deine gespeicherte Sammlung beim Start nicht laden. Die App hat nichts gelöscht oder zurückgesetzt.")
                     Text("Beende die App und starte sie noch einmal. Klappt es dann immer noch nicht, sichere zuerst den Ordner ~/Library/Containers/de.private.Plattenregal, bevor du etwas anderes versuchst.")
-                    // For whoever helps: the system's own wording.
-                    if let startupError { Text("Technische Details: \(startupError)").font(.caption).foregroundStyle(.secondary) }
+                    // Keep system wording in the protocol, outside the readable explanation.
+                    Text("Die technischen Details stehen im Protokoll.").font(.caption).foregroundStyle(.secondary)
                 } actions: {
                     // What happened at launch is in the protocol – that file helps whoever looks into it.
                     if let log = AppLog.fileURL {

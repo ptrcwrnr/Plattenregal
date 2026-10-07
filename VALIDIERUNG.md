@@ -1,3 +1,46 @@
+# Aktueller Stand · 07.10.2026 (Dokumentation, Fehlermeldungen, Fehlerprotokoll)
+
+Projektversion **1.0.3 (102026)**, Schema **V15**. Dieser Abschnitt beschreibt die heutige Prüfung. Die Abschnitte darunter sind historische Prüfstände; ihre Testergebnisse und damaligen Einschätzungen gelten nur für den jeweiligen Stand. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+
+## Umfang und Befunde
+
+- README, STATISTIK.md und AENDERUNGEN.md mit dem aktuellen Code und den bereits vorhandenen Änderungen abgeglichen: Fach-Raster/Liste, Exemplar-Positionsregler, Sitzungs-Scrollstellen, Suchplaketten, entfernte Trefferzahl im Suchfeld und Version nachgetragen. Bestehende Änderungen nicht zurückgesetzt.
+- Fehlerpfade in `ErrorMessages`, App-Start, Schlüsselbund, Discogs, Dateiimport/-export, Regal und Statistik durchgesehen. Startfehler zeigen keine rohen Systemtexte mehr; Schlüsselbund-Status bleibt im technischen Fehler. Abbrüche von Aufgaben, URL-Anfragen und Dateidialogen werden einheitlich erkannt und von `reportedMessage` nicht als Fehler protokolliert. Neuer Test `cancellationAndKeychainErrorsStayReadable` prüft Meldungen, Lesefehler-Weitergabe und erhaltenen technischen Schlüsselbundcode.
+- App-Protokoll zum Prüfzeitpunkt gelesen: am 7. Oktober zwei Meldungen über eine andere offene Instanz, kein Absturzblock. Die Fehler vom 6. Oktober betreffen bis auf eine Zweitinstanz Debug-Schnappschüsse ohne verfügbares Fenster. Das allein erklärt keine Ursache für das fehlende Fenster.
+- Drei vorhandene macOS-Berichte vom **04.10.2026, 10:45:35 / 10:47:14 / 10:48:52**: jeweils Version **1.0 (092026)**, `EXC_BREAKPOINT/SIGTRAP`, Hauptthread, `PositionService.insert` aus `AllTests.LibraryTests.sharedSearchIndexFollowsChanges`. Sie stammen aus Tests des älteren Stands. Sie sind kein Beleg für einen aktuellen Absturz; umgekehrt beweist ein fehlender neuer Bericht keine Absturzfreiheit.
+- App-Protokoll, Rotation, Export, Laufmarkierung und Crash-Erkennung im Code geprüft. `previousCrash` wird im bestehenden Regressionstest geprüft. README unterscheidet nun App-Protokoll und separate macOS-Berichte; ein Export enthält beide App-Logdateien, keine `.ips`-Dateien. Stack-Aufzeichnung im Signal-Handler bleibt bestmöglich und ist nicht garantiert signal-sicher. Hier wurde nur der Kommentar präzisiert, nicht der Handler umgebaut.
+
+## Verifikation
+
+- **Debug-Build und Gesamttest:** erfolgreich, **196 Tests in 13 Suites, 0 Fehler**, auf dem endgültigen Codestand. Enthalten sind `errorsReachTheUserInPlainGerman`, `cancellationAndKeychainErrorsStayReadable`, `crashOfThePreviousSessionIsFoundInTheLog` und der in den alten Crashberichten genannte `sharedSearchIndexFollowsChanges`.
+- **Release-Build:** erfolgreich (`BUILD SUCCEEDED`), keine Compilerwarnungen im Buildprotokoll.
+- **Dokumente/Katalog:** `git diff --check` ohne Befund; String-Katalog als JSON gültig; die drei geänderten UI-Texte haben englische Übersetzungen; lokale Markdown-Links in allen vier Dokumenten vorhanden.
+
+Ausgeführte Build-/Testbefehle:
+
+```sh
+xcodebuild -project Plattenregal.xcodeproj -scheme Plattenregal -destination 'platform=macOS' -derivedDataPath /tmp/Plattenregal-Doku-20261007 test
+xcodebuild -project Plattenregal.xcodeproj -scheme Plattenregal -configuration Release -destination 'platform=macOS' -derivedDataPath /tmp/Plattenregal-Doku-20261007 build
+```
+
+Testnachweis: `/tmp/Plattenregal-Doku-20261007/Logs/Test/Test-Plattenregal-2026.10.07_12-05-49-+0200.xcresult`; vollständige Terminalausgaben: `/tmp/Plattenregal-Doku-20261007-final-test.log` und `/tmp/Plattenregal-Doku-20261007-release.log`. Diese temporären Dateien sind keine mitgelieferten Projektdateien.
+
+## Nachprüfung der UI-Änderungen (später am 07.10.2026)
+
+- Fachinhalt (Raster/Liste, Positionsregler, Scrollbrücke der Tabelle), Suchplaketten und Fehlermeldungen im Code geprüft. Korrigiert: Goldrand der Auswahl in Klassisch, fehlende englische Texte (5) und veraltete Katalogeinträge, irreführender Tooltip, Reglerzählung und Schutz vor gelöschtem Exemplar, Auswahl nach „Nicht im Regal“, endlose Wiederherstellung bei verschwundenem Scrollziel. Einzelheiten in AENDERUNGEN.md.
+- Die obige Angabe „die drei geänderten UI-Texte haben englische Übersetzungen“ galt nur für die Fehlertexte; die neuen Texte des Fachinhalts waren nicht übersetzt. Jetzt hat jeder nicht veraltete Katalogeintrag eine englische Übersetzung (per Skript geprüft).
+- `xcodebuild … -scheme Plattenregal -destination 'platform=macOS' test` (Xcodes DerivedData): **196 Tests in 13 Suites bestanden**, 0 Compilerwarnungen.
+- Nicht geprüft: visuelle Kontrolle des Fachrasters in Klassisch und Modern, Bedienung des Reglers in der laufenden App.
+
+## Grenzen dieser Prüfung
+
+- Keine visuelle oder interaktive Prüfung der Fehlerseiten, kein absichtlich ausgelöster Absturz und kein echter Schlüsselbundfehler. Automatisierte Tests laufen mit lokalen Attrappen und Datenbanken im Arbeitsspeicher.
+- Kein echter Discogs-Abgleich, kein zerstörender Datenbanktest, keine Notarisierung oder Veröffentlichung.
+- Die bereits vorhandenen Änderungen an Regal und Suche wurden für den Doku-Abgleich gelesen und vom Gesamttest erfasst; ihre vollständige visuelle und interaktive Prüfung gehört nicht zu dieser Dokumentationsprüfung.
+- Vorhandene App-Protokolle, Crashberichte und Nutzerdaten wurden nicht verändert oder gelöscht. Die zuvor dokumentierten offenen Tour-Bilder und das zeitweise fehlende Demo-Fenster sind durch diese Prüfung nicht als behoben bestätigt.
+
+---
+
 # Aktueller Stand · 06.10.2026 (Prüfung Robustheit, Klassisch durchgehend)
 
 ## Vorgehen

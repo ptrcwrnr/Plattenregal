@@ -18,8 +18,8 @@ import SwiftData
 }
 
 /// The shelf page as one calm column: the KALLAX drawn as a single piece of
-/// furniture and the selected compartment underneath at full width (title,
-/// then a compact table of its records). The search sits in the toolbar; its
+/// furniture and the selected compartment underneath at full width with
+/// a cover grid or compact table. The search sits in the toolbar; its
 /// matches float over the top of the page.
 struct KallaxView: View {
     @Environment(\.modelContext) private var context
@@ -78,6 +78,10 @@ struct KallaxView: View {
     @State private var searchIndexStale = true
     @State private var changes = LibraryChanges.shared
     @State private var focusCopy: RecordCopy?
+    /// Repeating an external request for the same copy must reveal it again.
+    @State private var focusRevision = 0
+    /// Scroll anchors survive a visit to an empty or reserved compartment.
+    @State private var contentsSession = ShelfContentsSession()
     /// While the search field has focus, ⌘Z belongs to its text, not to the
     /// "Aus Fach entfernt" toast.
     private var searchFocused: Bool { searchRequests?.fieldFocused ?? false }
@@ -178,6 +182,7 @@ struct KallaxView: View {
         guard let shelf = copy.shelf else { startPlacement(copy); return }
         selectShelf(shelf)
         focusCopy = copy
+        focusRevision += 1
     }
 
     private func removeSoldFromShelves() {
@@ -342,7 +347,10 @@ struct KallaxView: View {
         .appPanel(item: $assignment, onDismiss: {
             // The shelf behind the sheet follows the additions only now, so
             // nothing rebuilds the sheet while records are being added.
-            if let copy = closingAssignment?.lastAdded { focusCopy = copy }
+            if let copy = closingAssignment?.lastAdded {
+                focusCopy = copy
+                focusRevision += 1
+            }
             closingAssignment = nil
         }) { session in
             ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id], labels: rangeLabels,
@@ -504,8 +512,7 @@ struct KallaxView: View {
 
     @ViewBuilder private var shelfDetail: some View {
         if let shown = detailShelf {
-            // No title row: the compartment above already shows its range
-            // and count.
+            // The contents own their grid/list switch.
             VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                 if let placement {
                     PlacementCard(
@@ -531,13 +538,13 @@ struct KallaxView: View {
                         }
                     }
                 } else {
-                    ShelfCopyTable(
+                    ShelfContentsView(
                         shelf: shown,
-                        shelves: shelves,
-                        rangeLabels: rangeLabels,
+                        session: contentsSession,
                         owner: owner,
                         missing: missingIDs,
                         focusCopy: focusCopy,
+                        focusRevision: focusRevision,
                         select: { copy in
                             if let copy { if focusCopy?.id != copy.id { focusCopy = copy } } else { deselect() }
                         },
@@ -547,8 +554,6 @@ struct KallaxView: View {
                         delete: { pendingDelete = $0 },
                         setMissing: setMissing
                     )
-                    .appTableCard()
-                    .modifier(FadeInOnChange(value: shown.id))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -564,6 +569,7 @@ struct KallaxView: View {
 
     private func detailNote(_ text: String) -> some View {
         Text(text).font(.callout).foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder private var undoToast: some View {
@@ -659,8 +665,8 @@ struct KallaxView: View {
         withAnimation(AppStyle.standardAnimation) { highlight = shelf.id }
     }
 
-    /// After the quick editor changed where a copy stands: follow it to its
-    /// new shelf, or drop the focus when it left the shelves altogether.
+    /// After a copy's place changed from the compartment contents: follow it
+    /// to its new shelf, or drop the focus when it left the shelves altogether.
     private func showPlaced(_ copy: RecordCopy) {
         guard let shelf = copy.shelf else {
             if focusCopy?.id == copy.id { focusCopy = nil }
@@ -668,6 +674,7 @@ struct KallaxView: View {
         }
         if highlight != shelf.id { withAnimation(AppStyle.standardAnimation) { highlight = shelf.id } }
         focusCopy = copy
+        focusRevision += 1
     }
 
     // Lets go of the picked record; the shelf itself stays selected.
@@ -707,7 +714,10 @@ struct KallaxView: View {
             if let shelf = new.spot?.shelf { highlight = shelf.id }
         }
         // A placed record is pulled out in the strip and selected in the table.
-        if new.found && new.putAwayIn == nil { focusCopy = copy }
+        if new.found && new.putAwayIn == nil {
+            focusCopy = copy
+            focusRevision += 1
+        }
     }
 
     /// Records may change while the card is open (sync, edits in the table):
@@ -745,6 +755,7 @@ struct KallaxView: View {
             try PositionService(context: context).move(placement.copy, to: spot.shelf, position: spot.position, found: true)
             withAnimation(AppStyle.standardAnimation) { self.placement = nil }
             focusCopy = placement.copy
+            focusRevision += 1
         } catch { self.error = error.reportedMessage() }
     }
 
@@ -791,21 +802,5 @@ struct KallaxView: View {
         if placement?.copy.id == copy.id { placement = nil }
         do { try PositionService(context: context).delete(copy) }
         catch { self.error = error.reportedMessage() }
-    }
-}
-
-/// Fades the content in afresh whenever `value` changes, e.g. the table
-/// when another compartment is picked, without rebuilding it.
-private struct FadeInOnChange<Value: Equatable>: ViewModifier {
-    let value: Value
-    @State private var opacity: Double = 1
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(opacity)
-            .onChange(of: value) {
-                opacity = 0
-                withAnimation(AppStyle.fadeAnimation) { opacity = 1 }
-            }
     }
 }

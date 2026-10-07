@@ -1,9 +1,13 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Copy table in the shelf detail area
 
-nonisolated private struct ShelfCopyItem: Identifiable {
+// MARK: - Copies in the selected compartment
+
+/// One physical copy, even when several copies share the same release.
+/// Both presentations use this snapshot, so a menu always acts on the copy
+/// whose position is shown rather than on a release's first copy.
+nonisolated struct ShelfCopyItem: Identifiable {
     let copy: RecordCopy
     let id: UUID
     let position: Int
@@ -11,10 +15,9 @@ nonisolated private struct ShelfCopyItem: Identifiable {
     let title: String
     /// 0 when unknown, so it sorts to one end instead of breaking the comparator.
     let year: Int
+    let label: String
     let genre: String
-    /// Not in the current Discogs collection (sold, other account).
     let sold: Bool
-    /// Marked "Vermisst".
     let missing: Bool
 
     init(_ copy: RecordCopy, owner: String?, missing: Bool) {
@@ -24,354 +27,750 @@ nonisolated private struct ShelfCopyItem: Identifiable {
         artist = copy.release?.displayArtist ?? "—"
         title = copy.release?.displayTitle ?? "—"
         year = copy.release?.year ?? 0
+        label = copy.release?.displayLabel ?? ""
         genre = copy.release?.primaryStyle ?? ""
         sold = copy.leftCurrentCollection(owner: owner)
         self.missing = missing
     }
+
+    /// SwiftData may publish the two sides of a relationship at different
+    /// times after a move. The copy's current shelf is the final authority.
+    @MainActor static func snapshot(for shelf: Shelf, owner: String?, missing: Set<UUID>) -> [ShelfCopyItem] {
+        let copies = shelf.copies.filter { !$0.isDeleted && $0.shelf?.id == shelf.id }
+        return PositionService.inShelfOrder(copies).map {
+            ShelfCopyItem($0, owner: owner, missing: missing.contains($0.id))
+        }
+    }
 }
 
-/// Compact, sortable table of the shelf's records (default: position in the
-/// shelf). Owns a cached snapshot that is rebuilt only when the shelf's
-/// contents actually change (see `signature`), not on every unrelated
-/// re-render of the surrounding page (e.g. a search hover).
-struct ShelfCopyTable: View {
+/// Kept by the shelf page, including while an empty or reserved compartment
+/// replaces this view. Scroll positions belong to one compartment and one
+/// presentation; switching between them never overwrites the other's place.
+@Observable final class ShelfContentsSession {
+    var gridScrollPositions: [UUID: UUID] = [:]
+    var listScrollPositions: [UUID: UUID] = [:]
+    var tableSortOrder = [KeyPathComparator(\ShelfCopyItem.position)]
+}
+
+/// A cover grid in physical shelf order, or the original sortable table.
+/// Owns a cached snapshot that follows actual content changes, not unrelated
+/// page renders. Editing and actions are shared by both presentations.
+struct ShelfContentsView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.coverCornerRadius) private var coverCornerRadius
     let shelf: Shelf
-    let shelves: [Shelf]
-    let rangeLabels: ShelfLabels
+    let session: ShelfContentsSession
     let owner: String?
-    /// Copies marked "Vermisst"; part of `signature`, so a mark
-    /// rebuilds the rows like any other change.
     let missing: Set<UUID>
     let focusCopy: RecordCopy?
+    let focusRevision: Int
     let select: (RecordCopy?) -> Void
+    /// After a copy left its place here: the page lets go of its focus.
     let placed: (RecordCopy) -> Void
     /// Shows the card with the records this one stands between.
     let find: (RecordCopy) -> Void
     let unplace: (RecordCopy) -> Void
     let delete: (RecordCopy) -> Void
     let setMissing: (RecordCopy, Bool) -> Void
+    @AppStorage("shelfContentsLayout") private var layout = OverviewLayout.grid
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
 
+    /// Always in physical order. Sorting the table never changes the grid.
     @State private var items: [ShelfCopyItem] = []
-    @State private var sortOrder = [KeyPathComparator(\ShelfCopyItem.position)]
-    /// The row last clicked in the table itself. Such a selection must not
-    /// scroll: the row is already under the pointer, and centering it would
-    /// slide the list away so the pointer ends up over a neighbouring record.
+    @State private var tableItems: [ShelfCopyItem] = []
+    private var sortOrder: [KeyPathComparator<ShelfCopyItem>] { session.tableSortOrder }
+    /// A selection made locally must not center itself under the pointer.
     @State private var clickedID: UUID?
-    /// Row whose quick editor popover is open (double-click).
     @State private var quickEditID: UUID?
-    /// Data changed while the quick editor was open; rows are rebuilt once it
-    /// closes, so a background sync can't pull the popover's row away.
+    /// Updates arriving during an edit are applied once its popover closes.
     @State private var reloadPending = false
-    /// Shelf the rows were last built for: only a new shelf scrolls to the
-    /// selected record, not every data refresh.
     @State private var loadedShelfID: UUID?
-    /// The row whose menu is open, and where in the table it was right-clicked.
+    @State private var loadedSignature: Int?
     @State private var menuFor: (id: UUID, anchor: UnitPoint)?
     @State private var error: String?
+    @State private var focusScroll: FocusScroll?
+    @State private var gridRestorePending = true
 
-    private func quickEditBinding(_ id: UUID) -> Binding<Bool> {
-        Binding(get: { quickEditID == id }, set: { if !$0, quickEditID == id { quickEditID = nil } })
+    private struct FocusScroll: Equatable {
+        let shelfID: UUID
+        let layout: OverviewLayout
+        let copyID: UUID
+        // Following the same copy again is still a new request.
+        let requestID = UUID()
     }
 
     private var signature: Int {
         var hasher = Hasher()
         hasher.combine(shelf.id)
-        // Artist, title, year and genre are copied into the rows; a sync or a
-        // Discogs reload changes them on the same copies, so follow those too.
         hasher.combine(LibraryChanges.shared.libraryVersion)
         hasher.combine(owner)
-        for copy in shelf.copies { hasher.combine(copy.id); hasher.combine(copy.positionInShelf); hasher.combine(copy.discogsActive); hasher.combine(missing.contains(copy.id)) }
+        for copy in shelf.copies where !copy.isDeleted && copy.shelf?.id == shelf.id {
+            hasher.combine(copy.id)
+            hasher.combine(copy.positionInShelf)
+            hasher.combine(copy.discogsActive)
+            hasher.combine(missing.contains(copy.id))
+        }
         return hasher.finalize()
+    }
+
+    private var layoutSelection: Binding<OverviewLayout> {
+        Binding(get: { layout }, set: { value in
+            // Close capture before SwiftUI mounts the incoming presentation.
+            gridRestorePending = true
+            layout = value
+        })
     }
 
     private var selection: Binding<UUID?> {
         Binding(
             get: { focusCopy?.id },
+            set: { id in selectLocally(id.flatMap { id in items.first { $0.id == id }?.copy }) }
+        )
+    }
+
+    private func selectLocally(_ copy: RecordCopy?) {
+        clickedID = copy?.id
+        focusScroll = nil
+        select(copy)
+    }
+
+    private func quickEditBinding(_ id: UUID) -> Binding<Bool> {
+        Binding(get: { quickEditID == id }, set: { if !$0, quickEditID == id { quickEditID = nil } })
+    }
+
+    private func menuBinding(_ id: UUID) -> Binding<Bool> {
+        Binding(get: { menuFor?.id == id }, set: { if !$0, menuFor?.id == id { menuFor = nil } })
+    }
+
+    private func scrollPosition(for presentation: OverviewLayout) -> Binding<UUID?> {
+        let shelfID = shelf.id
+        return Binding(
+            get: {
+                let id = presentation == .grid ? session.gridScrollPositions[shelfID] : session.listScrollPositions[shelfID]
+                return id
+            },
             set: { id in
-                clickedID = id
-                select(id.flatMap { id in items.first { $0.id == id }?.copy })
+                // A removed scroll view can emit nil while switching layouts.
+                // Keep its last anchor; reload explicitly removes stale IDs.
+                guard let id, layout == presentation, loadedShelfID == shelfID,
+                      presentation != .grid || !gridRestorePending,
+                      items.contains(where: { $0.id == id }) else { return }
+                if presentation == .grid { session.gridScrollPositions[shelfID] = id }
+                else { session.listScrollPositions[shelfID] = id }
             }
         )
     }
 
-    private func reload(_ proxy: ScrollViewProxy) {
+    private func reload() {
+        let changedShelf = loadedShelfID != shelf.id
+        if changedShelf {
+            gridRestorePending = true
+            // An editor from the previous compartment must never defer this
+            // load, or keep a popover attached to one of its old tiles.
+            quickEditID = nil
+            menuFor = nil
+            clickedID = nil
+        } else if quickEditID != nil {
+            reloadPending = true
+            return
+        }
+        guard changedShelf || loadedSignature != signature || reloadPending else { return }
         reloadPending = false
-        items = PositionService(context: context).ordered(shelf).map { ShelfCopyItem($0, owner: owner, missing: missing.contains($0.id)) }.sorted(using: sortOrder)
-        guard loadedShelfID != shelf.id else { return }
-        loadedShelfID = shelf.id
-        if let id = focusCopy?.id { proxy.scrollTo(id, anchor: .center) }
+        let next = ShelfCopyItem.snapshot(for: shelf, owner: owner, missing: missing)
+        let newlyFocused = focusCopy.map { focus in !items.contains { $0.id == focus.id } } ?? false
+        // The same snapshot animation as Collection/Wantlist, only on a real
+        // compartment change. Metadata updates and clicks never reorder tiles
+        // with an animation, and table sorting stays immediate.
+        let animate = loadedShelfID != nil && changedShelf && layout == .grid
+        withAnimation(animate ? AppStyle.layoutAnimation : nil) {
+            items = next
+            tableItems = next.sorted(using: sortOrder)
+            loadedShelfID = shelf.id
+            loadedSignature = signature
+        }
+        let ids = Set(next.map(\.id))
+        if let id = menuFor?.id, !ids.contains(id) { menuFor = nil }
+        if let id = session.gridScrollPositions[shelf.id], !ids.contains(id) {
+            session.gridScrollPositions[shelf.id] = nil
+        }
+        if let id = session.listScrollPositions[shelf.id], !ids.contains(id) {
+            session.listScrollPositions[shelf.id] = nil
+        }
+        if changedShelf || newlyFocused {
+            if let id = focusCopy?.id, ids.contains(id) { requestFocusScroll(id) }
+            else { focusScroll = nil }
+        }
     }
 
-    /// The row's right-click menu (an `AppMenu`, like the collection's).
+    private func requestFocusScroll(_ id: UUID) {
+        focusScroll = FocusScroll(shelfID: shelf.id, layout: layout, copyID: id)
+    }
+
+    private func edit(_ copy: RecordCopy) {
+        menuFor = nil
+        selectLocally(copy)
+        quickEditID = copy.id
+    }
+
+    private func activate(_ copy: RecordCopy) {
+        edit(copy)
+    }
+
+    private func quickEditor(_ copy: RecordCopy) -> some View {
+        ShelfCopyQuickEditor(copy: copy)
+    }
+
+    private func actionMenu(_ copy: RecordCopy) -> some View {
+        AppMenu(dismiss: { menuFor = nil }) { rowMenu(copy) }
+    }
+
+    /// Both presentations use the same copy actions and persistence services.
     @ViewBuilder private func rowMenu(_ copy: RecordCopy) -> some View {
-        Button("Exemplar bearbeiten …") { quickEditID = copy.id }
-        Button("Platz im Regal zeigen") { find(copy) }
+        Button { edit(copy) } label: { Label("Exemplar bearbeiten …", systemImage: "slider.horizontal.3") }
+        Button { menuFor = nil; find(copy) } label: { Label("Platz im Regal zeigen", systemImage: "scope") }
         Divider()
-        if !missingEnabled {
-            // Off in the settings: no marking.
-        } else if missing.contains(copy.id) {
-            Button("Wieder gefunden") { setMissing(copy, false) }
-        } else {
-            Button("Als vermisst markieren") { setMissing(copy, true) }
+        if missingEnabled {
+            if missing.contains(copy.id) {
+                Button { menuFor = nil; setMissing(copy, false) } label: { Label("Wieder gefunden", systemImage: "checkmark.circle") }
+            } else {
+                Button { menuFor = nil; setMissing(copy, true) } label: { Label("Als vermisst markieren", systemImage: "questionmark.circle") }
+            }
         }
-        // Takes it out of the shelf for good: it no longer waits to be sorted in.
-        Button("Nicht im Regal") {
-            do { try PositionService(context: context).setExcluded([copy], true) }
-            catch { self.error = error.reportedMessage() }
-        }
-        Button("Aus Fach entfernen") { unplace(copy) }
-        // Only for records no longer in the Discogs collection: an
-        // active one would come back with the next sync as a new copy.
+        Button {
+            menuFor = nil
+            do {
+                try PositionService(context: context).setExcluded([copy], true)
+                placed(copy)
+            } catch { self.error = error.reportedMessage() }
+        } label: { Label("Nicht im Regal", systemImage: "rectangle.slash") }
+        Button { menuFor = nil; unplace(copy) } label: { Label("Aus Fach entfernen", systemImage: "trash") }
+        // An active copy would return on the next sync as a new copy.
         if !copy.isInCurrentCollection(owner: owner) {
             Divider()
-            Button("Aus Sammlung löschen …", role: .destructive) { delete(copy) }
+            Button(role: .destructive) { menuFor = nil; delete(copy) } label: { Label("Aus Sammlung löschen …", systemImage: "trash") }
         }
     }
 
     var body: some View {
         ScrollViewReader { proxy in
-            Table(items, selection: selection, sortOrder: $sortOrder) {
-                TableColumn("Pos.", value: \.position) { item in
-                    Text(String(item.position)).monospacedDigit().foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Spacer(minLength: 12)
+                    OverviewLayoutPicker(selection: layoutSelection.animation(AppStyle.fadeAnimation))
+                        .accessibilityLabel("Ansicht der Fachinhalte")
                 }
-                .width(min: 34, ideal: 40, max: 52)
-                TableColumn("") { item in
-                    CoverView(url: item.copy.release?.coverURL, size: 20)
-                }
-                .width(24)
-                TableColumn("Interpret", value: \.artist) { item in
-                    Text(item.artist).lineLimit(1).help(item.artist)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .popover(isPresented: quickEditBinding(item.id), arrowEdge: .bottom) {
-                            ShelfCopyQuickEditor(copy: item.copy, shelves: shelves, rangeLabels: rangeLabels) {
-                                quickEditID = nil
-                                placed(item.copy)
-                            }
-                        }
-                }
-                .width(min: 120, ideal: 220)
-                TableColumn("Titel", value: \.title) { item in
-                    HStack(spacing: 6) {
-                        Text(item.title).lineLimit(1).help(item.title)
-                        if item.missing {
-                            MissingBadge()
-                                .help("Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht")
-                        }
-                        if item.sold {
-                            StatusTag(text: String(localized: "Nicht in der Collection"), color: AppStyle.warningColor)
-                                .help("Nicht (mehr) in deiner Discogs-Collection – über den Papierkorb aus dem Fach nehmen")
-                        }
-                    }
-                }
-                .width(min: 120, ideal: 280)
-                TableColumn("Jahr", value: \.year) { item in
-                    Text(item.year > 0 ? String(item.year) : "–").monospacedDigit().foregroundStyle(.secondary)
-                }
-                .width(min: 40, ideal: 48, max: 60)
-                TableColumn("Genre", value: \.genre) { item in
-                    Text(item.genre.isEmpty ? "–" : item.genre).lineLimit(1).foregroundStyle(.secondary).help(item.genre)
-                }
-                .width(min: 80, ideal: 130)
-                TableColumn("") { item in
-                    HStack(spacing: 2) {
-                        RowIconButton(systemImage: "scope", help: String(localized: "Zeigen, zwischen welchen Platten sie steht")) { find(item.copy) }
-                        RowIconButton(systemImage: "trash", help: String(localized: "Aus Fach entfernen"), hoverColor: AppStyle.errorColor) { unplace(item.copy) }
-                    }
-                }
-                .width(46)
+                if layout == .grid { grid(proxy) }
+                else { table }
             }
-            .tableStyle(.inset)
-            .background(QuietIconColumnHeaders())
-            // Like a spine in the strip: clicking the picked record again puts it back.
-            .background(TableRowClickToggle { select(nil) })
-            .alternatingRowBackgrounds(.disabled)
-            .scrollContentBackground(.hidden)
-            // Only for the double-click; the menu is the app's own (below).
-            .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
-                if let id = ids.first, items.contains(where: { $0.id == id }) { quickEditID = id }
-            }
-            .overlay(TableRowClicks(secondary: { row, point in
-                guard items.indices.contains(row) else { return }
-                menuFor = (items[row].id, point)
-            }))
-            .popover(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } }),
-                     attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
-                if let id = menuFor?.id, let copy = items.first(where: { $0.id == id })?.copy {
-                    AppMenu(dismiss: { menuFor = nil }) { rowMenu(copy) }
-                }
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .alert("Änderung nicht möglich", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
                 Button("OK") {}
             } message: { Text(error ?? "") }
             .task(id: signature) {
-                guard quickEditID == nil else { reloadPending = true; return }
-                reload(proxy)
+                guard !Task.isCancelled else { return }
+                reload()
             }
+            .onChange(of: shelf.id) { _, _ in reload() }
             .onChange(of: quickEditID) { _, id in
-                if id == nil && reloadPending { reload(proxy) }
+                if id == nil && reloadPending { reload() }
             }
-            .onChange(of: sortOrder) { _, order in items.sort(using: order) }
+            .onChange(of: sortOrder) { _, order in
+                withAnimation(nil) { tableItems = items.sorted(using: order) }
+            }
+            .onChange(of: layout) { _, _ in
+                gridRestorePending = true
+                quickEditID = nil
+                menuFor = nil
+                focusScroll = nil
+                // A previously visited presentation returns to its own place.
+                // On the first switch, keep the selected copy in view.
+                if scrollPosition(for: layout).wrappedValue == nil,
+                   let id = focusCopy?.id, items.contains(where: { $0.id == id }) {
+                    requestFocusScroll(id)
+                }
+            }
+            .onChange(of: focusRevision) { _, _ in
+                if let id = focusCopy?.id { requestFocusScroll(id) }
+            }
             .onChange(of: focusCopy?.id) { _, id in
-                let fromTable = id == clickedID
+                let local = id != nil && id == clickedID
                 clickedID = nil
-                guard let id, !fromTable else { return }
-                withAnimation(AppStyle.layoutAnimation) { proxy.scrollTo(id, anchor: .center) }
+                guard let id, !local else { focusScroll = nil; return }
+                requestFocusScroll(id)
             }
+            .task(id: focusScroll) {
+                guard let request = focusScroll, request.layout == .grid else { return }
+                // A request can arrive in the same update as a new compartment
+                // or presentation. Let its scroll targets complete layout first.
+                await Task.yield()
+                try? await Task.sleep(for: .milliseconds(25))
+                guard !Task.isCancelled, request == focusScroll,
+                      shelf.id == request.shelfID, layout == request.layout,
+                      loadedShelfID == request.shelfID,
+                      focusCopy?.id == request.copyID,
+                      items.contains(where: { $0.id == request.copyID }) else { return }
+                withAnimation(AppStyle.layoutAnimation) {
+                    // ScrollViewReader can reveal a target without publishing
+                    // it through scrollPosition. Keep the saved anchor in sync
+                    // so a later status update cannot restore the old place.
+                    session.gridScrollPositions[request.shelfID] = request.copyID
+                    proxy.scrollTo(request.copyID, anchor: .center)
+                }
+            }
+        }
+    }
+
+    private func grid(_ proxy: ScrollViewProxy) -> some View {
+        GeometryReader { geometry in
+            let width = max(0, geometry.size.width - 4)
+            let columns = CoverGrid.columnCount(available: width, minimum: 135)
+            ScrollView {
+                LazyVGrid(columns: CoverGrid.columns(count: columns), alignment: .leading, spacing: CoverGrid.spacing) {
+                    ForEach(items) { item in
+                        Button { activate(item.copy) } label: { tile(item) }
+                            .buttonStyle(.plain)
+                            .id(item.id)
+                            .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
+                                quickEditor(item.copy)
+                            }
+                            .onSecondaryClick { point in
+                                quickEditID = nil
+                                menuFor = (item.id, point)
+                            }
+                            .popover(isPresented: menuBinding(item.id),
+                                     attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+                                actionMenu(item.copy)
+                            }
+                            .help("Position \(item.position) · \(item.artist) · \(item.title)\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen.")
+                            .accessibilityLabel("Position \(item.position), \(item.artist), \(item.title)")
+                            .accessibilityAddTraits(focusCopy?.id == item.id ? .isSelected : [])
+                            .accessibilityAction(named: Text("Exemplar bearbeiten …")) { edit(item.copy) }
+                    }
+                }
+                .coverGridMotion(width: width, columnCount: columns)
+                .scrollTargetLayout()
+                .padding(.horizontal, 2)
+                .padding(.top, 2)
+                .padding(.bottom, CoverGrid.spacing)
+            }
+            .scrollPosition(id: scrollPosition(for: .grid), anchor: .top)
+            .id(loadedShelfID)
+            .task(id: loadedShelfID) {
+                let shelfID = shelf.id
+                let saved = session.gridScrollPositions[shelfID]
+                gridRestorePending = true
+                await Task.yield()
+                try? await Task.sleep(for: .milliseconds(25))
+                guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
+                // On mount SwiftUI can publish row zero before applying an
+                // existing scrollPosition. Keep capture closed until an
+                // explicit restore has laid out the saved copy. An external
+                // focus request takes precedence over a remembered position.
+                let hasFocusRequest = focusScroll?.shelfID == shelfID && focusScroll?.layout == .grid
+                if !hasFocusRequest, let saved, items.contains(where: { $0.id == saved }) {
+                    withAnimation(nil) {
+                        session.gridScrollPositions[shelfID] = saved
+                        proxy.scrollTo(saved, anchor: .top)
+                    }
+                }
+                await Task.yield()
+                try? await Task.sleep(for: .milliseconds(25))
+                guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
+                gridRestorePending = false
+            }
+        }
+    }
+
+    private func tile(_ item: ShelfCopyItem) -> some View {
+        let selected = focusCopy?.id == item.id
+        return VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 6) {
+            CoverView(url: item.copy.release?.coverURL, size: nil)
+                .atelierRecordSleeve()
+                .overlay {
+                    RoundedRectangle(cornerRadius: AppStyle.isAtelier
+                                     ? (AtelierCoverFrame.current == .sleeve ? 2 : AppStyle.cardRadius) : coverCornerRadius)
+                        .strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: 2)
+                }
+                .overlay(alignment: .topLeading) {
+                    Text(String(item.position))
+                        .font(.caption.weight(.semibold)).monospacedDigit()
+                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .appChipSurface(in: Capsule())
+                        .padding(AtelierCoverFrame.badgeInset)
+                }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.artist).font(.callout.weight(.semibold)).lineLimit(1)
+                    .foregroundStyle(selected ? AppStyle.accent : .primary)
+                Text(item.title).font(.caption).lineLimit(1).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 3) {
+                if item.missing { MissingBadge() }
+                if item.sold {
+                    Text("Nicht in der Collection")
+                        .font(.caption2.weight(.medium)).foregroundStyle(AppStyle.warningColor)
+                        .lineLimit(1).minimumScaleFactor(0.85)
+                }
+            }
+            .frame(minHeight: 14, alignment: .topLeading)
+        }
+        .contentShape(Rectangle())
+    }
+
+    private var table: some View {
+        Table(tableItems, selection: selection, sortOrder: Binding(
+            get: { sortOrder }, set: { session.tableSortOrder = $0 }
+        )) {
+            TableColumn("Pos.", value: \.position) { item in
+                Text(String(item.position)).monospacedDigit().foregroundStyle(.secondary)
+            }
+            .width(min: 34, ideal: 40, max: 52)
+            TableColumn("") { item in CoverView(url: item.copy.release?.coverURL, size: 20) }
+                .width(24)
+            TableColumn("Interpret", value: \.artist) { item in
+                Text(item.artist).lineLimit(1).help(item.artist)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
+                        quickEditor(item.copy)
+                    }
+            }
+            .width(min: 120, ideal: 220)
+            TableColumn("Titel", value: \.title) { item in
+                HStack(spacing: 6) {
+                    Text(item.title).lineLimit(1).help(item.title)
+                    if item.missing {
+                        MissingBadge()
+                            .help("Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht")
+                    }
+                    if item.sold {
+                        StatusTag(text: String(localized: "Nicht in der Collection"), color: AppStyle.warningColor)
+                            .help("Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen")
+                    }
+                }
+            }
+            .width(min: 120, ideal: 280)
+            TableColumn("Jahr", value: \.year) { item in
+                Text(item.year > 0 ? String(item.year) : "–").monospacedDigit().foregroundStyle(.secondary)
+            }
+            .width(min: 40, ideal: 48, max: 60)
+            TableColumn("Label", value: \.label) { item in
+                Text(item.label.isEmpty ? "–" : item.label).lineLimit(1).foregroundStyle(.secondary).help(item.label)
+            }
+            .width(min: 80, ideal: 160)
+            TableColumn("Genre", value: \.genre) { item in
+                Text(item.genre.isEmpty ? "–" : item.genre).lineLimit(1).foregroundStyle(.secondary).help(item.genre)
+            }
+            .width(min: 80, ideal: 130)
+        }
+        .tableStyle(.inset)
+        .background(QuietIconColumnHeaders())
+        .background(TableRowClickToggle { selectLocally(nil) })
+        .alternatingRowBackgrounds(.disabled)
+        .scrollContentBackground(.hidden)
+        .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
+            if let id = ids.first, let copy = items.first(where: { $0.id == id })?.copy { activate(copy) }
+        }
+        .overlay(TableRowClicks(secondary: { row, point in
+            guard tableItems.indices.contains(row) else { return }
+            quickEditID = nil
+            menuFor = (tableItems[row].id, point)
+        }))
+        .popover(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } }),
+                 attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+            if let id = menuFor?.id, let copy = items.first(where: { $0.id == id })?.copy {
+                actionMenu(copy)
+            }
+        }
+        .background(ShelfTableScrollBridge(
+            ids: tableItems.map(\.id),
+            position: scrollPosition(for: .list),
+            revealID: focusScroll?.layout == .list ? focusScroll?.copyID : nil,
+            revealRequest: focusScroll?.layout == .list ? focusScroll?.requestID : nil
+        ))
+        .id(loadedShelfID)
+        .appTableCard()
+    }
+}
+
+/// SwiftUI's Table does not reliably publish or restore scrollPosition on
+/// macOS. Keep the top visible copy through the native clip view instead.
+/// A saved target is restored before any initial bounds change can replace it
+/// with the new table's first row. External requests use their own token, so
+/// asking to show the same copy again still centers it.
+private struct ShelfTableScrollBridge: NSViewRepresentable {
+    let ids: [UUID]
+    let position: Binding<UUID?>
+    let revealID: UUID?
+    let revealRequest: UUID?
+
+    func makeNSView(context: Context) -> Anchor { Anchor() }
+    func updateNSView(_ view: Anchor, context: Context) {
+        view.configure(ids: ids, position: position, revealID: revealID, revealRequest: revealRequest)
+    }
+    static func dismantleNSView(_ view: Anchor, coordinator: ()) { view.stop() }
+
+    final class Anchor: NSView {
+        private var ids: [UUID] = []
+        private var position: Binding<UUID?>?
+        private var restoreID: UUID?
+        private var revealID: UUID?
+        private var revealRequest: UUID?
+        private var lastRevealRequest: UUID?
+        private var lastObservedID: UUID?
+        private var needsRestore = true
+        private var restoring = true
+        private weak var table: NSTableView?
+        private var observer: NSObjectProtocol?
+        private var pending: DispatchWorkItem?
+        private var generation = 0
+        private var stopped = false
+
+        func configure(ids: [UUID], position: Binding<UUID?>, revealID: UUID?, revealRequest: UUID?) {
+            if self.position == nil || self.ids != ids {
+                self.ids = ids
+                restoreID = position.wrappedValue
+                needsRestore = true
+                restoring = true
+                lastObservedID = nil
+            }
+            self.position = position
+            self.revealID = revealID
+            self.revealRequest = revealRequest
+            schedule()
+        }
+
+        override func viewDidMoveToWindow() {
+            if window == nil { stop() }
+            else {
+                stopped = false
+                restoreID = position?.wrappedValue
+                needsRestore = true
+                restoring = true
+                lastObservedID = nil
+                schedule()
+            }
+        }
+
+        override func layout() {
+            super.layout()
+            // A table can finish mounting after the bounded install retries.
+            if window != nil, !stopped, needsRestore { schedule() }
+        }
+
+        private func schedule(attempt: Int = 0) {
+            pending?.cancel()
+            generation += 1
+            let revision = generation
+            let work = DispatchWorkItem { [weak self] in
+                guard let self, !self.stopped, self.generation == revision, self.window != nil else { return }
+                self.install(attempt: attempt)
+            }
+            pending = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + (attempt == 0 ? 0 : 0.025), execute: work)
+        }
+
+        private func install(attempt: Int) {
+            guard let native = nearbyTable(), let scroll = native.enclosingScrollView,
+                  native.numberOfRows == ids.count, !ids.isEmpty,
+                  scroll.contentView.bounds.height > 0, native.bounds.height > 0 else {
+                if attempt < 20 { schedule(attempt: attempt + 1) }
+                return
+            }
+            if table !== native {
+                if let observer { NotificationCenter.default.removeObserver(observer) }
+                table = native
+                let clip = scroll.contentView
+                clip.postsBoundsChangedNotifications = true
+                observer = NotificationCenter.default.addObserver(
+                    forName: NSView.boundsDidChangeNotification, object: clip, queue: .main
+                ) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.capture() }
+                }
+            }
+            let wantsReveal = revealRequest != nil && revealRequest != lastRevealRequest
+            guard needsRestore || wantsReveal else { return }
+            // A remembered copy that has left the compartment restores to the top.
+            if !wantsReveal, let id = restoreID, !ids.contains(id) { restoreID = nil }
+            let target = wantsReveal ? revealID : restoreID
+            guard let row = target.flatMap({ ids.firstIndex(of: $0) }) ?? (needsRestore && target == nil ? 0 : nil) else {
+                if attempt < 20 { schedule(attempt: attempt + 1) }
+                return
+            }
+            restoring = true
+            native.layoutSubtreeIfNeeded()
+            let clip = scroll.contentView
+            let rect = native.rect(ofRow: row)
+            // Inset tables draw their fixed header over the clip view. Its
+            // top inset is real document space: row zero starts at -topInset,
+            // and a restored row belongs below that header, not behind it.
+            let inset = scroll.contentInsets
+            // An inset NSTableView has an implicit header inset even when
+            // NSScrollView.contentInsets reports zero (its natural y is -28).
+            let topInset = max(inset.top, native.headerView?.frame.height ?? 0)
+            if target != nil {
+                let y = wantsReveal
+                    ? rect.midY - (clip.bounds.height + topInset - inset.bottom) / 2
+                    : rect.minY - topInset
+                let minimum = -topInset
+                let maximum = max(minimum, native.bounds.height - clip.bounds.height + inset.bottom)
+                clip.scroll(to: NSPoint(x: clip.bounds.minX, y: min(max(minimum, y), maximum)))
+                scroll.reflectScrolledClipView(clip)
+            }
+            native.headerView?.needsDisplay = true
+            needsRestore = false
+            if wantsReveal { lastRevealRequest = revealRequest }
+            restoring = false
+            capture()
+        }
+
+        private func capture() {
+            guard !stopped, !restoring, !needsRestore, let table,
+                  table.numberOfRows == ids.count, !ids.isEmpty else { return }
+            var visible = table.visibleRect
+            if let scroll = table.enclosingScrollView {
+                let clip = scroll.contentView.bounds
+                let topInset = max(scroll.contentInsets.top, table.headerView?.frame.height ?? 0)
+                let top = max(visible.minY, clip.minY + topInset)
+                let bottom = min(visible.maxY, clip.maxY - scroll.contentInsets.bottom)
+                visible = NSRect(x: visible.minX, y: top, width: visible.width, height: max(0, bottom - top))
+            }
+            let rows = table.rows(in: visible)
+            guard rows.location != NSNotFound, ids.indices.contains(rows.location) else { return }
+            let id = ids[rows.location]
+            guard id != lastObservedID else { return }
+            lastObservedID = id
+            if position?.wrappedValue != id { position?.wrappedValue = id }
+        }
+
+        func stop() {
+            stopped = true
+            generation += 1
+            pending?.cancel()
+            pending = nil
+            if let observer { NotificationCenter.default.removeObserver(observer) }
+            observer = nil
+            table = nil
+        }
+
+        isolated deinit {
+            pending?.cancel()
+            if let observer { NotificationCenter.default.removeObserver(observer) }
         }
     }
 }
 
-/// Double-click on a row in the compartment table: the release at a glance,
-/// whether the copy belongs in the shelf at all, and which compartment and
-/// position it stands at.
+/// A compact editor for the position within the copy's current compartment.
 private struct ShelfCopyQuickEditor: View {
     let copy: RecordCopy
-    let shelves: [Shelf]
-    let rangeLabels: ShelfLabels
-    /// Called after a successful save.
-    let done: () -> Void
     @Environment(\.modelContext) private var context
-    @State private var notInShelf = false
-    @State private var shelfID: UUID?
     @State private var position = 1
+    @State private var isSliding = false
     @State private var error: String?
 
-    private var availableShelves: [Shelf] { shelves.filter { !$0.isReserved } }
-    private var targetShelf: Shelf? { availableShelves.first { $0.id == shelfID } }
-
-    /// Last valid position: the end of the shelf, one further when the copy
-    /// comes in from another compartment.
     private var maxPosition: Int {
-        guard let target = targetShelf else { return 1 }
-        let others = target.copies.filter { $0.id != copy.id }.count
-        return others + 1
-    }
-
-    private func shelfLabel(_ shelf: Shelf) -> String {
-        rangeLabels.prefix(for: shelf) + (rangeLabels[shelf.id] ?? String(localized: "Leeres Fach (Reihe \(shelf.row), Spalte \(shelf.column))"))
+        // The same copies the grid and table count (see `ShelfCopyItem.snapshot`).
+        guard let shelf = copy.shelf else { return 1 }
+        return shelf.copies.filter { !$0.isDeleted && $0.shelf?.id == shelf.id && $0.id != copy.id }.count + 1
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(copy.release?.displayTitle ?? "—").font(.headline).lineLimit(2)
-                Text(copy.release?.displayArtist ?? "—").foregroundStyle(.secondary).lineLimit(1)
-            }
-            .textSelection(.enabled)
-            Divider()
-            SettingsRow(title: String(localized: "Nicht im Regal"), hint: notInShelf
-                        ? String(localized: "Die Platte verlässt ihr Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen.")
-                        : nil) {
-                Toggle("Nicht im Regal", isOn: $notInShelf.animation(AppStyle.quickAnimation))
-                    .labelsHidden().toggleStyle(.switch)
-            }
-            Divider()
-            Group {
-                SettingsRow(title: String(localized: "Fach")) {
-                    GlassMenuPicker(title: String(localized: "Fach"), selection: $shelfID,
-                                    current: targetShelf.map(shelfLabel) ?? "–") {
-                        ForEach(availableShelves) { shelf in
-                            Text(shelfLabel(shelf)).tag(Optional(shelf.id))
-                        }
-                    }
+            HStack(spacing: AppStyle.rowSpacing) {
+                CoverView(url: copy.release?.coverURL, size: 44)
+                    .atelierRecordSleeve()
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(copy.release?.displayArtist ?? "—")
+                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text(copy.release?.displayTitle ?? "—")
+                        .font(.headline).lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Divider()
-                SettingsRow(title: String(localized: "Position"), hint: String(localized: "von \(maxPosition)")) {
-                    HStack(spacing: 2) {
-                        GlassStepButton(systemImage: "chevron.left", help: String(localized: "Eine Position nach links")) {
-                            position = max(position - 1, 1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Slider(value: Binding(
+                get: { Double(position) },
+                set: { value in
+                    let next = min(max(Int(value.rounded()), 1), maxPosition)
+                    if isSliding { position = next } else { setPosition(next) }
+                }
+            ), in: 1...Double(max(maxPosition, 2)), onEditingChanged: { editing in
+                isSliding = editing
+                if !editing { setPosition(position) }
+            })
+            .tint(AppStyle.isAtelier ? AtelierPalette.accent : nil)
+            .opacity(AppStyle.isAtelier ? 0.02 : 1)
+            .overlay {
+                if AppStyle.isAtelier {
+                    GeometryReader { geometry in
+                        let inset: CGFloat = 10
+                        let travel = max(geometry.size.width - 2 * inset, 0)
+                        let progress = CGFloat(position - 1) / CGFloat(max(maxPosition - 1, 1))
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(AtelierPalette.accent.opacity(0.15))
+                                .frame(height: 5)
+                            Capsule().fill(AtelierPalette.accent.opacity(0.65))
+                                .frame(width: inset + travel * progress, height: 5)
+                            Circle().fill(AtelierPalette.accent)
+                                .frame(width: 20, height: 20)
+                                .shadow(color: AtelierPalette.shadow, radius: 2, y: 1)
+                                .offset(x: travel * progress)
                         }
-                        .disabled(position <= 1)
-                        TextField("Position", value: $position, format: .number)
-                            .labelsHidden()
-                            .noTextAutoFill()
-                            .textFieldStyle(.plain)
-                            .multilineTextAlignment(.center)
+                        .frame(height: geometry.size.height)
+                    }
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                }
+            }
+            .disabled(maxPosition <= 1)
+            .accessibilityLabel("Position")
+            .accessibilityValue(String(localized: "\(position) von \(maxPosition)"))
+            .help(String(localized: "Position 1 bis \(maxPosition)"))
+            .overlay {
+                GeometryReader { geometry in
+                    if isSliding {
+                        Text(String(position))
+                            .font(.caption.weight(.semibold))
                             .monospacedDigit()
-                            .frame(width: 34)
-                        GlassStepButton(systemImage: "chevron.right", help: String(localized: "Eine Position nach rechts")) {
-                            position = min(position + 1, maxPosition)
-                        }
-                        .disabled(position >= maxPosition)
+                            .foregroundStyle(AppStyle.accent)
+                            .position(
+                                x: 10 + CGFloat(position - 1) / CGFloat(max(maxPosition - 1, 1)) * max(geometry.size.width - 20, 0),
+                                y: -7
+                            )
                     }
-                    .padding(.horizontal, 6)
-                    .frame(height: 30)
-                    .appChipSurface(in: Capsule(), interactive: true)
                 }
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
             }
-            .disabled(notInShelf)
-            .opacity(notInShelf ? 0.5 : 1)
+            .padding(.top, 14)
+            .padding(.bottom, AppStyle.tightSpacing)
             if let error {
                 Text(error).font(.caption).foregroundStyle(AppStyle.errorColor)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            HStack {
-                Spacer()
-                PrimaryButton(title: String(localized: "Speichern"), action: save)
-                    .keyboardShortcut(.defaultAction)
-            }
+
         }
         .padding(AppStyle.cardPadding)
-        .frame(width: 380)
+        .frame(width: 320)
         .fixedSize(horizontal: false, vertical: true)
-        .onAppear {
-            shelfID = copy.shelf?.id
-            position = max(copy.positionInShelf, 1)
-        }
-        // Typed values outside 1…end snap back right away, not only on save.
-        .onChange(of: position) { _, value in
-            let clamped = min(max(value, 1), maxPosition)
-            if clamped != value { position = clamped }
-        }
-        .onChange(of: shelfID) { _, id in
-            guard let target = targetShelf else { return }
-            // Back in its own shelf: its current spot; elsewhere: where it belongs alphabetically.
-            position = id == copy.shelf?.id
-                ? max(copy.positionInShelf, 1)
-                : AlphabeticalPlacement.position(for: copy, in: target)
-        }
+        .onAppear { position = min(max(copy.positionInShelf, 1), maxPosition) }
+        .onDisappear { setPosition(position) }
         .appPopoverSurface()
     }
 
-    private func save() {
-        let service = PositionService(context: context)
+    private func setPosition(_ value: Int) {
+        // A sync may have removed the copy while the popover was open.
+        guard !copy.isDeleted, let shelf = copy.shelf else { return }
         do {
-            if notInShelf {
-                try service.setExcluded([copy], true)
-            } else if let target = targetShelf {
-                let clamped = min(max(position, 1), maxPosition)
-                if target.id != copy.shelf?.id || clamped != copy.positionInShelf {
-                    try service.move(copy, to: target, position: clamped)
-                }
+            let clamped = min(max(value, 1), maxPosition)
+            if clamped != copy.positionInShelf {
+                try PositionService(context: context).move(copy, to: shelf, position: clamped)
             }
-            done()
-        } catch { self.error = error.reportedMessage() }
-    }
-}
-
-
-/// Takes a copy out of its shelf (undoable via the toast). Quiet secondary
-/// color at rest, red only while hovered.
-private struct RowIconButton: View {
-    let systemImage: String
-    let help: String
-    var hoverColor: Color = AppStyle.accent
-    let action: () -> Void
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .foregroundStyle(hovering ? hoverColor : .secondary)
-                .frame(width: 20, height: 18)
-                .contentShape(Rectangle())
+            position = clamped
+            error = nil
+        } catch {
+            position = min(max(copy.positionInShelf, 1), maxPosition)
+            self.error = error.reportedMessage()
         }
-        .buttonStyle(.plain)
-        .onHover { hovering = $0 }
-        .help(help)
-        .accessibilityLabel(help)
     }
 }
 
@@ -405,7 +804,13 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
                     if attempt < 10 { self.install(attempt: attempt + 1) }
                     return
                 }
-                if !(header is Header) { table.headerView = Header(frame: header.frame) }
+                if !(header is Header) {
+                    let replacement = Header(frame: header.frame)
+                    replacement.tableView = table
+                    table.headerView = replacement
+                }
+                table.headerView?.tableView = table
+                table.headerView?.needsDisplay = true
             }
         }
     }
@@ -420,16 +825,9 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
             view.state = .active
             return view
         }()
-        /// Klassisch: a petrol band like the toolbar instead of the frost.
-        private let band = PetrolBand()
+        // Klassisch paints its opaque petrol background in the same draw
+        // pass as its titles, avoiding sibling layer ordering on remount.
         private var frameObserver: NSObjectProtocol?
-
-        final class PetrolBand: NSView {
-            override func draw(_ dirtyRect: NSRect) {
-                NSColor(AtelierPalette.petrol).setFill()
-                bounds.fill()
-            }
-        }
 
         /// Vibrancy would darken the cream titles into the petrol.
         override var allowsVibrancy: Bool { AppStyle.isAtelier ? false : super.allowsVibrancy }
@@ -437,22 +835,29 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
         override func viewWillDraw() {
             super.viewWillDraw()
             frost.isHidden = AppStyle.isAtelier
-            band.isHidden = !AppStyle.isAtelier
         }
 
-        /// Klassisch: cream titles, sort arrow and dividers on the petrol band,
-        /// drawn here – the system header would bring its own gray.
-        private func drawOnBand(_ table: NSTableView, dividers: [CGFloat]) {
-            let cream = NSColor(AtelierPalette.toolbarSelection)
+        /// Draw the titles explicitly in both designs: SwiftUI's header cells
+        /// can leave a replacement header blank when asked to draw themselves.
+        /// Modern keeps its frosted backdrop; Klassisch paints the petrol band.
+        private func drawColumnHeaders(_ table: NSTableView, dividers: [CGFloat]) {
+            let atelier = AppStyle.isAtelier
+            if atelier {
+                NSColor(AtelierPalette.petrol).setFill()
+                bounds.fill()
+            }
+            let titleColor = atelier ? NSColor(AtelierPalette.toolbarSelection) : NSColor.labelColor
+            let secondaryTitleColor = atelier ? titleColor.withAlphaComponent(0.8) : NSColor.secondaryLabelColor
+            let dividerColor = atelier ? titleColor.withAlphaComponent(0.18) : NSColor.separatorColor
             let sortKey = table.sortDescriptors.first
             for (index, column) in table.tableColumns.enumerated() where !column.title.isEmpty {
                 let cell = column.headerCell
-                let rect = cell.drawingRect(forBounds: headerRect(ofColumn: index))
+                let rect = headerRect(ofColumn: index)
                 let sorted = sortKey != nil && column.sortDescriptorPrototype?.key == sortKey?.key
                 let font = NSFont.systemFont(ofSize: cell.font?.pointSize ?? NSFont.systemFontSize,
                                              weight: sorted ? .semibold : .regular)
                 let title = NSAttributedString(string: column.title, attributes: [
-                    .font: font, .foregroundColor: cream.withAlphaComponent(sorted ? 1 : 0.8),
+                    .font: font, .foregroundColor: sorted ? titleColor : secondaryTitleColor,
                 ])
                 let size = title.size()
                 // Over the column's content, as the system header places its titles.
@@ -460,17 +865,21 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
                 title.draw(at: origin)
                 if sorted, let ascending = sortKey?.ascending,
                    let arrow = NSImage(systemSymbolName: ascending ? "chevron.up" : "chevron.down", accessibilityDescription: nil)?
-                    .withSymbolConfiguration(.init(pointSize: font.pointSize * 0.75, weight: .semibold).applying(.init(paletteColors: [cream]))) {
+                    .withSymbolConfiguration(.init(pointSize: font.pointSize * 0.75, weight: .semibold).applying(.init(paletteColors: [titleColor]))) {
                     let arrowRect = NSRect(x: origin.x + size.width + 6, y: rect.midY - arrow.size.height / 2,
                                            width: arrow.size.width, height: arrow.size.height)
                     arrow.draw(in: arrowRect)
                 }
             }
-            cream.withAlphaComponent(0.18).setFill()
+            dividerColor.setFill()
             for index in table.tableColumns.indices.dropLast() {
                 let x = headerRect(ofColumn: index).maxX
                 guard !dividers.contains(where: { abs($0 - x) < 1 }) else { continue }
                 NSRect(x: x - 0.5, y: bounds.midY - 7, width: 1, height: 14).fill()
+            }
+            if !atelier {
+                NSRect(x: bounds.minX, y: isFlipped ? bounds.maxY - 1 : bounds.minY,
+                       width: bounds.width, height: 1).fill()
             }
         }
 
@@ -480,21 +889,17 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
             frameObserver = nil
             guard let clip = superview, let scroll = clip.superview else {
                 frost.removeFromSuperview()
-                band.removeFromSuperview()
                 return
             }
             // Sits in the scroll view right below the header's clip view, so it
             // covers the rows but never the column titles.
-            for backdrop in [frost, band] {
-                scroll.addSubview(backdrop, positioned: .below, relativeTo: clip)
-                backdrop.frame = clip.frame
-            }
+            scroll.addSubview(frost, positioned: .below, relativeTo: clip)
+            frost.frame = clip.frame
             clip.postsFrameChangedNotifications = true
             frameObserver = NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: clip, queue: .main) { [weak self, weak clip] _ in
                 guard let clip else { return }
                 MainActor.assumeIsolated {
                     self?.frost.frame = clip.frame
-                    self?.band.frame = clip.frame
                 }
             }
         }
@@ -506,14 +911,9 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
         override func draw(_ dirtyRect: NSRect) {
             guard let table = tableView else { return super.draw(dirtyRect) }
             let columns = table.tableColumns
-            // Keep the line along the header's bottom edge intact.
-            let height = bounds.height - 2
-            let y = isFlipped ? bounds.minY : bounds.maxY - height
-            // Each header cell draws its divider on its right edge: skip it on
-            // an icon column, on the column just before one and on the last
-            // column, where there is nothing left to separate. The inset
-            // style's empty lead-in before the first column gets a divider of
-            // its own at the first column's left edge – nothing to separate there either.
+            // Skip dividers on an icon column, just before one and at the end
+            // of the last column. The inset style's empty lead-in before the
+            // first column has nothing to separate either.
             var edges: [CGFloat] = columns.isEmpty ? [] : [headerRect(ofColumn: 0).minX]
             for index in columns.indices {
                 let isIcon = columns[index].title.isEmpty
@@ -522,28 +922,7 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
                 guard isIcon || beforeIcon || isLast else { continue }
                 edges.append(headerRect(ofColumn: index).maxX)
             }
-            if AppStyle.isAtelier { return drawOnBand(table, dividers: edges) }
-            let gaps = edges.map { NSRect(x: $0 - 2, y: y, width: 3, height: height) }
-            let clip = NSBezierPath(rect: bounds)
-            clip.windingRule = .evenOdd
-            gaps.forEach(clip.appendRect)
-            NSGraphicsContext.saveGraphicsState()
-            clip.addClip()
-            super.draw(dirtyRect)
-            NSGraphicsContext.restoreGraphicsState()
-            // Left empty, a gap would show as a light slit where the header has
-            // a background of its own (gray in an inactive window). Fill it
-            // with what lies just right of it: plain header background.
-            let shift: CGFloat = 4
-            for gap in gaps {
-                NSGraphicsContext.saveGraphicsState()
-                NSBezierPath(rect: gap).addClip()
-                let transform = NSAffineTransform()
-                transform.translateX(by: -shift, yBy: 0)
-                transform.concat()
-                super.draw(gap.offsetBy(dx: shift, dy: 0))
-                NSGraphicsContext.restoreGraphicsState()
-            }
+            drawColumnHeaders(table, dividers: edges)
         }
     }
 }

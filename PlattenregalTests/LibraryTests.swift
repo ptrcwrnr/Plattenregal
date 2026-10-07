@@ -266,6 +266,22 @@ extension AllTests {
             #expect(ReadError.wrapping(DiscogsError.offline).userMessage == DiscogsError.offline.errorDescription)
             #expect(String(describing: ReadError.wrapping(saveFailure)).contains("134030"))
         }
+        @Test func cancellationAndKeychainErrorsStayReadable() {
+            let message = CancellationError().userMessage
+            #expect(message == "Der Vorgang wurde abgebrochen.")
+            let cancellations: [any Error] = [CancellationError(), URLError(.cancelled), CocoaError(.userCancelled)]
+            for error in cancellations {
+                #expect(error.isUserCancellation)
+                #expect(error.userMessage == message)
+                #expect(ReadError.wrapping(error).userMessage == message)
+            }
+            #expect(!URLError(.timedOut).isUserCancellation)
+            #expect(!CocoaError(.fileWriteNoPermission).isUserCancellation)
+            let keychain = KeychainError(status: -25308)
+            #expect(keychain.userMessage.contains("Schlüsselbund"))
+            #expect(!keychain.userMessage.contains("-25308"))
+            #expect(String(describing: keychain).contains("-25308"))
+        }
         /// The demo's sample collection: every page has something to show, and
         /// the layout is consistent (as a sync and the shelf page expect it).
         @Test func demoCollectionIsCompleteAndConsistent() throws {
@@ -380,6 +396,75 @@ extension AllTests {
             #expect(groups[0].copies.map(\.id) == [first.id, second.id, third.id])
             #expect(groups[1].copies.map(\.id) == [separateLocalRelease.id])
             #expect(items.count == 4)
+        }
+        @Test func shelfCoverSnapshotKeepsPhysicalCopiesStatusesAndCurrentLocations() throws {
+            let (container, shelves, service) = try fixture()
+            let context = container.mainContext
+            let release = Release(discogsID: 42, artist: "Artist", title: "Record")
+            // Created first, but physically second: shelf order must win over creation order.
+            let second = try service.insert(release: release, shelf: shelves[0], position: 1, owner: "old")
+            let first = try service.insert(release: release, shelf: shelves[0], position: 1, owner: "me")
+            let unknown = try service.insert(release: Release(discogsID: 43, artist: "", title: ""),
+                                             shelf: shelves[0], position: 3, owner: "me") {
+                $0.discogsActive = false
+            }
+            let withoutRelease = try service.insert(release: Release(discogsID: 44, artist: "Lost", title: "Metadata"),
+                                                    shelf: shelves[0], position: 4, owner: "me")
+            try service.save { withoutRelease.release = nil }
+            try service.setMissing([second], true)
+            let missing = Set(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID))
+
+            let items = ShelfCopyItem.snapshot(for: shelves[0], owner: "me", missing: missing)
+            try #require(items.count == 4)
+            #expect(items.map(\.id) == [first.id, second.id, unknown.id, withoutRelease.id])
+            #expect(items.map(\.position) == [1, 2, 3, 4])
+            #expect(items.map(\.missing) == [false, true, false, false])
+            #expect(items.map(\.sold) == [false, true, true, false])
+            #expect(items[0].copy === first && items[1].copy === second)
+            #expect(items[0].artist == "Artist" && items[1].title == "Record")
+            #expect(items[2].artist == "Unbekannter Interpret" && items[2].title == "Release #43")
+            #expect(items[2].year == 0 && items[2].genre.isEmpty)
+            #expect(items[3].artist == "—" && items[3].title == "—")
+            #expect(items[3].year == 0 && items[3].genre.isEmpty)
+
+            // Without a synced account, active copies from any owner count as current.
+            let withoutAccount = ShelfCopyItem.snapshot(for: shelves[0], owner: nil, missing: missing)
+            #expect(withoutAccount.map(\.sold) == [false, false, true, false])
+
+            try service.move(second, to: shelves[1], position: 1)
+            let source = ShelfCopyItem.snapshot(for: shelves[0], owner: "me", missing: missing)
+            #expect(source.map(\.id) == [first.id, unknown.id, withoutRelease.id])
+            #expect(source.map(\.position) == [1, 2, 3])
+            #expect(source.allSatisfy { !$0.missing })
+            let destination = ShelfCopyItem.snapshot(for: shelves[1], owner: "me", missing: missing)
+            #expect(destination.map(\.id) == [second.id])
+            #expect(destination.map(\.position) == [1])
+            #expect(destination.first?.missing == true && destination.first?.sold == true)
+        }
+        @Test func shelfLabelSortUsesDisplayNamesWithoutChangingPhysicalPositions() throws {
+            let (container, shelves, service) = try fixture(); _ = container
+            let zetaRelease = Release(discogsID: 42, artist: "Artist", title: "First")
+            zetaRelease.label = "Zeta (2), Acme (4)"
+            let first = try service.insert(release: zetaRelease, shelf: shelves[0], position: 1)
+            let alphaRelease = Release(discogsID: 43, artist: "Artist", title: "Second")
+            alphaRelease.label = "Alpha (17), Kontor Records (Germany)"
+            let second = try service.insert(release: alphaRelease, shelf: shelves[0], position: 2)
+            let unknown = try service.insert(release: Release(discogsID: 44, artist: "", title: ""),
+                                             shelf: shelves[0], position: 3)
+            let withoutRelease = try service.insert(release: Release(discogsID: 45, artist: "Lost", title: "Metadata"),
+                                                    shelf: shelves[0], position: 4)
+            try service.save { withoutRelease.release = nil }
+
+            let items = ShelfCopyItem.snapshot(for: shelves[0], owner: nil, missing: [])
+            #expect(items.map(\.label) == ["Zeta, Acme", "Alpha, Kontor Records (Germany)", "", ""])
+            #expect(zetaRelease.label == "Zeta (2), Acme (4)")
+            let sorted = items.sorted(using: [KeyPathComparator(\ShelfCopyItem.label), KeyPathComparator(\ShelfCopyItem.position)])
+            #expect(sorted.map(\.id) == [unknown.id, withoutRelease.id, second.id, first.id])
+            #expect(sorted.map(\.position) == [3, 4, 2, 1])
+            #expect(sorted.allSatisfy { $0.id == $0.copy.id && $0.position == $0.copy.positionInShelf })
+            let physicalIDs = service.ordered(shelves[0]).map(\.id)
+            let expectedPhysicalIDs: [UUID] = [first.id, second.id, unknown.id, withoutRelease.id]
+            #expect(physicalIDs == expectedPhysicalIDs)
         }
         @Test func alphabeticalSortAndSearchAcrossWords() throws {
             let (container, shelves, service) = try fixture(); _ = container

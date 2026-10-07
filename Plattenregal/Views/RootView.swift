@@ -326,8 +326,7 @@ private struct ToolbarSearchField: View {
         let page = selection.current
         Group {
             if page.hasSearch {
-                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused,
-                               accessory: otherSection(for: page).map { AnyView(otherButton($0)) })
+                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused)
                     .frame(width: AppStyle.toolbarSearchWidth)
                     .padding(.trailing, AppStyle.toolbarSearchInset)
                     .accessibilityLabel(String(localized: "Suchen"))
@@ -335,48 +334,12 @@ private struct ToolbarSearchField: View {
             }
         }
         .animation(AppStyle.fadeAnimation, value: page.hasSearch)
-        .animation(AppStyle.quickAnimation, value: otherSection(for: page)?.count)
         .onChange(of: requests.count) {
             guard selection.current.hasSearch else { return }
             focused = true
         }
         .onChange(of: focused) { _, new in requests.fieldFocused = new }
         .onChange(of: page) { if !page.hasSearch { focused = false } }
-    }
-
-    /// The other page's hits for the same query, one click away; quiet, like
-    /// the placeholder, inside the field.
-    private func otherButton(_ other: (page: Destination, count: Int)) -> some View {
-        Button { selection.current = other.page } label: {
-            if AppStyle.isAtelier {
-                // Klassisch: a small tag with a fine rim and the petrol of
-                // the links, with an arrow – it leads to the other page.
-                HStack(spacing: 3) {
-                    Text("\(other.count.formatted()) in der \(other.page.title)")
-                    Image(systemName: "arrow.right").font(.caption2.weight(.semibold))
-                }
-                .font(.caption.weight(.medium))
-                .monospacedDigit()
-                .lineLimit(1)
-                .foregroundStyle(AtelierPalette.accent)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 2)
-                .background(AtelierPalette.paper, in: RoundedRectangle(cornerRadius: 6))
-                .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(AtelierPalette.border, lineWidth: 1))
-                .contentShape(RoundedRectangle(cornerRadius: 6))
-            } else {
-                Text("\(other.count.formatted()) in der \(other.page.title)")
-                    .font(.caption)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .buttonStyle(.plain)
-        .fixedSize()
-        .help("Treffer in der \(other.page.title) anzeigen")
-        .accessibilityLabel("\(other.count) Treffer in der \(other.page.title) anzeigen")
-        .transition(.opacity)
     }
 
     private func text(for page: Destination) -> Binding<String> {
@@ -388,15 +351,6 @@ private struct ToolbarSearchField: View {
         case .collection: String(localized: "Collection durchsuchen")
         case .wantlist: String(localized: "Wantlist durchsuchen")
         case .shelf, .statistics: String(localized: "Platte im Regal suchen …")
-        }
-    }
-
-    private func otherSection(for page: Destination) -> (page: Destination, count: Int)? {
-        guard !library.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
-        switch page {
-        case .collection: return library.wantlistMatches > 0 ? (.wantlist, library.wantlistMatches) : nil
-        case .wantlist: return library.collectionMatches > 0 ? (.collection, library.collectionMatches) : nil
-        case .shelf, .statistics: return nil
         }
     }
 }
@@ -471,10 +425,6 @@ private struct PagePicker: View {
 /// handed in would keep the value it had then.
 @Observable final class LibrarySearch {
     var query = ""
-    /// Hits of `query` on the other page, for the button beside the search
-    /// field: the collection counts the wantlist's, the wantlist the collection's.
-    var wantlistMatches = 0
-    var collectionMatches = 0
 }
 
 /// Watches the window's clicks while the actions are fanned out and reports

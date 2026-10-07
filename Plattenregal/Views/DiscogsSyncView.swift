@@ -242,9 +242,6 @@ struct WantlistView: View {
     // Same two stages as the collection: sort on data changes, cheap
     // filtering per (debounced) keystroke with the shared search texts.
     @State private var sortedEntries: [WantlistEntry] = []
-    /// Active copies with the release they belong to: the hint counts
-    /// releases (grid tiles), not copies.
-    @State private var activeCopies: [(id: UUID, group: CollectionCoverGroup.Identity)] = []
     /// Discogs release IDs in the collection, for the search badge on the covers.
     @State private var ownedReleaseIDs: Set<Int> = []
     @State private var queryPending = false
@@ -396,7 +393,6 @@ struct WantlistView: View {
     private func rebuildCollection() {
         let owner = owner
         let active = copies.filter { $0.isInCurrentCollection(owner: owner) }
-        activeCopies = active.map { ($0.id, CollectionCoverGroup.identity(of: $0)) }
         ownedReleaseIDs = Set(active.compactMap { $0.release?.discogsID })
     }
 
@@ -408,12 +404,9 @@ struct WantlistView: View {
         let visible: [WantlistEntry]
         if words.isEmpty {
             visible = sortedEntries
-            search.collectionMatches = 0
         } else {
             let index = LibrarySearchIndexes.shared.wantlist(entries)
             visible = sortedEntries.filter { index.matches($0.persistentModelID, words) }
-            let collection = LibrarySearchIndexes.shared.collection(copies)
-            search.collectionMatches = Set(activeCopies.filter { collection.matches($0.id, words) }.map(\.group)).count
         }
         let searchEnded = !appliedQuery.isEmpty && words.isEmpty
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
@@ -448,13 +441,6 @@ struct WantlistView: View {
                             VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 6) {
                                 CoverView(url: entry.release?.coverURL, size: nil)
                                     .atelierRecordSleeve()
-                                    .overlay(alignment: .topLeading) {
-                                        if !appliedQuery.isEmpty {
-                                            PlacementBadge(inCollection: ownedReleaseIDs.contains(entry.releaseID), inWantlist: true)
-                                                .transition(.opacity)
-                                        }
-                                    }
-                                    .animation(AppStyle.quickAnimation, value: appliedQuery.isEmpty)
                                 if AppStyle.isAtelier {
                                     AtelierRecordCaption(
                                         release: entry.release,
@@ -480,11 +466,21 @@ struct WantlistView: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – "))
+                        .overlay(alignment: .topLeading) {
+                            if !appliedQuery.isEmpty {
+                                PlacementBadge(
+                                    inCollection: ownedReleaseIDs.contains(entry.releaseID),
+                                    inWantlist: true,
+                                    show: { pages.current = $0 }
+                                )
+                                .padding(AtelierCoverFrame.badgeInset)
+                            }
+                        }
                         .popover(isPresented: quickLookBinding(entry.persistentModelID), arrowEdge: .trailing) {
                             RecordPopover(release: entry.release, discogsURL: sourceURL(entry))
                         }
                         .id(entry.persistentModelID)
-                        .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – "))
                         // The app's own menu, as in the collection.
                         .onSecondaryClick { point in
                             if sourceURL(entry) != nil { menuFor = (entry.persistentModelID, point) }
@@ -504,6 +500,7 @@ struct WantlistView: View {
             .pullToRefresh(disabled: sync.busy, action: syncWantlist)
         }
     }
+
 
     private func table(_ rows: [WantlistEntry]) -> some View {
         Table(rows) {

@@ -1,3 +1,27 @@
+# Prüfung der Änderungen vom 07.10.2026: Fachinhalt, Suchplaketten, Fehlermeldungen · 07.10.2026
+
+- **Fachinhalt als Raster/Liste** (`ShelfContentsView`, vorher `ShelfCopyTable`): standardmäßig Cover-Raster in Fachreihenfolge mit Positionsplakette, umschaltbar auf die Tabelle (neu mit Spalte Label); Scrollstellen je Fach und Ansicht für die Sitzung (`ShelfContentsSession`). „Exemplar bearbeiten …“ ist jetzt ein kleiner Regler für die Position im aktuellen Fach, „Nicht im Regal“ und „Platz im Regal zeigen“ (darüber auch in ein anderes Fach) stehen im Rechtsklick-Menü. Die Spalte mit Lupe und Papierkorb in der Tabelle entfällt.
+- **Suchplaketten** an den Rastertreffern von Collection und Wantlist sind anklickbar und wechseln zur Rubrik; der Trefferzähler im Suchfeld entfällt (`LibrarySearch.wantlistMatches`/`collectionMatches` entfernt).
+- **Korrigiert bei der Prüfung:**
+  - Klassisch: Das gewählte Cover im Fachraster trug einen Petrol- statt des Goldrands; jetzt `AppStyle.selectedBorder` wie überall sonst.
+  - Fünf neue Texte (Ansichts-Umschalter, Tooltip und Bedienhilfe der Fachkacheln, Plaketten-Tooltip, Reglerwert) hatten keine englische Übersetzung oder fehlten im Katalog; ergänzt. Der Tooltip „Doppelklick: …“ hieß im Code inzwischen „Klick: …“; alter Eintrag und das unbenutzte „Platz im Regal“ als veraltet markiert.
+  - Tooltip „Nicht in der Collection“ verwies auf das Popover, das kein Entfernen mehr bietet; jetzt „per Rechtsklick aus dem Fach entfernen“.
+  - Positionsregler: zählt dieselben Exemplare wie Raster und Tabelle (ohne gelöschte und ohne solche, deren Fach sich gerade geändert hat) und speichert nicht mehr in ein Exemplar, das ein Sync währenddessen gelöscht hat.
+  - „Nicht im Regal“ aus dem Menü lässt die Auswahl der Platte los, die das Fach verlassen hat (vorher blieb sie unsichtbar ausgewählt).
+  - Tabelle: Eine gemerkte Scrollstelle, deren Platte das Fach verlassen hat, führte zu endlosen Wiederherstellungsversuchen bei jedem Layout; jetzt beginnt die Tabelle dann oben.
+  - Unbenutzte Parameter `shelves` und `rangeLabels` entfernt.
+- Debug-Build und 196 Tests erfolgreich, keine Compilerwarnungen.
+
+# Dokumentation, Fehlermeldungen und Diagnose geprüft · 07.10.2026
+
+- **README** an den vorhandenen Stand 1.0.3 (102026) angepasst: Fachinhalt standardmäßig als Cover-Raster, unabhängig umschaltbare Liste, Position je Exemplar, Scrollstellen je Fach/Ansicht und anklickbare Collection-/Wantlist-Plaketten in Raster-Suchergebnissen. Der Trefferzähler im Suchfeld ist entfernt. Die heute bereits vorhandenen UI-Änderungen werden hier nachgetragen.
+- **Fehlermeldungen**: Die Fehlerseite beim Start zeigt eine verständliche Erklärung und verweist für technische Details auf das Protokoll. Sie verspricht nicht mehr, dass beschädigte oder fehlende Daten sicher noch vorhanden seien. Die Schlüsselbundmeldung enthält keinen Statuscode mehr; der Fehler selbst behält ihn für das Protokoll. Deutsche und englische Texte angepasst.
+- **Abbrechen**: `CancellationError`, `URLError.cancelled` und der Abbruch eines Dateidialogs erhalten dieselbe Abbruchmeldung. `reportedMessage` protokolliert sie nicht als Fehler; `ReadError.wrapping` erhält den Abbruch. Neuer Regressionstest prüft diese Fälle und den Schlüsselbundcode.
+- **Protokoll/Crashlog**: Vorhandenes App-Protokoll und macOS-Berichte gelesen. Am 7. Oktober bislang zwei abgewiesene Zweitinstanzen, kein Absturzblock. Drei macOS-Berichte vom 4. Oktober betreffen denselben Test `sharedSearchIndexFollowsChanges` in Version 1.0 (092026); sie belegen keinen Absturz der aktuellen Version. Am 6. Oktober hauptsächlich fehlgeschlagene Debug-Schnappschüsse ohne Fenster. Vorhandene Protokolle wurden nicht verändert.
+- **Grenzen korrekt dokumentiert**: Das eigene Crashprotokoll ist bestmöglich, nicht garantiert. macOS-Berichte liegen separat und werden nicht mit dem App-Protokoll exportiert. Rotation ab 2 MB, Export beider Logdateien, Leeren und persönliche Angaben erläutert. Der Code-Kommentar benennt die eingeschränkte Sicherheit der Stack-Aufzeichnung im Signal-Handler; sein Verhalten wurde nicht geändert.
+- **STATISTIK**: Lokales Vorladen beim Start und fehlender Netzabruf beim Rubrikwechsel präzisiert; Wertabrufe bleiben explizit bzw. an einen erfolgreichen Collection-Sync gebunden. Fehlerhinweise und erhaltene Daten erläutert.
+- **Prüfung**: Debug-Build mit 196 Tests (0 Fehler) und Release-Build erfolgreich. Ergebnisse und Grenzen stehen am Anfang von VALIDIERUNG.md. Frühere Prüfstände bleiben als Historie erhalten und gelten jeweils nur für den dort genannten Stand.
+
 # Modern: Cover so nah unter der Toolbar wie in Klassisch · 06.10.2026
 
 - Im Raster von Collection und Wantlist beginnt die erste Cover-Reihe jetzt in beiden Designs 18 pt unter der Toolbar (gemessen: 36 px auf Retina, Modern und Klassisch gleich). Modern hatte zusätzlich den Seitenrand (24 pt) darüber, insgesamt rund 32 pt. Weil Modern enger rastert (8 statt 18 pt), gleicht `CoverGrid.topSpace` den Unterschied aus; Klassisch bleibt unverändert. Die Listenansicht behält ihren Rand.

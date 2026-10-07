@@ -159,13 +159,7 @@ struct CollectionView: View {
             scrollBeforeSearch = nil
         }
         normalizeGridScrollPosition(in: grouped)
-        // For the button beside the search field that jumps to the wantlist's hits.
-        if let search, pages != nil {
-            if words.isEmpty { search.wantlistMatches = 0 } else {
-                let index = LibrarySearchIndexes.shared.wantlist(wantlistEntries)
-                search.wantlistMatches = currentWantlist.reduce(0) { $0 + (index.matches($1.persistentModelID, words) ? 1 : 0) }
-            }
-        }
+
     }
 
 
@@ -271,16 +265,21 @@ struct CollectionView: View {
                                             Button {
                                                 showQuickLook(copy)
                                             } label: {
-                                                RecordCard(
-                                                    copy: copy,
-                                                    copyCount: group.copies.count,
-                                                    placement: !searching || pages == nil ? nil : PlacementBadge(
-                                                        inCollection: true,
-                                                        inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false
-                                                    )
-                                                )
+                                                RecordCard(copy: copy, copyCount: group.copies.count)
                                             }
                                             .buttonStyle(.plain)
+                                            .help("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")) · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: " · \(group.copies.count) Exemplare") : "")")
+                                            .accessibilityLabel("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: ", \(group.copies.count) Exemplare") : "")")
+                                            .overlay(alignment: .topLeading) {
+                                                if searching, let pages {
+                                                    PlacementBadge(
+                                                        inCollection: true,
+                                                        inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false,
+                                                        show: { pages.current = $0 }
+                                                    )
+                                                    .padding(AtelierCoverFrame.badgeInset)
+                                                }
+                                            }
                                             .id(copy.id)
                                             .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
                                                 RecordPopover(copy: group.primary)
@@ -294,8 +293,6 @@ struct CollectionView: View {
                                                      arrowEdge: .trailing) {
                                                 AppMenu(dismiss: { contextMenu = nil }) { gridContextMenu(group) }
                                             }
-                                            .help("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")) · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: " · \(group.copies.count) Exemplare") : "")")
-                                            .accessibilityLabel("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: ", \(group.copies.count) Exemplare") : "")")
                                         }
                                     }
                                     .coverGridMotion(width: width, columnCount: columnCount)
@@ -591,8 +588,6 @@ struct CollectionCoverGroup: Identifiable {
 struct RecordCard: View {
     let copy: RecordCopy
     var copyCount = 1
-    /// Set while searching: where this record is (see `PlacementBadge`).
-    var placement: PlacementBadge? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 0) {
             cover
@@ -606,10 +601,6 @@ struct RecordCard: View {
     private var cover: some View {
         CoverView(url: copy.release?.coverURL, size: nil)
             .atelierRecordSleeve()
-            .overlay(alignment: .topLeading) {
-                if let placement { placement.transition(.opacity) }
-            }
-            .animation(AppStyle.quickAnimation, value: placement == nil)
             .overlay(alignment: .bottomTrailing) {
                 if copyCount > 1 {
                     Text("\(copyCount)×")
@@ -687,20 +678,31 @@ struct MatchedTrackLine: View {
     }
 }
 
-/// Small tag on a cover while searching (glass, in Klassisch paper): where the record is —
-/// "Collection", "Wantlist" or both. Deliberately quiet (caption size,
-/// secondary text) so it reads as a hint, not a label.
-struct PlacementBadge: View, Equatable {
+/// Membership tags in the top-left corner of a search-result cover. The cover retains its own
+/// click action; these sibling buttons use the existing page navigation.
+struct PlacementBadge: View {
     let inCollection: Bool
     let inWantlist: Bool
+    let show: (Destination) -> Void
+
     var body: some View {
-        Text([inCollection ? String(localized: "Collection") : nil, inWantlist ? String(localized: "Wantlist") : nil].compactMap { $0 }.joined(separator: " · "))
-            .font(.caption2.weight(.medium))
-            .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.secondary))
-            .padding(.horizontal, 7)
-            .padding(.vertical, 3)
-            .appChipSurface(in: Capsule())
-            .padding(AtelierCoverFrame.badgeInset)
-            .accessibilityLabel(String(localized: "In: ") + [inCollection ? String(localized: "Collection") : nil, inWantlist ? String(localized: "Wantlist") : nil].compactMap { $0 }.joined(separator: String(localized: " und ")))
+        VStack(alignment: .leading, spacing: 4) {
+            if inCollection { tag(.collection) }
+            if inWantlist { tag(.wantlist) }
+        }
+    }
+
+    private func tag(_ destination: Destination) -> some View {
+        Button { show(destination) } label: {
+            Text(destination.title)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.accent) : AnyShapeStyle(.secondary))
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .appChipSurface(in: Capsule(), interactive: true)
+        }
+        .buttonStyle(.plain)
+        .help("In der \(destination.title) anzeigen")
+        .accessibilityLabel("In der \(destination.title) anzeigen")
     }
 }

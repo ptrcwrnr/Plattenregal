@@ -1,5 +1,7 @@
 # Statistik
 
+Dokumentation geprüft am **07.10.2026**, Projektversion **1.0.3 (102026)**.
+
 Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf ihres Discogs-Sammlungswerts. Alles außer dem Sammlungswert wird lokal berechnet, ohne Anfrage an Discogs.
 
 ## Bedienung
@@ -37,7 +39,7 @@ Jeder Abruf wird als `CollectionValueSnapshot` gespeichert (Konto, Zeitpunkt, Ni
 - die Währung hat sich geändert oder
 - einer der drei Werte hat sich um mindestens 1 % und mindestens eine Währungseinheit bewegt.
 
-Kleinere Änderungen aktualisieren den heutigen Eintrag, statt neue Verlaufspunkte zu erzeugen. Beim bloßen Öffnen der Seite wird ein heutiger Wert desselben Bestands wiederverwendet. Konten und Währungen werden nie zu einer Kurve vermischt; es gibt keine erfundene Umrechnung. Der Durchschnitt pro Platte ist Median-Gesamtwert geteilt durch die Anzahl Exemplare. Veränderungen beziehen sich auf den letzten Wert spätestens 30 Tage bzw. ein Jahr zuvor („seit mindestens …“). Vergangene Werte vor der ersten Nutzung werden nicht rekonstruiert.
+Kleinere Änderungen aktualisieren den heutigen Eintrag, statt neue Verlaufspunkte zu erzeugen. Beim Start lädt die Seite die gespeicherten Daten lokal vor; Öffnen und Rubrikwechsel lösen keinen Wertabruf aus. Bei einem nicht erzwungenen Wertabruf wird ein heutiger Wert desselben Bestands wiederverwendet. Konten und Währungen werden nie zu einer Kurve vermischt; es gibt keine erfundene Umrechnung. Der Durchschnitt pro Platte ist Median-Gesamtwert geteilt durch die Anzahl Exemplare. Veränderungen beziehen sich auf den letzten Wert spätestens 30 Tage bzw. ein Jahr zuvor („seit mindestens …“). Vergangene Werte vor der ersten Nutzung werden nicht rekonstruiert.
 
 ## Lokale Auswertungen
 
@@ -47,7 +49,7 @@ Die Berechnung läuft im Hintergrund: SwiftData-Objekte werden auf dem Main Acto
 
 ## Aktualisierung und Zurücksetzen
 
-Die Seite liest ihre Platten in einem eigenen Datenbank-Kontext und rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern, das ihre Zahlen betrifft – neue oder entfernte Platten, geänderte Releases, Sammlungswert, Konten (`StatisticsView.affectsStatistics`). Einsortieren, Verschieben und „Vermisst“ lösen kein Neuladen aus. Solange die Seite verborgen ist, wird erst beim nächsten Anzeigen neu gerechnet. Der Zufallsfund liest seinen Platz im Regal selbst aus dem Kontext des Hauptfensters und folgt Platzänderungen sofort. Lassen sich die gespeicherten Daten nicht lesen, steht oben „Die gespeicherten Daten konnten gerade nicht gelesen werden …“ (Ursache im Protokoll). Eine Platte, die von hier aus geöffnet wird, holt die Detailansicht in den Kontext des Hauptfensters, damit Bearbeitungen dort gespeichert werden.
+Die Seite liest ihre Platten in einem eigenen Datenbank-Kontext und rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern, das ihre Zahlen betrifft – neue oder entfernte Platten, geänderte Releases, Sammlungswert, Konten (`StatisticsView.affectsStatistics`). Einsortieren, Verschieben und „Vermisst“ lösen kein Neuladen aus. Solange die Seite verborgen ist, wird erst beim nächsten Anzeigen neu gerechnet. Der Zufallsfund liest seinen Platz im Regal selbst aus dem Kontext des Hauptfensters und folgt Platzänderungen sofort. Lassen sich die gespeicherten Daten nicht lesen, steht oben „Die gespeicherten Daten konnten gerade nicht gelesen werden …“ (Ursache im Protokoll). Fehler beim Abruf des Sammlungswerts erscheinen als wegklickbarer Hinweis; bereits gespeicherte Auswertungen und Verlaufspunkte bleiben erhalten. Ein Abbruch wird nicht als Verbindungsfehler ausgegeben. Eine Platte, die von hier aus geöffnet wird, holt die Detailansicht in den Kontext des Hauptfensters, damit Bearbeitungen dort gespeichert werden.
 
 Ein eigener Kontext erfährt nicht, dass Platten anderswo gelöscht wurden. Nach **Alles zurücksetzen** lässt die Statistik deshalb sofort alle Platten los (`StatisticsViewModel.forget`), schließt offene Detail- und Filterfenster und lädt neu, samt Konto. Vorher konnte das Nachladen von Fach oder Release einer gelöschten Platte die App zum Absturz bringen. Test: `StatisticsTests.statisticsForgetTheirRecordsOnReset`.
 

@@ -1257,13 +1257,15 @@ extension View {
 /// action (so a sheet it opens isn't fighting the closing popover).
 struct AppMenu<Content: View>: View {
     let dismiss: () -> Void
+    /// Menus inside a record card align their rows with its wider header.
+    var fillsWidth = false
     @ViewBuilder let content: Content
     var body: some View {
         VStack(alignment: .leading, spacing: 1) { content }
             .buttonStyle(AppMenuButtonStyle(dismiss: dismiss))
             .padding(5)
-            .frame(minWidth: 220, alignment: .leading)
-            .fixedSize()
+            .frame(minWidth: 220, maxWidth: fillsWidth ? .infinity : nil, alignment: .leading)
+            .fixedSize(horizontal: !fillsWidth, vertical: true)
             .appPopoverSurface()
     }
 }

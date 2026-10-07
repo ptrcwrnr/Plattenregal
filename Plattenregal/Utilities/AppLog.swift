@@ -11,7 +11,7 @@ import OSLog
 /// Records launches and how the last session ended, opening and migrating the
 /// store, syncs, token changes, every change to shelves and copies, exports,
 /// shelf backups (automatic and to a file) and restores, every error the user
-/// is shown (with its technical detail) and crashes with their call stack.
+/// is shown (with its technical detail) and best-effort crash diagnostics.
 /// Never the Discogs token.
 ///
 /// A crash is written as a block "==== ABSTURZ … ====" with the app version
@@ -201,8 +201,9 @@ nonisolated enum AppLog {
     /// Swift runtime traps (force unwraps, `fatalError`, failed preconditions –
     /// in Xcode the "breakpoint" stop), invalid memory access and aborts end
     /// the process in a signal. The handler may only use async-signal-safe
-    /// calls, so it writes to a file descriptor opened beforehand: the signal
-    /// and the raw call stack, then lets the crash continue as usual.
+    /// calls. The header uses a descriptor opened beforehand; stack unwinding
+    /// below is best-effort and is not guaranteed async-signal-safe. macOS
+    /// DiagnosticReports remain the independent source for a full crash report.
     private static func installCrashHandlers(logPath: String, version: String) {
         crashFD = open(logPath, O_WRONLY | O_APPEND | O_CREAT, 0o644)
         crashFrames = .allocate(capacity: 64)
