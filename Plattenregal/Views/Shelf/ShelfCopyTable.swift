@@ -178,11 +178,11 @@ struct ShelfContentsView: View {
         reloadPending = false
         let next = ShelfCopyItem.snapshot(for: shelf, owner: owner, missing: missing)
         let newlyFocused = focusCopy.map { focus in !items.contains { $0.id == focus.id } } ?? false
-        // The same snapshot animation as Collection/Wantlist, only on a real
-        // compartment change. Metadata updates and clicks never reorder tiles
-        // with an animation, and table sorting stays immediate.
-        let animate = loadedShelfID != nil && changedShelf && layout == .grid
-        withAnimation(animate ? AppStyle.layoutAnimation : nil) {
+        // Only a real compartment change fades the new contents in (grid and
+        // table, as the table did before). Metadata updates and clicks never
+        // reorder tiles with an animation, and table sorting stays immediate.
+        let animate = loadedShelfID != nil && changedShelf
+        withAnimation(animate ? (layout == .grid ? AppStyle.layoutAnimation : AppStyle.fadeAnimation) : nil) {
             items = next
             tableItems = next.sorted(using: sortOrder)
             loadedShelfID = shelf.id
@@ -259,8 +259,12 @@ struct ShelfContentsView: View {
                     OverviewLayoutPicker(selection: layoutSelection.animation(AppStyle.fadeAnimation))
                         .accessibilityLabel("Ansicht der Fachinhalte")
                 }
-                if layout == .grid { grid(proxy) }
-                else { table }
+                // One slot for both: while fading between them, grid and
+                // table overlap instead of sharing the height.
+                ZStack(alignment: .topLeading) {
+                    if layout == .grid { grid(proxy) }
+                    else { table }
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .alert("Änderung nicht möglich", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
@@ -347,12 +351,16 @@ struct ShelfContentsView: View {
                             .accessibilityAction(named: Text("Exemplar bearbeiten …")) { edit(item.copy) }
                     }
                 }
-                .coverGridMotion(width: width, columnCount: columns)
                 .scrollTargetLayout()
-                .padding(.horizontal, 2)
+                .coverGridMotion(width: width, columnCount: columns)
+                // Room for the covers' shadows inside the scroll view, which
+                // clips; the negative padding below keeps the covers flush
+                // with the rack.
+                .padding(.horizontal, 2 + CoverGrid.shadowRoom)
                 .padding(.top, 2)
                 .padding(.bottom, CoverGrid.spacing)
             }
+            .padding(.horizontal, -CoverGrid.shadowRoom)
             .scrollPosition(id: scrollPosition(for: .grid), anchor: .top)
             .id(loadedShelfID)
             .task(id: loadedShelfID) {

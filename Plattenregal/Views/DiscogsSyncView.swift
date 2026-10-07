@@ -472,6 +472,7 @@ struct WantlistView: View {
                                 PlacementBadge(
                                     inCollection: ownedReleaseIDs.contains(entry.releaseID),
                                     inWantlist: true,
+                                    current: .wantlist,
                                     show: { pages.current = $0 }
                                 )
                                 .padding(AtelierCoverFrame.badgeInset)
@@ -491,8 +492,8 @@ struct WantlistView: View {
                         }
                     }
                 }
-                .coverGridMotion(width: width, columnCount: columnCount)
                 .scrollTargetLayout()
+                .coverGridMotion(width: width, columnCount: columnCount)
                 .padding(.vertical, CoverGrid.spacing)
                 .padding(.horizontal, pageMargin)
             }

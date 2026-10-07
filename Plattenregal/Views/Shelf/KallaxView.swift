@@ -525,6 +525,9 @@ struct KallaxView: View {
                     )
                     .transition(AppStyle.funnelTransition())
                 }
+                // One slot: an animated switch between an empty and a filled
+                // compartment crossfades instead of stacking both for a moment.
+                ZStack(alignment: .topLeading) {
                 if shown.isReserved || shown.copies.isEmpty {
                     ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
                         if locked {
@@ -554,6 +557,7 @@ struct KallaxView: View {
                         delete: { pendingDelete = $0 },
                         setMissing: setMissing
                     )
+                }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -5016,6 +5016,16 @@
         }
       }
     },
+    "In der %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@"
+          }
+        }
+      }
+    },
     "In der %@ anzeigen" : {
       "localizations" : {
         "en" : {

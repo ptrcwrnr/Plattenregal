@@ -1,3 +1,13 @@
+# Collection, Wantlist und Regal geprüft: Schatten, Überblendungen, Suchplaketten · 07.10.2026
+
+- **Schatten am Rasterrand**: `coverGridMotion` schnitt das Raster an seinen eigenen Grenzen ab. In Klassisch endete der Schatten der Hüllen in der linken (und rechten) Spalte deshalb in einer harten senkrechten Kante – in Collection, Wantlist und im Fachraster. Der Clip liegt jetzt um `CoverGrid.shadowRoom` (16 pt) außerhalb; das Fachraster bekommt denselben Platz innerhalb seiner ScrollView, die Cover bleiben bündig mit dem Regal.
+- **Raster ↔ Liste im Fach**: Beide Ansichten standen beim Überblenden kurz untereinander und teilten sich die Höhe (das Fach stauchte sich). Jetzt ein gemeinsamer Platz (ZStack) wie in Collection und Wantlist. Ebenso beim animierten Wechsel zwischen leerem/gesperrtem und belegtem Fach.
+- **Fachwechsel in der Liste** blendet wieder sanft über (wie vor dem Umbau mit `FadeInOnChange`); das Raster behält seine Überblendung, Sortieren und Datenänderungen bleiben sofort.
+- **Suchplaketten**: Die Plakette der aktuellen Rubrik („Collection“ in der Collection, „Wantlist“ in der Wantlist) war ein Knopf ohne Wirkung. Sie ist jetzt eine ruhige Angabe in Tinte; nur die Plakette der anderen Rubrik ist ein Link (Petrol) und wechselt dorthin.
+- **Track-Treffer in der Collection (Klassisch)**: Wie in der Wantlist steht unter dem Cover „♪ A2 · Titel“, wenn die Suche eine Platte über einen Track gefunden hat.
+- `scrollTargetLayout` sitzt direkt am Raster statt hinter den Bewegungs-Modifiern.
+- In der Demo angesehen (Klassisch hell, Hülle): Collection-Suche und Fachraster. Debug-Build und 196 Tests erfolgreich, keine Compilerwarnungen. Die Überblendungen selbst lassen sich per Schnappschuss nicht zeigen; sie wurden am Aufbau der Ansichten geprüft.
+
 # Klassisch: aktives Regalfach wieder mit Goldrand · 07.10.2026
 
 - Das aktive Regalfach hatte heute eine feine Petrolkante bekommen, entgegen der Regel „Auswahl überall mit Goldrand“. Wie gewünscht wieder Goldrand (1,5 pt) mit dem bisherigen Schatten (`RaisedPlate`); README angepasst.

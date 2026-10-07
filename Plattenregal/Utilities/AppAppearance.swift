@@ -993,6 +993,8 @@ enum CoverGrid {
     /// Extra room above the grid's own padding, so the first covers start
     /// 18 pt below the toolbar in both designs (Modern's spacing is tighter).
     static var topSpace: CGFloat { max(0, 18 - spacing) }
+    /// How far a cover's shadow reaches beyond it (`atelierRecordSleeve`).
+    static let shadowRoom: CGFloat = 16
 
     static func columnCount(available: CGFloat, minimum: CGFloat) -> Int {
         guard available.isFinite, minimum.isFinite, minimum > 0 else { return 1 }
@@ -1014,7 +1016,8 @@ extension View {
     ///   pointer directly.
     /// - A new column count (reflow) is never animated: covers changing rows
     ///   would slide across each other.
-    /// - Clipped to the grid's bounds as a last line of defence.
+    /// - Clipped to the grid's bounds plus `shadowRoom` as a last line of
+    ///   defence; the room keeps the covers' own shadows (Klassisch) whole.
     func coverGridMotion(width: CGFloat, columnCount: Int) -> some View {
         modifier(CoverGridMotion(width: width, columnCount: columnCount))
     }
@@ -1034,7 +1037,11 @@ private struct CoverGridMotion: ViewModifier {
                 let liveResize = NSApp.windows.contains(where: \.inLiveResize)
                 transaction.animation = grows && !liveResize ? AppStyle.layoutAnimation : nil
             }
+            // Wider than the grid by the shadow's reach, so the outer
+            // columns' shadows aren't cut off in a straight line.
+            .padding(CoverGrid.shadowRoom)
             .clipped()
+            .padding(-CoverGrid.shadowRoom)
             .onAppear { previousWidth = width }
             .onChange(of: width) { _, new in previousWidth = new }
     }

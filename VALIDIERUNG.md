@@ -32,6 +32,12 @@ Testnachweis: `/tmp/Plattenregal-Doku-20261007/Logs/Test/Test-Plattenregal-2026.
 - `xcodebuild … -scheme Plattenregal -destination 'platform=macOS' test` (Xcodes DerivedData): **196 Tests in 13 Suites bestanden**, 0 Compilerwarnungen.
 - Visuell (zweite Durchsicht): Fachraster in Klassisch hell und dunkel per `--snapshot` in der Demo geprüft (Start über `open`, aus einer Shell direkt gestartet entsteht kein Fenster). Nicht geprüft: Modern, Bedienung des Reglers und Rechtsklick-Menü in der laufenden App.
 
+## Collection, Wantlist und Regal (dritte Durchsicht, 07.10.2026)
+
+- Code von Collection, Wantlist, Regalseite und Fachinhalt samt Animationen durchgesehen. Korrigiert: abgeschnittene Coverschatten am Rasterrand, gestauchtes Fach beim Umschalten Raster/Liste und beim Wechsel leeres/belegtes Fach, fehlende Überblendung beim Fachwechsel in der Liste, wirkungslose Plakette der aktuellen Rubrik, fehlender Track-Treffer in der Collection (Klassisch). Einzelheiten in AENDERUNGEN.md.
+- Schnappschüsse der Demo (Klassisch hell, Hülle): Collection-Suche „Radiohead“ und Fachraster vor/nach der Korrektur verglichen; Schatten vollständig, Cover weiter bündig mit dem Regal.
+- 196 Tests bestanden, 0 Compilerwarnungen. Nicht geprüft: Modern im Bild, Überblendungen in Bewegung (nur am Aufbau der Ansichten).
+
 ## Grenzen dieser Prüfung
 
 - Keine visuelle oder interaktive Prüfung der Fehlerseiten, kein absichtlich ausgelöster Absturz und kein echter Schlüsselbundfehler. Automatisierte Tests laufen mit lokalen Attrappen und Datenbanken im Arbeitsspeicher.

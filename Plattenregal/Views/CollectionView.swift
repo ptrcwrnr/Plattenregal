@@ -104,6 +104,9 @@ struct CollectionView: View {
     /// Whether the visible items are a search result — the placement badges
     /// follow this, not the raw field (whitespace, debounce).
     @State private var searching = false
+    /// The query the visible items were filtered with, for the matched track
+    /// under a cover (Klassisch) – as in the wantlist.
+    @State private var appliedQuery = ""
     /// Where the page was scrolled when the search began, to go back there
     /// when it ends (see `leaveSearch`).
     @State private var scrollBeforeSearch: UUID?
@@ -151,6 +154,7 @@ struct CollectionView: View {
             items = filtered
             coverGroups = grouped
             searching = !words.isEmpty
+            appliedQuery = words.isEmpty ? "" : query
         }
         // Back where the page was before the search – also when it was
         // cleared while this page was hidden.
@@ -263,7 +267,9 @@ struct CollectionView: View {
                                             Button {
                                                 showQuickLook(copy)
                                             } label: {
-                                                RecordCard(copy: copy, copyCount: group.copies.count)
+                                                RecordCard(copy: copy, copyCount: group.copies.count,
+                                                           matchedTrack: AppStyle.isAtelier && !appliedQuery.isEmpty
+                                                               ? copy.release?.track(matching: appliedQuery) : nil)
                                             }
                                             .buttonStyle(.plain)
                                             .help("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")) · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: " · \(group.copies.count) Exemplare") : "")")
@@ -273,6 +279,7 @@ struct CollectionView: View {
                                                     PlacementBadge(
                                                         inCollection: true,
                                                         inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false,
+                                                        current: .collection,
                                                         show: { pages.current = $0 }
                                                     )
                                                     .padding(AtelierCoverFrame.badgeInset)
@@ -293,8 +300,8 @@ struct CollectionView: View {
                                             }
                                         }
                                     }
-                                    .coverGridMotion(width: width, columnCount: columnCount)
                                     .scrollTargetLayout()
+                                    .coverGridMotion(width: width, columnCount: columnCount)
                                 }
                                 .padding(.horizontal, AppStyle.pagePadding + 4)
                                 .padding(.vertical, CoverGrid.spacing)
@@ -586,11 +593,13 @@ struct CollectionCoverGroup: Identifiable {
 struct RecordCard: View {
     let copy: RecordCopy
     var copyCount = 1
+    /// Found by one of its tracks while searching: shown instead of the title.
+    var matchedTrack: Track? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.isAtelier ? 9 : 0) {
             cover
             if AppStyle.isAtelier {
-                AtelierRecordCaption(release: copy.release)
+                AtelierRecordCaption(release: copy.release, matchedTrack: matchedTrack)
             }
         }
         .contentShape(Rectangle())
@@ -677,10 +686,12 @@ struct MatchedTrackLine: View {
 }
 
 /// Membership tags in the top-left corner of a search-result cover. The cover retains its own
-/// click action; these sibling buttons use the existing page navigation.
+/// click action; the tag of the other page is a button that switches to it, the
+/// current page's tag only says so (a button there would lead nowhere).
 struct PlacementBadge: View {
     let inCollection: Bool
     let inWantlist: Bool
+    let current: Destination
     let show: (Destination) -> Void
 
     var body: some View {
@@ -690,17 +701,26 @@ struct PlacementBadge: View {
         }
     }
 
-    private func tag(_ destination: Destination) -> some View {
-        Button { show(destination) } label: {
-            Text(destination.title)
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.accent) : AnyShapeStyle(.secondary))
-                .padding(.horizontal, 7)
-                .padding(.vertical, 3)
-                .appChipSurface(in: Capsule(), interactive: true)
+    @ViewBuilder private func tag(_ destination: Destination) -> some View {
+        if destination == current {
+            label(destination, interactive: false)
+                .accessibilityLabel("In der \(destination.title)")
+        } else {
+            Button { show(destination) } label: { label(destination, interactive: true) }
+                .buttonStyle(.plain)
+                .help("In der \(destination.title) anzeigen")
+                .accessibilityLabel("In der \(destination.title) anzeigen")
         }
-        .buttonStyle(.plain)
-        .help("In der \(destination.title) anzeigen")
-        .accessibilityLabel("In der \(destination.title) anzeigen")
+    }
+
+    private func label(_ destination: Destination, interactive: Bool) -> some View {
+        Text(destination.title)
+            .font(.caption2.weight(.medium))
+            // The link's color only where a click leads somewhere.
+            .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(interactive ? AtelierPalette.accent : AtelierPalette.ink)
+                                                : AnyShapeStyle(.secondary))
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .appChipSurface(in: Capsule(), interactive: interactive)
     }
 }
