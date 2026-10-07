@@ -265,9 +265,12 @@ struct ShelfAssignmentView: View {
                     .transition(.opacity)
             }
         }
-        .padding(.horizontal, AppStyle.cardPadding)
+        .padding(.horizontal, AppStyle.rowSpacing)
         .padding(.vertical, AppStyle.rowSpacing)
         .appCardSurface(cornerRadius: 16)
+        // The surface reaches out past the column, so the icon lines up
+        // with the title above and the covers below.
+        .padding(.horizontal, -AppStyle.rowSpacing)
         .animation(AppStyle.standardAnimation, value: session.addedCount)
         .animation(AppStyle.quickAnimation, value: session.hoveredID)
     }
