@@ -18,7 +18,7 @@
 - **Weitere Randfälle** (Discogs-Anbindung, Fachbeschriftungen, Platzsuche, Listen):
   - **Ein Interpret über mehrere Fächer**: Fächer, die mit denselben Buchstaben beginnen (etwa zwei Fächer „The Beatles“), standen in der alphabetischen Folge in zufälliger Reihenfolge – „Th · 1“ und „Th · 2“ konnten bei jeder Neuberechnung tauschen, und die Grenzbuchstaben zum Nachbarn hingen vom Zufall ab. Jetzt entscheiden die vollen Sortierschlüssel (Interpret, dann Titel bzw. die gewählte Reihenfolge) wie beim Einsortieren, danach die Lage im Regal (`Shelf.readingOrder`). Dasselbe für die Platzsuche, wenn zwei Fächer mit derselben Platte beginnen. Der Zwischenspeicher der Fachgrenzen rechnet nach einem Wechsel von Titel/Jahr/Label neu. Neuer Test `labelsOfShelvesStartingAlikeAreStable`.
   - **Gleiche Platten in Listen**: Trefferliste der Regalsuche und „Platte hinzufügen“ ordnen zwei Exemplare desselben Albums jetzt fest (wie die Collection), statt sie beim Tippen oder Aktualisieren tauschen zu lassen.
-  - Ohne Befund: Discogs-Seitenzählung, Wartezeiten bei Drosselung, Wiederholungen, Tokenprüfung.
+  - Ohne Befund: Discogs-Seitenzählung, Wartezeiten bei Drosselung, Wiederholungen, Tokenprüfung; Zusammenführen beim Sync (doppelte Ordner/Wünsche, entfernte Platten behalten ihren Platz), Tracklisten-Nachladen (gelöschte Releases, Abbruch, Fehler je Release); geplanter Export (läuft nicht während eines Syncs, ersetzt nie eine Datei durch eine leere Liste, falsche Uhrzeit); Collection-Gruppen; Positionsregler bei einem Fach mit einer Platte. 199 Tests grün.
 - Debug-Build erfolgreich.
 
 # Platte hinzufügen, Vermisst und Rechtsklick-Menüs ruhiger · 07.10.2026
