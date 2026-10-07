@@ -61,9 +61,10 @@ struct ShelfSearchResultsPanel: View {
                     }
                 }
                 if hidden > 0 {
+                    // In the accent like the sync capsule's second line (Klassisch: petrol).
                     Text("\(hidden) weitere Treffer – Suche genauer eingrenzen")
-                        .font(.caption)
-                        .foregroundStyle(SearchPanelInk.muted)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppStyle.accent)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 8)
                         .padding(.bottom, 4)
