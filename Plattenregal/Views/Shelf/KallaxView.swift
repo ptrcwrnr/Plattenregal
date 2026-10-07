@@ -611,7 +611,7 @@ struct KallaxView: View {
             .disabled(locked)
         Button("Sortierung prüfen") { selectShelf(shelf); sortCheck = ShelfSortCheckRequest(shelf: shelf) }
             .disabled(locked || shelf.copies.count < 2)
-        Divider()
+        AppMenuDivider()
         if locked {
             Button("Namen ändern …") { selectShelf(shelf); showsNameEditor = true }
             Button("Fach entsperren") { setLocked(shelf, false) }

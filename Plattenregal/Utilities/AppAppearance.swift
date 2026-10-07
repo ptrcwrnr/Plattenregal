@@ -1297,9 +1297,9 @@ extension View {
 }
 
 /// The app's own context menu: a popover with hover rows instead of the
-/// native macOS menu. Plain `Button`s and `Divider`s inside `content` are
-/// styled as menu rows; choosing one closes the menu first, then runs the
-/// action (so a sheet it opens isn't fighting the closing popover).
+/// native macOS menu. Plain `Button`s inside `content` are styled as menu
+/// rows, `AppMenuDivider` separates groups; choosing a row closes the menu
+/// first, then runs the action (so a sheet it opens isn't fighting the closing popover).
 struct AppMenu<Content: View>: View {
     let dismiss: () -> Void
     @ViewBuilder let content: Content
@@ -1310,6 +1310,18 @@ struct AppMenu<Content: View>: View {
             .frame(minWidth: 220, alignment: .leading)
             .fixedSize()
             .appPopoverSurface()
+    }
+}
+
+/// Hairline between groups of rows in an `AppMenu`: much quieter than the
+/// native `Divider`, so the menu reads as one surface.
+struct AppMenuDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.primary.opacity(0.06))
+            .frame(height: 1)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
     }
 }
 

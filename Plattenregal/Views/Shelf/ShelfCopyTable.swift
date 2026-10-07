@@ -226,14 +226,14 @@ struct ShelfContentsView: View {
 
     /// Both presentations use the same copy actions and persistence services.
     @ViewBuilder private func rowMenu(_ copy: RecordCopy) -> some View {
-        Button { edit(copy) } label: { Label("Exemplar bearbeiten …", systemImage: "slider.horizontal.3") }
-        Button { menuFor = nil; find(copy) } label: { Label("Platz im Regal zeigen", systemImage: "scope") }
-        Divider()
+        Button("Exemplar bearbeiten …") { edit(copy) }
+        Button("Platz im Regal zeigen") { menuFor = nil; find(copy) }
+        AppMenuDivider()
         if missingEnabled {
             if missing.contains(copy.id) {
-                Button { menuFor = nil; setMissing(copy, false) } label: { Label("Wieder gefunden", systemImage: "checkmark.circle") }
+                Button("Wieder gefunden") { menuFor = nil; setMissing(copy, false) }
             } else {
-                Button { menuFor = nil; setMissing(copy, true) } label: { Label("Als vermisst markieren", systemImage: "questionmark.circle") }
+                Button("Als vermisst markieren") { menuFor = nil; setMissing(copy, true) }
             }
         }
         Button {
@@ -242,12 +242,12 @@ struct ShelfContentsView: View {
                 try PositionService(context: context).setExcluded([copy], true)
                 placed(copy)
             } catch { self.error = error.reportedMessage() }
-        } label: { Label("Nicht im Regal", systemImage: "rectangle.slash") }
-        Button { menuFor = nil; unplace(copy) } label: { Label("Aus Fach entfernen", systemImage: "trash") }
+        } label: { Text("Nicht im Regal") }
+        Button("Aus Fach entfernen") { menuFor = nil; unplace(copy) }
         // An active copy would return on the next sync as a new copy.
         if !copy.isInCurrentCollection(owner: owner) {
-            Divider()
-            Button(role: .destructive) { menuFor = nil; delete(copy) } label: { Label("Aus Sammlung löschen …", systemImage: "trash") }
+            AppMenuDivider()
+            Button("Aus Sammlung löschen …", role: .destructive) { menuFor = nil; delete(copy) }
         }
     }
 

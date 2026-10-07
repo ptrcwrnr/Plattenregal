@@ -41,8 +41,8 @@ struct MissingBadge: View {
 
 /// The "Vermisst" column beside "Platte hinzufügen": grouped by shelf (in
 /// shelf order), records without a shelf last, each with its cover to look
-/// for at the shelf. A row shows the record in its shelf, the check mark
-/// marks it found again.
+/// for at the shelf. A row shows the record in its shelf (or finds it a
+/// place), the check mark – shown on hover – marks it found again.
 struct MissingCopiesColumn: View {
     let copies: [RecordCopy]
     let labels: ShelfLabels
@@ -53,7 +53,8 @@ struct MissingCopiesColumn: View {
 
     private struct Group: Identifiable {
         let id: String
-        let title: String
+        /// `nil` for records without a shelf: they need no caption.
+        let title: String?
         let copies: [RecordCopy]
     }
 
@@ -65,7 +66,7 @@ struct MissingCopiesColumn: View {
             if let last = result.last, last.id == id {
                 result[result.count - 1] = Group(id: id, title: last.title, copies: last.copies + [copy])
             } else {
-                let title = copy.shelf.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) } ?? String(localized: "Noch ohne Fach")
+                let title = copy.shelf.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) } 
                 result.append(Group(id: id, title: title, copies: [copy]))
             }
         }
@@ -77,9 +78,6 @@ struct MissingCopiesColumn: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Vermisst").font(AppStyle.dialogTitle)
-                    Text(AppStyle.records(copies.count))
-                        .font(.callout).foregroundStyle(.secondary).monospacedDigit()
-                        .contentTransition(.numericText())
                     Spacer()
                     if let collapse {
                         IconButton(systemImage: "chevron.right", help: String(localized: "Vermisst einklappen"), action: collapse)
@@ -103,13 +101,17 @@ struct MissingCopiesColumn: View {
     private var list: some View {
         VStack(alignment: .leading, spacing: 2) {
             ForEach(groups) { group in
-                Text(group.title.uppercased())
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .padding(.horizontal, 8)
-                    .padding(.top, group.id == groups.first?.id ? 4 : 10)
-                    .padding(.bottom, 2)
+                if let title = group.title {
+                    Text(title.uppercased())
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .padding(.horizontal, 8)
+                        .padding(.top, group.id == groups.first?.id ? 4 : 10)
+                        .padding(.bottom, 2)
+                } else if group.id != groups.first?.id {
+                    Spacer().frame(height: 10)
+                }
                 ForEach(group.copies) { copy in
                     MissingCopyRow(copy: copy, show: { show(copy) }, found: {
                         withAnimation(AppStyle.standardAnimation) { found(copy) }
@@ -144,10 +146,6 @@ private struct MissingCopyRow: View {
                     }
                     .lineLimit(1)
                     Spacer(minLength: 4)
-                    Text(copy.shelf == nil ? "Platz finden" : "Zeigen")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .opacity(hovering ? 1 : 0)
                 }
                 .contentShape(Rectangle())
             }
@@ -156,11 +154,14 @@ private struct MissingCopyRow: View {
             Button(action: found) {
                 Image(systemName: "checkmark.circle")
                     .font(.system(size: 15))
-                    .foregroundStyle(hovering ? AppStyle.successColor : Color.secondary)
+                    .foregroundStyle(AppStyle.successColor)
                     .frame(width: 24, height: 24)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            // Only on hover: the row itself stays the quiet way to the shelf.
+            .opacity(hovering ? 1 : 0)
+            .animation(AppStyle.fadeAnimation, value: hovering)
             .help("Wieder gefunden")
             .accessibilityLabel("Wieder gefunden")
         }
