@@ -57,7 +57,6 @@ nonisolated struct ShelfCopyItem: Identifiable {
 /// page renders. Editing and actions are shared by both presentations.
 struct ShelfContentsView: View {
     @Environment(\.modelContext) private var context
-    @Environment(\.coverCornerRadius) private var coverCornerRadius
     let shelf: Shelf
     let session: ShelfContentsSession
     let owner: String?
@@ -416,8 +415,7 @@ struct ShelfContentsView: View {
             CoverView(url: item.copy.release?.coverURL, size: nil)
                 .atelierRecordSleeve()
                 .overlay {
-                    RoundedRectangle(cornerRadius: AppStyle.isAtelier
-                                     ? (AtelierCoverFrame.current == .sleeve ? 2 : AppStyle.cardRadius) : coverCornerRadius)
+                    RoundedRectangle(cornerRadius: AtelierCoverFrame.usesMat ? AppStyle.cardRadius : 2)
                         .strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: 2)
                 }
                 .overlay(alignment: .topLeading) {

@@ -89,10 +89,11 @@ private struct AtelierButtonStyle: ButtonStyle {
 }
 
 /// Toolbar preferences from a small background leaf, so switching designs
-/// never changes the page hierarchy. The color scheme is always set, never
-/// left out: a window opened in Klassisch otherwise keeps its dark toolbar
-/// after switching to Modern (gray glass, light labels on the light bar).
-/// Modern follows the window's own scheme.
+/// never changes the page hierarchy. Scheme and visibility are always set,
+/// never left out: a window opened in Klassisch otherwise keeps its dark
+/// toolbar after switching to Modern (gray glass, light labels on the light
+/// bar) and its bar with the line under it. Modern hides the bar like the
+/// settings window, so the ambient background runs on under the toolbar.
 struct SignatureToolbarAppearance: View {
     @Environment(\.colorScheme) private var scheme
 
@@ -104,6 +105,7 @@ struct SignatureToolbarAppearance: View {
                     .toolbarBackgroundVisibility(.visible, for: .windowToolbar)
             } else {
                 Color.clear.frame(width: 0, height: 0)
+                    .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
             }
         }
         .toolbarColorScheme(AppStyle.isAtelier ? .dark : scheme, for: .windowToolbar)

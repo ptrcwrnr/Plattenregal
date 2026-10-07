@@ -628,18 +628,22 @@ enum AtelierCoverFrame: String {
     static var current: AtelierCoverFrame {
         UserDefaults.standard.string(forKey: "atelierCoverFrame").flatMap(Self.init) ?? .sleeve
     }
-    /// Distance of the tags on a cover from its edge, the mat included –
-    /// Modern as far in as the sleeve.
-    static var badgeInset: CGFloat {
-        AppStyle.isAtelier && current == .passepartout ? 11 : 8
-    }
+    /// Distance of the tags on a cover from its edge, the mat included.
+    static var badgeInset: CGFloat { usesMat ? 11 : 8 }
+    /// The cover lies on a mat: Klassisch's passepartout, and always in Modern.
+    static var usesMat: Bool { !(AppStyle.isAtelier && current == .sleeve) }
+    /// Modern's mat: white in light mode; a light veil in dark mode, so it
+    /// sits a little above the window like Klassisch's surface on its paper.
+    static let modernMat = Color(nsColor: NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(white: 1, alpha: 0.1) : .white
+    })
 }
 
 extension View {
     /// Atelier's frame around the existing image. The unchanged cover
     /// remains in the tree, including its loading state, in every design.
     @ViewBuilder func atelierRecordSleeve() -> some View {
-        if AppStyle.isAtelier && AtelierCoverFrame.current == .sleeve {
+        if !AtelierCoverFrame.usesMat {
             environment(\.coverCornerRadius, 2)
                 .overlay {
                     RoundedRectangle(cornerRadius: 2)
@@ -648,19 +652,18 @@ extension View {
                 .shadow(color: AtelierPalette.petrol.opacity(0.18), radius: 1, y: 1)
                 .shadow(color: AtelierPalette.petrol.opacity(0.14), radius: 10, y: 6)
         } else {
-            padding(AppStyle.isAtelier ? 6 : 0)
+            // The mat in both designs; Modern only takes the system's surface
+            // and edge instead of cream.
+            padding(6)
                 .background {
-                    if AppStyle.isAtelier {
-                        RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                            .fill(AtelierPalette.surface)
-                            .overlay {
-                                RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                                    .strokeBorder(AtelierPalette.border, lineWidth: 1)
-                            }
-                    }
+                    RoundedRectangle(cornerRadius: AppStyle.cardRadius)
+                        .fill(AppStyle.isAtelier ? AtelierPalette.surface : AtelierCoverFrame.modernMat)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: AppStyle.cardRadius)
+                                .strokeBorder(AppStyle.borderColor, lineWidth: 1)
+                        }
                 }
-                .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.08 : 0),
-                        radius: AppStyle.isAtelier ? 8 : 0, y: AppStyle.isAtelier ? 3 : 0)
+                .shadow(color: .black.opacity(0.08), radius: 8, y: 3)
         }
     }
 }
