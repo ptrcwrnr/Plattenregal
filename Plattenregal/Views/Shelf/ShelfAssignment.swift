@@ -167,7 +167,7 @@ struct ShelfAssignmentView: View {
                 .frame(width: Self.listWidth)
             if showsMissing {
                 Divider().padding(.vertical, AppStyle.pagePadding)
-                MissingCopiesColumn(copies: missingCopies, labels: labels, show: showMissing, found: found,
+                MissingCopiesColumn(copies: missingCopies, show: showMissing, found: found,
                                     collapse: { missingCollapsed = true })
                     .frame(width: Self.missingWidth)
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
@@ -244,22 +244,8 @@ struct ShelfAssignmentView: View {
     /// and – for the row under the pointer, else the last one added – the
     /// two records it goes between. The count of additions on the right.
     private var targetCard: some View {
-        HStack(spacing: AppStyle.rowSpacing) {
-            // Centered in a column as wide as a cover: sits right above the
-            // covers below, and the texts line up with theirs.
-            Image(systemName: "square.grid.3x3.fill")
-                .resizable()
-                .frame(width: 24, height: 24)
-                .foregroundStyle(AppStyle.accent)
-                .frame(width: ShelfAssignmentRow.coverSize)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")).font(.headline).lineLimit(1)
-                // One line, so long names never grow the card.
-                Text(detail).font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1).truncationMode(.middle)
-                    .contentTransition(.opacity)
-            }
-            Spacer(minLength: AppStyle.itemSpacing)
+        AssignmentCard(title: rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach"),
+                       detail: detail) {
             if session.addedCount > 0 {
                 Label("\(session.addedCount) hinzugefügt", systemImage: "checkmark")
                     .font(.callout.weight(.medium))
@@ -269,12 +255,6 @@ struct ShelfAssignmentView: View {
                     .transition(.opacity)
             }
         }
-        .padding(.horizontal, AppStyle.rowSpacing)
-        .padding(.vertical, AppStyle.rowSpacing)
-        .appCardSurface(cornerRadius: 16)
-        // The surface reaches out past the column, so the icon lines up
-        // with the title above and the covers below.
-        .padding(.horizontal, -AppStyle.rowSpacing)
         .animation(AppStyle.standardAnimation, value: session.addedCount)
         .animation(AppStyle.quickAnimation, value: session.hoveredID)
     }
@@ -358,7 +338,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
 /// next "+" ends up exactly under the pointer.
 @MainActor
 final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NSTableViewDelegate {
-    static let rowHeight: CGFloat = 52
+    static let rowHeight = AssignmentRowMetrics.height
     let scrollView = NSScrollView()
     private let table = NSTableView()
     private var items: [RecordCopy] = []
@@ -485,8 +465,51 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     }
 }
 
+/// The card over each column of "Platte hinzufügen" (the shelf on the left,
+/// "Vermisst" on the right). Built the same on both sides, so the lists
+/// below start at the same height.
+struct AssignmentCard<Trailing: View>: View {
+    /// Covers in the lists below; the symbol is centered above them.
+    static var coverSize: CGFloat { 38 }
+    let title: String
+    let detail: String
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: AppStyle.rowSpacing) {
+            // Centered in a column as wide as a cover: sits right above the
+            // covers below, and the texts line up with theirs.
+            Image(systemName: "square.grid.3x3.fill")
+                .resizable()
+                .frame(width: 24, height: 24)
+                .foregroundStyle(AppStyle.accent)
+                .frame(width: Self.coverSize)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.headline).lineLimit(1)
+                // One line, so long names never grow the card.
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.middle)
+                    .contentTransition(.opacity)
+            }
+            Spacer(minLength: AppStyle.itemSpacing)
+            trailing
+        }
+        .padding(.horizontal, AppStyle.rowSpacing)
+        .padding(.vertical, AppStyle.rowSpacing)
+        .appCardSurface(cornerRadius: 16)
+        // The surface reaches out past the column, so the symbol and texts
+        // line up with the title above and the rows below.
+        .padding(.horizontal, -AppStyle.rowSpacing)
+    }
+}
+
+/// Rows of both lists in "Platte hinzufügen": the same height and cover.
+enum AssignmentRowMetrics {
+    static let height: CGFloat = 52
+}
+
 private struct ShelfAssignmentRow: View {
-    static let coverSize: CGFloat = 38
+    static let coverSize = AssignmentCard<EmptyView>.coverSize
     let copy: RecordCopy
     /// Marked "Vermisst": shown paused, still addable once it turns up.
     let missing: Bool

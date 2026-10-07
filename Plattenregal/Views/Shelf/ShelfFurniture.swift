@@ -39,59 +39,37 @@ struct MissingBadge: View {
     var body: some View { StatusTag(text: String(localized: "Vermisst"), color: AppStyle.errorColor) }
 }
 
-/// The "Vermisst" column beside "Platte hinzufügen": grouped by shelf (in
-/// shelf order), records without a shelf last, each with its cover to look
-/// for at the shelf. A row shows the record in its shelf (or finds it a
-/// place), the check mark – shown on hover – marks it found again.
+/// The "Vermisst" column beside "Platte hinzufügen", built like the column
+/// on the left: title, card, and the records (in shelf order) with their
+/// covers to look for at the shelf. A row shows the record in its shelf (or
+/// finds it a place), the check mark – shown on hover – marks it found again.
 struct MissingCopiesColumn: View {
     let copies: [RecordCopy]
-    let labels: ShelfLabels
     let show: (RecordCopy) -> Void
     let found: (RecordCopy) -> Void
     /// Folds the column away (see `ShelfAssignmentView`).
     var collapse: (() -> Void)?
 
-    private struct Group: Identifiable {
-        let id: String
-        /// `nil` for records without a shelf: they need no caption.
-        let title: String?
-        let copies: [RecordCopy]
-    }
-
-    /// `copies` already comes in shelf order, so neighbours share a group.
-    private var groups: [Group] {
-        var result: [Group] = []
-        for copy in copies {
-            let id = copy.shelf?.id.uuidString ?? "none"
-            if let last = result.last, last.id == id {
-                result[result.count - 1] = Group(id: id, title: last.title, copies: last.copies + [copy])
-            } else {
-                let title = copy.shelf.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) } 
-                result.append(Group(id: id, title: title, copies: [copy]))
-            }
-        }
-        return result
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                // The button lies over the row, so this title sits exactly
+                // like "Platte hinzufügen".
                 HStack(alignment: .firstTextBaseline) {
                     Text("Vermisst").font(AppStyle.dialogTitle)
                     Spacer()
+                }
+                .overlay(alignment: .trailing) {
                     if let collapse {
                         IconButton(systemImage: "chevron.right", help: String(localized: "Vermisst einklappen"), action: collapse)
                             .foregroundStyle(.secondary)
-                            .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
                     }
                 }
-                Text("Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                AssignmentCard(title: String(localized: "Beim Einsortieren nicht gefunden"),
+                               detail: String(localized: "Vermutlich noch in einem anderen Fach")) { EmptyView() }
             }
             .padding(.horizontal, AppStyle.pagePadding)
             .padding(.top, AppStyle.pagePadding)
-            .padding(.bottom, AppStyle.rowSpacing)
             ScrollView { list }
                 .scrollIndicators(.automatic)
                 .frame(maxHeight: .infinity)
@@ -99,33 +77,21 @@ struct MissingCopiesColumn: View {
     }
 
     private var list: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            ForEach(groups) { group in
-                if let title = group.title {
-                    Text(title.uppercased())
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .padding(.horizontal, 8)
-                        .padding(.top, group.id == groups.first?.id ? 4 : 10)
-                        .padding(.bottom, 2)
-                } else if group.id != groups.first?.id {
-                    Spacer().frame(height: 10)
-                }
-                ForEach(group.copies) { copy in
-                    MissingCopyRow(copy: copy, show: { show(copy) }, found: {
-                        withAnimation(AppStyle.standardAnimation) { found(copy) }
-                    })
-                    // Comes in from the list on the left, goes back there.
-                    .transition(.opacity.combined(with: .move(edge: .leading)))
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(copies) { copy in
+                MissingCopyRow(copy: copy, show: { show(copy) }, found: {
+                    withAnimation(AppStyle.standardAnimation) { found(copy) }
+                })
+                // Comes in from the list on the left, goes back there.
+                .transition(.opacity.combined(with: .move(edge: .leading)))
             }
         }
         // Marks set in the list on the left arrive through the store, outside
         // any `withAnimation`: animate every change of the list here.
         .animation(AppStyle.standardAnimation, value: copies.map(\.id))
         .padding(.horizontal, AppStyle.pagePadding - 8)
-        .padding(.bottom, 8)
+        // The same inset as the table on the left (`contentInsets`).
+        .padding(.vertical, AppStyle.tightSpacing)
     }
 }
 
@@ -138,11 +104,13 @@ private struct MissingCopyRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Button(action: show) {
-                HStack(spacing: 10) {
-                    CoverView(url: copy.release?.coverURL, size: 36)
-                    VStack(alignment: .leading, spacing: 1) {
+                // Spacing as on the left, so the texts line up with the card's.
+                HStack(spacing: AppStyle.rowSpacing) {
+                    CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
+                    // Type as in the rows on the left.
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(copy.release?.displayTitle ?? "—").fontWeight(.medium)
-                        Text(copy.release?.displayArtist ?? "—").foregroundStyle(.secondary)
+                        Text(copy.release?.displayArtist ?? "—").font(.caption).foregroundStyle(.secondary)
                     }
                     .lineLimit(1)
                     Spacer(minLength: 4)
@@ -167,7 +135,8 @@ private struct MissingCopyRow: View {
         }
         .font(.callout)
         .padding(.horizontal, 8)
-        .padding(.vertical, 5)
+        // As high as the rows on the left, so both lists run level.
+        .frame(height: AssignmentRowMetrics.height)
         // Like the rows of the search and "Sortierung prüfen".
         .appHoverable(hovering, cornerRadius: 8)
         .onHover { hovering = $0 }
