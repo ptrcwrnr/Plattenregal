@@ -154,6 +154,6 @@ Für einen Demo-Lauf aus Xcode unter **Edit Scheme → Run → Arguments** `--de
 
 ## Neues App-Symbol vom 5. Oktober 2026
 
-Das App-Symbol zeigt jetzt eine schwarze Schallplatte in einer hellen Papierhülle auf petrolblauem Grund, passend zu Media und Sync. Nur die Bilddateien in `Plattenregal/Assets.xcassets/AppIcon.appiconset` wurden ersetzt, der Code nicht. Bei dieser Änderung wurde die Version auf 1.0.2 (Build 102026) angehoben; aktuell ist 1.0.3. Vorlage, Prompt und das bisherige Symbol liegen in `outputs/AppIcon-Vinyl-2026-10-05/`. Einzelheiten in [AENDERUNGEN.md](AENDERUNGEN.md).
+Das App-Symbol zeigt jetzt eine schwarze Schallplatte in einer hellen Papierhülle auf petrolblauem Grund, passend zu Media und Sync. Nur die Bilddateien in `Plattenregal/Assets.xcassets/AppIcon.appiconset` wurden ersetzt, der Code nicht. Bei dieser Änderung wurde die Version auf 1.0.2 (Build 102026) angehoben; aktuell ist 1.0.3. Vorlage, Prompt und das bisherige Symbol lagen in `outputs/AppIcon-Vinyl-2026-10-05/`; der Ordner ist gelöscht, die Dateien stehen in der Git-Historie (zuletzt in Commit `2b2152e`). Einzelheiten in [AENDERUNGEN.md](AENDERUNGEN.md).
 
 Änderungen im Detail: [AENDERUNGEN.md](AENDERUNGEN.md). Build- und Teststände: [VALIDIERUNG.md](VALIDIERUNG.md).

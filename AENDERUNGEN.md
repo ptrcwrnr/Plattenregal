@@ -10,6 +10,7 @@
 - **Rechtsklick auf ein Fach** (Regalseite und Einstellungen): „Inhalt anzeigen“ entfällt; „Fach sperren“ ohne zweite Zeile „Nur leere Fächer lassen sich sperren“ (bei belegten Fächern weiterhin ausgegraut). Beide Texte im Katalog als veraltet markiert.
 - **Sortierung prüfen** ruhiger: Unten steht nur noch „Reihenfolge übernehmen“ – als schlichter Button, golden (Modern: Akzentschrift) erst, wenn alle Schritte abgehakt sind. Der Hinweis „Übernimmt ‚…‘ auch für Platzsuche …“ steht in der Akzentfarbe unter der Auswahl Titel/Jahr/Label und nur, wenn dort etwas anderes als bisher gewählt ist. Die Karte „x Platten umstellen“ ohne Erklärsatz, mit „1 von 3“ in der Akzentfarbe und dünnem Fortschrittsbalken; am Ende „Alles umgestellt“ mit Haken in Grün. Der nächste offene Schritt trägt den Auswahlrand (Klassisch Gold), das Ziel („hinter **Interpret** – Titel“) steht in der Textfarbe statt grau, nur „Platz x“ bleibt gedämpft. Neue Startargumente `--preview-sortcheck` und `--preview-sortcheck-done=N` für Fensterfotos. Geprüft mit Fotos der Demo: Klassisch hell und dunkel, Modern dunkel; der Hinweis bei geänderter Reihenfolge nicht im Bild.
 - **Fenster über der Seite** (`appPanel`: Sortierung prüfen, Platte hinzufügen, Plattenliste der Statistik): Ein Klick direkt nach dem Schließen ging verloren, weil Klickfläche und Fenster während des Ausblendens (0,25 s) noch Klicks abfingen. Beim Schließen lassen beide Klicks jetzt sofort durch. Nachgestellt in der Demo mit echten Mausklicks (Rechtsklick → Sortierung prüfen → daneben → gleich ein anderes Fach): vorher erst der zweite Klick, jetzt der erste – für Fächer neben und unter dem Fenster.
+- **Ordner `outputs/` gelöscht** (Arbeitsdateien: zwei gebaute Apps, Vergleichsbilder, Vorlage und Prompt des App-Symbols). Verweise in README, AENDERUNGEN.md und VALIDIERUNG.md zeigen auf die Git-Historie (Commit `2b2152e`).
 - Debug-Build erfolgreich.
 
 # Platte hinzufügen, Vermisst und Rechtsklick-Menüs ruhiger · 07.10.2026
@@ -193,7 +194,7 @@ Beim ersten Start öffnet sich über dem Hauptfenster eine kurze Tour mit sechs 
 Das App-Symbol wurde ersetzt. Es zeigt jetzt eine schwarze Schallplatte mit sandfarbenem Etikett, die aus einer elfenbeinfarbenen Papierhülle ragt, auf einer gedämpft petrolblauen, abgerundeten Kachel – in den ruhigen Petrol- und Sandtönen der App, ohne Schrift. Bisher war es eine flache Schallplatte über einem hellen Balken. Damit gehört es zur gleichen Icon-Familie wie Media und Sync.
 
 - Alle zehn Größen in `Plattenregal/Assets.xcassets/AppIcon.appiconset` (16 bis 1.024 Pixel) wurden ersetzt, außen transparent. `Contents.json` ist unverändert. Das Symbol erscheint im Dock, im Finder und auf der Karte „Über Plattenregal“.
-- Vorlage, Prompt und das bisherige Symbol liegen in `outputs/AppIcon-Vinyl-2026-10-05/`.
+- Vorlage, Prompt und das bisherige Symbol lagen in `outputs/AppIcon-Vinyl-2026-10-05/` (Ordner inzwischen gelöscht, in der Git-Historie bis Commit `2b2152e`).
 - **Version 1.0.2, Build 102026** (vorher 1.0, Build 092026); „Über Plattenregal“ und das Protokoll zeigen sie automatisch. Die Beispielangabe im README ist entsprechend angepasst.
 - Am Swift-Code und an den Tests hat sich nichts geändert.
 

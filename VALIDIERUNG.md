@@ -297,7 +297,7 @@ Stand nach dem neuen App-Symbol und dem Versionssprung auf 1.0.2 (Details in [AE
 
 ## Vorgehen
 
-1. Die zehn PNG-Dateien im `AppIcon.appiconset` auf Pixelgröße und Alphakanal geprüft und mit der finalen Vorlage `outputs/AppIcon-Vinyl-2026-10-05/AppIcon-Vinyl-1024.png` verglichen: Die 1.024-Pixel-Datei ist byte-gleich mit der Vorlage.
+1. Die zehn PNG-Dateien im `AppIcon.appiconset` auf Pixelgröße und Alphakanal geprüft und mit der finalen Vorlage `outputs/AppIcon-Vinyl-2026-10-05/AppIcon-Vinyl-1024.png` verglichen (Ordner inzwischen gelöscht, in der Git-Historie bis Commit `2b2152e`): Die 1.024-Pixel-Datei ist byte-gleich mit der Vorlage.
 2. Debug-Build mit `xcodebuild` erstellt (DerivedData außerhalb des Schreibtischs).
 3. `AppIcon.icns` aus dem gebauten Paket entpackt (`sips`) und angesehen. Es zeigt das neue Motiv.
 4. `Info.plist` des gebauten Pakets gelesen und `codesign --verify --deep --strict` ausgeführt.
