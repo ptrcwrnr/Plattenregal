@@ -2,6 +2,7 @@ import AppKit
 import CryptoKit
 import ImageIO
 import SwiftUI
+import Synchronization
 
 actor CoverCache {
     static let shared = CoverCache()
@@ -13,8 +14,10 @@ actor CoverCache {
         let url: URL
         let maximumPixelSize: Int
     }
-    private struct Entry { let payload: ImagePayload; let expires: Date; var lastAccess: Date }
-    private var entries: [CacheKey: Entry] = [:]
+    /// Decoded covers, least recently used first out. Behind a lock instead
+    /// of on the actor, so a cover scrolled back into view is there in its
+    /// first frame (see `CoverView`) instead of after a trip to the actor.
+    private let memory = Mutex(Memory())
     // Keyed by URL alone (not size): the disk cache file is also per-URL, so two
     // concurrent requests for the same cover at different sizes must share one
     // download/write instead of racing two writes to the same file.
@@ -47,15 +50,15 @@ actor CoverCache {
             cacheDirectory = nil
         }
     }
+    /// A cover already decoded at this size, without waiting.
+    nonisolated func cachedImage(_ url: URL, maximumPixelSize: Int) -> ImagePayload? {
+        let key = CacheKey(url: url, maximumPixelSize: maximumPixelSize)
+        return memory.withLock { $0.lookup(key, now: .now) }
+    }
+
     func image(_ url: URL, maximumPixelSize: Int) async throws -> ImagePayload {
         let key = CacheKey(url: url, maximumPixelSize: maximumPixelSize)
-        if var entry = entries[key] {
-            if entry.expires > .now {
-                entry.lastAccess = .now; entries[key] = entry
-                return entry.payload
-            }
-            entries[key] = nil
-        }
+        if let payload = memory.withLock({ $0.lookup(key, now: .now) }) { return payload }
         // Demo covers are drawn, never downloaded or written to disk.
         if url.scheme == DemoCover.scheme {
             guard let image = DemoCover.render(url, pixelSize: maximumPixelSize) else { throw DiscogsError.invalidResponse }
@@ -132,21 +135,50 @@ actor CoverCache {
         return ImagePayload(image)
     }
 
-    /// Decoded covers are big (a 1000 px one takes 4 MB), so the count alone
-    /// doesn't bound the memory: large grid covers would add up to more than a gigabyte.
-    private static let memoryLimit = 256 * 1024 * 1024
-    private static func cost(_ payload: ImagePayload) -> Int { payload.image.bytesPerRow * payload.image.height }
-
     private func storeInMemory(_ payload: ImagePayload, for key: CacheKey) {
-        let now = Date.now
-        entries = entries.filter { $0.key != key && $0.value.expires > now }
-        var total = entries.values.reduce(0) { $0 + Self.cost($1.payload) } + Self.cost(payload)
-        while !entries.isEmpty, entries.count >= 320 || total > Self.memoryLimit,
-              let oldest = entries.min(by: { $0.value.lastAccess < $1.value.lastAccess }) {
-            total -= Self.cost(oldest.value.payload)
-            entries.removeValue(forKey: oldest.key)
+        memory.withLock { $0.store(payload, for: key, now: .now) }
+    }
+
+    private struct Memory {
+        private struct Entry { let payload: ImagePayload; let expires: Date; var lastAccess: Date }
+        private var entries: [CacheKey: Entry] = [:]
+        /// Bytes of all entries, kept up to date instead of summed per store.
+        private var total = 0
+        /// Decoded covers are big (a 1000 px one takes 4 MB), so the count alone
+        /// doesn't bound the memory: large grid covers would add up to more than a gigabyte.
+        private static let limit = 256 * 1024 * 1024
+        private static let countLimit = 320
+        private static func cost(_ payload: ImagePayload) -> Int { payload.image.bytesPerRow * payload.image.height }
+
+        mutating func lookup(_ key: CacheKey, now: Date) -> ImagePayload? {
+            guard var entry = entries[key] else { return nil }
+            guard entry.expires > now else { remove(key); return nil }
+            entry.lastAccess = now
+            entries[key] = entry
+            return entry.payload
         }
-        entries[key] = Entry(payload: payload, expires: Date().addingTimeInterval(3600), lastAccess: .now)
+
+        mutating func store(_ payload: ImagePayload, for key: CacheKey, now: Date) {
+            remove(key)
+            // Expired ones first, then the least recently used.
+            for key in entries.compactMap({ $0.value.expires <= now ? $0.key : nil }) { remove(key) }
+            let cost = Self.cost(payload)
+            while !entries.isEmpty, entries.count >= Self.countLimit || total + cost > Self.limit,
+                  let oldest = entries.min(by: { $0.value.lastAccess < $1.value.lastAccess }) {
+                remove(oldest.key)
+            }
+            entries[key] = Entry(payload: payload, expires: now.addingTimeInterval(3600), lastAccess: now)
+            total += cost
+        }
+
+        mutating func removeAll() {
+            entries.removeAll()
+            total = 0
+        }
+
+        private mutating func remove(_ key: CacheKey) {
+            if let entry = entries.removeValue(forKey: key) { total -= Self.cost(entry.payload) }
+        }
     }
     /// Bytes the covers take up on disk (for the settings).
     func diskUsage() -> Int64 {
@@ -194,7 +226,7 @@ actor CoverCache {
     /// Drops every cached cover; they are downloaded again when next shown.
     /// Returns false when some files could not be removed.
     @discardableResult func clear() -> Bool {
-        entries.removeAll()
+        memory.withLock { $0.removeAll() }
         generation += 1
         guard let cacheDirectory,
               let files = try? FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil)
@@ -235,6 +267,9 @@ struct CoverView: View {
     private var decodeEdge: Int { Int((edge / 64).rounded(.up) * 64) }
 
     var body: some View {
+        // A cover shown before (scrolled back into view) is there in the
+        // first frame, without the placeholder flashing up.
+        let image = image ?? memoryImage
         ZStack {
             Rectangle().fill(.quaternary)
             if let image { Image(nsImage: image).resizable().scaledToFit() }
@@ -256,17 +291,30 @@ struct CoverView: View {
 
     private struct LoadKey: Hashable { let url: String?; let edge: Int }
 
+    /// Pixels to decode for `decodeEdge` points.
+    private var pixelSize: Int {
+        let scale = NSScreen.main?.backingScaleFactor ?? 2
+        return max(64, Int((CGFloat(decodeEdge) * scale).rounded(.up)))
+    }
+
+    /// The cover at this size, if the cache has it decoded already.
+    private var memoryImage: NSImage? {
+        guard let url, let parsed = URL(string: url),
+              let payload = CoverCache.shared.cachedImage(parsed, maximumPixelSize: pixelSize) else { return nil }
+        return NSImage(cgImage: payload.image, size: .zero)
+    }
+
     private func load() async {
         // Only a new URL clears the old image; a sharper re-decode swaps in place.
         if loadedURL != url { image = nil; failed = false; loadedURL = url; loadedEdge = 0 }
         // Never re-decode smaller: a shrinking cover just draws the sharper image scaled down.
         guard let url, let parsed = URL(string: url), image == nil || decodeEdge > loadedEdge else { return }
+        if let cached = memoryImage {
+            image = cached; failed = false; loadedEdge = decodeEdge
+            return
+        }
         do {
-            let scale = NSScreen.main?.backingScaleFactor ?? 2
-            let loaded = try await CoverCache.shared.image(
-                parsed,
-                maximumPixelSize: max(64, Int((CGFloat(decodeEdge) * scale).rounded(.up)))
-            )
+            let loaded = try await CoverCache.shared.image(parsed, maximumPixelSize: pixelSize)
             try Task.checkCancellation()
             image = NSImage(cgImage: loaded.image, size: .zero); failed = false; loadedEdge = decodeEdge
         }

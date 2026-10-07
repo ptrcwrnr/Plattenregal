@@ -30,7 +30,7 @@ struct CollectionView: View {
     var analyticsFilter: StatisticGroup? = nil
     /// Kept for as long as the page lives (see `PageStack`), so a section
     /// switch or another page doesn't lose the place.
-    @State private var scrollPosition: UUID?
+    @State private var scroll = ScrollAnchor<UUID>()
     @AppStorage(DisplaySettings.collectionLayoutKey) private var layout = OverviewLayout.grid
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
@@ -54,6 +54,7 @@ struct CollectionView: View {
     @State private var quickLook: UUID?
     /// The cover whose right-click menu is open, and where it was clicked.
     @State private var contextMenu: (id: UUID, anchor: UnitPoint)?
+    @State private var gridClicks = GridSecondaryClicks<UUID>()
     /// The popover closes on the mouse-down of a click outside it; if that
     /// click lands on the same cover, it should stay closed, not reopen.
     @State private var quickLookDismissed: (id: UUID, at: Date)?
@@ -159,17 +160,19 @@ struct CollectionView: View {
         // Back where the page was before the search – also when it was
         // cleared while this page was hidden.
         if searchEnded {
-            scrollPosition = scrollBeforeSearch ?? filtered.first?.id
+            scroll.id = scrollBeforeSearch ?? filtered.first?.id
             scrollBeforeSearch = nil
         }
+        // A place filtered away isn't held on to.
+        if let id = scroll.id, !filtered.contains(where: { $0.id == id }) { scroll.id = nil }
         normalizeGridScrollPosition(in: grouped)
     }
 
     private func normalizeGridScrollPosition(in groups: [CollectionCoverGroup]) {
-        guard layout == .grid, let scrollPosition,
-              let group = groups.first(where: { group in group.copies.contains { $0.id == scrollPosition } })
+        guard layout == .grid, let id = scroll.id,
+              let group = groups.first(where: { group in group.copies.contains { $0.id == id } })
         else { return }
-        if scrollPosition != group.primary.id { self.scrollPosition = group.primary.id }
+        if id != group.primary.id { scroll.id = group.primary.id }
     }
 
     private func rebuildWantedReleaseIDs() {
@@ -200,7 +203,6 @@ struct CollectionView: View {
     }
 
     var body: some View {
-        let visibleIDs = items.map(\.id)
         VStack(spacing: 0) {
             // Not in the drill-down sheets of the statistics: only on the page itself.
             if DemoMode.showsBanner && analyticsFilter == nil {
@@ -289,10 +291,7 @@ struct CollectionView: View {
                                             .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
                                                 RecordPopover(copy: group.primary)
                                             }
-                                            .onSecondaryClick { point in
-                                                quickLook = nil
-                                                contextMenu = (copy.id, point)
-                                            }
+                                            .gridSecondaryClickCell(copy.id, in: gridClicks)
                                             .popover(isPresented: contextMenuBinding(for: copy.id),
                                                      attachmentAnchor: .point(contextMenu?.anchor ?? .center),
                                                      arrowEdge: .trailing) {
@@ -301,12 +300,17 @@ struct CollectionView: View {
                                         }
                                     }
                                     .scrollTargetLayout()
+                                    .gridSecondaryClickGrid(gridClicks)
                                     .coverGridMotion(width: width, columnCount: columnCount)
                                 }
                                 .padding(.horizontal, AppStyle.pagePadding + 4)
                                 .padding(.vertical, CoverGrid.spacing)
                             }
-                            .scrollPosition(id: $scrollPosition, anchor: .top)
+                            .scrollPosition(scroll)
+                            .onGridSecondaryClick(gridClicks) { id, point in
+                                quickLook = nil
+                                contextMenu = (id, point)
+                            }
                             .pullToRefresh(disabled: sync.busy) {
                                 sync.start(.collection, container: context.container)
                             }
@@ -361,7 +365,7 @@ struct CollectionView: View {
                                 }
                             }
                         }
-                        .scrollPosition(id: $scrollPosition, anchor: .top)
+                        .scrollPosition(scroll)
                         .refreshShortcut(disabled: sync.busy) {
                             sync.start(.collection, container: context.container)
                         }
@@ -383,13 +387,8 @@ struct CollectionView: View {
         .alert(errorTitle, isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
-        .onChange(of: visibleIDs) { _, visibleIDs in
-            if let scrollPosition, !visibleIDs.contains(scrollPosition) {
-                self.scrollPosition = nil
-            }
-        }
         .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
-        .onChange(of: order) { _, _ in scrollPosition = nil; rebuildBase(animated: true) }
+        .onChange(of: order) { _, _ in scroll.id = nil; rebuildBase(animated: true) }
         .onChange(of: secondaryOrder) { _, _ in rebuildBase(animated: true) }
         .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantedReleaseIDs(); rebuildBase() }
         .onChange(of: copies) { _, _ in dataRevision += 1 }
@@ -415,7 +414,7 @@ struct CollectionView: View {
         // Debounced, and only for the visible section — the hidden ones
         // share the query but catch up when they're shown again.
         .onChange(of: query) { old, new in
-            if old.isEmpty && !new.isEmpty && !searching { scrollBeforeSearch = scrollPosition }
+            if old.isEmpty && !new.isEmpty && !searching { scrollBeforeSearch = scroll.id }
         }
         .task(id: query) {
             guard activity.isActive else { queryPending = true; return }

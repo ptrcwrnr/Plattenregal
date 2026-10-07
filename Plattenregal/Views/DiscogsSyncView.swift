@@ -295,7 +295,8 @@ struct WantlistView: View {
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
     // Filtered/sorted once per change of entries or query, not on every render.
     @State private var visibleEntries: [WantlistEntry] = []
-    @State private var scrollPosition: PersistentIdentifier?
+    /// See `ScrollAnchor`: scrolling must not rebuild the page.
+    @State private var scroll = ScrollAnchor<PersistentIdentifier>()
     /// Where the page was scrolled when the search began (see `leaveSearch`).
     @State private var scrollBeforeSearch: PersistentIdentifier?
     /// The results, faded out while leaving a search.
@@ -304,6 +305,7 @@ struct WantlistView: View {
     @State private var settingsTab: AppSettingsView.Tab?
     /// The entry whose menu is open, and where it was right-clicked.
     @State private var menuFor: (id: PersistentIdentifier, anchor: UnitPoint)?
+    @State private var gridClicks = GridSecondaryClicks<PersistentIdentifier>()
     /// The entry whose popover (with the tracklist) is open; in the list
     /// also where it was double-clicked.
     @State private var quickLook: (id: PersistentIdentifier, anchor: UnitPoint)?
@@ -373,7 +375,7 @@ struct WantlistView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.release?.coverURL }.prefix(3))) }
         .settingsOpener($settingsTab)
-        .onChange(of: order) { _, _ in scrollPosition = nil; rebuild() }
+        .onChange(of: order) { _, _ in scroll.id = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
         .task { rebuildCollection(); rebuild() }
         .onChange(of: entries) { _, _ in dataRevision += 1 }
@@ -392,7 +394,7 @@ struct WantlistView: View {
         // New tracks are found by a running search (the index follows them).
         .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
         .onChange(of: query) { old, new in
-            if old.isEmpty && !new.isEmpty && appliedQuery.isEmpty { scrollBeforeSearch = scrollPosition }
+            if old.isEmpty && !new.isEmpty && appliedQuery.isEmpty { scrollBeforeSearch = scroll.id }
         }
         .task(id: query) {
             guard activity.isActive else { queryPending = true; return }
@@ -454,11 +456,11 @@ struct WantlistView: View {
         }
         // Back where the page was before the search (see CollectionView).
         if searchEnded {
-            scrollPosition = scrollBeforeSearch ?? visible.first?.persistentModelID
+            scroll.id = scrollBeforeSearch ?? visible.first?.persistentModelID
             scrollBeforeSearch = nil
         }
-        if let scrollPosition, !visible.contains(where: { $0.persistentModelID == scrollPosition }) {
-            self.scrollPosition = nil
+        if let id = scroll.id, !visible.contains(where: { $0.persistentModelID == id }) {
+            scroll.id = nil
         }
     }
 
@@ -508,9 +510,7 @@ struct WantlistView: View {
                         }
                         .id(entry.persistentModelID)
                         // The app's own menu, as in the collection.
-                        .onSecondaryClick { point in
-                            if sourceURL(entry) != nil { menuFor = (entry.persistentModelID, point) }
-                        }
+                        .gridSecondaryClickCell(entry.persistentModelID, in: gridClicks)
                         .popover(isPresented: menuBinding(entry.persistentModelID),
                                  attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
                             AppMenu(dismiss: { menuFor = nil }) { entryMenu(entry) }
@@ -518,11 +518,17 @@ struct WantlistView: View {
                     }
                 }
                 .scrollTargetLayout()
+                .gridSecondaryClickGrid(gridClicks)
                 .coverGridMotion(width: width, columnCount: columnCount)
                 .padding(.vertical, CoverGrid.spacing)
                 .padding(.horizontal, pageMargin)
             }
-            .scrollPosition(id: $scrollPosition, anchor: .top)
+            .scrollPosition(scroll)
+            .onGridSecondaryClick(gridClicks) { id, point in
+                if let entry = rows.first(where: { $0.persistentModelID == id }), sourceURL(entry) != nil {
+                    menuFor = (id, point)
+                }
+            }
             .pullToRefresh(disabled: sync.busy, action: syncWantlist)
         }
     }
@@ -575,7 +581,7 @@ struct WantlistView: View {
         .background(QuietIconColumnHeaders())
         .alternatingRowBackgrounds(.disabled)
         .scrollContentBackground(.hidden)
-        .scrollPosition(id: $scrollPosition, anchor: .top)
+        .scrollPosition(scroll)
         .refreshShortcut(disabled: sync.busy, action: syncWantlist)
         // The app's own menu, and on double-click the popover – as in the collection.
         .overlay(TableRowClicks(secondary: { row, point in

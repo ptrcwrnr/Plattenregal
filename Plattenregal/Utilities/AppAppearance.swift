@@ -710,14 +710,17 @@ extension View {
     /// A small capsule or circle on the page – tags on covers, steppers,
     /// toasts, round row buttons: Liquid Glass in Modern; in Klassisch the
     /// cards' matte paper with a fine rim, never see-through.
-    func appChipSurface<S: InsettableShape>(in shape: S, interactive: Bool = false) -> some View {
-        background {
-            if AppStyle.isAtelier {
+    /// Klassisch leaves the glass out altogether: even as `.identity` it
+    /// sets up the glass machinery, for every cover tag of a scrolling grid.
+    @ViewBuilder func appChipSurface<S: InsettableShape>(in shape: S, interactive: Bool = false) -> some View {
+        if AppStyle.isAtelier {
+            background {
                 shape.fill(AtelierPalette.surface)
                     .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
             }
+        } else {
+            glassEffect(interactive ? .regular.interactive() : .regular, in: shape)
         }
-        .glassEffect(AppStyle.isAtelier ? .identity : interactive ? .regular.interactive() : .regular, in: shape)
     }
 
     /// The background of a popover: in Modern glass tinted with the window
@@ -1080,6 +1083,37 @@ enum CoverGrid {
     }
 }
 
+/// The item at the top of a scrolled page, for `.scrollPosition(id:)`. An
+/// object, not `@State` of the page: the scroll view writes it every time
+/// another row reaches the top, and a state value would rebuild the whole
+/// page with all its covers each time. Through Observation only views that
+/// read `id` in their `body` follow it – usually none.
+@Observable final class ScrollAnchor<ID: Hashable> {
+    var id: ID?
+}
+
+extension View {
+    /// `.scrollPosition(id:anchor: .top)` bound to `anchor` (see `scrollPosition(tracking:)`).
+    func scrollPosition<ID: Hashable>(_ anchor: ScrollAnchor<ID>) -> some View {
+        scrollPosition(tracking: Bindable(anchor).id)
+    }
+
+    /// `.scrollPosition(id:anchor: .top)` in a modifier of its own. The
+    /// scroll view reads the position where the modifier is built; built
+    /// inline in a grid's closure, every new top row re-ran that closure –
+    /// and with it every cover cell of the grid.
+    func scrollPosition<ID: Hashable>(tracking position: Binding<ID?>) -> some View {
+        modifier(TrackedScrollPosition(position: position))
+    }
+}
+
+private struct TrackedScrollPosition<ID: Hashable>: ViewModifier {
+    let position: Binding<ID?>
+    func body(content: Content) -> some View {
+        content.scrollPosition(id: position, anchor: .top)
+    }
+}
+
 extension View {
     /// Motion for a cover grid of `width` with `columnCount` columns.
     /// - The grid growing in one step (full screen, zoom)
@@ -1260,7 +1294,9 @@ private struct PullToRefresh: ViewModifier {
     func body(content: Content) -> some View {
         content
             .offset(y: mousePull)
-            .onScrollGeometryChange(for: CGFloat.self) { -($0.contentOffset.y + $0.contentInsets.top) } action: { _, distance in
+            // Clamped: anywhere below the top is the same value, so scrolling
+            // through the page doesn't call this on every frame.
+            .onScrollGeometryChange(for: CGFloat.self) { max(-2, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, distance in
                 atTop = distance > -1
                 overscroll = max(0, distance)
                 if overscroll < 6 { armed = true }
@@ -1400,18 +1436,62 @@ extension View {
     /// Right-click (or Control-click) on this view runs `action` with the
     /// click position as a unit point, e.g. to anchor an `AppMenu` popover
     /// there. Other clicks pass straight through to the view underneath.
+    /// Not for the cells of a scrolling grid: see `GridSecondaryClicks`.
     func onSecondaryClick(perform action: @escaping (UnitPoint) -> Void) -> some View {
-        overlay(SecondaryClickCatcher(action: action))
+        overlay(SecondaryClickCatcher { point, size in
+            action(UnitPoint(x: point.x / size.width, y: point.y / size.height))
+        })
+    }
+}
+
+/// Right-clicks on the cells of a scrolling cover grid. An AppKit view in
+/// every cell (`onSecondaryClick`) made AppKit work out the window's drag
+/// regions again for every frame of scrolling, walking all cells – about a
+/// quarter of each scroll step. Here a single catcher lies over the scroll
+/// view and finds the cell from the frames the cells report in the grid's
+/// own space (which scrolling doesn't change) and where the grid stands.
+/// Plain storage, not state: nothing re-renders when it changes.
+final class GridSecondaryClicks<ID: Hashable> {
+    fileprivate var cells: [ID: CGRect] = [:]
+    fileprivate var gridOrigin: CGPoint = .zero
+    fileprivate let gridSpace = UUID()
+    fileprivate let scrollSpace = UUID()
+}
+
+extension View {
+    /// On each cell of the grid.
+    func gridSecondaryClickCell<ID: Hashable>(_ id: ID, in clicks: GridSecondaryClicks<ID>) -> some View {
+        onGeometryChange(for: CGRect.self, of: { $0.frame(in: .named(clicks.gridSpace)) }) { clicks.cells[id] = $0 }
+            .onDisappear { clicks.cells[id] = nil }
+    }
+
+    /// On the lazy grid inside the scroll view.
+    func gridSecondaryClickGrid<ID: Hashable>(_ clicks: GridSecondaryClicks<ID>) -> some View {
+        coordinateSpace(.named(clicks.gridSpace))
+            .onGeometryChange(for: CGPoint.self, of: { $0.frame(in: .named(clicks.scrollSpace)).origin }) { clicks.gridOrigin = $0 }
+    }
+
+    /// On the scroll view: a right-click on a cell runs `action` with the
+    /// cell and the click position as a unit point of the cell.
+    func onGridSecondaryClick<ID: Hashable>(_ clicks: GridSecondaryClicks<ID>, perform action: @escaping (ID, UnitPoint) -> Void) -> some View {
+        coordinateSpace(.named(clicks.scrollSpace))
+            .overlay(SecondaryClickCatcher { point, _ in
+                let p = CGPoint(x: point.x - clicks.gridOrigin.x, y: point.y - clicks.gridOrigin.y)
+                guard let (id, frame) = clicks.cells.first(where: { $0.value.contains(p) }),
+                      frame.width > 0, frame.height > 0 else { return }
+                action(id, UnitPoint(x: (p.x - frame.minX) / frame.width, y: (p.y - frame.minY) / frame.height))
+            })
     }
 }
 
 private struct SecondaryClickCatcher: NSViewRepresentable {
-    let action: (UnitPoint) -> Void
+    /// The click's position in the view (from the top left) and the view's size.
+    let action: (CGPoint, CGSize) -> Void
     func makeNSView(context: Context) -> CatcherView { CatcherView() }
     func updateNSView(_ view: CatcherView, context: Context) { view.action = action }
 
     final class CatcherView: NSView {
-        var action: ((UnitPoint) -> Void)?
+        var action: ((CGPoint, CGSize) -> Void)?
         override var isFlipped: Bool { true }
         private static func isSecondary(_ event: NSEvent?) -> Bool {
             guard let event else { return false }
@@ -1428,9 +1508,8 @@ private struct SecondaryClickCatcher: NSViewRepresentable {
             if Self.isSecondary(event) { fire(event) } else { super.mouseDown(with: event) }
         }
         private func fire(_ event: NSEvent) {
-            let p = convert(event.locationInWindow, from: nil)
             guard bounds.width > 0, bounds.height > 0 else { return }
-            action?(UnitPoint(x: p.x / bounds.width, y: p.y / bounds.height))
+            action?(convert(event.locationInWindow, from: nil), bounds.size)
         }
     }
 }

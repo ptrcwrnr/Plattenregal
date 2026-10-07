@@ -47,8 +47,12 @@ nonisolated struct ShelfCopyItem: Identifiable {
 /// replaces this view. Scroll positions belong to one compartment and one
 /// presentation; switching between them never overwrites the other's place.
 @Observable final class ShelfContentsSession {
-    var gridScrollPositions: [UUID: UUID] = [:]
-    var listScrollPositions: [UUID: UUID] = [:]
+    // Not observed: the scroll views write them whenever another row reaches
+    // the top, and an observed change re-ran the whole cover grid each time.
+    // Restoring a place scrolls explicitly (`ScrollViewProxy`, the table's
+    // scroll bridge), so no view needs to follow them.
+    @ObservationIgnored var gridScrollPositions: [UUID: UUID] = [:]
+    @ObservationIgnored var listScrollPositions: [UUID: UUID] = [:]
     var tableSortOrder = [KeyPathComparator(\ShelfCopyItem.position)]
 }
 
@@ -86,6 +90,7 @@ struct ShelfContentsView: View {
     @State private var loadedShelfID: UUID?
     @State private var loadedSignature: Int?
     @State private var menuFor: (id: UUID, anchor: UnitPoint)?
+    @State private var gridClicks = GridSecondaryClicks<UUID>()
     @State private var error: String?
     @State private var focusScroll: FocusScroll?
     @State private var gridRestorePending = true
@@ -345,10 +350,7 @@ struct ShelfContentsView: View {
                             .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
                                 quickEditor(item.copy)
                             }
-                            .onSecondaryClick { point in
-                                quickEditID = nil
-                                menuFor = (item.id, point)
-                            }
+                            .gridSecondaryClickCell(item.id, in: gridClicks)
                             .popover(isPresented: menuBinding(item.id),
                                      attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
                                 actionMenu(item.copy)
@@ -360,6 +362,7 @@ struct ShelfContentsView: View {
                     }
                 }
                 .scrollTargetLayout()
+                .gridSecondaryClickGrid(gridClicks)
                 .coverGridMotion(width: width, columnCount: columns)
                 // Room for the covers' shadows inside the scroll view, which
                 // clips; the negative padding below keeps the covers flush
@@ -368,8 +371,12 @@ struct ShelfContentsView: View {
                 .padding(.top, 2)
                 .padding(.bottom, CoverGrid.spacing)
             }
+            .onGridSecondaryClick(gridClicks) { id, point in
+                quickEditID = nil
+                menuFor = (id, point)
+            }
             .padding(.horizontal, -CoverGrid.shadowRoom)
-            .scrollPosition(id: scrollPosition(for: .grid), anchor: .top)
+            .scrollPosition(tracking: scrollPosition(for: .grid))
             .opacity(gridRevealPending != nil && gridRevealPending == loadedShelfID ? 0 : 1)
             .id(loadedShelfID)
             .task(id: loadedShelfID) {
