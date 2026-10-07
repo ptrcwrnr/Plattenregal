@@ -348,17 +348,6 @@
       },
       "shouldTranslate" : false
     },
-    "%@ „%@ – %@“" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ „%2$@ – %3$@“"
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
     "%@ (inaktiv) · " : {
       "localizations" : {
         "en" : {
@@ -691,17 +680,6 @@
       }
     },
     "%lld" : {
-      "shouldTranslate" : false
-    },
-    "%lld / %lld" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld / %2$lld"
-          }
-        }
-      },
       "shouldTranslate" : false
     },
     "%lld ältere Sicherungen löschen?" : {
