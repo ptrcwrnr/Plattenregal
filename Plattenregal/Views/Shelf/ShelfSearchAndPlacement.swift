@@ -5,7 +5,9 @@ import SwiftData
 
 /// The matches of the shelf search (typed into the field in the toolbar),
 /// floating over the rack like a popover so the page layout never shifts
-/// while typing.
+/// while typing. Rows as in "Platte hinzufügen" (same height and cover),
+/// the place in the shelf on the right; records without a shelf follow under
+/// their own heading. Scrolls only when the window is too low for the list.
 struct ShelfSearchResultsPanel: View {
     let matches: [RecordCopy]
     /// Records without a shelf; picking one shows where it belongs, picking
@@ -18,48 +20,81 @@ struct ShelfSearchResultsPanel: View {
     let missing: Set<UUID>
     let place: (RecordCopy) -> Void
 
-    var body: some View { results }
+    var body: some View {
+        ViewThatFits(in: .vertical) {
+            results
+            ScrollView { results }.scrollIndicators(.automatic)
+        }
+        .searchPanelSurface()
+    }
 
     @ViewBuilder private var results: some View {
-        Group {
-            if matches.isEmpty && unplaced.isEmpty {
-                Text("Keine Treffer im Regal.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                VStack(alignment: .leading, spacing: 1) {
-                    ForEach(matches) { copy in
+        if matches.isEmpty && unplaced.isEmpty {
+            Text("Keine Treffer im Regal.")
+                .font(.callout)
+                .foregroundStyle(SearchPanelInk.muted)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(matches) { copy in
+                    Button { place(copy) } label: {
+                        SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Zeigt, zwischen welchen Platten sie steht")
+                }
+                if !unplaced.isEmpty {
+                    Text("Ohne Fach")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(SearchPanelInk.muted)
+                        .padding(.horizontal, 10)
+                        .padding(.top, matches.isEmpty ? 4 : 12)
+                        .padding(.bottom, 4)
+                    ForEach(unplaced) { copy in
                         Button { place(copy) } label: {
-                            SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id))
+                            SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id), placeable: true)
                         }
                         .buttonStyle(.plain)
-                        .help("Zeigt, zwischen welchen Platten sie steht")
-                    }
-                    if !unplaced.isEmpty {
-                        if !matches.isEmpty { Divider().padding(.vertical, 3) }
-                        ForEach(unplaced) { copy in
-                            Button { place(copy) } label: {
-                                SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id), placeable: true)
-                            }
-                            .buttonStyle(.plain)
-                            .help("Zeigt, wo die Platte alphabetisch hingehört")
-                        }
-                    }
-                    if hidden > 0 {
-                        Text("\(hidden) weitere Treffer – Suche genauer eingrenzen")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 4)
+                        .help("Zeigt, wo die Platte alphabetisch hingehört")
                     }
                 }
-                .padding(5)
+                if hidden > 0 {
+                    Text("\(hidden) weitere Treffer – Suche genauer eingrenzen")
+                        .font(.caption)
+                        .foregroundStyle(SearchPanelInk.muted)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+                }
             }
+            .padding(6)
         }
-        // Same glass as the system popovers in the overview.
-        .appGlassSurface(cornerRadius: AppStyle.surfaceRadius)
+    }
+}
+
+/// Text colors of the panel: the design's ink in Klassisch, the system's in Modern.
+private enum SearchPanelInk {
+    static var ink: AnyShapeStyle { AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary) }
+    static var muted: AnyShapeStyle { AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary) }
+}
+
+private extension View {
+    /// Klassisch: paper card like the popovers. Modern: glass tinted toward
+    /// the window color like the popovers and the sync capsule, so the rack
+    /// underneath doesn't run through the text.
+    func searchPanelSurface() -> some View {
+        let shape = RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
+        return clipShape(shape)
+            .background {
+                if AppStyle.isAtelier {
+                    shape.fill(AtelierPalette.surface)
+                        .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+                }
+            }
+            .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: shape)
+            .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.1 : 0.15), radius: 14, y: 4)
     }
 }
 
@@ -69,28 +104,62 @@ private struct SearchResultRow: View {
     var missing = false
     var placeable = false
     @State private var hovering = false
+
     var body: some View {
-        HStack(spacing: 10) {
-            CoverView(url: copy.release?.coverURL, size: 28)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(copy.release?.displayArtist ?? "—").font(.callout).lineLimit(1)
+        HStack(spacing: AppStyle.rowSpacing) {
+            CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(copy.release?.displayArtist ?? "—")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(SearchPanelInk.ink)
                 HStack(spacing: 6) {
-                    Text(copy.release?.displayTitle ?? "—").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text(copy.release?.displayTitle ?? "—")
+                        .font(.caption)
+                        .foregroundStyle(SearchPanelInk.muted)
                     if missing { MissingBadge() }
                 }
             }
-            Spacer(minLength: 8)
-            Text(placeable ? String(localized: "Ohne Fach · Platz finden") : ShelfRangeLabels.location(of: copy, labels: labels))
-                .font(.caption2.monospacedDigit())
-                .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .opacity(missing ? 0.7 : 1)
+            Spacer(minLength: AppStyle.itemSpacing)
+            place
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 8)
+        .frame(height: AssignmentRowMetrics.height)
         .contentShape(Rectangle())
         .appHoverable(hovering, cornerRadius: 8)
         .onHover { hovering = $0 }
     }
+
+    /// Where it stands, in two short lines instead of one cut-off one: the
+    /// compartment, then cabinet and position. Without a shelf: the way to one.
+    private var place: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            if placeable || copy.shelf == nil {
+                // "Ohne Fach" already heads the section.
+                Text("Platz finden").font(.caption.weight(.medium)).foregroundStyle(AppStyle.accent)
+            } else if let shelf = copy.shelf {
+                let prefix = labels.prefix(for: shelf)
+                if shelf.isReserved {
+                    Text(shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name)
+                        .font(.caption.weight(.medium)).foregroundStyle(SearchPanelInk.ink)
+                    if !prefix.isEmpty {
+                        Text(prefix.trimmingCharacters(in: CharacterSet(charactersIn: " ·")))
+                            .font(.caption2).foregroundStyle(SearchPanelInk.muted)
+                    }
+                } else {
+                    Text(labels[shelf.id] ?? String(localized: "Leeres Fach"))
+                        .font(.caption.weight(.medium)).foregroundStyle(SearchPanelInk.ink)
+                    Text(prefix + String(localized: "Position \(copy.positionInShelf)"))
+                        .font(.caption2.monospacedDigit()).foregroundStyle(SearchPanelInk.muted)
+                }
+            }
+        }
+        .lineLimit(1)
+        .fixedSize()
+    }
 }
+
 
 // MARK: - Placement
 
