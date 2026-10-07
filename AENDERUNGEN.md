@@ -1,3 +1,9 @@
+# Klassisch: aktives Regalfach wieder mit Goldrand · 07.10.2026
+
+- Das aktive Regalfach hatte heute eine feine Petrolkante bekommen, entgegen der Regel „Auswahl überall mit Goldrand“. Wie gewünscht wieder Goldrand (1,5 pt) mit dem bisherigen Schatten (`RaisedPlate`); README angepasst.
+- Zweite Durchsicht: unbenutzte Option `AppMenu.fillsWidth` (Überbleibsel eines verworfenen Ansatzes) entfernt, doppelte Leerzeilen nach dem Ausbau des Trefferzählers bereinigt.
+- In der Demo angesehen (Klassisch hell mit Passepartout, dunkel mit Hülle): goldenes aktives Fach, Positionsplaketten auf den Covern, Raster/Liste-Umschalter rechts über dem Inhalt. Debug-Build und 196 Tests erfolgreich, keine Compilerwarnungen.
+
 # Prüfung der Änderungen vom 07.10.2026: Fachinhalt, Suchplaketten, Fehlermeldungen · 07.10.2026
 
 - **Fachinhalt als Raster/Liste** (`ShelfContentsView`, vorher `ShelfCopyTable`): standardmäßig Cover-Raster in Fachreihenfolge mit Positionsplakette, umschaltbar auf die Tabelle (neu mit Spalte Label); Scrollstellen je Fach und Ansicht für die Sitzung (`ShelfContentsSession`). „Exemplar bearbeiten …“ ist jetzt ein kleiner Regler für die Position im aktuellen Fach, „Nicht im Regal“ und „Platz im Regal zeigen“ (darüber auch in ein anderes Fach) stehen im Rechtsklick-Menü. Die Spalte mit Lupe und Papierkorb in der Tabelle entfällt.

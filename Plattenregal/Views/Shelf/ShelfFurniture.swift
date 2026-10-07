@@ -357,17 +357,17 @@ private struct RaisedPlate: View {
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
         let fill = AppStyle.isAtelier ? AtelierPalette.surface : Self.fill
-        let edge = AppStyle.isAtelier ? AtelierPalette.accent.opacity(0.35) : Self.edge
+        let edge = AppStyle.isAtelier ? AtelierPalette.gold : Self.edge
         shape
             .fill(fill)
             .overlay {
                 if AppStyle.isAtelier {
-                    shape.strokeBorder(edge, lineWidth: 1)
+                    shape.strokeBorder(edge, lineWidth: 1.5)
                 } else {
                     shape.strokeBorder(LinearGradient(colors: [edge, .clear], startPoint: .top, endPoint: .center), lineWidth: 1)
                 }
             }
-            .shadow(color: AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.08) : Self.shadow,
+            .shadow(color: AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.15) : Self.shadow,
                     radius: AppStyle.isAtelier ? 3 : 6, y: AppStyle.isAtelier ? 1 : 2.5)
     }
 }

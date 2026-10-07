@@ -30,7 +30,7 @@ Testnachweis: `/tmp/Plattenregal-Doku-20261007/Logs/Test/Test-Plattenregal-2026.
 - Fachinhalt (Raster/Liste, Positionsregler, Scrollbrücke der Tabelle), Suchplaketten und Fehlermeldungen im Code geprüft. Korrigiert: Goldrand der Auswahl in Klassisch, fehlende englische Texte (5) und veraltete Katalogeinträge, irreführender Tooltip, Reglerzählung und Schutz vor gelöschtem Exemplar, Auswahl nach „Nicht im Regal“, endlose Wiederherstellung bei verschwundenem Scrollziel. Einzelheiten in AENDERUNGEN.md.
 - Die obige Angabe „die drei geänderten UI-Texte haben englische Übersetzungen“ galt nur für die Fehlertexte; die neuen Texte des Fachinhalts waren nicht übersetzt. Jetzt hat jeder nicht veraltete Katalogeintrag eine englische Übersetzung (per Skript geprüft).
 - `xcodebuild … -scheme Plattenregal -destination 'platform=macOS' test` (Xcodes DerivedData): **196 Tests in 13 Suites bestanden**, 0 Compilerwarnungen.
-- Nicht geprüft: visuelle Kontrolle des Fachrasters in Klassisch und Modern, Bedienung des Reglers in der laufenden App.
+- Visuell (zweite Durchsicht): Fachraster in Klassisch hell und dunkel per `--snapshot` in der Demo geprüft (Start über `open`, aus einer Shell direkt gestartet entsteht kein Fenster). Nicht geprüft: Modern, Bedienung des Reglers und Rechtsklick-Menü in der laufenden App.
 
 ## Grenzen dieser Prüfung
 

@@ -159,9 +159,7 @@ struct CollectionView: View {
             scrollBeforeSearch = nil
         }
         normalizeGridScrollPosition(in: grouped)
-
     }
-
 
     private func normalizeGridScrollPosition(in groups: [CollectionCoverGroup]) {
         guard layout == .grid, let scrollPosition,

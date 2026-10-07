@@ -501,7 +501,6 @@ struct WantlistView: View {
         }
     }
 
-
     private func table(_ rows: [WantlistEntry]) -> some View {
         Table(rows) {
             TableColumn("") { entry in
