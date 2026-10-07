@@ -1675,6 +1675,16 @@
         }
       }
     },
+    "Alles umgestellt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All moved"
+          }
+        }
+      }
+    },
     "Alles zurückgesetzt. Trage unter „Discogs“ einen Token ein, um neu zu beginnen." : {
       "localizations" : {
         "en" : {
@@ -2964,6 +2974,7 @@
       }
     },
     "Der Reihe nach herausnehmen und an die neue Stelle stellen. Die übrigen bleiben, wo sie sind." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8646,6 +8657,7 @@
       }
     },
     "Wenn alles umgestellt ist, die neue Reihenfolge übernehmen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
