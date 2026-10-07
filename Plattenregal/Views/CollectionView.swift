@@ -464,7 +464,6 @@ struct CollectionView: View {
         if group.copies.count > 1 {
             ForEach(Array(group.copies.enumerated()), id: \.element.id) { index, copy in
                 let excluded = excludedIDs.contains(copy.id)
-                if index > 0 { AppMenuDivider() }
                 AppMenuSection(title: String(localized: "Exemplar \(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excluded))"))
                 actions(copy)
             }
@@ -534,7 +533,6 @@ struct CollectionView: View {
             Button("Auf Discogs öffnen") { openURL(url) }
         }
         refreshButton(for: [copy])
-        AppMenuDivider()
         exclusionButton(for: [copy])
     }
     /// Reloads the Discogs data of the given records (only those from Discogs).

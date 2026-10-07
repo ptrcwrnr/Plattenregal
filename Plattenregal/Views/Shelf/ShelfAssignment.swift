@@ -13,11 +13,9 @@ import SwiftData
 final class ShelfAssignmentSession: Identifiable {
     let id = UUID()
     let shelf: Shelf
-    var query = ""
     /// Records without a shelf, sorted by artist; loaded once, then only
     /// shrinks as records are added here.
     private(set) var candidates: [RecordCopy] = []
-    private var searchIndex = SearchIndex<UUID>()
     /// Account the candidates were chosen for (see `load`).
     private var owner: String?
     private(set) var loaded = false
@@ -60,11 +58,7 @@ final class ShelfAssignmentSession: Identifiable {
                 position <= items.count ? items[position - 1] : nil)
     }
 
-    var visible: [RecordCopy] {
-        guard !query.isEmpty else { return candidates }
-        let words = SearchIndex<UUID>.words(query)
-        return candidates.filter { searchIndex.matches($0.id, words) }
-    }
+    var visible: [RecordCopy] { candidates }
 
     /// Taken once: the list is a snapshot and must not reorder while records
     /// are added or paused. Records that fit this shelf alphabetically come
@@ -88,7 +82,6 @@ final class ShelfAssignmentSession: Identifiable {
             }
             let sorted = ShelfAssignmentPresentation.sortedByArtist(available)
             candidates = sorted.filter { belongsElsewhere[$0.id] == nil } + sorted.filter { belongsElsewhere[$0.id] != nil }
-            searchIndex = SearchIndex(available, id: \.id, text: SortingService.searchText)
         } catch { self.error = ReadError.wrapping(error).reportedMessage() }
     }
 
@@ -213,7 +206,6 @@ struct ShelfAssignmentView: View {
                 }
                 .animation(AppStyle.standardAnimation, value: showsMissing)
                 targetCard
-                AppSearchField(placeholder: String(localized: "Platten ohne Fach durchsuchen"), text: $session.query)
                 if let error = session.error {
                     AppBanner(message: error, kind: .error)
                         .transition(AppStyle.funnelTransition())
@@ -237,10 +229,7 @@ struct ShelfAssignmentView: View {
                     session.add(copy, in: context)
                 }
                 if session.loaded && items.isEmpty {
-                    if !session.query.isEmpty {
-                        AppEmptyState(String(localized: "Keine Treffer"), systemImage: "magnifyingglass",
-                                      description: Text("Versuche einen anderen Suchbegriff."))
-                    } else if pausedCount > 0 {
+                    if pausedCount > 0 {
                         AppEmptyState(String(localized: "Nur noch vermisste Platten"), systemImage: "checkmark.circle",
                                       description: Text("Alle übrigen Platten ohne Fach stehen unter „Vermisst“."))
                     } else {
@@ -282,7 +271,7 @@ struct ShelfAssignmentView: View {
         }
         .padding(.horizontal, AppStyle.cardPadding)
         .padding(.vertical, AppStyle.rowSpacing)
-        .accentGlassCard()
+        .appCardSurface(cornerRadius: 16)
         .animation(AppStyle.standardAnimation, value: session.addedCount)
         .animation(AppStyle.quickAnimation, value: session.hoveredID)
     }

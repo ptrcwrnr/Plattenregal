@@ -226,9 +226,8 @@ struct ShelfContentsView: View {
 
     /// Both presentations use the same copy actions and persistence services.
     @ViewBuilder private func rowMenu(_ copy: RecordCopy) -> some View {
-        Button("Exemplar bearbeiten …") { edit(copy) }
+        Button("Exemplar bearbeiten") { edit(copy) }
         Button("Platz im Regal zeigen") { menuFor = nil; find(copy) }
-        AppMenuDivider()
         if missingEnabled {
             if missing.contains(copy.id) {
                 Button("Wieder gefunden") { menuFor = nil; setMissing(copy, false) }
@@ -246,7 +245,6 @@ struct ShelfContentsView: View {
         Button("Aus Fach entfernen") { menuFor = nil; unplace(copy) }
         // An active copy would return on the next sync as a new copy.
         if !copy.isInCurrentCollection(owner: owner) {
-            AppMenuDivider()
             Button("Aus Sammlung löschen …", role: .destructive) { menuFor = nil; delete(copy) }
         }
     }
@@ -348,7 +346,7 @@ struct ShelfContentsView: View {
                             .help("Position \(item.position) · \(item.artist) · \(item.title)\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen.")
                             .accessibilityLabel("Position \(item.position), \(item.artist), \(item.title)")
                             .accessibilityAddTraits(focusCopy?.id == item.id ? .isSelected : [])
-                            .accessibilityAction(named: Text("Exemplar bearbeiten …")) { edit(item.copy) }
+                            .accessibilityAction(named: Text("Exemplar bearbeiten")) { edit(item.copy) }
                     }
                 }
                 .scrollTargetLayout()
