@@ -684,13 +684,18 @@ extension View {
         .glassEffect(AppStyle.isAtelier ? .identity : interactive ? .regular.interactive() : .regular, in: shape)
     }
 
-    /// The background of a popover: the system's glass in Modern, the
-    /// cards' matte paper in Klassisch. On the popover's content.
+    /// The background of a popover: in Modern glass tinted with the window
+    /// color (like the panels over the page and the sync pill), so a bright
+    /// cover underneath doesn't run through the text; the cards' matte paper
+    /// in Klassisch. On the popover's content.
     @ViewBuilder func appPopoverSurface() -> some View {
         if AppStyle.isAtelier {
             presentationBackground(AtelierPalette.surface)
         } else {
-            self
+            presentationBackground {
+                Rectangle().fill(.clear)
+                    .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .rect)
+            }
         }
     }
 
@@ -737,7 +742,20 @@ struct AppBadge: View {
         .foregroundStyle(prominent ? AppStyle.accent : .secondary)
         .padding(.horizontal, AppStyle.itemSpacing + 2)
         .padding(.vertical, AppStyle.tightSpacing)
-        .background(prominent ? AppStyle.selectedBackground : AppStyle.hoverBackground.opacity(1.2), in: Capsule())
+        // Like every other tag: glass in Modern, paper with a rim in
+        // Klassisch – no gray fill of its own.
+        .modifier(BadgeSurface(prominent: prominent))
+    }
+}
+
+private struct BadgeSurface: ViewModifier {
+    let prominent: Bool
+    func body(content: Content) -> some View {
+        if prominent {
+            content.background(AppStyle.selectedBackground, in: Capsule())
+        } else {
+            content.appChipSurface(in: Capsule())
+        }
     }
 }
 

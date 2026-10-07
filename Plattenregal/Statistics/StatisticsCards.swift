@@ -396,7 +396,10 @@ struct SoundDonut: View {
     }
 
     private func legend(_ slices: [Slice]) -> some View {
-        let maximum = CGFloat(max(1, slices.map(\.group.count).max() ?? 1))
+        // Measured against the largest named entry: "Weitere" bundles many and
+        // would shrink every real bar to a few pixels; it is capped at full.
+        let named = slices.filter { !$0.id.hasPrefix("weitere:") }
+        let maximum = CGFloat(max(1, (named.isEmpty ? slices : named).map(\.group.count).max() ?? 1))
         return VStack(alignment: .leading, spacing: 4) {
             ForEach(slices) { slice in
                 Button { select(slice.group) } label: {
@@ -405,7 +408,7 @@ struct SoundDonut: View {
                         Text(slice.label).lineLimit(1)
                         Spacer(minLength: 8)
                         Capsule().fill(slice.color.opacity(0.5))
-                            .frame(width: 70 * CGFloat(slice.group.count) / maximum, height: 4)
+                            .frame(width: 70 * min(1, CGFloat(slice.group.count) / maximum), height: 4)
                             .frame(width: 70, alignment: .leading)
                         Text(slice.group.count.formatted()).monospacedDigit().frame(minWidth: 36, alignment: .trailing)
                         Text(slice.group.percentage(of: statistics.totalItems)).monospacedDigit().foregroundStyle(.secondary)
@@ -461,12 +464,18 @@ struct ArtistPodium: View {
         }
     }
 
-    /// A stable representative cover: the first copy (by ID) that has one.
+    /// A representative cover that stays the same across launches and a new
+    /// sync (copy IDs don't): the artist's earliest release, then by title.
     private func cover(for group: StatisticGroup) -> String? {
-        group.copyIDs.compactMap { copies[$0] }
-            .filter { $0.release?.coverURL != nil }
-            .min { $0.id.uuidString < $1.id.uuidString }?
-            .release?.coverURL
+        group.copyIDs.compactMap { copies[$0]?.release }
+            .filter { $0.coverURL != nil }
+            .min { lhs, rhs in
+                let left = lhs.year ?? Int.max, right = rhs.year ?? Int.max
+                if left != right { return left < right }
+                let order = lhs.displayTitle.localizedStandardCompare(rhs.displayTitle)
+                return order == .orderedSame ? lhs.discogsID < rhs.discogsID : order == .orderedAscending
+            }?
+            .coverURL
     }
 
     private struct ArtistTile: View {

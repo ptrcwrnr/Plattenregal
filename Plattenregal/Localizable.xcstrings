@@ -6454,12 +6454,12 @@
         }
       }
     },
-    "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Flächen, Angaben unter jedem Cover." : {
+    "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Papierflächen statt Glas." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Petrol, cream and gold – inspired by the app icon. Matte surfaces, details under every cover."
+            "value" : "Petrol, cream and gold – inspired by the app icon. Matte paper surfaces instead of glass."
           }
         }
       }

@@ -430,7 +430,7 @@ private struct SignatureDesignOption: View {
                     Text(design.title).font(.body.weight(.semibold))
                         .foregroundStyle(.primary)
                     Text(design == .atelier
-                         ? String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Flächen, Angaben unter jedem Cover.")
+                         ? String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Papierflächen statt Glas.")
                          : String(localized: "Glas wie in macOS, mit deiner Akzent- und Ambient-Farbe."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -492,6 +492,10 @@ private struct LiquidGlassDesignPreview: View {
                 }
                 .frame(height: 26)
                 .padding(.horizontal, 9)
+                // The caption under the covers, as in Klassisch.
+                Capsule().fill(Color.secondary.opacity(0.4)).frame(width: 54, height: 3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 9)
             }
             .padding(.top, 6)
         }

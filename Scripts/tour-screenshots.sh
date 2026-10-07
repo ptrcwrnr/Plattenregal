@@ -37,12 +37,12 @@ SHOTS=(
 # Pictures of the tour: name | window shot | crop "height width y x" in pixels
 # of the window shot (Retina, window 1223 × 793 pt). Two per page, fanned out.
 PICTURES=(
-  "collection|collection|1000 1650 155 45"
-  "wantlist|wantlist|830 1650 155 45"
+  "collection|collection|1000 1650 125 45"
+  "wantlist|wantlist|830 1650 125 45"
   "account|discogs|372 1455 370 497"
   "sync|discogs|310 1455 752 497"
   "rack|shelf|450 1200 145 45"
-  "table|shelf|560 1300 640 45"
+  "table|shelf|440 1400 715 45"
   "add|add|950 1676 151 384"
   "place|place|640 1250 230 45"
   "value|statistics|570 1500 145 72"
@@ -66,7 +66,8 @@ capture() {  # language appearance
     name=${shot%%|*}; arguments=${shot#*|}
     open -n "$APP" --args --demo --screenshots ${=arguments} -appearanceMode $2 -AppleLanguages "($1)"
     sleep 6
-    screencapture -o -l"$(swift Scripts/winid.swift)" "$WORK/shots/$name-$1-$2.png"
+    # Only the demo just launched – never a window of the own collection.
+    screencapture -o -l"$(swift Scripts/winid.swift "$(pgrep -f "^$APP/Contents/MacOS/" | head -1)")" "$WORK/shots/$name-$1-$2.png"
     quit_demo
     echo "$name $1 $2"
   done
