@@ -223,56 +223,59 @@ struct PlacementCard: View {
 
     var body: some View {
         let release = placement.copy.release
-        HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
-            CoverView(url: release?.coverURL, size: 52)
-            VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                Text("\(placement.found ? String(localized: "Hier steht") : String(localized: "Einsortieren")): \(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
-                    .font(.headline)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                if placement.excluded && !placement.found {
-                    Label("Steht auf „Nicht im Regal“ – beim Einsortieren wird das aufgehoben.", systemImage: "info.circle")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-                if placement.missing && placement.putAwayIn == nil {
-                    Label(placement.found
-                          ? "Als vermisst markiert – hier sollte sie stehen."
-                          : "Als vermisst markiert – beim Einsortieren gilt sie als gefunden.",
-                          systemImage: "pause.circle")
-                        .font(.callout)
-                        .foregroundStyle(AppStyle.errorColor)
-                }
-                if let spot = placement.spot {
-                    Text(location(spot))
-                        .font(.callout)
-                    // An empty shelf has no neighbours: no empty line then.
-                    if spot.before != nil || spot.after != nil {
-                        Text(neighbours(spot))
+        // Cover and text from the top; the buttons centered beside them.
+        HStack(spacing: AppStyle.rowSpacing) {
+            HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
+                CoverView(url: release?.coverURL, size: 52)
+                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                    Text("\(placement.found ? String(localized: "Hier steht") : String(localized: "Einsortieren")): \(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
+                        .font(.headline)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    if placement.excluded && !placement.found {
+                        Label("Steht auf „Nicht im Regal“ – beim Einsortieren wird das aufgehoben.", systemImage: "info.circle")
                             .font(.callout)
                             .foregroundStyle(.secondary)
-                            .lineLimit(2)
                     }
-                    ForEach(Array(placement.spots.enumerated()), id: \.element.id) { index, other in
-                        if index != placement.chosen {
-                            Button { choose(index) } label: {
-                                Text("Passt genauso \(other.position == 1 ? String(localized: "an den Anfang") : String(localized: "ans Ende")) von „\(name(other.shelf))“ (\(AppStyle.records(other.shelf.copies.count))) – dorthin wechseln")
-                            }
-                            .appLinkButton()
+                    if placement.missing && placement.putAwayIn == nil {
+                        Label(placement.found
+                              ? "Als vermisst markiert – hier sollte sie stehen."
+                              : "Als vermisst markiert – beim Einsortieren gilt sie als gefunden.",
+                              systemImage: "pause.circle")
                             .font(.callout)
-                            .padding(.top, 2)
-                        }
+                            .foregroundStyle(AppStyle.errorColor)
                     }
-                } else if let cabinet = placement.putAwayIn {
-                    Text("Steht im deaktivierten Regal „\(cabinet)“. Aktiviere es in den Einstellungen unter „Regale“, um sie hier zu sehen.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                } else {
-                    Text("Es steht noch keine Platte im Regal, an der sich die Platte ausrichten könnte. Wähle ein Fach und füge sie dort über „+“ hinzu.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    if let spot = placement.spot {
+                        Text(location(spot))
+                            .font(.callout)
+                        // An empty shelf has no neighbours: no empty line then.
+                        if spot.before != nil || spot.after != nil {
+                            Text(neighbours(spot))
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                        }
+                        ForEach(Array(placement.spots.enumerated()), id: \.element.id) { index, other in
+                            if index != placement.chosen {
+                                Button { choose(index) } label: {
+                                    Text("Passt genauso \(other.position == 1 ? String(localized: "an den Anfang") : String(localized: "ans Ende")) von „\(name(other.shelf))“ (\(AppStyle.records(other.shelf.copies.count))) – dorthin wechseln")
+                                }
+                                .appLinkButton()
+                                .font(.callout)
+                                .padding(.top, 2)
+                            }
+                        }
+                    } else if let cabinet = placement.putAwayIn {
+                        Text("Steht im deaktivierten Regal „\(cabinet)“. Aktiviere es in den Einstellungen unter „Regale“, um sie hier zu sehen.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text("Es steht noch keine Platte im Regal, an der sich die Platte ausrichten könnte. Wähle ein Fach und füge sie dort über „+“ hinzu.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
             Spacer(minLength: AppStyle.itemSpacing)
