@@ -245,9 +245,13 @@ struct ShelfAssignmentView: View {
     /// two records it goes between. The count of additions on the right.
     private var targetCard: some View {
         HStack(spacing: AppStyle.rowSpacing) {
+            // Resizable, so the glyph's left edge sits exactly on the
+            // covers' edge below; as wide as a cover, so the texts line up too.
             Image(systemName: "square.grid.3x3.fill")
-                .font(.system(size: 22))
+                .resizable()
+                .frame(width: 24, height: 24)
                 .foregroundStyle(AppStyle.accent)
+                .frame(width: ShelfAssignmentRow.coverSize, alignment: .leading)
             VStack(alignment: .leading, spacing: 1) {
                 Text(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")).font(.headline).lineLimit(1)
                 // One line, so long names never grow the card.
@@ -482,6 +486,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
 }
 
 private struct ShelfAssignmentRow: View {
+    static let coverSize: CGFloat = 38
     let copy: RecordCopy
     /// Marked "Vermisst": shown paused, still addable once it turns up.
     let missing: Bool
@@ -501,7 +506,7 @@ private struct ShelfAssignmentRow: View {
         let artist = copy.release?.displayArtist ?? "—"
         let title = copy.release?.displayTitle ?? "—"
         HStack(spacing: AppStyle.rowSpacing) {
-            CoverView(url: copy.release?.coverURL, size: 38)
+            CoverView(url: copy.release?.coverURL, size: Self.coverSize)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(artist).font(.callout.weight(.medium)).lineLimit(1)
