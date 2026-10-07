@@ -415,6 +415,18 @@ private struct SignatureDesignOption: View {
     let design: SignatureDesign
     let selected: Bool
     let action: () -> Void
+    @State private var preferences = AppPreferences.shared
+
+    /// Klassisch: petrol, paper, gold. Modern: the chosen accent, the window
+    /// and the chosen ambient color (the window again when it is off).
+    private var swatches: [Color] {
+        switch design {
+        case .atelier: [AtelierPalette.petrol, AtelierPalette.paper, AtelierPalette.gold]
+        case .liquidGlass:
+            [preferences.accent.color, Color(nsColor: .windowBackgroundColor),
+             preferences.ambient.color ?? Color(nsColor: .windowBackgroundColor)]
+        }
+    }
 
     var body: some View {
         Button(action: action) {
@@ -435,17 +447,17 @@ private struct SignatureDesignOption: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    if design == .atelier {
-                        HStack(spacing: 5) {
-                            ForEach(Array([AtelierPalette.petrol, AtelierPalette.paper, AtelierPalette.gold].enumerated()), id: \.offset) { _, color in
-                                Circle().fill(color)
-                                    .frame(width: 12, height: 12)
-                                    .overlay(Circle().strokeBorder(AtelierPalette.border, lineWidth: 0.5))
-                            }
+                    HStack(spacing: 5) {
+                        ForEach(Array(swatches.enumerated()), id: \.offset) { _, color in
+                            Circle().fill(color)
+                                .frame(width: 12, height: 12)
+                                .overlay(Circle().strokeBorder(design == .atelier ? AtelierPalette.border : Color.primary.opacity(0.15), lineWidth: 0.5))
                         }
-                        .padding(.top, 2)
-                        .accessibilityHidden(true)
                     }
+                    .padding(.top, 2)
+                    .animation(AppStyle.quickAnimation, value: preferences.accent)
+                    .animation(AppStyle.quickAnimation, value: preferences.ambient)
+                    .accessibilityHidden(true)
                 }
                 Spacer(minLength: 8)
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")

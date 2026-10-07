@@ -305,10 +305,20 @@ struct AmbientGlow: View {
             if preferences.signatureDesign == .atelier {
                 AtelierPalette.paper
             } else if let color = preferences.ambient.color {
-                RadialGradient(colors: [color.opacity(scheme == .dark ? 0.18 : 0.10), .clear],
-                               center: .top, startRadius: 0,
-                               endRadius: max(geometry.size.width, geometry.size.height) * 0.7)
-                    .transition(.opacity)
+                // Modern's counterpart to the paper: the whole window faintly
+                // in the ambient color, brightest at the top, with a second
+                // glow from the bottom corner – a room for the glass to sit in.
+                let dark = scheme == .dark
+                let reach = max(geometry.size.width, geometry.size.height)
+                ZStack {
+                    LinearGradient(colors: [color.opacity(dark ? 0.12 : 0.07), color.opacity(dark ? 0.04 : 0.02)],
+                                   startPoint: .top, endPoint: .bottom)
+                    RadialGradient(colors: [color.opacity(dark ? 0.22 : 0.14), .clear],
+                                   center: .top, startRadius: 0, endRadius: reach * 0.7)
+                    RadialGradient(colors: [color.opacity(dark ? 0.10 : 0.06), .clear],
+                                   center: .bottomTrailing, startRadius: 0, endRadius: reach * 0.6)
+                }
+                .transition(.opacity)
             }
         }
         .ignoresSafeArea()
