@@ -321,33 +321,25 @@ private struct ToolbarSearchField: View {
     let shelf: ShelfSearch
     let requests: SearchRequests
     @FocusState private var focused: Bool
-    /// The last page with a search: its query and placeholder stay in the
-    /// field while it fades out on the statistics.
-    @State private var searchPage: Destination?
 
     var body: some View {
         let page = selection.current
-        let shown = searchPage ?? (page.hasSearch ? page : .collection)
-        // Stays in the toolbar and only fades: an item removed from the
-        // toolbar collapses at once, so a removal transition never shows.
-        AppSearchField(placeholder: placeholder(for: shown), text: text(for: shown), focus: $focused)
-            .frame(width: AppStyle.toolbarSearchWidth)
-            .padding(.trailing, AppStyle.toolbarSearchInset)
-            .accessibilityLabel(String(localized: "Suchen"))
-            .opacity(page.hasSearch ? 1 : 0)
-            .scaleEffect(page.hasSearch || AppStyle.reduceMotion ? 1 : 0.96)
-            .allowsHitTesting(page.hasSearch)
-            .disabled(!page.hasSearch)
-            .accessibilityHidden(!page.hasSearch)
-            .animation(AppStyle.fadeAnimation, value: page.hasSearch)
-            .onChange(of: requests.count) {
-                guard selection.current.hasSearch else { return }
-                focused = true
+        Group {
+            if page.hasSearch {
+                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused)
+                    .frame(width: AppStyle.toolbarSearchWidth)
+                    .padding(.trailing, AppStyle.toolbarSearchInset)
+                    .accessibilityLabel(String(localized: "Suchen"))
+                    .transition(.opacity)
             }
-            .onChange(of: focused) { _, new in requests.fieldFocused = new }
-            .onChange(of: page, initial: true) {
-                if page.hasSearch { searchPage = page } else { focused = false }
-            }
+        }
+        .animation(AppStyle.fadeAnimation, value: page.hasSearch)
+        .onChange(of: requests.count) {
+            guard selection.current.hasSearch else { return }
+            focused = true
+        }
+        .onChange(of: focused) { _, new in requests.fieldFocused = new }
+        .onChange(of: page) { if !page.hasSearch { focused = false } }
     }
 
     private func text(for page: Destination) -> Binding<String> {
