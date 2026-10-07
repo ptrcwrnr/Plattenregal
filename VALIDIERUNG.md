@@ -51,6 +51,15 @@ Testnachweis: `/tmp/Plattenregal-Doku-20261007/Logs/Test/Test-Plattenregal-2026.
 - Die im Abschnitt darunter als offen vermerkten **Tour-Bilder sind erneuert** (Deutsch/Englisch, hell/dunkel) und zeigen den aktuellen Aufbau.
 - 196 Tests bestanden, 0 Compilerwarnungen.
 
+## Platte hinzufügen, Vermisst und Rechtsklick-Menüs (07.10.2026, abends)
+
+- Änderungen siehe AENDERUNGEN.md. Fensterfotos der Demo (`--preview-page=Regal --preview-add`) in Klassisch hell und dunkel sowie Modern dunkel; Modern hell nur vor dem Umbau der Vermisst-Spalte. Lage des ersten Covers links und rechts auf dem Foto nachgemessen: gleiche Pixelzeile. Rechtsklick-Menüs nur gebaut, nicht im Bild geprüft.
+- **Lokalisierung:** per Skript gegen den Quelltext geprüft – jeder aktive Katalogeintrag hat eine englische Übersetzung mit gleicher Zahl an Platzhaltern, kein als veraltet markierter Eintrag wird noch benutzt, kein neuer Text fehlt im Katalog. Ergänzt: „Beim Einsortieren nicht gefunden“, „Vermutlich noch in einem anderen Fach“, „Exemplar bearbeiten“.
+- **Fehlermeldungen:** In den geänderten Ansichten keine neuen Fehlerpfade. Mit dem Suchfeld entfällt nur der Leerzustand „Keine Treffer“ in „Platte hinzufügen“; Fehlerbanner und Meldungen des Fachinhalts sind unverändert.
+- **Protokoll:** App-Protokoll vom 07.10. ohne `ERROR` und ohne Absturzblock. Die Warnungen „Die vorige Sitzung wurde nicht normal beendet …“ stammen von den Foto-Läufen, die die Demo per `kill` beenden, und einmal von einer Xcode-Sitzung, die dabei versehentlich mit beendet wurde – kein App-Fehler. Keine neuen macOS-Absturzberichte (zuletzt 04.10.2026, siehe oben).
+- `xcodebuild … -scheme Plattenregal -destination 'platform=macOS' test` (Xcodes DerivedData): **196 Tests in 13 Suites bestanden**, 0 Compilerwarnungen; `git diff --check` ohne Befund.
+- **Offen:** Das Tour-Bild „Platte hinzufügen“ zeigt noch den alten Aufbau (Suchfeld, Goldrand, Vermisst mit Fach-Zwischentiteln); die Tour wurde auf Wunsch nicht neu aufgenommen.
+
 ## Grenzen dieser Prüfung
 
 - Keine visuelle oder interaktive Prüfung der Fehlerseiten, kein absichtlich ausgelöster Absturz und kein echter Schlüsselbundfehler. Automatisierte Tests laufen mit lokalen Attrappen und Datenbanken im Arbeitsspeicher.

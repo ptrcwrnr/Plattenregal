@@ -111,6 +111,7 @@
       }
     },
     " und " : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -126,6 +127,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ", %lld copies"
+          }
+        }
+      }
+    },
+    "Beim Einsortieren nicht gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not found while placing"
+          }
+        }
+      }
+    },
+    "Exemplar bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Copy"
+          }
+        }
+      }
+    },
+    "Vermutlich noch in einem anderen Fach" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probably still in another compartment"
           }
         }
       }
@@ -438,6 +469,7 @@
       }
     },
     "%@ in der %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -512,6 +544,7 @@
       }
     },
     "%@ ohne Fach" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1072,6 +1105,7 @@
       }
     },
     "%lld Treffer in der %@ anzeigen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2273,6 +2307,7 @@
       }
     },
     "Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3269,6 +3304,7 @@
       }
     },
     "Die Platte verlässt ihr Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3819,6 +3855,7 @@
       }
     },
     "Eine Position nach links" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3829,6 +3866,7 @@
       }
     },
     "Eine Position nach rechts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4101,6 +4139,7 @@
       }
     },
     "Exemplar bearbeiten …" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4987,6 +5026,7 @@
       }
     },
     "In: " : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5449,6 +5489,7 @@
       }
     },
     "Leeres Fach (Reihe %lld, Spalte %lld)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5995,9 +6036,6 @@
         }
       }
     },
-    "Nicht (mehr) in deiner Discogs-Collection – im Popover aus dem Fach entfernen" : {
-      "extractionState" : "stale"
-    },
     "Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen" : {
       "localizations" : {
         "en" : {
@@ -6229,6 +6267,7 @@
       }
     },
     "Noch ohne Fach" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6525,6 +6564,7 @@
       }
     },
     "Platten ohne Fach durchsuchen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6657,6 +6697,7 @@
       }
     },
     "Plattenregal kommt gerade nicht an den Schlüsselbund von macOS, in dem der Discogs-Token liegt. Erlaube den Zugriff, falls macOS danach fragt, und versuche es noch einmal. (Code %d)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6757,6 +6798,7 @@
       }
     },
     "Platz finden" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6765,9 +6807,6 @@
           }
         }
       }
-    },
-    "Platz im Regal" : {
-      "extractionState" : "stale"
     },
     "Platz im Regal finden" : {
       "localizations" : {
@@ -6848,17 +6887,6 @@
           }
         }
       }
-    },
-    "Position %lld · %@ · %@\nDoppelklick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Position %1$lld · %2$@ · %3$@\nDoppelklick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen."
-          }
-        }
-      },
-      "extractionState" : "stale"
     },
     "Position %lld · %@ · %@\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen." : {
       "localizations" : {
@@ -7507,6 +7535,7 @@
       }
     },
     "Speichern" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7948,6 +7977,7 @@
       }
     },
     "Technische Details: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8118,6 +8148,7 @@
       }
     },
     "Treffer in der %@ anzeigen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8334,6 +8365,7 @@
       }
     },
     "Versuche einen anderen Suchbegriff." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8354,6 +8386,7 @@
       }
     },
     "von %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8840,6 +8873,7 @@
       }
     },
     "Zeigen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
