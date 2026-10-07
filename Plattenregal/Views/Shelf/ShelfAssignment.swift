@@ -245,13 +245,13 @@ struct ShelfAssignmentView: View {
     /// two records it goes between. The count of additions on the right.
     private var targetCard: some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            // Resizable, so the glyph's left edge sits exactly on the
-            // covers' edge below; as wide as a cover, so the texts line up too.
+            // Centered in a column as wide as a cover: sits right above the
+            // covers below, and the texts line up with theirs.
             Image(systemName: "square.grid.3x3.fill")
                 .resizable()
                 .frame(width: 24, height: 24)
                 .foregroundStyle(AppStyle.accent)
-                .frame(width: ShelfAssignmentRow.coverSize, alignment: .leading)
+                .frame(width: ShelfAssignmentRow.coverSize)
             VStack(alignment: .leading, spacing: 1) {
                 Text(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")).font(.headline).lineLimit(1)
                 // One line, so long names never grow the card.

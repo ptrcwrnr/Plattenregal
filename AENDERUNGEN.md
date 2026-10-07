@@ -1,9 +1,9 @@
 # Platte hinzufügen, Vermisst und Rechtsklick-Menüs ruhiger · 07.10.2026
 
 - **Vermisst-Spalte**: ohne Anzahl hinter dem Titel und ohne Zwischentitel „Noch ohne Fach“ (Fachnamen über den übrigen Gruppen bleiben). Der Text „Platz finden“/„Zeigen“ entfällt; der Haken erscheint nur beim Überfahren der Zeile, ein Klick auf die Zeile zeigt das Fach bzw. sucht den Platz.
-- **Platte hinzufügen**: kein Suchfeld mehr, keine Zeile „x Platten ohne Fach“. Die Fachkarte ohne Goldrand (neutrale Kartenfläche); die Fläche ragt seitlich heraus, damit das Raster-Symbol exakt bündig mit den Covern und „Fach …“ bündig mit den Interpreten steht. Pause, Pfeil und Plus als schlichte Kreissymbole wie der Haken bei Vermisst, nur beim Überfahren sichtbar (ein rotes Pause-Symbol einer vermissten Platte bleibt stehen).
+- **Platte hinzufügen**: kein Suchfeld mehr, keine Zeile „x Platten ohne Fach“. Die Fachkarte ohne Goldrand (neutrale Kartenfläche); die Fläche ragt seitlich heraus, damit das Raster-Symbol mittig über den Covern und „Fach …“ bündig mit den Interpreten steht. Pause, Pfeil und Plus als schlichte Kreissymbole wie der Haken bei Vermisst, nur beim Überfahren sichtbar (ein rotes Pause-Symbol einer vermissten Platte bleibt stehen).
 - **Rechtsklick-Menüs** (Fachinhalt, Fächer, Collection/Wantlist): ohne Symbole und ohne Trennlinien; „Exemplar bearbeiten“ ohne Auslassungspunkte.
-- Geprüft mit Fensterfotos der Demo (Klassisch hell und dunkel, Modern hell): Symbol und Cover bündig, Hover-Symbole sichtbar. Nicht im Bild geprüft: Rechtsklick-Menüs. Debug-Build erfolgreich.
+- Geprüft mit Fensterfotos der Demo (Klassisch hell und dunkel, Modern hell): Symbol mittig über den Covern, Hover-Symbole sichtbar. Nicht im Bild geprüft: Rechtsklick-Menüs. Debug-Build erfolgreich.
 
 # Nachprüfung mit echten Fensterfotos: Statistik, Popover, Tour · 07.10.2026
 
