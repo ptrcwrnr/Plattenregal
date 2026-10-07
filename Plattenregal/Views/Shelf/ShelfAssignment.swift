@@ -626,13 +626,10 @@ enum ShelfAssignmentPresentation {
         copy.shelf == nil && copy.isInCurrentCollection(owner: owner) && !excluded.contains(copy.id)
     }
 
-    /// Artist, then title. Keys are built once per record instead of twice
-    /// per comparison.
+    /// Artist, then title (`SortingService.sorted`: keys built once per
+    /// record, ties by ID so equal copies keep their order between updates).
     static func sortedByArtist(_ copies: [RecordCopy]) -> [RecordCopy] {
-        copies
-            .map { (copy: $0, key: SortingService.sortKey($0)) }
-            .sorted { $0.key.localizedStandardCompare($1.key) == .orderedAscending }
-            .map(\.copy)
+        SortingService.sorted(copies)
     }
 }
 

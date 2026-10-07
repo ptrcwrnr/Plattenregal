@@ -214,10 +214,9 @@ struct KallaxView: View {
             // aren't meant to be placed (same rule as "Platte hinzufügen").
             else if ShelfAssignmentPresentation.isCandidate(copy, owner: owner, excluding: excluded) { unplaced.append(copy) }
         }
+        // Ties (two copies of one album) by ID, so rows don't swap while typing.
         func sorted(_ copies: [RecordCopy], _ limit: Int) -> [RecordCopy] {
-            Array(copies.map { (SortingService.sortKey($0), $0) }
-                .sorted { $0.0.localizedStandardCompare($1.0) == .orderedAscending }
-                .prefix(limit).map(\.1))
+            Array(SortingService.sorted(copies).prefix(limit))
         }
         searchResults = ShelfSearchResults(
             placed: sorted(placed, ShelfSearchResults.placedLimit),

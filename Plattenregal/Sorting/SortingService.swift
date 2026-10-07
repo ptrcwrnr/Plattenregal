@@ -289,7 +289,15 @@ enum AlphabeticalPlacement {
             guard let first = keys.min(by: ascending), let last = keys.max(by: ascending) else { return nil }
             return Run(shelf: shelf, items: items, first: first, last: last)
         }
-        .sorted { $0.first.localizedStandardCompare($1.first) == .orderedAscending }
+        // Same start in two shelves (one artist and title across both): the
+        // end decides, then the place in the rack, so the run never flips.
+        .sorted { a, b in
+            let first = a.first.localizedStandardCompare(b.first)
+            if first != .orderedSame { return first == .orderedAscending }
+            let last = a.last.localizedStandardCompare(b.last)
+            if last != .orderedSame { return last == .orderedAscending }
+            return a.shelf.readingOrder.lexicographicallyPrecedes(b.shelf.readingOrder)
+        }
     }
 
     private static func ordered(_ shelf: Shelf, excluding id: UUID?) -> [RecordCopy] {

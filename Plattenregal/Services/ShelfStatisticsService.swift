@@ -64,11 +64,13 @@ struct ShelfLabels {
     func ends(of shelf: Shelf) -> ShelfRangeLabels.Ends? { entries[shelf.id].map(\.ends) ?? ShelfRangeLabels.ends(of: shelf) }
 
     /// Changes whenever the shelf's records, their places or (via
-    /// `version`, `libraryVersion`) their metadata change. Reads only the
+    /// `version`, `libraryVersion`) their metadata change, and with the order
+    /// for one artist's records (part of the ends' sort keys). Reads only the
     /// copies, never their releases.
     static func fingerprint(of shelf: Shelf, version: Int) -> Int {
         var hasher = Hasher()
         hasher.combine(version)
+        hasher.combine(ShelfSecondaryOrder.current)
         hasher.combine(shelf.isReserved)
         for copy in shelf.copies { hasher.combine(copy.id); hasher.combine(copy.positionInShelf) }
         return hasher.finalize()
@@ -144,7 +146,9 @@ enum ShelfRangeLabels {
         AppDefaults.store.string(forKey: ShelfLabelStyle.key).flatMap(ShelfLabelStyle.init) ?? .range
     }
 
-    struct Ends: Equatable { let first: String; let last: String }
+    /// `first`/`last` reduced to letters for the label; the full sort keys
+    /// order the shelves in the run (as `AlphabeticalPlacement` does).
+    struct Ends: Equatable { let first: String; let last: String; var firstKey = ""; var lastKey = "" }
 
     /// `nil` for a reserved or empty shelf.
     static func ends(of shelf: Shelf) -> Ends? {
@@ -153,16 +157,26 @@ enum ShelfRangeLabels {
         let order = ShelfSecondaryOrder.current
         let keys = shelf.copies.map { SortingService.sortKey($0, by: order) }
         guard let first = keys.min(by: AlphabeticalPlacement.ascending), let last = keys.max(by: AlphabeticalPlacement.ascending) else { return nil }
-        return Ends(first: letters(first), last: letters(last))
+        return Ends(first: letters(first), last: letters(last), firstKey: first, lastKey: last)
     }
 
     private static func rangeLabels(for shelves: [Shelf], ends: @MainActor (Shelf) -> Ends?) -> [UUID: String] {
-        struct Span { let id: UUID; let first: String; let last: String }
+        struct Span { let id: UUID; let first: String; let last: String; let ends: Ends; let place: [Int] }
         let spans: [Span] = shelves.compactMap { shelf in
-            ends(shelf).map { Span(id: shelf.id, first: $0.first, last: $0.last) }
+            ends(shelf).map { Span(id: shelf.id, first: $0.first, last: $0.last, ends: $0, place: shelf.readingOrder) }
         }
-        // Neighbours in the alphabetical run, independent of the physical layout.
-        .sorted { $0.first.localizedStandardCompare($1.first) == .orderedAscending }
+        // Neighbours in the alphabetical run, independent of the physical
+        // layout: by the full keys (artist and title), like sorting in. One
+        // artist across several shelves starts them with the same letters, so
+        // the letters alone left their order – and "Th · 1"/"Th · 2" – to
+        // chance; the place in the rack settles what is still equal.
+        .sorted { a, b in
+            for (left, right) in [(a.ends.firstKey, b.ends.firstKey), (a.ends.lastKey, b.ends.lastKey), (a.first, b.first)] {
+                let order = left.localizedStandardCompare(right)
+                if order != .orderedSame { return order == .orderedAscending }
+            }
+            return a.place.lexicographicallyPrecedes(b.place)
+        }
 
         var labels: [UUID: String] = [:]
         for (index, span) in spans.enumerated() {

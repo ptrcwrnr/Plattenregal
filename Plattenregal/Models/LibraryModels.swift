@@ -36,6 +36,8 @@ extension Shelf {
         shelf.cabinet = cabinet
         return shelf
     }
+    /// Cabinet, place in it, number – what `physicalOrder` compares.
+    var readingOrder: [Int] { [cabinet?.sortOrder ?? 0, sortOrder, number] }
     static func physicalOrder(_ a: Shelf, _ b: Shelf) -> Bool {
         (a.cabinet?.sortOrder ?? 0, a.sortOrder, a.number) < (b.cabinet?.sortOrder ?? 0, b.sortOrder, b.number)
     }

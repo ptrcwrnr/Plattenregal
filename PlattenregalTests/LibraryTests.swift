@@ -88,6 +88,20 @@ extension AllTests {
             #expect(service.ordered(shelves[1]).map(\.id) == [a.id])
             #expect(ShelfRangeLabels.location(of: a, labels: ShelfRangeLabels.compute(for: shelves)) == "A · Position 1")
         }
+        /// One artist across shelves: numbered by title (as sorting in sees
+        /// them), then by place in the rack – never by the order they come in.
+        @Test func labelsOfShelvesStartingAlikeAreStable() throws {
+            let (container, shelves, service) = try fixture(); _ = container
+            try add(service, shelves[2], "The Beatles", "Let It Be")
+            try add(service, shelves[6], "The Beatles", "Abbey Road")
+            try add(service, shelves[4], "The Beatles", "Abbey Road")
+            for input in [shelves, shelves.reversed(), shelves.shuffled()] {
+                let labels = ShelfRangeLabels.compute(for: Array(input))
+                #expect(labels[shelves[4].id] == "Th · 1")
+                #expect(labels[shelves[6].id] == "Th · 2")
+                #expect(labels[shelves[2].id] == "Th · 3")
+            }
+        }
         @Test func shelfContentCacheMatchesAFullRecompute() throws {
             let (container, shelves, service) = try fixture(); _ = container
             let can = try add(service, shelves[0], "Can", "Tago Mago")
