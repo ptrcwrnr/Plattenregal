@@ -205,6 +205,7 @@ struct StatisticsView: View {
                 ActivityRing()
                 Text(model.busy ? "Sammlungswert wird aktualisiert" : "Wird berechnet")
                     .font(.callout)
+                    .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
                     .contentTransition(.interpolate)
             }
             .geometryGroup()

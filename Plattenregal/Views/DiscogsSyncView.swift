@@ -197,11 +197,13 @@ struct DiscogsSyncPill: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(content.title)
                     .font(.callout)
+                    .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
                     .lineLimit(1)
                     .contentTransition(.interpolate)
                 if let subtitle = content.subtitle {
+                    // In the accent like the ring and the checkmark (Klassisch: petrol), not grey.
                     Text(subtitle)
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption.weight(.medium)).foregroundStyle(AppStyle.accent)
                         .monospacedDigit().lineLimit(1)
                         .contentTransition(.numericText())
                         .transition(.opacity.combined(with: .offset(y: -4)))
