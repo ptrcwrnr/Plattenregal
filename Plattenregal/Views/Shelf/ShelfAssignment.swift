@@ -210,10 +210,6 @@ struct ShelfAssignmentView: View {
                     AppBanner(message: error, kind: .error)
                         .transition(AppStyle.funnelTransition())
                 }
-                listCaption(count: items.count)
-                    .padding(.top, AppStyle.tightSpacing)
-                    // Nothing listed: the empty state below says it.
-                    .opacity(items.isEmpty ? 0 : 1)
             }
             .padding(.horizontal, AppStyle.pagePadding)
             .padding(.top, AppStyle.pagePadding)
@@ -298,15 +294,6 @@ struct ShelfAssignmentView: View {
         case let (before?, nil): return String(localized: "ans Ende, nach \(name(before))")
         case (nil, nil): return String(localized: "als erste Platte")
         }
-    }
-
-    private func listCaption(count: Int) -> some View {
-        HStack(spacing: 0) {
-            Text("\(AppStyle.records(count)) ohne Fach").foregroundStyle(.secondary)
-        }
-        .font(.caption)
-        .monospacedDigit()
-        .lineLimit(1)
     }
 
     private var pausedCount: Int {
@@ -505,6 +492,7 @@ private struct ShelfAssignmentRow: View {
     let hover: (Bool) -> Void
     let findPlace: () -> Void
     let add: () -> Void
+    @State private var hovering = false
 
     var body: some View {
         let artist = copy.release?.displayArtist ?? "—"
@@ -537,18 +525,19 @@ private struct ShelfAssignmentRow: View {
             .help("\(artist) – \(title)")
             Spacer(minLength: AppStyle.itemSpacing)
             if missingEnabled {
-                RowGlassButton(systemImage: missing ? "pause.fill" : "pause",
-                               color: missing ? AppStyle.errorColor : .secondary, action: toggleMissing)
+                RowSymbolButton(systemImage: missing ? "pause.circle.fill" : "pause.circle",
+                                color: missing ? AppStyle.errorColor : .secondary,
+                                visible: hovering || missing, action: toggleMissing)
                     .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
                     .accessibilityLabel(missing ? String(localized: "\(artist) – \(title) wieder gefunden") : String(localized: "\(artist) – \(title) als vermisst markieren"))
             }
             if let belongsIn {
-                RowGlassButton(systemImage: "arrow.turn.up.right", color: .secondary, action: findPlace)
+                RowSymbolButton(systemImage: "arrow.right.circle", color: .secondary, visible: hovering, action: findPlace)
                     .help("Zu „\(belongsIn)“ wechseln und dort einsortieren")
                     .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
             }
             // The main action: accent in the glyph, like chosen options elsewhere.
-            RowGlassButton(systemImage: "plus", color: AppStyle.accent, action: add)
+            RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
                 .help(belongsIn == nil ? String(localized: "An ihrer alphabetischen Stelle ins Fach hinzufügen") : String(localized: "Trotzdem in dieses Fach hinzufügen"))
                 .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
         }
@@ -565,26 +554,29 @@ private struct ShelfAssignmentRow: View {
             }
         }
         .contentShape(Rectangle())
-        .onHover(perform: hover)
+        .onHover { hovering = $0; hover($0) }
+        .animation(AppStyle.fadeAnimation, value: hovering)
     }
 }
 
-/// A small round Liquid Glass button for a row's actions.
-private struct RowGlassButton: View {
+/// A row action as a bare symbol, like the check mark in the "Vermisst"
+/// column: only shown while the pointer is over the row.
+private struct RowSymbolButton: View {
     let systemImage: String
     let color: Color
+    let visible: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 15))
                 .foregroundStyle(color)
-                .frame(width: 30, height: 30)
-                .contentShape(Circle())
-                .appChipSurface(in: Circle(), interactive: true)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .opacity(visible ? 1 : 0)
     }
 }
 
