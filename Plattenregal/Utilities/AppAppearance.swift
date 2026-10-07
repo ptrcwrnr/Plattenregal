@@ -390,7 +390,7 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                         Color.clear
                             .contentShape(Rectangle())
                             .onTapGesture { item = nil }
-                            .transition(.opacity)
+                            .transition(.opacity.combined(with: .releasesClicks))
                         panel(shown)
                             .clipShape(RoundedRectangle(cornerRadius: AppStyle.panelRadius))
                             .background {
@@ -406,7 +406,7 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                             // Esc closes it, wherever the focus is.
                             .background { PanelEscapeMonitor { item = nil } }
                             .padding(AppStyle.pagePadding)
-                            .transition(.scale(scale: 0.96).combined(with: .opacity))
+                            .transition(.scale(scale: 0.96).combined(with: .opacity).combined(with: .releasesClicks))
                             .id(shown.id)
                     }
                 }
@@ -415,6 +415,21 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
             .onChange(of: item?.id) { old, new in
                 if old != nil && new == nil { onDismiss?() }
             }
+    }
+}
+
+/// While a panel fades out, the click layer and the panel would still catch
+/// clicks: a compartment clicked right after closing didn't react. Removing
+/// lets clicks through at once; showing keeps them caught from the start.
+private struct ClickRelease: ViewModifier {
+    let released: Bool
+    func body(content: Content) -> some View { content.allowsHitTesting(!released) }
+}
+
+private extension AnyTransition {
+    static var releasesClicks: AnyTransition {
+        .asymmetric(insertion: .identity,
+                    removal: .modifier(active: ClickRelease(released: true), identity: ClickRelease(released: false)))
     }
 }
 
