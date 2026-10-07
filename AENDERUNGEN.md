@@ -1,3 +1,10 @@
+# Aktualisieren: Ring mit Abstand, Sync-Kapsel gleitet · 07.10.2026
+
+- **Herunterziehen** geprüft: Collection, Wantlist und Statistik nutzen denselben Baustein (`pullToRefresh`) mit denselben Schwellen (Trackpad 38 pt, Maus 70 pt gedämpfter Zug) – kein Angleichen nötig.
+- **Ring beim Ziehen** 8 pt unter dem oberen Seitenrand statt direkt daran; von dort folgt er dem Zug wie bisher.
+- **Sync-Kapsel** (`DiscogsSyncPill`): Jeder Schritt bleibt mindestens 0,9 s stehen, schnelle Zwischenschritte werden übersprungen, und Text, Symbol und Größe wechseln in einer gemeinsamen Animation (vorher drei getrennte mit unterschiedlicher Dauer) – beim Nachladen der Tracklisten nach dem Start springt sie nicht mehr. Inhalt und Kapsel bewegen sich beim Größerwerden als ein Stück (`geometryGroup`), ebenso in der Kapsel der Statistik.
+- Debug-Build erfolgreich.
+
 # Platte hinzufügen, Vermisst und Rechtsklick-Menüs ruhiger · 07.10.2026
 
 - **Vermisst-Spalte** aufgebaut wie die linke Spalte: Titel, Karte „Beim Einsortieren nicht gefunden – Vermutlich noch in einem anderen Fach“ mit dem Raster-Symbol (gemeinsamer Baustein `AssignmentCard`), darunter die Platten flach in Regalreihenfolge. Entfallen: Anzahl, Beschreibungstext, Fach-Zwischentitel, Text „Platz finden“/„Zeigen“. Zeilen so hoch wie links (52 pt, Cover 38 pt, gleiche Schrift), erstes Cover pixelgenau auf Höhe des ersten Covers links. Der Haken erscheint nur beim Überfahren; ein Klick auf die Zeile zeigt das Fach bzw. sucht den Platz.

@@ -207,6 +207,7 @@ struct StatisticsView: View {
                     .font(.callout)
                     .contentTransition(.interpolate)
             }
+            .geometryGroup()
             .activityPillChrome()
             .animation(.smooth(duration: 0.45), value: model.busy)
             .transition(.scale(scale: 0.6, anchor: .top).combined(with: .opacity))

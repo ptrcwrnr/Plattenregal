@@ -1270,7 +1270,8 @@ private struct PullToRefresh: ViewModifier {
             }
             .frame(width: 26, height: 26)
             .opacity(progress)
-            .padding(.top, max(0, travel / 2 - 13))
+            // A little room to the page's top edge, then it follows the pull.
+            .padding(.top, 8 + max(0, travel / 2 - 13))
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         }
