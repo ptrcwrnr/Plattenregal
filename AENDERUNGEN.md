@@ -1,5 +1,6 @@
 # Aktualisieren: Ring mit Abstand, Sync-Kapsel gleitet · 07.10.2026
 
+- **Suchtreffer im Regal anklicken**: Das Cover-Raster des neuen Fachs blendete oben ein und scrollte dann sichtbar zur Platte, während die Platzkarte aufklappte – wirkte hektisch. Jetzt bleibt das neue Raster kurz unsichtbar, springt ohne Animation auf die Platte und blendet dann weich ein (`gridRevealPending` in `ShelfContentsView`). Gilt auch für „im Regal zeigen“; bei reduzierter Bewegung wie bisher.
 - **Herunterziehen** geprüft: Collection, Wantlist und Statistik nutzen denselben Baustein (`pullToRefresh`) mit denselben Schwellen (Maus 70 pt gedämpfter Zug) – kein Angleichen nötig. Trackpad-Schwelle von 38 auf 40 pt angehoben.
 - **Ring beim Ziehen** 8 pt unter dem oberen Seitenrand statt direkt daran; von dort folgt er dem Zug wie bisher.
 - **Sync-Kapsel** (`DiscogsSyncPill`): Jeder Schritt bleibt mindestens 0,9 s stehen, schnelle Zwischenschritte werden übersprungen, und Text, Symbol und Größe wechseln in einer gemeinsamen Animation (vorher drei getrennte mit unterschiedlicher Dauer) – beim Nachladen der Tracklisten nach dem Start springt sie nicht mehr. Inhalt und Kapsel bewegen sich beim Größerwerden als ein Stück (`geometryGroup`), ebenso in der Kapsel der Statistik.

@@ -90,6 +90,10 @@ struct ShelfContentsView: View {
     @State private var error: String?
     @State private var focusScroll: FocusScroll?
     @State private var gridRestorePending = true
+    /// A compartment opened for a record (search, "im Regal zeigen") stays
+    /// invisible until it stands at that record, then fades in – instead of
+    /// fading in at the top and visibly scrolling through the covers.
+    @State private var gridRevealPending: UUID?
 
     private struct FocusScroll: Equatable {
         let shelfID: UUID
@@ -182,6 +186,12 @@ struct ShelfContentsView: View {
         // table, as the table did before). Metadata updates and clicks never
         // reorder tiles with an animation, and table sorting stays immediate.
         let animate = loadedShelfID != nil && changedShelf
+        if changedShelf, layout == .grid, AppStyle.layoutAnimation != nil,
+           let id = focusCopy?.id, next.contains(where: { $0.id == id }) {
+            gridRevealPending = shelf.id
+        } else if changedShelf {
+            gridRevealPending = nil
+        }
         withAnimation(animate ? (layout == .grid ? AppStyle.layoutAnimation : AppStyle.fadeAnimation) : nil) {
             items = next
             tableItems = next.sorted(using: sortOrder)
@@ -281,6 +291,7 @@ struct ShelfContentsView: View {
             }
             .onChange(of: layout) { _, _ in
                 gridRestorePending = true
+                gridRevealPending = nil
                 quickEditID = nil
                 menuFor = nil
                 focusScroll = nil
@@ -360,6 +371,7 @@ struct ShelfContentsView: View {
             }
             .padding(.horizontal, -CoverGrid.shadowRoom)
             .scrollPosition(id: scrollPosition(for: .grid), anchor: .top)
+            .opacity(gridRevealPending != nil && gridRevealPending == loadedShelfID ? 0 : 1)
             .id(loadedShelfID)
             .task(id: loadedShelfID) {
                 let shelfID = shelf.id
@@ -379,8 +391,19 @@ struct ShelfContentsView: View {
                         proxy.scrollTo(saved, anchor: .top)
                     }
                 }
+                // Opened for a record: jump to it while still invisible.
+                if gridRevealPending == shelfID, let request = focusScroll, request.shelfID == shelfID,
+                   items.contains(where: { $0.id == request.copyID }) {
+                    withAnimation(nil) {
+                        session.gridScrollPositions[shelfID] = request.copyID
+                        proxy.scrollTo(request.copyID, anchor: .center)
+                    }
+                }
                 await Task.yield()
                 try? await Task.sleep(for: .milliseconds(25))
+                if gridRevealPending == shelfID {
+                    withAnimation(AppStyle.fadeAnimation) { gridRevealPending = nil }
+                }
                 guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
                 gridRestorePending = false
             }
