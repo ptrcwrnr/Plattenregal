@@ -6,10 +6,12 @@ struct CollectionView: View {
     /// Shown or not, without re-rendering the grid on every page switch.
     @State private var activity = PageActivity()
     @Environment(\.modelContext) private var context
-    @Query private var copies: [RecordCopy]
-    @Query(sort: \Shelf.number) private var shelves: [Shelf]
-    @Query private var exclusions: [OptimizationExclusion]
-    @Query private var accounts: [DiscogsAccount]
+    /// Shared with the other pages, fetched only when they change (see `LibraryRecords`).
+    private var records: LibraryRecords { .of(context) }
+    private var copies: [RecordCopy] { records.copies }
+    private var shelves: [Shelf] { records.shelves }
+    private var exclusions: [OptimizationExclusion] { records.exclusions }
+    private var accounts: [DiscogsAccount] { records.accounts }
     /// IDs of `exclusions`, looked up per table row and context menu.
     @State private var excludedIDs: Set<UUID> = []
     @State private var sync = DiscogsSyncService.shared
@@ -25,7 +27,7 @@ struct CollectionView: View {
     /// The query typed into the search field in the toolbar (see `ToolbarSearchField`).
     private var query: String { search?.query ?? "" }
 
-    @Query private var wantlistEntries: [WantlistEntry]
+    private var wantlistEntries: [WantlistEntry] { records.wants }
     let showShelf: (RecordCopy) -> Void
     var analyticsFilter: StatisticGroup? = nil
     /// Kept for as long as the page lives (see `PageStack`), so a section
@@ -393,14 +395,14 @@ struct CollectionView: View {
         .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantedReleaseIDs(); rebuildBase() }
         .onChange(of: copies) { _, _ in dataRevision += 1 }
         .onChange(of: labelStyle) { _, style in shelfLabels = labelsCache.labels(for: shelves, style: style) }
-        .onChange(of: changes.shelvesVersion) { _, _ in refreshLabels() }
-        .onChange(of: changes.placementsVersion) { _, _ in refreshLabels() }
+        .onObservedChange(of: { changes.shelvesVersion }) { _, _ in refreshLabels() }
+        .onObservedChange(of: { changes.placementsVersion }) { _, _ in refreshLabels() }
         .onChange(of: exclusions) { _, exclusions in excludedIDs = Set(exclusions.map(\.copyID)) }
         .onChange(of: accounts) { _, _ in dataRevision += 1 }
         .onChange(of: wantlistEntries) { _, _ in dataRevision += 1 }
         // Changed metadata on existing records and newly loaded tracklists
-        // don't change the @Query arrays; the sync service reports them.
-        .onChange(of: changes.libraryVersion) { _, _ in dataRevision += 1 }
+        // don't change the record lists; the sync service reports them.
+        .onObservedChange(of: { changes.libraryVersion }) { _, _ in dataRevision += 1 }
         .task(id: dataRevision) {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
@@ -410,13 +412,13 @@ struct CollectionView: View {
             rebuildBase()
         }
         // New tracks are found by a running search (the index follows them).
-        .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
+        .onObservedChange(of: { changes.tracksVersion }) { _, _ in if !query.isEmpty { applyQuery() } }
         // Debounced, and only for the visible section — the hidden ones
         // share the query but catch up when they're shown again.
-        .onChange(of: query) { old, new in
+        .onObservedChange(of: { query }) { old, new in
             if old.isEmpty && !new.isEmpty && !searching { scrollBeforeSearch = scroll.id }
         }
-        .task(id: query) {
+        .observedTask(id: { query }) {
             guard activity.isActive else { queryPending = true; return }
             // Cleared: no debounce, the list comes back together with the
             // search bar going away.
@@ -593,6 +595,8 @@ struct RecordCard: View {
     /// Found by one of its tracks while searching: shown instead of the title.
     var matchedTrack: Track? = nil
     var body: some View {
+        // The cover's address may come with a sync (see `RecordCaption`).
+        let _ = LibraryChanges.shared.libraryVersion
         VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
             cover
             RecordCaption(release: copy.release, matchedTrack: matchedTrack)

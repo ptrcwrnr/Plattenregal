@@ -534,9 +534,14 @@ struct RandomRecordCard: View {
     /// in new objects, and an old one must not stay on screen.
     @State private var pickID: UUID?
     @State private var rolls = 0
-    @Query private var shelves: [Shelf]
-    @Query private var exclusions: [OptimizationExclusion]
+    /// Shared with the pages, fetched only when they change (see `LibraryRecords`).
+    private var shelves: [Shelf] { LibraryRecords.of(context).shelves }
+    private var exclusions: [OptimizationExclusion] { LibraryRecords.of(context).exclusions }
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    /// Records sorted in on the shelf page change the labels; while the
+    /// statistics aren't shown, the place is worked out once they are.
+    @State private var activity = PageActivity()
+    @State private var placementPending = false
     private var pick: RecordCopy? { pickID.flatMap { id in copies.first { $0.id == id } } }
 
     private var coverSpan: Int { columns >= 5 ? 2 : 1 }
@@ -571,9 +576,13 @@ struct RandomRecordCard: View {
         // Places change without a reload of the page (see `StatisticsView.affectsStatistics`).
         .task(id: [version, labelStyle.hashValue, LibraryChanges.shared.placementsVersion, LibraryChanges.shared.shelvesVersion]) {
             if pick == nil { pickID = copies.randomElement()?.id }
+            guard activity.isActive else { placementPending = true; return }
             updatePlacement()
         }
         .onChange(of: pickID) { updatePlacement() }
+        .trackPageActivity(activity) { active in
+            if active && placementPending { updatePlacement() }
+        }
     }
 
     private func details(_ pick: RecordCopy, _ release: Release) -> some View {
@@ -622,6 +631,7 @@ struct RandomRecordCard: View {
     }
 
     private func updatePlacement() {
+        placementPending = false
         guard let id = pickID,
               let copy = try? context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.id == id })).first
         else { placement = nil; return }

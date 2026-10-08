@@ -23,13 +23,15 @@ import SwiftData
 /// matches float over the top of the page.
 struct KallaxView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Shelf.number) private var allShelves: [Shelf]
-    @Query(sort: \Cabinet.sortOrder) private var cabinets: [Cabinet]
-    @Query private var allCopies: [RecordCopy]
-    @Query private var exclusions: [OptimizationExclusion]
-    @Query private var missingMarks: [MissingCopyMark]
+    /// Shared with the other pages, fetched only when they change (see `LibraryRecords`).
+    private var records: LibraryRecords { .of(context) }
+    private var allShelves: [Shelf] { records.shelves }
+    private var cabinets: [Cabinet] { records.cabinets }
+    private var allCopies: [RecordCopy] { records.copies }
+    private var exclusions: [OptimizationExclusion] { records.exclusions }
+    private var missingMarks: [MissingCopyMark] { records.missingMarks }
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
-    @Query private var accounts: [DiscogsAccount]
+    private var accounts: [DiscogsAccount] { records.accounts }
     /// The compartment selected in the rack.
     @State private var highlight: UUID?
     /// "Im Regal anzeigen" / "Platz im Regal finden" from other pages; taken
@@ -280,7 +282,7 @@ struct KallaxView: View {
             // right end of the toolbar, floating over the rack.
             .overlay(alignment: .topTrailing) { searchResultsPanel }
         }
-        .task(id: statsSignature) {
+        .observedTask(id: { statsSignature }) {
             shelfContent.refresh(allShelves, version: changes.libraryVersion)
             shelfStats = Dictionary(uniqueKeysWithValues: shelves.map { ($0.id, shelfContent.stats(for: $0)) })
             rangeLabels = ShelfRangeLabels.compute(for: allShelves, style: labelStyle, ends: shelfContent.ends)
@@ -312,8 +314,8 @@ struct KallaxView: View {
             searchIndexStale = true; if !searchQuery.isEmpty { applySearch() }
         }
         // Metadata and tracklist updates don't show up in `statsSignature`.
-        .onChange(of: changes.libraryVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
-        .onChange(of: changes.tracksVersion) { searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
+        .onObservedChange(of: { changes.libraryVersion }) { _, _ in searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
+        .onObservedChange(of: { changes.tracksVersion }) { _, _ in searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onAppear { takePlacingRequest() }
         #if DEBUG
         // Screenshots for the tour without clicking: --preview-add opens
@@ -342,7 +344,7 @@ struct KallaxView: View {
         .onChange(of: missingIDs) { refreshPlacement() }
         // Settings (other window) rebuilt cabinets, restored a backup or reset
         // the locations: the sheet's list and target shelf may be stale or gone.
-        .onChange(of: changes.shelvesVersion) {
+        .onObservedChange(of: { changes.shelvesVersion }) { _, _ in
             if assignment != nil { AppLog.info("Regal", "„Platte hinzufügen“ geschlossen: Regale wurden in den Einstellungen geändert") }
             assignment = nil; showsNameEditor = false; sortCheck = nil
         }

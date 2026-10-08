@@ -134,6 +134,11 @@ struct ShelfBackupService {
     // MARK: Backup
 
     func makeBackup(at date: Date = .now) throws -> ShelfBackup {
+        try Self.makeBackup(of: context, at: date)
+    }
+
+    /// Also off the main actor, with a context of its own (see `ShelfAutoBackup`).
+    nonisolated static func makeBackup(of context: ModelContext, at date: Date = .now) throws -> ShelfBackup {
         let owner = DiscogsAccount.current(in: try context.fetch(FetchDescriptor<DiscogsAccount>()))?.username
         let shelves = try context.fetch(FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\Shelf.number)]))
         let cabinets = try context.fetch(FetchDescriptor<Cabinet>(sortBy: [SortDescriptor(\Cabinet.sortOrder)]))
@@ -421,7 +426,7 @@ extension ShelfBackupService {
         }
     }
 
-    static func isAppStore(_ container: ModelContainer) -> Bool {
+    nonisolated static func isAppStore(_ container: ModelContainer) -> Bool {
         guard let store = try? LibraryStorage.storeURL() else { return false }
         return container.configurations.contains { !$0.isStoredInMemoryOnly && $0.url.standardizedFileURL == store.standardizedFileURL }
     }
@@ -441,7 +446,7 @@ extension ShelfBackupService {
         guard let container = pendingContainer else { return }
         guard isEnabled else { pendingContainer = nil; return }
         do {
-            try await backUpInBackground(ShelfBackupService(context: container.mainContext))
+            try await backUpInBackground(container)
             lastFailure = nil
         } catch {
             lastFailure = .now
@@ -480,15 +485,18 @@ extension ShelfBackupService {
         return written(try Self.write(backup, keptCount: Self.keptCount, keptDays: Self.keptDays), backup)
     }
 
-    /// `backUpNow` with the reading and writing of files off the main actor.
-    /// The layout itself is taken here, in one piece.
-    private func backUpInBackground(_ service: ShelfBackupService) async throws {
-        guard let backup = try Self.take(service, skipEmpty: true) else { return }
+    /// `backUpNow` entirely off the main actor: the layout is read in a
+    /// context of its own (for 900 records ~75 ms, a hitch while sorting on),
+    /// then the files are read and written.
+    private func backUpInBackground(_ container: ModelContainer) async throws {
         let keptCount = Self.keptCount, keptDays = Self.keptDays
-        let name = try await Task.detached(priority: .utility) {
-            try Self.write(backup, keptCount: keptCount, keptDays: keptDays)
+        let result = try await Task.detached(priority: .utility) { () throws -> (name: String?, backup: ShelfBackup)? in
+            guard ShelfAutoBackup.isAppStore(container) else { return nil }
+            let backup = try ShelfBackupService.makeBackup(of: ModelContext(container))
+            guard !backup.isEmpty else { return nil }
+            return (try Self.write(backup, keptCount: keptCount, keptDays: keptDays), backup)
         }.value
-        written(name, backup)
+        if let result { written(result.name, result.backup) }
     }
 
     private static func take(_ service: ShelfBackupService, skipEmpty: Bool) throws -> ShelfBackup? {

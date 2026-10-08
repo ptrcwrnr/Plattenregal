@@ -11,6 +11,23 @@ extension AllTests {
             return (container, shelves, PositionService(context: container.mainContext))
         }
 
+        /// The automatic backup reads the layout in a context of its own, off
+        /// the main actor; it must hold exactly what the main context sees.
+        @Test func backupTakenOffTheMainActorMatches() async throws {
+            let (container, shelves, service) = try fixture()
+            try service.insert(release: Release(artist: "A", title: "1"), shelf: shelves[0], position: 1, instanceID: 11)
+            try service.insert(release: Release(artist: "B", title: "2"), shelf: shelves[1], position: 1, instanceID: 12)
+            let d = try service.insert(release: Release(artist: "D", title: "4"), shelf: nil, instanceID: 14)
+            try service.setExcluded([d], true)
+            try service.configure(shelves[5], name: "Deko", isReserved: true)
+            let date = Date(timeIntervalSince1970: 1_800_000_000)
+            let onMain = try ShelfBackupService(context: container.mainContext).makeBackup(at: date)
+            let beside = try await Task.detached { try ShelfBackupService.makeBackup(of: ModelContext(container), at: date) }.value
+            #expect(beside == onMain)
+            #expect(beside.placements.map(\.instanceID) == [11, 12])
+            #expect(beside.notInShelf == [14])
+        }
+
         @Test func roundTripRestoresPlacesLocksAndExclusions() throws {
             let (container, shelves, service) = try fixture()
             let a = try service.insert(release: Release(artist: "A", title: "1"), shelf: shelves[0], position: 1, instanceID: 11)

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 /// The count of one shelf, derived from its current copies. Never persisted —
 /// always recomputed from the live collection so it can't drift from the
@@ -52,9 +53,14 @@ struct ShelfLabels {
 
     func refresh(_ shelves: [Shelf], version: Int) {
         var fresh: [UUID: Entry] = [:]
+        var stale: [(shelf: Shelf, fingerprint: Int)] = []
         for shelf in shelves {
             let fingerprint = Self.fingerprint(of: shelf, version: version)
-            if let entry = entries[shelf.id], entry.fingerprint == fingerprint { fresh[shelf.id] = entry; continue }
+            if let entry = entries[shelf.id], entry.fingerprint == fingerprint { fresh[shelf.id] = entry }
+            else { stale.append((shelf, fingerprint)) }
+        }
+        ShelfRangeLabels.prefetchReleases(for: stale.map(\.shelf))
+        for (shelf, fingerprint) in stale {
             fresh[shelf.id] = Entry(fingerprint: fingerprint, stats: ShelfStatistics(shelf: shelf), ends: ShelfRangeLabels.ends(of: shelf))
         }
         entries = fresh
@@ -90,13 +96,36 @@ struct ShelfLabels {
         guard style == .range else { return ShelfRangeLabels.compute(for: shelves, style: style) }
         let version = LibraryChanges.shared.libraryVersion
         var fresh: [UUID: (fingerprint: Int, ends: ShelfRangeLabels.Ends?)] = [:]
+        var stale: [(shelf: Shelf, fingerprint: Int)] = []
         for shelf in shelves {
             let fingerprint = ShelfContentCache.fingerprint(of: shelf, version: version)
-            if let entry = ends[shelf.id], entry.fingerprint == fingerprint { fresh[shelf.id] = entry; continue }
-            fresh[shelf.id] = (fingerprint, ShelfRangeLabels.ends(of: shelf))
+            if let entry = ends[shelf.id], entry.fingerprint == fingerprint { fresh[shelf.id] = entry }
+            else { stale.append((shelf, fingerprint)) }
         }
+        ShelfRangeLabels.prefetchReleases(for: stale.map(\.shelf))
+        for (shelf, fingerprint) in stale { fresh[shelf.id] = (fingerprint, ShelfRangeLabels.ends(of: shelf)) }
         ends = fresh
         return ShelfRangeLabels.compute(for: shelves, style: style) { fresh[$0.id]?.ends ?? ShelfRangeLabels.ends(of: $0) }
+    }
+}
+
+/// Sort keys of placed records for the shelf labels, kept until record data
+/// (`libraryVersion`) or the order for one artist's records changes. Moving a
+/// record changes its shelf's labels but no key: without this, every move had
+/// SwiftData fetch each release of that shelf one by one again, once for
+/// every page showing labels.
+@MainActor enum ShelfSortKeys {
+    private static var keys: [PersistentIdentifier: String] = [:]
+    private static var state: (version: Int, order: ShelfSecondaryOrder)?
+
+    static func key(_ copy: RecordCopy, by order: ShelfSecondaryOrder) -> String {
+        let current = (LibraryChanges.shared.libraryVersion, order)
+        if state.map({ $0 != current }) ?? true { keys = [:]; state = current }
+        let id = copy.persistentModelID
+        if let key = keys[id] { return key }
+        let key = SortingService.sortKey(copy, by: order)
+        keys[id] = key
+        return key
     }
 }
 
@@ -150,12 +179,27 @@ enum ShelfRangeLabels {
     /// order the shelves in the run (as `AlphabeticalPlacement` does).
     struct Ends: Equatable { let first: String; let last: String; var firstKey = ""; var lastKey = "" }
 
+    /// Reading a record's artist right after a save makes SwiftData fetch
+    /// its release on its own – one request per record, ~0.15 ms each. When
+    /// several shelves are about to be read (after a sync, a restore), their
+    /// releases come in one fetch first; a single shelf isn't worth it.
+    /// Once per state of the library: the pages reading after the same
+    /// sync find the releases loaded already.
+    static func prefetchReleases(for shelves: [Shelf]) {
+        guard shelves.count > 1, let context = shelves.first?.modelContext else { return }
+        let state = (ObjectIdentifier(context), LibraryChanges.shared.libraryVersion)
+        guard prefetched.map({ $0 != state }) ?? true else { return }
+        prefetched = state
+        _ = try? context.fetch(RecordCopy.fetchingReleases())
+    }
+    @MainActor private static var prefetched: (ObjectIdentifier, Int)?
+
     /// `nil` for a reserved or empty shelf.
     static func ends(of shelf: Shelf) -> Ends? {
         guard !shelf.isReserved else { return nil }
         // Only the ends matter: one pass instead of sorting every key.
         let order = ShelfSecondaryOrder.current
-        let keys = shelf.copies.map { SortingService.sortKey($0, by: order) }
+        let keys = shelf.copies.map { ShelfSortKeys.key($0, by: order) }
         guard let first = keys.min(by: AlphabeticalPlacement.ascending), let last = keys.max(by: AlphabeticalPlacement.ascending) else { return nil }
         return Ends(first: letters(first), last: letters(last), firstKey: first, lastKey: last)
     }

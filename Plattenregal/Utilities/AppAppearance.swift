@@ -51,6 +51,9 @@ struct RecordCaption: View {
     /// The selected copy in a compartment: its artist in the accent.
     var emphasized = false
     var body: some View {
+        // Release data a sync saved in its own context changes no property
+        // this view observes; redrawn with the library's state, it shows it.
+        let _ = LibraryChanges.shared.libraryVersion
         let ink = AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary)
         let muted = AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary)
         VStack(alignment: .leading, spacing: 2) {
@@ -1105,6 +1108,33 @@ extension View {
     func scrollPosition<ID: Hashable>(tracking position: Binding<ID?>) -> some View {
         modifier(TrackedScrollPosition(position: position))
     }
+}
+
+extension View {
+    /// `onChange(of:)` for a value read from an observed object (e.g.
+    /// `LibraryChanges`), read in a modifier of its own: read in a page's
+    /// `body`, every change re-ran the whole page with all its cover cells –
+    /// even when the handler had nothing to do.
+    func onObservedChange<V: Equatable>(of value: @escaping () -> V, perform action: @escaping (V, V) -> Void) -> some View {
+        modifier(ObservedChange(value: value, action: action))
+    }
+
+    /// `task(id:)` with the id read in a modifier of its own (see `onObservedChange`).
+    func observedTask<ID: Equatable>(id: @escaping () -> ID, _ action: @escaping @MainActor () async -> Void) -> some View {
+        modifier(ObservedTask(id: id, action: action))
+    }
+}
+
+private struct ObservedChange<V: Equatable>: ViewModifier {
+    let value: () -> V
+    let action: (V, V) -> Void
+    func body(content: Content) -> some View { content.onChange(of: value(), action) }
+}
+
+private struct ObservedTask<ID: Equatable>: ViewModifier {
+    let id: () -> ID
+    let action: @MainActor () async -> Void
+    func body(content: Content) -> some View { content.task(id: id(), action) }
 }
 
 private struct TrackedScrollPosition<ID: Hashable>: ViewModifier {

@@ -266,7 +266,9 @@ private struct CancelIconButton: View {
 struct WantlistView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL
-    @Query private var entries: [WantlistEntry]
+    /// Shared with the other pages, fetched only when they change (see `LibraryRecords`).
+    private var records: LibraryRecords { .of(context) }
+    private var entries: [WantlistEntry] { records.wants }
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
     /// Shared with the collection (see `LibrarySearch`). An object, read
@@ -274,8 +276,8 @@ struct WantlistView: View {
     /// handed in would keep the value it had then.
     let search: LibrarySearch
     private var query: String { search.query }
-    @Query private var copies: [RecordCopy]
-    @Query private var accounts: [DiscogsAccount]
+    private var copies: [RecordCopy] { records.copies }
+    private var accounts: [DiscogsAccount] { records.accounts }
     /// Shown or not, without re-rendering the list on every page switch.
     @State private var activity = PageActivity()
     // Same two stages as the collection: sort on data changes, cheap
@@ -382,7 +384,7 @@ struct WantlistView: View {
         .onChange(of: copies) { _, _ in dataRevision += 1 }
         .onChange(of: accounts) { _, _ in dataRevision += 1 }
         // See CollectionView: metadata and tracklist changes on the same objects.
-        .onChange(of: changes.libraryVersion) { _, _ in dataRevision += 1 }
+        .onObservedChange(of: { changes.libraryVersion }) { _, _ in dataRevision += 1 }
         .task(id: dataRevision) {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
@@ -392,11 +394,11 @@ struct WantlistView: View {
             rebuild()
         }
         // New tracks are found by a running search (the index follows them).
-        .onChange(of: changes.tracksVersion) { _, _ in if !query.isEmpty { applyQuery() } }
-        .onChange(of: query) { old, new in
+        .onObservedChange(of: { changes.tracksVersion }) { _, _ in if !query.isEmpty { applyQuery() } }
+        .onObservedChange(of: { query }) { old, new in
             if old.isEmpty && !new.isEmpty && appliedQuery.isEmpty { scrollBeforeSearch = scroll.id }
         }
-        .task(id: query) {
+        .observedTask(id: { query }) {
             guard activity.isActive else { queryPending = true; return }
             // Cleared: no debounce, as in the collection.
             if query.isEmpty && !appliedQuery.isEmpty { await leaveSearch(); return }

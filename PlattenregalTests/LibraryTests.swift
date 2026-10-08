@@ -19,6 +19,32 @@ extension AllTests {
         @discardableResult private func add(_ service: PositionService, _ shelf: Shelf, _ artist: String, _ title: String = "Album", at position: Int? = nil) throws -> RecordCopy {
             try service.insert(release: Release(artist: artist, title: title), shelf: shelf, position: position ?? shelf.copies.count + 1)
         }
+        /// The pages' shared lists follow records saved in another context
+        /// (the sync), and the main context takes values saved there – the
+        /// pages no longer fetch everything again after each save.
+        @Test @MainActor func sharedRecordsFollowSavesFromOtherContexts() throws {
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            let records = LibraryRecords.of(container.mainContext)
+            #expect(records.copies.isEmpty)
+            let other = ModelContext(container)
+            let release = Release(artist: "Moby", title: "Play")
+            other.insert(release)
+            other.insert(RecordCopy(release: release, instanceID: 1, owner: "test"))
+            try other.save()
+            #expect(records.copies.count == 1)
+            let shown = try #require(records.copies.first?.release)
+            #expect(shown.title == "Play")
+            release.title = "Play (Remastered)"
+            release.tracks = [Track(position: "A1", title: "Porcelain", duration: "")]
+            try other.save()
+            #expect(shown.title == "Play (Remastered)")
+            #expect(shown.tracks.map(\.title) == ["Porcelain"])
+            // Gone in the other context: gone from the list.
+            for copy in try other.fetch(FetchDescriptor<RecordCopy>()) { other.delete(copy) }
+            try other.save()
+            #expect(records.copies.isEmpty)
+        }
+
         /// Both pages share one index; it follows tracklists and new records.
         @Test func sharedSearchIndexFollowsChanges() throws {
             let container = try LibraryStorage.makeContainer(inMemory: true)
@@ -123,9 +149,11 @@ extension AllTests {
             try service.move(can, to: shelves[1], position: 1)
             #expect(matchesFullRecompute())
             #expect(ShelfRangeLabels.compute(for: shelves, ends: cache.ends)[shelves[1].id] == "C – M")
-            // Metadata is followed via the library version, like on the shelf page.
+            // Metadata is followed via the library version, like on the shelf
+            // page; every write path reports it (here: as a sync would).
             can.release?.artist = "Zapp"
-            #expect(matchesFullRecompute(version: 1))
+            LibraryChanges.shared.libraryDidChange()
+            #expect(matchesFullRecompute(version: LibraryChanges.shared.libraryVersion))
             #expect(ShelfRangeLabels.compute(for: shelves, ends: cache.ends)[shelves[1].id] == "M – Z")
         }
         @Test func assignedCopyDoesNotReappearInShelfAssignment() throws {
