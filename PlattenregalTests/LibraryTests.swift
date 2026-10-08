@@ -45,6 +45,24 @@ extension AllTests {
             #expect(records.copies.isEmpty)
         }
 
+        /// A released container's lists don't take a new container's saves for
+        /// their own, even at the same address (crash report of 08.10.2026).
+        @Test @MainActor func sharedRecordsOfReleasedContainersStayOut() throws {
+            for _ in 0..<40 {
+                try autoreleasepool {
+                    let container = try LibraryStorage.makeContainer(inMemory: true)
+                    _ = LibraryRecords.of(container.mainContext)
+                }
+            }
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            let records = LibraryRecords.of(container.mainContext)
+            let release = Release(artist: "Moby", title: "Play")
+            container.mainContext.insert(release)
+            container.mainContext.insert(RecordCopy(release: release, instanceID: 1, owner: "test"))
+            try container.mainContext.save()
+            #expect(records.copies.count == 1)
+        }
+
         /// Both pages share one index; it follows tracklists and new records.
         @Test func sharedSearchIndexFollowsChanges() throws {
             let container = try LibraryStorage.makeContainer(inMemory: true)

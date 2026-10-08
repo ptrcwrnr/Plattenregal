@@ -1,6 +1,23 @@
-# Aktueller Stand · 07.10.2026 (Dokumentation, Fehlermeldungen, Fehlerprotokoll)
+# Aktueller Stand · 08.10.2026 (Dokumentation, Fehlermeldungen, Fehlerprotokoll, Lokalisierung)
 
-Projektversion **1.0.3 (102026)**, Schema **V15**. Dieser Abschnitt beschreibt die heutige Prüfung. Die Abschnitte darunter sind historische Prüfstände; ihre Testergebnisse und damaligen Einschätzungen gelten nur für den jeweiligen Stand. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+Projektversion **1.0.3 (102026)**, Schema **V15**. Prüfung nach den Scroll- und Datenänderungen vom Vormittag. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+
+## Umfang und Befunde
+
+- **Doku:** README, STATISTIK.md und AENDERUNGEN.md gegen alle Commits seit der letzten Durchsicht (`16e1494`) abgeglichen. AENDERUNGEN war vollständig; README und STATISTIK ergänzt (Einzelheiten in AENDERUNGEN.md).
+- **macOS-Absturzberichte:** neu `Plattenregal-2026-10-08-093425.ips` (Version 1.0.3 (102026), Debug-Build, `EXC_BREAKPOINT/SIGTRAP` in SwiftData aus `LibraryRecords.reloadSmallLists`, ausgelöst im Test `StatisticsTests.snapshotReplacementSameCountAndCurrencyIsolation` beim Anlegen eines neuen Containers). Ursache: Bestände wurden über die Adresse ihres Containers zugeordnet, die nach Freigabe neu vergeben wird. **Korrigiert**; neuer Test `sharedRecordsOfReleasedContainersStayOut` stellt den Absturz mit dem alten Code nach (zweiter Bericht `Plattenregal-2026-10-08-101207.ips`, gleiche Aufrufliste, absichtlich erzeugt) und läuft mit dem neuen durch. Die Berichte vom 04.10. sind unverändert die bekannten aus älteren Tests.
+- **App-Protokoll** vom 08.10.: kein `ERROR`, kein Absturzblock. Die vielen Warnungen „Die vorige Sitzung wurde nicht normal beendet …“ stammen von den Messläufen der Demo (per `kill` beendet) – kein App-Fehler. Der Testabsturz steht erwartungsgemäß nicht darin (Tests schreiben nicht ins App-Protokoll).
+- **Fehlermeldungen:** neue Pfade seit der letzten Durchsicht durchgesehen (gemeinsamer Bestand, Sicherung im Hintergrund, Sammlungswert während eines Syncs). Die Sicherung im Hintergrund meldet und protokolliert Fehler wie zuvor. Der gemeinsame Bestand verschluckte Lesefehler und hätte eine leere Sammlung gezeigt – **korrigiert**: letzter Stand bleibt, Protokollzeile in „Datenbank“.
+- **Lokalisierung:** per Skript – 871 Einträge, 34 veraltet und nicht mehr im Code, jeder aktive Eintrag mit englischer Übersetzung (Status „translated“) und gleichen Platzhaltern; kein im Code benutzter UI-Text fehlt im Katalog (Demo-Albentitel sind bewusst nicht übersetzt).
+
+## Verifikation
+
+- `xcodebuild … -scheme Plattenregal -destination 'platform=macOS' test` (Xcodes DerivedData): **203 Tests in 13 Suites bestanden**; geänderte Dateien neu übersetzt ohne Compilerwarnung.
+- Nicht geprüft: Verhalten der App bei einem echten Lesefehler (lässt sich nicht ohne Eingriff in SwiftData erzeugen); nur am Code nachvollzogen.
+
+# Stand · 07.10.2026 (Dokumentation, Fehlermeldungen, Fehlerprotokoll)
+
+Projektversion **1.0.3 (102026)**, Schema **V15**. Dieser Abschnitt beschreibt die Prüfung vom 07.10. Die Abschnitte darunter sind historische Prüfstände; ihre Testergebnisse und damaligen Einschätzungen gelten nur für den jeweiligen Stand. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
 
 ## Umfang und Befunde
 

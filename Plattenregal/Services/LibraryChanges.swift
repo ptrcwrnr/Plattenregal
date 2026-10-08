@@ -63,12 +63,20 @@ import SwiftData
     @ObservationIgnored private let context: ModelContext
     @ObservationIgnored private var observer: (any NSObjectProtocol)?
 
+    /// Held weakly: a context doesn't keep its container alive, and a new
+    /// container can get the address of a released one (tests make hundreds).
+    /// Matched by its own address only, a store of a released container took
+    /// the new one's saves for its own and read through its dead context – a
+    /// SwiftData trap (crash report of 08.10.2026, in a test).
+    @ObservationIgnored private weak var container: ModelContainer?
+
     private static var stores: [ObjectIdentifier: LibraryRecords] = [:]
 
     /// The lists of the store `context` belongs to (its main context's objects).
     static func of(_ context: ModelContext) -> LibraryRecords {
         let key = ObjectIdentifier(context.container)
-        if let store = stores[key] { return store }
+        if let store = stores[key], store.container === context.container { return store }
+        stores = stores.filter { $0.value.container != nil }
         let store = LibraryRecords(context: context.container.mainContext)
         stores[key] = store
         return store
@@ -76,12 +84,13 @@ import SwiftData
 
     private init(context: ModelContext) {
         self.context = context
-        copies = (try? context.fetch(FetchDescriptor<RecordCopy>())) ?? []
-        wants = (try? context.fetch(FetchDescriptor<WantlistEntry>())) ?? []
+        container = context.container
+        copies = Self.fetched(FetchDescriptor<RecordCopy>(), in: context) ?? []
+        wants = Self.fetched(FetchDescriptor<WantlistEntry>(), in: context) ?? []
         reloadSmallLists()
-        let container = ObjectIdentifier(context.container), main = ObjectIdentifier(context)
-        observer = NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: nil) { [weak self] note in
-            guard let saved = note.object as? ModelContext, ObjectIdentifier(saved.container) == container else { return }
+        let main = ObjectIdentifier(context)
+        observer = NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: nil) { [weak self, weak container = context.container] note in
+            guard let container, let saved = note.object as? ModelContext, saved.container === container else { return }
             let changed = Self.membershipChanged(note)
             // Saved elsewhere (sync, tracklist download): the main context
             // keeps its old values of objects it holds until it fetches them
@@ -108,6 +117,8 @@ import SwiftData
     }
 
     private func saved(_ changed: (copies: Bool, wants: Bool), updated: [PersistentIdentifier]) {
+        // A background save is handled later, its container may be gone by then.
+        guard container != nil else { return }
         refetch(updated)
         reload(changed)
     }
@@ -131,14 +142,23 @@ import SwiftData
     }
 
     private func reload(_ changed: (copies: Bool, wants: Bool)) {
-        if changed.copies { copies = (try? context.fetch(FetchDescriptor<RecordCopy>())) ?? [] }
-        if changed.wants { wants = (try? context.fetch(FetchDescriptor<WantlistEntry>())) ?? [] }
+        if changed.copies, let fresh = Self.fetched(FetchDescriptor<RecordCopy>(), in: context) { copies = fresh }
+        if changed.wants, let fresh = Self.fetched(FetchDescriptor<WantlistEntry>(), in: context) { wants = fresh }
         reloadSmallLists()
+    }
+
+    /// A list that can't be read keeps what the pages show (an empty list
+    /// would look like a lost collection); the cause goes to the log.
+    private static func fetched<T: PersistentModel>(_ descriptor: FetchDescriptor<T>, in context: ModelContext) -> [T]? {
+        do { return try context.fetch(descriptor) } catch {
+            AppLog.error("Datenbank", "\(Schema.entityName(for: T.self)) nicht gelesen, Seiten behalten den letzten Stand: \(error)")
+            return nil
+        }
     }
 
     private func reloadSmallLists() {
         func update<T: PersistentModel>(_ list: ReferenceWritableKeyPath<LibraryRecords, [T]>, _ descriptor: FetchDescriptor<T>) {
-            guard let fresh = try? context.fetch(descriptor), fresh != self[keyPath: list] else { return }
+            guard let fresh = Self.fetched(descriptor, in: context), fresh != self[keyPath: list] else { return }
             self[keyPath: list] = fresh
         }
         update(\.shelves, FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\.number)]))

@@ -1,6 +1,6 @@
 # Statistik
 
-Dokumentation geprüft am **07.10.2026**, Projektversion **1.0.3 (102026)**.
+Dokumentation geprüft am **08.10.2026**, Projektversion **1.0.3 (102026)**.
 
 Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf ihres Discogs-Sammlungswerts. Alles außer dem Sammlungswert wird lokal berechnet, ohne Anfrage an Discogs.
 
@@ -31,7 +31,7 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 
 ## Sammlungswert
 
-Einzige Discogs-Anfrage der Statistik: `GET /users/{username}/collection/value` über den gemeinsamen API-Client (Taktung, `Retry-After`, Token aus dem Schlüsselbund). Vor und nach dem Abruf wird geprüft, dass Token und Bestand noch zum Konto passen; sonst wird nichts gespeichert.
+Einzige Discogs-Anfrage der Statistik: `GET /users/{username}/collection/value` über den gemeinsamen API-Client (Taktung, `Retry-After`, Token aus dem Schlüsselbund). Vor und nach dem Abruf wird geprüft, dass Token und Bestand noch zum Konto passen; sonst wird nichts gespeichert. Ändert ein Sync die Sammlung, während der Wert noch geladen wird, fragt die Statistik einmal für die neue Sammlung nach; die Meldung „Der Discogs-Token passt nicht mehr zum geladenen Konto“ kommt nur bei wirklich geändertem Token (Test `collectionChangingDuringValueRequestIsAskedAgain`).
 
 Jeder Abruf wird als `CollectionValueSnapshot` gespeichert (Konto, Zeitpunkt, Niedrig/Median/Hoch als `Decimal`, Währung, Anzahl Exemplare und eindeutiger Releases, Signatur des Bestands) – höchstens einer pro Kalendertag, außer
 
@@ -43,13 +43,13 @@ Kleinere Änderungen aktualisieren den heutigen Eintrag, statt neue Verlaufspunk
 
 ## Lokale Auswertungen
 
-Innerhalb eines Exemplars werden identische Genre-, Style-, Künstler- und Labelangaben nur einmal gezählt; mehrere Exemplare derselben Veröffentlichung zählen mehrfach. Künstler- und Label-IDs von Discogs haben Vorrang vor Namen. Formate werden in Medium und Merkmal getrennt, ohne aus unklarem Text zu raten. Fehlende Jahre, Genres und Styles werden ausgewiesen; Einträge ohne gültiges Hinzufügedatum erhalten kein erfundenes.
+Innerhalb eines Exemplars werden identische Genre-, Style-, Künstler- und Labelangaben nur einmal gezählt; mehrere Exemplare derselben Veröffentlichung zählen mehrfach. Künstler- und Label-IDs von Discogs haben Vorrang vor Namen. Bei gleicher Anzahl und gleichem Namen entscheidet zuletzt die ID, damit Ranglisten beim Aktualisieren nicht springen. Formate werden in Medium und Merkmal getrennt, ohne aus unklarem Text zu raten. Fehlende Jahre, Genres und Styles werden ausgewiesen; Einträge ohne gültiges Hinzufügedatum erhalten kein erfundenes.
 
 Die Berechnung läuft im Hintergrund: SwiftData-Objekte werden auf dem Main Actor in einfache Werte überführt, die Auswertung selbst läuft außerhalb davon, damit große Sammlungen die Oberfläche nicht blockieren.
 
 ## Aktualisierung und Zurücksetzen
 
-Die Seite liest ihre Platten in einem eigenen Datenbank-Kontext und rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern, das ihre Zahlen betrifft – neue oder entfernte Platten, geänderte Releases, Sammlungswert, Konten (`StatisticsView.affectsStatistics`). Einsortieren, Verschieben und „Vermisst“ lösen kein Neuladen aus. Solange die Seite verborgen ist, wird erst beim nächsten Anzeigen neu gerechnet. Der Zufallsfund liest seinen Platz im Regal selbst aus dem Kontext des Hauptfensters und folgt Platzänderungen sofort. Lassen sich die gespeicherten Daten nicht lesen, steht oben „Die gespeicherten Daten konnten gerade nicht gelesen werden …“ (Ursache im Protokoll). Fehler beim Abruf des Sammlungswerts erscheinen als wegklickbarer Hinweis; bereits gespeicherte Auswertungen und Verlaufspunkte bleiben erhalten. Ein Abbruch wird nicht als Verbindungsfehler ausgegeben. Eine Platte, die von hier aus geöffnet wird, holt die Detailansicht in den Kontext des Hauptfensters, damit Bearbeitungen dort gespeichert werden.
+Die Seite liest ihre Platten in einem eigenen Datenbank-Kontext und rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern, das ihre Zahlen betrifft – neue oder entfernte Platten, geänderte Releases, Sammlungswert, Konten (`StatisticsView.affectsStatistics`). Einsortieren, Verschieben und „Vermisst“ lösen kein Neuladen aus. Solange die Seite verborgen ist, wird erst beim nächsten Anzeigen neu gerechnet. Der Zufallsfund liest seinen Platz im Regal selbst aus dem Kontext des Hauptfensters und folgt Platzänderungen sofort, solange die Statistik zu sehen ist; Verschiebungen auf der Regalseite rechnet er erst beim nächsten Anzeigen nach. Lassen sich die gespeicherten Daten nicht lesen, steht oben „Die gespeicherten Daten konnten gerade nicht gelesen werden …“ (Ursache im Protokoll). Fehler beim Abruf des Sammlungswerts erscheinen als wegklickbarer Hinweis; bereits gespeicherte Auswertungen und Verlaufspunkte bleiben erhalten. Ein Abbruch wird nicht als Verbindungsfehler ausgegeben. Eine Platte, die von hier aus geöffnet wird, holt die Detailansicht in den Kontext des Hauptfensters, damit Bearbeitungen dort gespeichert werden.
 
 Ein eigener Kontext erfährt nicht, dass Platten anderswo gelöscht wurden. Nach **Alles zurücksetzen** lässt die Statistik deshalb sofort alle Platten los (`StatisticsViewModel.forget`), schließt offene Detail- und Filterfenster und lädt neu, samt Konto. Vorher konnte das Nachladen von Fach oder Release einer gelöschten Platte die App zum Absturz bringen. Test: `StatisticsTests.statisticsForgetTheirRecordsOnReset`.
 
@@ -65,7 +65,7 @@ Ein eigener Kontext erfährt nicht, dass Platten anderswo gelöscht wurden. Nach
 | `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
-| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen (30 Tests) |
+| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen, Sammlungswert während eines Syncs (31 Tests) |
 
 Das Modell `ReleaseMarketValue` aus der früheren Einzelpreis-Funktion ist seit Schema V15 entfernt; die Migration verwirft seine Zeilen.
 
