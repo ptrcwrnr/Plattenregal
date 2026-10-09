@@ -131,129 +131,6 @@
         }
       }
     },
-    "Ansicht Collection" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collection view"
-          }
-        }
-      }
-    },
-    "Ansicht Wantlist" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wantlist view"
-          }
-        }
-      }
-    },
-    "Automatischer Export" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatic export"
-          }
-        }
-      }
-    },
-    "Covergröße im Raster" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cover size in grid"
-          }
-        }
-      }
-    },
-    "Die kleinste Breite eines Covers. Die Spalten füllen die Fensterbreite immer ganz aus." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The smallest width of a cover. The columns always fill the full window width."
-          }
-        }
-      }
-    },
-    "Einstellungen schließen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close Settings"
-          }
-        }
-      }
-    },
-    "Groß" : {
-      "comment" : "Covergröße",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Large"
-          }
-        }
-      }
-    },
-    "Immer zuerst nach Interpret. %@ Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Always by artist first. %@ Applies to finding a spot, adding, “Check Order” and the alphabetical collection."
-          }
-        }
-      }
-    },
-    "Klein" : {
-      "comment" : "Covergröße",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Small"
-          }
-        }
-      }
-    },
-    "Mittel" : {
-      "comment" : "Covergröße",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Medium"
-          }
-        }
-      }
-    },
-    "Raster oder Liste auch direkt auf der Seite über den runden Knopf unten rechts, die Covergröße mit ⌘+ und ⌘−." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grid or list also right on the page with the round button at the bottom right, cover size with ⌘+ and ⌘−."
-          }
-        }
-      }
-    },
-    "Sprache, Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Language, appearance, start page, export and all other settings return to their defaults. Collection, shelves, locations, the Discogs token and the backup folder and retention are kept."
-          }
-        }
-      }
-    },
     "·" : {
       "shouldTranslate" : false
     },
@@ -1056,6 +933,7 @@
       }
     },
     "%lld pt" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1326,6 +1204,16 @@
         }
       }
     },
+    "⌥⌘R holt alle Platten. Neue Platten trägst du bei Discogs ein, beim nächsten Abgleich sind sie hier." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥⌘R fetches all records. Add new records on Discogs – they show up here with the next sync."
+          }
+        }
+      }
+    },
     "1 ältere Sicherung löschen?" : {
       "localizations" : {
         "en" : {
@@ -1452,6 +1340,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Abgleichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync"
           }
         }
       }
@@ -1737,6 +1635,7 @@
       }
     },
     "Alles kommt von Discogs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2047,12 +1946,32 @@
         }
       }
     },
+    "Ansicht Collection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection view"
+          }
+        }
+      }
+    },
     "Ansicht der Fachinhalte" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compartment contents view"
+          }
+        }
+      }
+    },
+    "Ansicht Wantlist" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wantlist view"
           }
         }
       }
@@ -2264,6 +2183,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatic backups of the shelf layout (see “Backup”)."
+          }
+        }
+      }
+    },
+    "Automatischer Export" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic export"
           }
         }
       }
@@ -2550,6 +2479,7 @@
       }
     },
     "Collection und Wantlist gehen als CSV oder PDF hinaus, auf Wunsch regelmäßig von selbst. Wo deine Platten im Regal stehen, gibt es nur hier – Plattenregal sichert es automatisch." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2606,6 +2536,7 @@
       }
     },
     "Cover" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2695,6 +2626,16 @@
         }
       }
     },
+    "Covergröße im Raster" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cover size in grid"
+          }
+        }
+      }
+    },
     "Da ist etwas schiefgelaufen. Bitte versuche es noch einmal." : {
       "localizations" : {
         "en" : {
@@ -2726,6 +2667,7 @@
       }
     },
     "Das + an einem Fach listet alle Platten, die noch keinen Platz haben. Ein Klick stellt eine Platte an ihre alphabetische Stelle; gehört sie in ein anderes Fach, führt dich der Pfeil dorthin." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2826,6 +2768,7 @@
       }
     },
     "Dein Regal, Fach für Fach" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2876,11 +2819,22 @@
       }
     },
     "Deine Schallplatten auf dem Mac – die ganze Sammlung auf einen Blick, dein Regal zu Hause als Abbild und immer die Antwort auf die Frage, wo eine Platte steht." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your records on the Mac – the whole collection at a glance, your shelf at home as a picture, and always the answer to where a record is."
+          }
+        }
+      }
+    },
+    "Deine Schallplatten auf dem Mac: die ganze Sammlung auf einen Blick und immer die Antwort, wo eine Platte im Regal steht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your records on the Mac: the whole collection at a glance, and always the answer to where a record stands on the shelf."
           }
         }
       }
@@ -3356,6 +3310,16 @@
         }
       }
     },
+    "Die kleinste Breite eines Covers. Die Spalten füllen die Fensterbreite immer ganz aus." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The smallest width of a cover. The columns always fill the full window width."
+          }
+        }
+      }
+    },
     "Die neue Reihenfolge konnte nicht gespeichert werden – das Fach ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu." : {
       "localizations" : {
         "en" : {
@@ -3468,6 +3432,7 @@
       }
     },
     "Die Regal-Seite zeigt deine Regale so, wie sie bei dir stehen, mit dem Buchstabenbereich und der Anzahl Platten jedes Fachs. Für jede Platte siehst du, wo sie hingehört: Fach, Position und zwischen welchen beiden Platten." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3754,6 +3719,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discogs doesn’t allow access. Check in the settings that the token is correct and belongs to your account."
+          }
+        }
+      }
+    },
+    "Discogs verbinden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Discogs"
           }
         }
       }
@@ -4060,6 +4035,16 @@
         }
       }
     },
+    "Einstellungen schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Settings"
+          }
+        }
+      }
+    },
     "Einstellungen zurücksetzen" : {
       "localizations" : {
         "en" : {
@@ -4172,6 +4157,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "First snapshot saved. Further fetches on later days extend the curve."
+          }
+        }
+      }
+    },
+    "Erste Schritte …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Getting Started…"
           }
         }
       }
@@ -4294,6 +4289,7 @@
       }
     },
     "Export und Sicherung" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4749,6 +4745,17 @@
         }
       }
     },
+    "Groß" : {
+      "comment" : "Covergröße",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large"
+          }
+        }
+      }
+    },
     "Größe" : {
       "localizations" : {
         "en" : {
@@ -5076,6 +5083,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Always by artist first. %@ Applies to finding a spot, adding and “Check Order”."
+          }
+        }
+      }
+    },
+    "Immer zuerst nach Interpret. %@ Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always by artist first. %@ Applies to finding a spot, adding, “Check Order” and the alphabetical collection."
           }
         }
       }
@@ -5484,6 +5501,17 @@
         }
       }
     },
+    "Klein" : {
+      "comment" : "Covergröße",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small"
+          }
+        }
+      }
+    },
     "Klicke auf ein Fach, um es zu sperren oder zu entsperren – z. B. für Deko oder andere Dinge. Gesperrte Fächer werden beim Einsortieren übersprungen." : {
       "localizations" : {
         "en" : {
@@ -5628,6 +5656,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Space"
+          }
+        }
+      }
+    },
+    "Leg unter Einstellungen › Regal deine Regale an, so wie sie bei dir stehen. Dann zeigt Plattenregal für jede Platte Fach und Position." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your shelves under Settings › Shelf, just as they stand at home. Plattenregal then shows the compartment and position of every record."
           }
         }
       }
@@ -5819,6 +5857,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "With the new setting, fewer backups are kept. The surplus ones are deleted immediately and can’t be recovered."
+          }
+        }
+      }
+    },
+    "Mittel" : {
+      "comment" : "Covergröße",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
           }
         }
       }
@@ -6054,6 +6103,7 @@
       }
     },
     "Neue Platten einsortieren" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6889,6 +6939,7 @@
       }
     },
     "Plattenregal zeigt deine Discogs-Collection und -Wantlist. Trag einmal deinen persönlichen Token ein, dann holt ⌥⌘R alle Platten. Neue Platten trägst du bei Discogs ein – beim nächsten Abgleich sind sie hier." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7098,6 +7149,16 @@
         }
       }
     },
+    "Raster oder Liste auch direkt auf der Seite über den runden Knopf unten rechts, die Covergröße mit ⌘+ und ⌘−." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grid or list also right on the page with the round button at the bottom right, cover size with ⌘+ and ⌘−."
+          }
+        }
+      }
+    },
     "Regal" : {
       "localizations" : {
         "en" : {
@@ -7154,6 +7215,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search shelf"
+          }
+        }
+      }
+    },
+    "Regal einrichten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Up Your Shelves"
           }
         }
       }
@@ -7654,6 +7725,16 @@
         }
       }
     },
+    "Später" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        }
+      }
+    },
     "Speichern" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7722,6 +7803,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App language"
+          }
+        }
+      }
+    },
+    "Sprache, Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language, appearance, start page, export and all other settings return to their defaults. Collection, shelves, locations, the Discogs token and the backup folder and retention are kept."
           }
         }
       }
@@ -7827,6 +7918,7 @@
       }
     },
     "Statistik und Wertentwicklung" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8229,6 +8321,7 @@
       }
     },
     "Tour durch Plattenregal …" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8264,6 +8357,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tracks"
+          }
+        }
+      }
+    },
+    "Trag deinen persönlichen Token von Discogs ein. Damit liest Plattenregal deine Collection und Wantlist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your personal token from Discogs. Plattenregal uses it to read your collection and wantlist."
           }
         }
       }
@@ -8341,6 +8444,7 @@
       }
     },
     "Überspringen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8699,6 +8803,7 @@
       }
     },
     "Was steckt in deiner Sammlung? Künstler, Styles, Jahrzehnte und Labels – und der Wert laut Discogs-Marktplatz, mit jedem Abgleich als Verlauf." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8709,6 +8814,7 @@
       }
     },
     "Weiter" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9226,6 +9332,7 @@
       }
     },
     "Zurück" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

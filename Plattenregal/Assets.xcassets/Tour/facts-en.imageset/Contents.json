@@ -1,8 +1,0 @@
-{
-  "images" : [
-    { "filename" : "facts-en.jpg", "idiom" : "universal", "scale" : "2x" },
-    { "appearances" : [ { "appearance" : "luminosity", "value" : "dark" } ],
-      "filename" : "facts-en-dark.jpg", "idiom" : "universal", "scale" : "2x" }
-  ],
-  "info" : { "author" : "xcode", "version" : 1 }
-}

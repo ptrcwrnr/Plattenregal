@@ -320,7 +320,7 @@ struct KallaxView: View {
         .onObservedChange(of: { changes.tracksVersion }) { _, _ in searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onAppear { takePlacingRequest() }
         #if DEBUG
-        // Screenshots for the tour without clicking: --preview-add opens
+        // Screenshots without clicking: --preview-add opens
         // "Platte hinzufügen" for the selected compartment,
         // --preview-place=Artist the placement card of that artist's record,
         // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment.

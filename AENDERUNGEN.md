@@ -1,3 +1,13 @@
+# Willkommensseite statt Tour · 09.10.2026
+
+- Die Tour mit sechs Seiten und je zwei Bildschirmfotos ist durch eine Willkommensseite ersetzt: ein Satz zur App, drei nummerierte Schritte (Discogs verbinden, abgleichen, Regal einrichten), Knöpfe „Später“, „Demo starten …“ und „Token eintragen …“. In der Demo nur „Los geht’s“.
+- Gründe: Beim ersten Start ist die Sammlung leer, Seiten über Regal, Statistik und Export erklärten Dinge, die noch nicht zu sehen waren. Der eigentliche erste Schritt (Token) stand auf Seite 2. Die 24 Fotos (3,2 MB) waren nach jeder Änderung an der Oberfläche veraltet. Die Leerzustände und die Demo erklären die App ohnehin.
+- Die Seite sitzt in der Mitte des Fensters: `appPanel` hat dafür eine Ausrichtung, Standard bleibt oben (wachsende Panels gehen nach unten auf).
+- Hilfe-Menü: „Erste Schritte …“ und „Demo starten …“ statt „Tour durch Plattenregal …“.
+- Gesehen-Schlüssel bleibt `tourSeen`: Wer die Tour schon geschlossen hat, bekommt die neue Seite nicht noch einmal von selbst.
+- Entfernt: `Assets.xcassets/Tour`, `Scripts/tour-screenshots.sh`, `Scripts/winid.swift`. `--preview-tour` heißt jetzt `--preview-welcome`.
+- Texte englisch übersetzt, die der Tour im Katalog als veraltet markiert. Demo auf Deutsch hell und Englisch dunkel in Klassisch angesehen. 205 Tests grün.
+
 # DMG mit eigenem Fenster · 09.10.2026
 
 - `Scripts/make-dmg.sh` baut Release und packt die App in `dist/Plattenregal-<Version>.dmg`. Das Fenster ist 660 × 400 pt groß und zeigt die App und den Programme-Ordner mit Pfeil dazwischen, Symbole in 112 pt.

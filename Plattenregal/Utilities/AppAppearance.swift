@@ -403,15 +403,16 @@ private struct AmbientCover: View {
 struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
     @Binding var item: Item?
     var onDismiss: (() -> Void)?
+    /// `.top` by default: a panel that grows (another list, a column folding
+    /// out) extends downwards, and nothing moves under the pointer. One of a
+    /// fixed size, like the welcome, may sit in the middle.
+    var alignment: Alignment = .top
     @ViewBuilder let panel: (Item) -> Panel
 
     func body(content: Content) -> some View {
         content
             .overlay {
-                // Anchored at the top: a panel that grows (another list, a
-                // column folding out) extends downwards, and nothing moves
-                // under the pointer.
-                ZStack(alignment: .top) {
+                ZStack(alignment: alignment) {
                     if let shown = item {
                         // No dimming: the toolbar is drawn by the window and would
                         // stay bright above it, a hard edge. A shadow sets the
@@ -514,10 +515,11 @@ extension View {
     /// See `AppPanelModifier`. `onDismiss` runs whenever the panel closes.
     func appPanel<Item: Identifiable, Panel: View>(
         item: Binding<Item?>,
+        alignment: Alignment = .top,
         onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping (Item) -> Panel
     ) -> some View {
-        modifier(AppPanelModifier(item: item, onDismiss: onDismiss, panel: content))
+        modifier(AppPanelModifier(item: item, onDismiss: onDismiss, alignment: alignment, panel: content))
     }
 }
 

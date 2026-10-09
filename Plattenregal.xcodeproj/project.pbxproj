@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		005BAF1A4673DA152131D179 /* Plattenregal/Services/PositionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E0AD8DA08D7E3BED87977C /* Plattenregal/Services/PositionService.swift */; };
-		0A1A73C477102FEC879EABBF /* Plattenregal/Views/TourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/TourView.swift */; };
+		0A1A73C477102FEC879EABBF /* Plattenregal/Views/WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/WelcomeView.swift */; };
 		0B0065E8BEB7875F78F47B57 /* Plattenregal/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 843EBC136D87F7E70013A055 /* Plattenregal/Assets.xcassets */; };
 		0DAFF2CBB4E7FB89A55AD938 /* Plattenregal/Views/Settings/DiscogsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC89C15A0DAFF2CBB4E7FB89 /* Plattenregal/Views/Settings/DiscogsSettingsView.swift */; };
 		14BC632A098D7F5EC4128E10 /* Plattenregal/Services/ScheduledExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C0F32914BC632A098D7F5E /* Plattenregal/Services/ScheduledExportService.swift */; };
@@ -114,7 +114,7 @@
 		6D61F0D9CB6F4BCA8BB2E43B /* Plattenregal/Services/ShelfStatisticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/ShelfStatisticsService.swift; sourceTree = "<group>"; };
 		7326E43CAB42FD70589F5501 /* Plattenregal/Views/RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/RootView.swift; sourceTree = "<group>"; };
 		7833C2D45EB971604C106375 /* Plattenregal/Views/Settings/AppSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/AppSettingsView.swift; sourceTree = "<group>"; };
-		79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/TourView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/TourView.swift; sourceTree = "<group>"; };
+		79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/WelcomeView.swift; sourceTree = "<group>"; };
 		81DBC184AF98C763E6527CB8 /* Plattenregal/Services/CabinetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/CabinetService.swift; sourceTree = "<group>"; };
 		843EBC136D87F7E70013A055 /* Plattenregal/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Plattenregal/Assets.xcassets; sourceTree = "<group>"; };
 		89E19798396FABE61801C3CB /* Plattenregal/Views/Shelf/ShelfOptionsPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfOptionsPopover.swift; sourceTree = "<group>"; };
@@ -262,7 +262,7 @@
 				1C3F3637D69FF6FD7DD08D48 /* Plattenregal/Views/Shelf/KallaxView.swift */,
 				56D13B317B8B52745B4AA0E9 /* Plattenregal/Views/RecordDetailView.swift */,
 				7326E43CAB42FD70589F5501 /* Plattenregal/Views/RootView.swift */,
-				79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/TourView.swift */,
+				79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/WelcomeView.swift */,
 				A1C0DE0000000000000000F1 /* Plattenregal/Views/PageStack.swift */,
 				A1C0DE0000000000000000F2 /* Plattenregal/Views/AboutView.swift */,
 			);
@@ -492,7 +492,7 @@
 				C4CCBDD5D67B742E2C954590 /* Plattenregal/Views/Shelf/KallaxView.swift in Sources */,
 				C60ED484EF79070BBD2D0D51 /* Plattenregal/Views/RecordDetailView.swift in Sources */,
 				6CE58895D0157E81E6D3E3E0 /* Plattenregal/Views/RootView.swift in Sources */,
-				0A1A73C477102FEC879EABBF /* Plattenregal/Views/TourView.swift in Sources */,
+				0A1A73C477102FEC879EABBF /* Plattenregal/Views/WelcomeView.swift in Sources */,
 				A1C0DE0000000000000000B1 /* Plattenregal/Views/PageStack.swift in Sources */,
 				A1C0DE0000000000000000B2 /* Plattenregal/Views/AboutView.swift in Sources */,
 			);

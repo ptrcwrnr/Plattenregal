@@ -126,7 +126,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         .windowToolbarLabelStyle(fixed: .iconOnly)
         .commands {
             CommandGroup(replacing: .appInfo) { AboutCommand() }
-            CommandGroup(replacing: .help) { TourCommand() }
+            CommandGroup(replacing: .help) { HelpCommands() }
             CommandGroup(after: .appSettings) {
                 if DemoMode.isActive {
                     Button("Demo beenden") { DemoMode.end() }
