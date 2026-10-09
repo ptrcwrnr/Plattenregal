@@ -109,11 +109,12 @@ struct ShelfLabels {
     }
 }
 
-/// Sort keys of placed records for the shelf labels, kept until record data
-/// (`libraryVersion`) or the order for one artist's records changes. Moving a
-/// record changes its shelf's labels but no key: without this, every move had
-/// SwiftData fetch each release of that shelf one by one again, once for
-/// every page showing labels.
+/// Sort keys of records for the shelf labels and for sorting in
+/// (`AlphabeticalPlacement`), kept until record data (`libraryVersion`) or
+/// the order for one artist's records changes. Moving a record changes its
+/// shelf's labels but no key: without this, every move had SwiftData fetch
+/// each release of that shelf one by one again, once for every page showing
+/// labels, and every placement once more for all placed records.
 @MainActor enum ShelfSortKeys {
     private static var keys: [PersistentIdentifier: String] = [:]
     private static var state: (version: Int, order: ShelfSecondaryOrder)?

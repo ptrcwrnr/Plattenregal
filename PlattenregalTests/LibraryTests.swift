@@ -850,6 +850,27 @@ extension AllTests.LibraryTests {
         try service.unplace(abba)
         #expect(AlphabeticalPlacement.current(for: abba, in: shelves) == nil)
     }
+    /// Sorting in and the compartment contents keep what they read of the
+    /// releases; a sync that renames an artist must reach both.
+    @Test func placementAndShelfContentsFollowChangedMetadata() throws {
+        let (container, shelves, service) = try fixture(); let context = container.mainContext
+        try add(service, shelves[8], "Abba")
+        let can = try add(service, shelves[8], "Can")
+        try add(service, shelves[1], "Daft Punk")
+        let loose = try service.insert(release: Release(artist: "Beck", title: "Odelay"), shelf: nil)
+        LibraryChanges.shared.libraryDidChange()
+        #expect(AlphabeticalPlacement.spots(for: loose, in: shelves).map(\.position) == [2])
+        #expect(ShelfCopyItem.snapshot(for: shelves[8], owner: nil, missing: []).map(\.artist) == ["Abba", "Can"])
+
+        // The sync renames "Can" to "Aaron": the loose record now comes after
+        // the whole shelf, at the boundary to the next one.
+        can.release?.artist = "Aaron"
+        try context.save()
+        LibraryChanges.shared.syncDidCommit()
+        #expect(AlphabeticalPlacement.spots(for: loose, in: shelves).map(\.position) == [3, 1])
+        #expect(AlphabeticalPlacement.fittingShelves(for: [loose], in: shelves)[loose.id]?.map(\.id) == [shelves[8].id, shelves[1].id])
+        #expect(ShelfCopyItem.snapshot(for: shelves[8], owner: nil, missing: []).map(\.artist) == ["Abba", "Aaron"])
+    }
     @Test func rackPlacementNeedsAnOccupiedShelf() throws {
         let (container, shelves, _) = try fixture(); let context = container.mainContext
         let copy = RecordCopy(release: Release(artist: "Beck", title: "Odelay"), instanceID: 1, owner: "fixture", shelf: nil, position: 0)

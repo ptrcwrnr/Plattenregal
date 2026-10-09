@@ -140,7 +140,9 @@ struct KallaxView: View {
         let owner = owner
         // Deactivated cabinets are put away and not shown here; their records
         // are neither counted nor taken out from this page.
-        return allCopies.filter { ($0.shelf?.isInUse ?? false) && $0.leftCurrentCollection(owner: owner) }
+        // The collection check first: it fails for almost every record, so their
+        // shelves aren't read (this runs after every save).
+        return allCopies.filter { $0.leftCurrentCollection(owner: owner) && ($0.shelf?.isInUse ?? false) }
     }
 
     /// Empty while "Vermisst" is off in the settings: no marks shown anywhere

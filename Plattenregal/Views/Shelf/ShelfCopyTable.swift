@@ -20,15 +20,15 @@ nonisolated struct ShelfCopyItem: Identifiable {
     let sold: Bool
     let missing: Bool
 
-    init(_ copy: RecordCopy, owner: String?, missing: Bool) {
+    init(_ copy: RecordCopy, release: ShelfCopyReleaseFields, owner: String?, missing: Bool) {
         self.copy = copy
         id = copy.id
         position = copy.positionInShelf
-        artist = copy.release?.displayArtist ?? "—"
-        title = copy.release?.displayTitle ?? "—"
-        year = copy.release?.year ?? 0
-        label = copy.release?.displayLabel ?? ""
-        genre = copy.release?.primaryStyle ?? ""
+        artist = release.artist
+        title = release.title
+        year = release.year
+        label = release.label
+        genre = release.genre
         sold = copy.leftCurrentCollection(owner: owner)
         self.missing = missing
     }
@@ -38,8 +38,38 @@ nonisolated struct ShelfCopyItem: Identifiable {
     @MainActor static func snapshot(for shelf: Shelf, owner: String?, missing: Set<UUID>) -> [ShelfCopyItem] {
         let copies = shelf.copies.filter { !$0.isDeleted && $0.shelf?.id == shelf.id }
         return PositionService.inShelfOrder(copies).map {
-            ShelfCopyItem($0, owner: owner, missing: missing.contains($0.id))
+            ShelfCopyItem($0, release: .of($0), owner: owner, missing: missing.contains($0.id))
         }
+    }
+}
+
+/// What a compartment's tiles and table rows show of a record's release,
+/// kept per record until record data changes (`libraryVersion`, like
+/// `ShelfSortKeys`). After every save SwiftData fetches each release again
+/// one by one on the next read: sorting in a record or moving one with the
+/// position slider re-read the whole compartment behind it (~20 ms for 150).
+nonisolated struct ShelfCopyReleaseFields {
+    let artist: String
+    let title: String
+    /// 0 when unknown, so it sorts to one end instead of breaking the comparator.
+    let year: Int
+    let label: String
+    let genre: String
+
+    @MainActor private static var cache: [PersistentIdentifier: ShelfCopyReleaseFields] = [:]
+    @MainActor private static var version: Int?
+
+    @MainActor static func of(_ copy: RecordCopy) -> ShelfCopyReleaseFields {
+        let current = LibraryChanges.shared.libraryVersion
+        if version != current { cache = [:]; version = current }
+        let id = copy.persistentModelID
+        if let fields = cache[id] { return fields }
+        let release = copy.release
+        let fields = ShelfCopyReleaseFields(artist: release?.displayArtist ?? "—", title: release?.displayTitle ?? "—",
+                                            year: release?.year ?? 0, label: release?.displayLabel ?? "",
+                                            genre: release?.primaryStyle ?? "")
+        cache[id] = fields
+        return fields
     }
 }
 
@@ -701,13 +731,16 @@ private struct ShelfCopyQuickEditor: View {
     @State private var isSliding = false
     @State private var error: String?
 
-    private var maxPosition: Int {
+    /// Walks the shelf's records: `body` reads it once (it runs again with
+    /// every step of the slider), not in each of the places that show it.
+    private var currentMaxPosition: Int {
         // The same copies the grid and table count (see `ShelfCopyItem.snapshot`).
         guard let shelf = copy.shelf else { return 1 }
         return shelf.copies.filter { !$0.isDeleted && $0.shelf?.id == shelf.id && $0.id != copy.id }.count + 1
     }
 
     var body: some View {
+        let maxPosition = currentMaxPosition
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             HStack(spacing: AppStyle.rowSpacing) {
                 CoverView(url: copy.release?.coverURL, size: 44)
@@ -786,7 +819,7 @@ private struct ShelfCopyQuickEditor: View {
         .padding(AppStyle.cardPadding)
         .frame(width: 320)
         .fixedSize(horizontal: false, vertical: true)
-        .onAppear { position = min(max(copy.positionInShelf, 1), maxPosition) }
+        .onAppear { position = min(max(copy.positionInShelf, 1), currentMaxPosition) }
         .onDisappear { setPosition(position) }
         .appPopoverSurface()
     }
@@ -795,14 +828,14 @@ private struct ShelfCopyQuickEditor: View {
         // A sync may have removed the copy while the popover was open.
         guard !copy.isDeleted, let shelf = copy.shelf else { return }
         do {
-            let clamped = min(max(value, 1), maxPosition)
+            let clamped = min(max(value, 1), currentMaxPosition)
             if clamped != copy.positionInShelf {
                 try PositionService(context: context).move(copy, to: shelf, position: clamped)
             }
             position = clamped
             error = nil
         } catch {
-            position = min(max(copy.positionInShelf, 1), maxPosition)
+            position = min(max(copy.positionInShelf, 1), currentMaxPosition)
             self.error = error.reportedMessage()
         }
     }

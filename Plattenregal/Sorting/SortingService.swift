@@ -190,7 +190,10 @@ enum AlphabeticalPlacement {
         var id: UUID { shelf.id }
     }
 
-    static func key(_ copy: RecordCopy) -> String { SortingService.sortKey(copy) }
+    /// Kept per record (see `ShelfSortKeys`): every placement walks all
+    /// placed records, and reading their releases again after a save makes
+    /// SwiftData fetch them one by one ("Platte hinzufügen": ~70 ms for 2 000).
+    static func key(_ copy: RecordCopy) -> String { ShelfSortKeys.key(copy, by: .current) }
 
     /// Where `copy` belongs inside `shelf` by artist, then title — the same
     /// order the shelves are sorted by. 1-based; after the last record if it
@@ -209,27 +212,34 @@ enum AlphabeticalPlacement {
     /// next fit equally, and only the person at the shelf can tell which has
     /// room. Empty when no shelf holds records yet.
     static func spots(for copy: RecordCopy, in shelves: [Shelf]) -> [Spot] {
-        let runs = runs(of: shelves, excluding: copy.id)
+        // Usually a record without a shelf: then no shelf holds it, and the
+        // records of all shelves needn't be checked against it.
+        let excluded = copy.shelf == nil ? nil : copy.id
+        let runs = runs(of: shelves, excluding: excluded)
         guard let lastRun = runs.last else { return [] }
+        // Only the one or two shelves the record ends up beside are put in order.
+        func items(_ run: Run) -> [RecordCopy] { ordered(run.shelf, excluding: excluded) }
 
         let target = key(copy)
         guard let index = runs.firstIndex(where: { target.localizedStandardCompare($0.last) != .orderedDescending }) else {
-            return [Spot(shelf: lastRun.shelf, position: lastRun.items.count + 1, before: lastRun.items.last, after: nil)]
+            let last = items(lastRun)
+            return [Spot(shelf: lastRun.shelf, position: last.count + 1, before: last.last, after: nil)]
         }
         let run = runs[index]
+        let runItems = items(run)
         if target.localizedStandardCompare(run.first) == .orderedAscending {
-            let start = Spot(shelf: run.shelf, position: 1, before: index > 0 ? runs[index - 1].items.last : nil, after: run.items.first)
+            let previous = index > 0 ? items(runs[index - 1]) : []
+            let start = Spot(shelf: run.shelf, position: 1, before: previous.last, after: runItems.first)
             guard index > 0 else { return [start] }
-            let previous = runs[index - 1]
-            let end = Spot(shelf: previous.shelf, position: previous.items.count + 1, before: previous.items.last, after: run.items.first)
+            let end = Spot(shelf: runs[index - 1].shelf, position: previous.count + 1, before: previous.last, after: runItems.first)
             return [end, start]
         }
         let position = position(for: copy, in: run.shelf)
         return [Spot(
             shelf: run.shelf,
             position: position,
-            before: position > 1 ? run.items[position - 2] : nil,
-            after: position <= run.items.count ? run.items[position - 1] : nil
+            before: position > 1 ? runItems[position - 2] : nil,
+            after: position <= runItems.count ? runItems[position - 1] : nil
         )]
     }
 
@@ -267,8 +277,8 @@ enum AlphabeticalPlacement {
         // The copy itself counts here, so a shelf holding only this copy keeps its place in the run.
         let runs = runs(of: shelves, excluding: nil)
         let runIndex = runs.firstIndex { $0.shelf.id == shelf.id }
-        let previous = runIndex.flatMap { $0 > 0 ? runs[$0 - 1].items.last : nil }
-        let next = runIndex.flatMap { $0 + 1 < runs.count ? runs[$0 + 1].items.first : nil }
+        let previous = runIndex.flatMap { $0 > 0 ? ordered(runs[$0 - 1].shelf, excluding: nil).last : nil }
+        let next = runIndex.flatMap { $0 + 1 < runs.count ? ordered(runs[$0 + 1].shelf, excluding: nil).first : nil }
         return Spot(
             shelf: shelf,
             position: index + 1,
@@ -277,17 +287,19 @@ enum AlphabeticalPlacement {
         )
     }
 
-    private struct Run { let shelf: Shelf; let items: [RecordCopy]; let first: String; let last: String }
+    private struct Run { let shelf: Shelf; let first: String; let last: String }
 
-    /// Occupied, unreserved shelves in the alphabetical order of their contents.
+    /// Occupied, unreserved shelves in the alphabetical order of their
+    /// contents. Only their ends: callers put just the shelves they need in
+    /// order – sorting every shelf was most of opening "Platte hinzufügen".
     private static func runs(of shelves: [Shelf], excluding id: UUID?) -> [Run] {
         shelves.compactMap { shelf -> Run? in
             guard !shelf.isReserved else { return nil }
-            let items = ordered(shelf, excluding: id)
+            let copies = id.map { id in shelf.copies.filter { $0.id != id } } ?? shelf.copies
             // Only the ends matter: one pass instead of sorting every key.
-            let keys = items.map(key)
+            let keys = copies.map(key)
             guard let first = keys.min(by: ascending), let last = keys.max(by: ascending) else { return nil }
-            return Run(shelf: shelf, items: items, first: first, last: last)
+            return Run(shelf: shelf, first: first, last: last)
         }
         // Same start in two shelves (one artist and title across both): the
         // end decides, then the place in the rack, so the run never flips.

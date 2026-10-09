@@ -69,7 +69,11 @@ final class ShelfAssignmentSession: Identifiable {
         loaded = true
         self.owner = owner
         do {
-            let copies = try context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.shelf == nil }))
+            var unplaced = FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.shelf == nil })
+            // Their artists and titles are read right below (sort keys, list):
+            // in one fetch, not one request per release.
+            unplaced.relationshipKeyPathsForPrefetching = [\.release]
+            let copies = try context.fetch(unplaced)
             let excluded = Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID))
             let available = ShelfAssignmentPresentation.candidates(copies, owner: owner, excluding: excluded)
             missing = Set(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID))
