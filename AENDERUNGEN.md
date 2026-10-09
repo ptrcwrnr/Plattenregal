@@ -1,3 +1,9 @@
+# Umschalter in den Einstellungen: Animation geprüft, VoiceOver · 09.10.2026
+
+- **Animation geprüft, ohne Änderung**: Alle Umschalter der Einstellungen sind derselbe Baustein (`GlassSegmentedPicker`), dessen Auswahl in 0,3 s zur neuen Option gleitet. In der Demo (Klassisch) jeden per Bedienungshilfen gedrückt und sofort fotografiert – die Auswahl stand jedes Mal zwischen alter und neuer Option: Reiterleiste; Allgemein (Startseite, Reihenfolge Collection und Wantlist); Darstellung (Modus, Raster/Liste, Covergröße); Regal (Bei gleichem Interpreten nach, Beschriftung); Export (Collection/Wantlist, CSV/PDF, Wie im Regal/Alphabetisch); Sicherung (Letzte Stände). Nicht gedrückt: Sprache (fragt nach einem Neustart), Trennzeichen im Export.
+- **VoiceOver**: Ein Etikett am Umschalter (`.accessibilityLabel("Modus")`) ersetzte den Namen jeder Option – VoiceOver las „Modus, Modus, Modus“ statt System, Hell, Dunkel; ebenso bei Covergröße, Einstellungsreitern und dem Seitenumschalter. Der Umschalter ist jetzt eine Gruppe mit diesem Namen, die Optionen behalten ihre (per Bedienungshilfen-Abfrage geprüft).
+- 205 Tests grün.
+
 # Covergröße: Klein, Mittel, Groß · 09.10.2026
 
 - **Drei Stufen statt Regler** (Einstellungen › Darstellung › Cover): Das Raster füllt die Fensterbreite immer ganz aus, eine Größe zeigt sich also erst, wenn sich die Spaltenzahl ändert – beim alten Regler (120–220 pt in 5-pt-Schritten) tat sich bei jedem zweiten Strich nichts. Jetzt ein Umschalter wie bei „Modus“: Klein 125 pt, Mittel 155 pt (der bisherige Standard), Groß 195 pt; die Abstände ändern bei üblichen Fensterbreiten bei jedem Schritt die Spaltenzahl. Ein gespeicherter Wert des alten Reglers wird zur nächsten Stufe. ⌘+ / ⌘− gehen eine Stufe weiter, ⌘0 auf Mittel. Der Zurücksetzen-Pfeil entfällt (Text im Katalog als veraltet markiert); „Klein“, „Mittel“, „Groß“ englisch übersetzt.
