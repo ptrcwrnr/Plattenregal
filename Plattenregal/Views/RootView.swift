@@ -326,7 +326,7 @@ private struct ToolbarSearchField: View {
         let page = selection.current
         Group {
             if page.hasSearch {
-                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused)
+                AppSearchField(placeholder: placeholder(for: page), text: text(for: page), focus: $focused, onToolbar: true)
                     .frame(width: AppStyle.toolbarSearchWidth)
                     .padding(.trailing, AppStyle.toolbarSearchInset)
                     .accessibilityLabel(String(localized: "Suchen"))

@@ -282,7 +282,7 @@ struct WantlistView: View {
     @State private var activity = PageActivity()
     // Same two stages as the collection: sort on data changes, cheap
     // filtering per (debounced) keystroke with the shared search texts.
-    @State private var sortedEntries: [WantlistEntry] = []
+    @State private var sortedEntries: [WantlistItem] = []
     /// Discogs release IDs in the collection, for the search badge on the covers.
     @State private var ownedReleaseIDs: Set<Int> = []
     @State private var queryPending = false
@@ -296,21 +296,21 @@ struct WantlistView: View {
     @AppStorage(DisplaySettings.wantlistLayoutKey) private var layout = OverviewLayout.grid
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
     // Filtered/sorted once per change of entries or query, not on every render.
-    @State private var visibleEntries: [WantlistEntry] = []
+    @State private var visibleEntries: [WantlistItem] = []
     /// See `ScrollAnchor`: scrolling must not rebuild the page.
-    @State private var scroll = ScrollAnchor<PersistentIdentifier>()
+    @State private var scroll = ScrollAnchor<Int>()
     /// Where the page was scrolled when the search began (see `leaveSearch`).
-    @State private var scrollBeforeSearch: PersistentIdentifier?
+    @State private var scrollBeforeSearch: Int?
     /// The results, faded out while leaving a search.
     @State private var resultsHidden = false
     @State private var hasToken = true
     @State private var settingsTab: AppSettingsView.Tab?
     /// The entry whose menu is open, and where it was right-clicked.
-    @State private var menuFor: (id: PersistentIdentifier, anchor: UnitPoint)?
-    @State private var gridClicks = GridSecondaryClicks<PersistentIdentifier>()
+    @State private var menuFor: (id: Int, anchor: UnitPoint)?
+    @State private var gridClicks = GridSecondaryClicks<Int>()
     /// The entry whose popover (with the tracklist) is open; in the list
     /// also where it was double-clicked.
-    @State private var quickLook: (id: PersistentIdentifier, anchor: UnitPoint)?
+    @State private var quickLook: (id: Int, anchor: UnitPoint)?
     /// The window's page switch, to jump to the collection's hits.
     let pages: PageSelection<Destination>
 
@@ -375,7 +375,7 @@ struct WantlistView: View {
             .overlay(alignment: .top) { DiscogsSyncPill() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.release?.coverURL }.prefix(3))) }
+        .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.entry.release?.coverURL }.prefix(3))) }
         .settingsOpener($settingsTab)
         .onChange(of: order) { _, _ in scroll.id = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
@@ -427,8 +427,8 @@ struct WantlistView: View {
     private func rebuild() {
         let owner = owner
         let owned = owner.map { owner in entries.filter { $0.owner == owner } } ?? entries
-        sortedEntries = order.apply(owned, scope: DisplaySettings.wantlistOrderKey, alphabetical: WantlistPresentation.sorted,
-                                    key: \.releaseID, added: { DiscogsDate.parse($0.dateAdded) })
+        sortedEntries = WantlistItem.make(from: order.apply(owned, scope: DisplaySettings.wantlistOrderKey, alphabetical: WantlistPresentation.sorted,
+                                                            key: \.releaseID, added: { DiscogsDate.parse($0.dateAdded) }))
         loaded = true
         applyQuery()
     }
@@ -444,12 +444,12 @@ struct WantlistView: View {
     private func applyQuery(animated: Bool = false) {
         queryPending = false
         let words = SearchIndex<UUID>.words(query)
-        let visible: [WantlistEntry]
+        let visible: [WantlistItem]
         if words.isEmpty {
             visible = sortedEntries
         } else {
             let index = LibrarySearchIndexes.shared.wantlist(entries)
-            visible = sortedEntries.filter { index.matches($0.persistentModelID, words) }
+            visible = sortedEntries.filter { index.matches($0.entry.persistentModelID, words) }
         }
         let searchEnded = !appliedQuery.isEmpty && words.isEmpty
         withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
@@ -458,17 +458,17 @@ struct WantlistView: View {
         }
         // Back where the page was before the search (see CollectionView).
         if searchEnded {
-            scroll.id = scrollBeforeSearch ?? visible.first?.persistentModelID
+            scroll.id = scrollBeforeSearch ?? visible.first?.id
             scrollBeforeSearch = nil
         }
-        if let id = scroll.id, !visible.contains(where: { $0.persistentModelID == id }) {
+        if let id = scroll.id, !visible.contains(where: { $0.id == id }) {
             scroll.id = nil
         }
     }
 
     /// Covers like the collection grid; a click shows the popover with the
     /// tracklist and the way to Discogs.
-    private func grid(_ rows: [WantlistEntry]) -> some View {
+    private func grid(_ rows: [WantlistItem]) -> some View {
         // Width read live on every layout pass (no cached copy that could lag
         // behind a window resize); flexible columns keep covers inside their cells.
         GeometryReader { proxy in
@@ -479,27 +479,18 @@ struct WantlistView: View {
             )
             ScrollView {
                 LazyVGrid(columns: CoverGrid.columns(count: columnCount), alignment: .leading, spacing: CoverGrid.spacing) {
-                    ForEach(rows) { entry in
-                        Button { quickLook = (entry.persistentModelID, .center) } label: {
-                            VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
-                                CoverView(url: entry.release?.coverURL, size: nil)
-                                    .atelierRecordSleeve()
-                                RecordCaption(
-                                    release: entry.release,
-                                    matchedTrack: appliedQuery.isEmpty ? nil : entry.release?.track(matching: appliedQuery),
-                                    fallbackArtist: String(localized: "Unbekannter Interpret"),
-                                    fallbackTitle: String(localized: "Release #\(String(entry.releaseID))")
-                                )
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                    ForEach(rows) { item in
+                        let entry = item.entry
+                        Button { quickLook = (item.id, .center) } label: {
+                            WantlistCard(entry: entry,
+                                         matchedTrack: appliedQuery.isEmpty ? nil : entry.release?.track(matching: appliedQuery))
                         }
                         .buttonStyle(.plain)
                         .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – "))
                         .overlay(alignment: .topLeading) {
                             if !appliedQuery.isEmpty {
                                 PlacementBadge(
-                                    inCollection: ownedReleaseIDs.contains(entry.releaseID),
+                                    inCollection: ownedReleaseIDs.contains(item.id),
                                     inWantlist: true,
                                     current: .wantlist,
                                     show: { pages.current = $0 }
@@ -507,13 +498,13 @@ struct WantlistView: View {
                                 .padding(AtelierCoverFrame.badgeInset)
                             }
                         }
-                        .popover(isPresented: quickLookBinding(entry.persistentModelID), arrowEdge: .trailing) {
+                        .id(item.id)
+                        .popover(isPresented: quickLookBinding(item.id), arrowEdge: .trailing) {
                             RecordPopover(release: entry.release, discogsURL: sourceURL(entry))
                         }
-                        .id(entry.persistentModelID)
                         // The app's own menu, as in the collection.
-                        .gridSecondaryClickCell(entry.persistentModelID, in: gridClicks)
-                        .popover(isPresented: menuBinding(entry.persistentModelID),
+                        .gridSecondaryClickCell(item.id, in: gridClicks)
+                        .popover(isPresented: menuBinding(item.id),
                                  attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
                             AppMenu(dismiss: { menuFor = nil }) { entryMenu(entry) }
                         }
@@ -527,7 +518,7 @@ struct WantlistView: View {
             }
             .scrollPosition(scroll)
             .onGridSecondaryClick(gridClicks) { id, point in
-                if let entry = rows.first(where: { $0.persistentModelID == id }), sourceURL(entry) != nil {
+                if let item = rows.first(where: { $0.id == id }), sourceURL(item.entry) != nil {
                     menuFor = (id, point)
                 }
             }
@@ -535,36 +526,43 @@ struct WantlistView: View {
         }
     }
 
-    private func table(_ rows: [WantlistEntry]) -> some View {
+    private func table(_ rows: [WantlistItem]) -> some View {
         Table(rows) {
-            TableColumn("") { entry in
+            TableColumn("") { item in
+                let entry = item.entry
                 CoverView(url: entry.release?.coverURL, size: 20)
             }
             .width(24)
-            TableColumn("Interpret") { entry in
+            TableColumn("Interpret") { item in
+                let entry = item.entry
                 let artist = entry.release?.displayArtist ?? String(localized: "Unbekannter Interpret")
                 Text(artist).lineLimit(1).help(artist)
             }
             .width(min: 120, ideal: 200)
-            TableColumn("Titel") { entry in
+            TableColumn("Titel") { item in
+                let entry = item.entry
                 let title = entry.release?.displayTitle ?? String(localized: "Release #\(String(entry.releaseID))")
                 Text(title).lineLimit(1).help(title)
             }
             .width(min: 140, ideal: 260)
-            TableColumn("Jahr") { entry in
+            TableColumn("Jahr") { item in
+                let entry = item.entry
                 Text(entry.release?.year.map(String.init) ?? "–").monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 40, ideal: 48, max: 60)
-            TableColumn("Notiz") { entry in
+            TableColumn("Notiz") { item in
+                let entry = item.entry
                 Text(entry.notes ?? "").lineLimit(1).foregroundStyle(.secondary).help(entry.notes ?? "")
             }
             .width(min: 80, ideal: 180)
-            TableColumn("Hinzugefügt") { entry in
+            TableColumn("Hinzugefügt") { item in
+                let entry = item.entry
                 Text(DiscogsDate.parse(entry.dateAdded)?.formatted(date: .abbreviated, time: .omitted) ?? "–")
                     .monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 80, ideal: 100, max: 120)
-            TableColumn("") { entry in
+            TableColumn("") { item in
+                let entry = item.entry
                 if sourceURL(entry) != nil {
                 Button { open(entry) } label: {
                     Image(systemName: "arrow.up.forward.square")
@@ -587,24 +585,24 @@ struct WantlistView: View {
         .refreshShortcut(disabled: sync.busy, action: syncWantlist)
         // The app's own menu, and on double-click the popover – as in the collection.
         .overlay(TableRowClicks(secondary: { row, point in
-            guard rows.indices.contains(row), sourceURL(rows[row]) != nil else { return }
-            menuFor = (rows[row].persistentModelID, point)
+            guard rows.indices.contains(row), sourceURL(rows[row].entry) != nil else { return }
+            menuFor = (rows[row].id, point)
         }, double: { row, point in
             guard rows.indices.contains(row) else { return }
-            quickLook = (rows[row].persistentModelID, point)
+            quickLook = (rows[row].id, point)
         }))
         // Its own layer: two popovers on one view get in each other's way.
         .background {
             Color.clear.popover(isPresented: Binding(get: { quickLook != nil && layout != .grid }, set: { if !$0 { quickLook = nil } }),
                                 attachmentAnchor: .point(quickLook?.anchor ?? .center), arrowEdge: .trailing) {
-                if let id = quickLook?.id, let entry = rows.first(where: { $0.persistentModelID == id }) {
+                if let id = quickLook?.id, let entry = rows.first(where: { $0.id == id })?.entry {
                     RecordPopover(release: entry.release, discogsURL: sourceURL(entry))
                 }
             }
         }
         .popover(isPresented: Binding(get: { menuFor != nil && layout != .grid }, set: { if !$0 { menuFor = nil } }),
                  attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
-            if let id = menuFor?.id, let entry = rows.first(where: { $0.persistentModelID == id }) {
+            if let id = menuFor?.id, let entry = rows.first(where: { $0.id == id })?.entry {
                 AppMenu(dismiss: { menuFor = nil }) { entryMenu(entry) }
             }
         }
@@ -614,11 +612,11 @@ struct WantlistView: View {
         Button("Auf Discogs öffnen") { open(entry) }
     }
 
-    private func quickLookBinding(_ id: PersistentIdentifier) -> Binding<Bool> {
+    private func quickLookBinding(_ id: Int) -> Binding<Bool> {
         Binding(get: { quickLook?.id == id && layout == .grid }, set: { if !$0, quickLook?.id == id { quickLook = nil } })
     }
 
-    private func menuBinding(_ id: PersistentIdentifier) -> Binding<Bool> {
+    private func menuBinding(_ id: Int) -> Binding<Bool> {
         Binding(get: { menuFor?.id == id }, set: { if !$0, menuFor?.id == id { menuFor = nil } })
     }
 
@@ -632,6 +630,50 @@ struct WantlistView: View {
         return entry.release?.sourceURL ?? URL(string: "https://www.discogs.com/release/\(entry.releaseID)")
     }
     private func open(_ entry: WantlistEntry) { if let url = sourceURL(entry) { openURL(url) } }
+}
+
+/// An entry of the wantlist as the page shows it, identified by its Discogs
+/// release ID: a stored Int, cheap for the grid's identity, scroll position
+/// and clicks – the model's `PersistentIdentifier` is read through SwiftData
+/// and hashed heavily, on every cell the lazy grid lays out (the collection
+/// uses its own stored IDs the same way, see `CollectionCoverGroup`).
+struct WantlistItem: Identifiable {
+    let id: Int
+    let entry: WantlistEntry
+
+    /// Keeps the order; one item per release (only entries of several
+    /// accounts, shown without a current one, could repeat a release).
+    static func make(from entries: [WantlistEntry]) -> [Self] {
+        var seen = Set<Int>()
+        return entries.compactMap { entry in
+            let id = entry.releaseID
+            return seen.insert(id).inserted ? Self(id: id, entry: entry) : nil
+        }
+    }
+}
+
+/// A cover of the wantlist grid with its caption: a view of its own, like
+/// the collection's `RecordCard`, so SwiftUI keeps a cell instead of
+/// re-evaluating it with the page.
+private struct WantlistCard: View {
+    let entry: WantlistEntry
+    var matchedTrack: Track? = nil
+    var body: some View {
+        // The cover's address may come with a sync (see `RecordCaption`).
+        let _ = LibraryChanges.shared.libraryVersion
+        VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
+            CoverView(url: entry.release?.coverURL, size: nil)
+                .atelierRecordSleeve()
+            RecordCaption(
+                release: entry.release,
+                matchedTrack: matchedTrack,
+                fallbackArtist: String(localized: "Unbekannter Interpret"),
+                fallbackTitle: String(localized: "Release #\(String(entry.releaseID))")
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
 }
 
 enum WantlistPresentation {

@@ -1,3 +1,10 @@
+# Ziehen zum Aktualisieren, Suchfeld in der Toolbar, Wantlist-Raster · 09.10.2026
+
+- **Nur echtes Ziehen aktualisiert** (`PullToRefresh`): Ein schneller Wisch nach oben federte mit seinem Schwung über den oberen Rand und füllte den Ring wie ein Ziehen – Collection und Wantlist synchronisierten. Jetzt zählt die Überdehnung nur, solange die Finger auf dem Trackpad liegen (`onScrollPhaseChange`, `.interacting`); ein Rückfedern aus dem Schwung zeigt keinen Ring und bleibt wirkungslos, auch wenn die Finger währenddessen aufsetzen. Ziehen mit der Maus und ⌘R unverändert. Gilt auch für die Statistik.
+- **Suchfeld in der Toolbar bleibt petrol** (Klassisch): Das Feld nahm `AtelierPalette.surface`, das sich nach dem Farbschema der Toolbar (dunkel) richtet. Kam dieses Schema in einem Randfall hell an, wurde das Feld cremeweiß, bis zum Neustart. Jetzt feste Farben der dunklen Fläche (`toolbarField`, `toolbarFieldBorder`) und ein festes dunkles Schema für Text und Platzhalter. Nicht reproduziert, daher nur über den Weg abgesichert, nicht am Fehler selbst geprüft.
+- **Wantlist-Raster wie die Collection**: Die Zelle ist eine eigene View (`WantlistCard`, wie `RecordCard`), und Raster, Liste, Scrollposition, Klicks und Menüs verwenden die Discogs-Release-ID als gespeicherte Zahl (`WantlistItem`) statt des `PersistentIdentifier` des Modells, der bei jeder Zelle über SwiftData gelesen und aufwendig gehasht wurde. Nicht mit Instruments gemessen.
+- 205 Tests grün.
+
 # Start, verborgene Seiten, Speicher · 09.10.2026
 
 Gemessen in einer auf ~2.000 Platten vergrößerten Demo (Release-Build): Zeitstempel in der App über je drei Starts, Instruments (Time Profiler) und `footprint`. **Nach dem ersten Erscheinen des Fensters war der Hauptthread ~1,36 s beschäftigt, jetzt ~0,75–0,87 s.**

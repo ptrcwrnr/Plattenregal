@@ -17,6 +17,11 @@ enum AtelierPalette {
     static let goldForeground = Color(nsColor: rgb(0x293C39))
     static let toolbarSelection = Color(nsColor: rgb(0xF4EFE5))
     static let toolbarInk = Color(nsColor: rgb(0x233A3E))
+    /// The search field on the petrol toolbar: `surface` and `border` of the
+    /// dark paper, fixed – not resolved from the toolbar's color scheme,
+    /// which now and then reached the field as light (a white field).
+    static let toolbarField = Color(nsColor: rgb(0x213940))
+    static let toolbarFieldBorder = Color(nsColor: rgb(0x3E5155))
     static let shadow = adaptive(0x1D3C42, 0x000000).opacity(0.08)
     /// Signal colors (see `AppStyle.successColor` …): moss, ochre, brick.
     static let success = adaptive(0x3E7A55, 0x8FC4A0)
@@ -576,6 +581,8 @@ struct AppSearchField: View {
     var focus: FocusState<Bool>.Binding?
     /// Shown at the end of the field, before the clear button.
     var accessory: AnyView?
+    /// Sits on the window's toolbar (see `searchBarChrome(onToolbar:)`).
+    var onToolbar = false
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
@@ -599,7 +606,7 @@ struct AppSearchField: View {
                 .accessibilityLabel(String(localized: "Suche löschen"))
             }
         }
-        .searchBarChrome()
+        .searchBarChrome(onToolbar: onToolbar)
     }
 
     @ViewBuilder private func focusable(_ field: some View) -> some View {
@@ -745,17 +752,26 @@ extension View {
         }
     }
 
-    /// The Liquid Glass capsule every search bar sits in.
-    func searchBarChrome() -> some View {
-        padding(.horizontal, 12)
+    /// The Liquid Glass capsule every search bar sits in. `onToolbar`: in
+    /// Klassisch always dark on the petrol bar, with fixed colors and scheme
+    /// instead of following the toolbar's (see `AtelierPalette.toolbarField`).
+    @ViewBuilder func searchBarChrome(onToolbar: Bool = false) -> some View {
+        let field = padding(.horizontal, 12)
             .frame(height: AppStyle.searchBarHeight)
             .background {
                 if AppStyle.isAtelier {
-                    RoundedRectangle(cornerRadius: 10).fill(AtelierPalette.surface)
-                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(onToolbar ? AtelierPalette.toolbarField : AtelierPalette.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 10)
+                            .strokeBorder(onToolbar ? AtelierPalette.toolbarFieldBorder : AtelierPalette.border, lineWidth: 1))
                 }
             }
             .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
+        if onToolbar && AppStyle.isAtelier {
+            field.environment(\.colorScheme, .dark)
+        } else {
+            field
+        }
     }
 
     /// Marks a text field as not an AutoFill target. Without a content type
@@ -1313,7 +1329,9 @@ extension View {
 
 /// Pull-to-refresh for a ScrollView: pulling the page down past its top edge
 /// fills a small ring; a full ring runs `action`. Works with the trackpad's
-/// rubber band (fires as soon as the ring is full) and, when `allowsMouseDrag`
+/// rubber band (fires as soon as the ring is full, but only while the fingers
+/// pull – a fast swipe whose momentum bounces off the top doesn't count) and,
+/// when `allowsMouseDrag`
 /// is on, with a click-drag of the page while it's at the top (fires on
 /// release). ⌘R triggers the same action. Leave the mouse drag off where
 /// dragging already means something (e.g. rubber-band selection).
@@ -1329,17 +1347,36 @@ private struct PullToRefresh: ViewModifier {
     @State private var armed = true
     @State private var mousePull: CGFloat = 0
     @State private var atTop = true
+    /// Fingers on the trackpad (or the scroll bar dragged). The momentum
+    /// after a fast swipe runs as `.decelerating` and rubber-bands at the top
+    /// just like a pull: it must neither fill the ring nor fire.
+    @State private var pulling = false
+    @State private var bouncing = false
 
     func body(content: Content) -> some View {
         content
             .offset(y: mousePull)
+            .onScrollPhaseChange { old, phase in
+                pulling = phase == .interacting
+                // A pull from rest is never a bounce, whichever of phase and
+                // geometry reports first.
+                if pulling, old == .idle { bouncing = false }
+            }
             // Clamped: anywhere below the top is the same value, so scrolling
             // through the page doesn't call this on every frame.
             .onScrollGeometryChange(for: CGFloat.self) { max(-2, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, distance in
                 atTop = distance > -1
-                overscroll = max(0, distance)
-                if overscroll < 6 { armed = true }
-                if overscroll >= trackpadThreshold, armed, !disabled {
+                let travel = max(0, distance)
+                if travel < 6 {
+                    armed = true
+                    bouncing = false
+                } else if overscroll < 6, !pulling {
+                    // Began without the fingers: stays a bounce until the
+                    // page is back at rest, even if they touch down during it.
+                    bouncing = true
+                }
+                overscroll = travel
+                if overscroll >= trackpadThreshold, armed, pulling, !bouncing, !disabled {
                     armed = false
                     NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
                     action()
@@ -1367,8 +1404,9 @@ private struct PullToRefresh: ViewModifier {
     }
 
     @ViewBuilder private var indicator: some View {
-        let progress = min(1, max(overscroll / trackpadThreshold, mousePull / mouseThreshold))
-        let travel = max(overscroll, mousePull)
+        let pull = bouncing ? 0 : overscroll
+        let progress = min(1, max(pull / trackpadThreshold, mousePull / mouseThreshold))
+        let travel = max(pull, mousePull)
         if travel > 4 {
             ZStack {
                 Circle().stroke(Color.primary.opacity(0.1), lineWidth: 2.5)
