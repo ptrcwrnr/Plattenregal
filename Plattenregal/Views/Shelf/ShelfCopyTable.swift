@@ -402,7 +402,8 @@ struct ShelfContentsView: View {
                     // with the rack.
                     .padding(.horizontal, 2 + CoverGrid.shadowRoom)
                     .padding(.top, 2)
-                    .padding(.bottom, CoverGrid.spacing)
+                    // The last covers scroll clear of the round button.
+                    .padding(.bottom, CoverGrid.spacing + AppStyle.floatingClearance)
                 }
             }
             .onGridSecondaryClick(gridClicks) { id, point in
@@ -531,6 +532,8 @@ struct ShelfContentsView: View {
         .background(TableRowClickToggle { selectLocally(nil) })
         .alternatingRowBackgrounds(.disabled)
         .scrollContentBackground(.hidden)
+        // The last rows scroll clear of the round button.
+        .contentMargins(.bottom, AppStyle.floatingClearance, for: .scrollContent)
         .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
             if let id = ids.first, let copy = items.first(where: { $0.id == id })?.copy { activate(copy) }
         }

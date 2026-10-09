@@ -98,7 +98,7 @@ struct RootView: View {
     private var library: some View {
         pages
             .environment(\.searchRequests, searchRequests)
-            .overlay(alignment: .bottomTrailing) { FloatingControls(selection: destination) }
+            .overlay(alignment: .bottomTrailing) { FloatingControls(selection: destination, shelfRequests: shelfRequests) }
             // Names the window in the Fenster menu and Mission Control; the
             // toolbar shows the page switch instead of a title.
             .navigationTitle("Plattenregal")
@@ -165,12 +165,14 @@ struct RootView: View {
     }
 }
 
-/// The round button at the bottom right of the window, only on collection
-/// and wantlist. A click fans the page's actions out around it on a quarter
+/// The round button at the bottom right of the window. On collection and
+/// wantlist a click fans the page's actions out around it on a quarter
 /// circle – grid or list, sync, settings – and closes them again; so does
-/// Esc, a click beside them or choosing one.
+/// Esc, a click beside them or choosing one. On the shelf page it opens
+/// "Einsortieren" right away: the records without a shelf and where they go.
 private struct FloatingControls: View {
     let selection: PageSelection<Destination>
+    let shelfRequests: ShelfRequests
     @Environment(\.modelContext) private var context
     @Environment(\.openSettings) private var openSettings
     @State private var sync = DiscogsSyncService.shared
@@ -192,9 +194,12 @@ private struct FloatingControls: View {
         ZStack {
             if page.hasActions {
                 controls(page: page).transition(.scale(scale: 0.6).combined(with: .opacity))
+            } else if page == .shelf {
+                sortInButton.transition(.scale(scale: 0.6).combined(with: .opacity))
             }
         }
         .animation(AppStyle.quickAnimation, value: page.hasActions)
+        .animation(AppStyle.quickAnimation, value: page == .shelf)
         .onChange(of: page) { collapse() }
     }
 
@@ -247,6 +252,22 @@ private struct FloatingControls: View {
         .help(expanded ? String(localized: "Aktionen schließen") : String(localized: "Aktionen"))
         .accessibilityLabel(String(localized: "Aktionen"))
         .accessibilityValue(expanded ? String(localized: "geöffnet") : "")
+    }
+
+    /// The shelf page's button: one click, no fan.
+    private var sortInButton: some View {
+        Button { shelfRequests.sortingIn = true } label: {
+            Image(systemName: "plus")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.toolbarSelection) : AnyShapeStyle(.primary))
+                .frame(width: AppStyle.floatingButtonSize, height: AppStyle.floatingButtonSize)
+                .floatingCircle(prominent: true)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .help("Einsortieren – Platten ohne Fach und wohin sie gehören")
+        .accessibilityLabel(String(localized: "Einsortieren"))
+        .padding(AppStyle.floatingMargin)
     }
 
     /// On a quarter circle from straight left to straight up of the button.

@@ -151,6 +151,34 @@ extension AllTests {
             #expect(abba.shelf?.id == first.id && abba.positionInShelf == 1)
         }
 
+        @Test func sortingInPutsEachRecordIntoItsOwnShelf() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let context = c.mainContext
+            let positions = PositionService(context: context)
+            let shelves = try context.fetch(FetchDescriptor<Shelf>())
+            let first = try #require(shelves.first { $0.sortOrder == 1 })
+            let second = try #require(shelves.first { $0.sortOrder == 2 })
+            try positions.insert(release: Release(artist: "Air", title: "Moon Safari"), shelf: first)
+            try positions.insert(release: Release(artist: "Can", title: "Tago Mago"), shelf: first, position: 2)
+            try positions.insert(release: Release(artist: "Moby", title: "Play"), shelf: second)
+            let zappa = try positions.insert(release: Release(artist: "Zappa", title: "Apostrophe"), shelf: nil)
+            let björk = try positions.insert(release: Release(artist: "Björk", title: "Post"), shelf: nil)
+
+            // The round button: no shelf of its own, simply by artist.
+            let session = ShelfAssignmentSession(shelf: nil)
+            session.load(context, owner: nil, labels: ShelfLabels())
+            #expect(session.candidates.map(\.id) == [björk.id, zappa.id])
+            #expect(session.belongsElsewhere[björk.id] != nil && session.belongsElsewhere[zappa.id] != nil)
+
+            session.add(björk, in: context)
+            session.add(zappa, in: context)
+            #expect(session.error == nil)
+            #expect(björk.shelf?.id == first.id && björk.positionInShelf == 2)
+            #expect(zappa.shelf?.id == second.id && zappa.positionInShelf == 2)
+            #expect(session.lastAddedHere?.id == zappa.id)
+            #expect(session.candidates.isEmpty)
+        }
+
         // MARK: Large collection
 
         @Test func tenThousandRecords() throws {

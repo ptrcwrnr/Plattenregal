@@ -121,12 +121,122 @@
         }
       }
     },
+    "%@ in „%@“ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ in “%2$@” %3$@"
+          }
+        }
+      }
+    },
+    "%@ – %@ im Regal zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show %1$@ – %2$@ on the shelf"
+          }
+        }
+      }
+    },
+    "%@ – Pfeil zeigt einen Platz im Regal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ – the arrow shows a spot on the shelf"
+          }
+        }
+      }
+    },
+    "%lld einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sorted in"
+          }
+        }
+      }
+    },
     ", %lld Exemplare" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ", %lld copies"
+          }
+        }
+      }
+    },
+    "An ihrer alphabetischen Stelle in „%@“ einsortieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort into “%@” at its alphabetical place"
+          }
+        }
+      }
+    },
+    "Einsortieren – Platten ohne Fach und wohin sie gehören" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort In – records without a compartment and where they belong"
+          }
+        }
+      }
+    },
+    "Im Regal zeigen, wohin sie gehört" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show where it belongs on the shelf"
+          }
+        }
+      }
+    },
+    "Nach Interpret die nächste Platte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next record by artist"
+          }
+        }
+      }
+    },
+    "Passt alphabetisch in „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fits alphabetically in “%@”"
+          }
+        }
+      }
+    },
+    "Platten ohne Fach" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records without a compartment"
+          }
+        }
+      }
+    },
+    "Zuletzt „%@“ in „%@“ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last added: “%1$@” in “%2$@” %3$@"
           }
         }
       }

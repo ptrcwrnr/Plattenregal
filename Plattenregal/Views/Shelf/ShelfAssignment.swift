@@ -12,7 +12,12 @@ import SwiftData
 @MainActor @Observable
 final class ShelfAssignmentSession: Identifiable {
     let id = UUID()
-    let shelf: Shelf
+    /// `nil`: "Einsortieren" from the round button – every record without a
+    /// shelf, each to its own alphabetical place in the rack.
+    let shelf: Shelf?
+    var isRackWide: Bool { shelf == nil }
+    /// Shelves in use, taken with the candidates (rack-wide places).
+    private var shelves: [Shelf] = []
     /// Records without a shelf, sorted by artist; loaded once, then only
     /// shrinks as records are added here.
     private(set) var candidates: [RecordCopy] = []
@@ -24,14 +29,15 @@ final class ShelfAssignmentSession: Identifiable {
     /// Candidates marked "Vermisst": the view lists them in their own column.
     private(set) var missing: Set<UUID> = []
     /// For candidates that belong in another shelf alphabetically: its name,
-    /// shown in their row ("gehört in „K – Ma“").
+    /// shown in their row ("gehört in „K – Ma“"). Rack-wide: every
+    /// candidate's shelf.
     private(set) var belongsElsewhere: [UUID: String] = [:]
     /// The row under the pointer; the target card tells where it would go.
     private(set) var hoveredID: UUID?
     var error: String?
     @ObservationIgnored let table = ShelfAssignmentTableController()
 
-    init(shelf: Shelf) {
+    init(shelf: Shelf?) {
         self.shelf = shelf
     }
 
@@ -39,30 +45,43 @@ final class ShelfAssignmentSession: Identifiable {
     var hovered: RecordCopy? {
         hoveredID.flatMap { id in candidates.first { $0.id == id } }.flatMap { isGone($0) ? nil : $0 }
     }
-    /// The last record added here, while it still stands in this shelf.
+    /// The last record added here, while it still stands in this shelf
+    /// (rack-wide: in any shelf).
     var lastAddedHere: RecordCopy? {
-        lastAdded.flatMap { !isGone($0) && $0.shelf?.id == shelf.id ? $0 : nil }
+        lastAdded.flatMap { copy in
+            guard !isGone(copy), let placed = copy.shelf else { return nil }
+            return shelf == nil || placed.id == shelf?.id ? copy : nil
+        }
     }
 
     func hover(_ copy: RecordCopy, _ hovering: Bool) {
         if hovering { hoveredID = copy.id } else if hoveredID == copy.id { hoveredID = nil }
     }
 
-    /// Where `copy` goes in this shelf: its alphabetical place among the
-    /// records there, and the two it would stand between.
-    func spot(for copy: RecordCopy) -> (position: Int, before: RecordCopy?, after: RecordCopy?) {
+    /// Where `copy` goes: its alphabetical place among the records of this
+    /// shelf, and the two it would stand between. Rack-wide its place in the
+    /// whole rack – between two shelves the end of the first; the arrow
+    /// offers both. `nil` while no shelf holds records yet.
+    func spot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
+        guard let shelf else { return AlphabeticalPlacement.spots(for: copy, in: shelves).first }
         let items = PositionService.inShelfOrder(shelf.copies, excluding: copy.id)
         let position = AlphabeticalPlacement.position(for: copy, in: shelf)
-        return (position,
-                position > 1 ? items[position - 2] : nil,
-                position <= items.count ? items[position - 1] : nil)
+        return AlphabeticalPlacement.Spot(shelf: shelf, position: position,
+                                          before: position > 1 ? items[position - 2] : nil,
+                                          after: position <= items.count ? items[position - 1] : nil)
+    }
+
+    /// Where an added `copy` stands now and between which records.
+    func placed(_ copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
+        guard shelf == nil else { return spot(for: copy) }
+        return AlphabeticalPlacement.current(for: copy, in: shelves)
     }
 
     var visible: [RecordCopy] { candidates }
 
     /// Taken once: the list is a snapshot and must not reorder while records
     /// are added or paused. Records that fit this shelf alphabetically come
-    /// first, then the rest – each by artist. Paused ones keep their place,
+    /// first, then the rest – each by artist (rack-wide simply by artist). Paused ones keep their place,
     /// so one found again returns right where it belongs.
     func load(_ context: ModelContext, owner: String?, labels: ShelfLabels) {
         guard !loaded else { return }
@@ -77,22 +96,25 @@ final class ShelfAssignmentSession: Identifiable {
             let excluded = Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID))
             let available = ShelfAssignmentPresentation.candidates(copies, owner: owner, excluding: excluded)
             missing = Set(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID))
-            let shelves = Shelf.inUse(try context.fetch(FetchDescriptor<Shelf>()))
+            shelves = Shelf.inUse(try context.fetch(FetchDescriptor<Shelf>()))
             let fits = AlphabeticalPlacement.fittingShelves(for: available, in: shelves)
             for copy in available {
-                guard let other = fits[copy.id], !other.isEmpty, !other.contains(where: { $0.id == shelf.id }) else { continue }
+                guard let other = fits[copy.id], !other.isEmpty else { continue }
+                if let shelf, other.contains(where: { $0.id == shelf.id }) { continue }
                 belongsElsewhere[copy.id] = other.map { labels.prefix(for: $0) + (labels[$0.id] ?? $0.numberText) }
                     .joined(separator: String(localized: " oder "))
             }
             let sorted = ShelfAssignmentPresentation.sortedByArtist(available)
-            candidates = sorted.filter { belongsElsewhere[$0.id] == nil } + sorted.filter { belongsElsewhere[$0.id] != nil }
+            candidates = shelf == nil ? sorted
+                : sorted.filter { belongsElsewhere[$0.id] == nil } + sorted.filter { belongsElsewhere[$0.id] != nil }
         } catch { self.error = ReadError.wrapping(error).reportedMessage() }
     }
 
     /// The list is a snapshot: a record or the shelf may be gone meanwhile
     /// (reset or restore in the settings window). Reading those would crash.
     private func isGone(_ copy: RecordCopy) -> Bool {
-        copy.isDeleted || copy.modelContext == nil || shelf.isDeleted || shelf.modelContext == nil
+        guard let shelf else { return copy.isDeleted || copy.modelContext == nil }
+        return copy.isDeleted || copy.modelContext == nil || shelf.isDeleted || shelf.modelContext == nil
     }
 
     func add(_ copy: RecordCopy, in context: ModelContext) {
@@ -105,9 +127,11 @@ final class ShelfAssignmentSession: Identifiable {
             error = String(localized: "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“ ist nicht mehr in der Collection.")
             return
         }
+        // Rack-wide while no shelf holds records: only the arrow helps.
+        guard let spot = spot(for: copy), !spot.shelf.isDeleted, spot.shelf.modelContext != nil else { return }
         do {
             // Its alphabetical place; standing in a shelf now, it turned up after all.
-            try PositionService(context: context).move(copy, to: shelf, position: spot(for: copy).position, found: true)
+            try PositionService(context: context).move(copy, to: spot.shelf, position: spot.position, found: true)
             missing.remove(copy.id)
             if hoveredID == copy.id { hoveredID = nil }
             candidates.removeAll { $0.id == copy.id }
@@ -188,7 +212,7 @@ struct ShelfAssignmentView: View {
         return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text("Platte hinzufügen").font(AppStyle.dialogTitle)
+                    Text(session.isRackWide ? "Einsortieren" : "Platte hinzufügen").font(AppStyle.dialogTitle)
                     Spacer()
                     // Folded away: the count, and the way to unfold it again.
                     if hasMissing && missingCollapsed {
@@ -220,8 +244,9 @@ struct ShelfAssignmentView: View {
             ZStack {
                 ShelfAssignmentTable(controller: session.table, items: items, missing: missingEnabled ? session.missing : [],
                                      missingEnabled: missingEnabled,
+                                     rackWide: session.isRackWide,
                                      // The next one by artist that fits here: where to go on.
-                                     suggestedID: items.first { session.belongsElsewhere[$0.id] == nil }?.id,
+                                     suggestedID: session.isRackWide ? items.first?.id : items.first { session.belongsElsewhere[$0.id] == nil }?.id,
                                      belongsElsewhere: session.belongsElsewhere,
                                      toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
                                      hover: { [session] copy, hovering in session.hover(copy, hovering) },
@@ -248,10 +273,11 @@ struct ShelfAssignmentView: View {
     /// and – for the row under the pointer, else the last one added – the
     /// two records it goes between. The count of additions on the right.
     private var targetCard: some View {
-        AssignmentCard(title: rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach"),
+        AssignmentCard(title: session.isRackWide ? String(localized: "Platten ohne Fach")
+                           : rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach"),
                        detail: detail) {
             if session.addedCount > 0 {
-                Label("\(session.addedCount) hinzugefügt", systemImage: "checkmark")
+                Label(session.isRackWide ? "\(session.addedCount) einsortiert" : "\(session.addedCount) hinzugefügt", systemImage: "checkmark")
                     .font(.callout.weight(.medium))
                     .foregroundStyle(AppStyle.accent)
                     .contentTransition(.numericText())
@@ -266,18 +292,23 @@ struct ShelfAssignmentView: View {
     private var detail: String {
         if let copy = session.hovered {
             let artist = String(localized: "„\(copy.release?.displayArtist ?? "—")“")
+            if session.isRackWide {
+                guard let spot = session.spot(for: copy) else { return String(localized: "\(artist) – Pfeil zeigt einen Platz im Regal") }
+                return String(localized: "\(artist) in „\(name(spot.shelf))“ \(place(spot))")
+            }
             if let other = session.belongsElsewhere[copy.id] { return String(localized: "\(artist) gehört in „\(other)“ – Pfeil führt dorthin") }
-            return String(localized: "\(artist) \(place(session.spot(for: copy)))")
+            if let spot = session.spot(for: copy) { return String(localized: "\(artist) \(place(spot))") }
         }
-        if let copy = session.lastAddedHere {
-            let spot = session.spot(for: copy)
-            return String(localized: "Zuletzt „\(copy.release?.displayArtist ?? "—")“ \(place(spot))")
+        if let copy = session.lastAddedHere, let spot = session.placed(copy) {
+            let artist = copy.release?.displayArtist ?? "—"
+            if session.isRackWide { return String(localized: "Zuletzt „\(artist)“ in „\(name(spot.shelf))“ \(place(spot))") }
+            return String(localized: "Zuletzt „\(artist)“ \(place(spot))")
         }
         return String(localized: "Jede Platte kommt an ihre alphabetische Stelle")
     }
 
     /// "zwischen „Air“ und „Björk“", "vor „Air“", "nach „Zappa“", "als erste Platte".
-    private func place(_ spot: (position: Int, before: RecordCopy?, after: RecordCopy?)) -> String {
+    private func place(_ spot: AlphabeticalPlacement.Spot) -> String {
         func name(_ copy: RecordCopy) -> String { String(localized: "„\(copy.release?.displayArtist ?? "—")“") }
         switch (spot.before, spot.after) {
         case let (before?, after?): return String(localized: "zwischen \(name(before)) und \(name(after))")
@@ -286,6 +317,10 @@ struct ShelfAssignmentView: View {
         case (nil, nil): return String(localized: "als erste Platte")
         }
     }
+
+    /// Just the compartment: the row below names the cabinet too, and the
+    /// card has one line.
+    private func name(_ shelf: Shelf) -> String { labels[shelf.id] ?? shelf.numberText }
 
     private var pausedCount: Int {
         guard missingEnabled else { return 0 }
@@ -301,6 +336,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
     let items: [RecordCopy]
     let missing: Set<UUID>
     let missingEnabled: Bool
+    let rackWide: Bool
     let suggestedID: UUID?
     let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
@@ -330,6 +366,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
         controller.hover = hover
         controller.findPlace = findPlace
         controller.belongsElsewhere = belongsElsewhere
+        controller.rackWide = rackWide
         controller.setMissingEnabled(missingEnabled)
         controller.setMissing(missing)
         controller.apply(items)
@@ -351,6 +388,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     private var suggestedID: UUID?
     /// Fixed for a session (see `ShelfAssignmentSession.load`).
     fileprivate var belongsElsewhere: [UUID: String] = [:]
+    fileprivate var rackWide = false
     fileprivate var add: (RecordCopy) -> Void = { _ in }
     fileprivate var toggleMissing: (RecordCopy) -> Void = { _ in }
     fileprivate var hover: (RecordCopy, Bool) -> Void = { _, _ in }
@@ -446,6 +484,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
         let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id), missingEnabled: missingEnabled,
                                          suggested: copy.id == suggestedID,
                                          belongsIn: belongsElsewhere[copy.id],
+                                         rackWide: rackWide,
                                          toggleMissing: { [weak self] in self?.toggleMissing(copy) },
                                          hover: { [weak self] in self?.hover(copy, $0) },
                                          findPlace: { [weak self] in self?.findPlace(copy) }) { [weak self] in self?.add(copy) }
@@ -523,6 +562,8 @@ private struct ShelfAssignmentRow: View {
     let suggested: Bool
     /// The shelf it fits alphabetically, when that isn't this one.
     let belongsIn: String?
+    /// "Einsortieren": no shelf of its own, each row goes to `belongsIn`.
+    let rackWide: Bool
     let toggleMissing: () -> Void
     let hover: (Bool) -> Void
     let findPlace: () -> Void
@@ -539,7 +580,7 @@ private struct ShelfAssignmentRow: View {
                     Text(artist).font(.callout.weight(.medium)).lineLimit(1)
                     if suggested {
                         StatusTag(text: String(localized: "Als Nächstes"), color: AppStyle.accent)
-                            .help("Nach Interpret die nächste Platte für dieses Fach")
+                            .help(rackWide ? String(localized: "Nach Interpret die nächste Platte") : String(localized: "Nach Interpret die nächste Platte für dieses Fach"))
                     }
                 }
                 HStack(spacing: 6) {
@@ -551,7 +592,7 @@ private struct ShelfAssignmentRow: View {
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)
                             .fixedSize()
-                            .help("Passt alphabetisch in „\(belongsIn)“, nicht in dieses Fach")
+                            .help(rackWide ? String(localized: "Passt alphabetisch in „\(belongsIn)“") : String(localized: "Passt alphabetisch in „\(belongsIn)“, nicht in dieses Fach"))
                     }
                 }
             }
@@ -566,15 +607,27 @@ private struct ShelfAssignmentRow: View {
                     .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
                     .accessibilityLabel(missing ? String(localized: "\(artist) – \(title) wieder gefunden") : String(localized: "\(artist) – \(title) als vermisst markieren"))
             }
-            if let belongsIn {
+            if rackWide {
+                // Its place in the rack, with the shelf before it when it falls between two.
                 RowSymbolButton(systemImage: "arrow.right.circle", color: .secondary, visible: hovering, action: findPlace)
-                    .help("Zu „\(belongsIn)“ wechseln und dort einsortieren")
-                    .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
+                    .help("Im Regal zeigen, wohin sie gehört")
+                    .accessibilityLabel("\(artist) – \(title) im Regal zeigen")
+                if let belongsIn {
+                    RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
+                        .help("An ihrer alphabetischen Stelle in „\(belongsIn)“ einsortieren")
+                        .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
+                }
+            } else {
+                if let belongsIn {
+                    RowSymbolButton(systemImage: "arrow.right.circle", color: .secondary, visible: hovering, action: findPlace)
+                        .help("Zu „\(belongsIn)“ wechseln und dort einsortieren")
+                        .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
+                }
+                // The main action: accent in the glyph, like chosen options elsewhere.
+                RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
+                    .help(belongsIn == nil ? String(localized: "An ihrer alphabetischen Stelle ins Fach hinzufügen") : String(localized: "Trotzdem in dieses Fach hinzufügen"))
+                    .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
             }
-            // The main action: accent in the glyph, like chosen options elsewhere.
-            RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
-                .help(belongsIn == nil ? String(localized: "An ihrer alphabetischen Stelle ins Fach hinzufügen") : String(localized: "Trotzdem in dieses Fach hinzufügen"))
-                .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
         }
         .padding(.horizontal, AppStyle.pagePadding)
         .frame(height: ShelfAssignmentTableController.rowHeight)

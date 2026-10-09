@@ -8,6 +8,8 @@ import SwiftData
     /// A record to show: where it stands and between which records, or –
     /// without a shelf – where it belongs.
     var placing: UUID?
+    /// The round button: every record without a shelf, each to its place.
+    var sortingIn = false
 }
 
 /// What is typed into the search field in the toolbar while the shelf page is
@@ -318,12 +320,13 @@ struct KallaxView: View {
         // Metadata and tracklist updates don't show up in `statsSignature`.
         .onObservedChange(of: { changes.libraryVersion }) { _, _ in searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
         .onObservedChange(of: { changes.tracksVersion }) { _, _ in searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
-        .onAppear { takePlacingRequest() }
+        .onAppear { takePlacingRequest(); takeSortingInRequest() }
         #if DEBUG
         // Screenshots without clicking: --preview-add opens
         // "Platte hinzufügen" for the selected compartment,
         // --preview-place=Artist the placement card of that artist's record,
-        // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment.
+        // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment,
+        // --preview-sortin "Einsortieren" of the round button.
         .task {
             let arguments = ProcessInfo.processInfo.arguments
             try? await Task.sleep(for: .seconds(1))
@@ -333,6 +336,8 @@ struct KallaxView: View {
             } else if let raw = arguments.first(where: { $0.hasPrefix("--preview-place=") }) {
                 let artist = String(raw.dropFirst("--preview-place=".count))
                 if let copy = allCopies.first(where: { $0.release?.artist == artist }) { startPlacement(copy) }
+            } else if arguments.contains("--preview-sortin") {
+                startAssignment(nil)
             } else if arguments.contains("--preview-sortcheck") {
                 let shelves = cabinets.flatMap(\.shelves)
                 if let shelf = shelves.first(where: { !ShelfSortCheck.steps(PositionService.inShelfOrder($0.copies), by: .current).isEmpty }) {
@@ -342,6 +347,7 @@ struct KallaxView: View {
         }
         #endif
         .onChange(of: requests.placing) { takePlacingRequest() }
+        .onChange(of: requests.sortingIn) { takeSortingInRequest() }
         // Marks change without touching `statsSignature` (menu, table, sheet).
         .onChange(of: missingIDs) { refreshPlacement() }
         // Settings (other window) rebuilt cabinets, restored a backup or reset
@@ -356,13 +362,10 @@ struct KallaxView: View {
         .appPanel(item: $assignment, onDismiss: {
             // The shelf behind the sheet follows the additions only now, so
             // nothing rebuilds the sheet while records are being added.
-            if let copy = closingAssignment?.lastAdded {
-                focusCopy = copy
-                focusRevision += 1
-            }
+            if let copy = closingAssignment?.lastAdded, !copy.isDeleted, copy.modelContext != nil { showPlaced(copy) }
             closingAssignment = nil
         }) { session in
-            ShelfAssignmentView(session: session, owner: owner, rangeLabel: rangeLabels[session.shelf.id], labels: rangeLabels,
+            ShelfAssignmentView(session: session, owner: owner, rangeLabel: session.shelf.flatMap { rangeLabels[$0.id] }, labels: rangeLabels,
                                 findPlace: { copy in
                                     // Its own shelf instead: no record to pick up here afterwards.
                                     closingAssignment = nil
@@ -646,8 +649,9 @@ struct KallaxView: View {
         }
     }
 
-    /// New records go to their alphabetical place in the compartment.
-    private func startAssignment(_ shelf: Shelf) {
+    /// New records go to their alphabetical place in the compartment –
+    /// without one (the round button), each to its place in the rack.
+    private func startAssignment(_ shelf: Shelf?) {
         let session = ShelfAssignmentSession(shelf: shelf)
         closingAssignment = session
         assignment = session
@@ -704,6 +708,13 @@ struct KallaxView: View {
         guard let id = requests.placing else { return }
         requests.placing = nil
         if let copy = allCopies.first(where: { $0.id == id }) { startPlacement(copy) }
+    }
+
+    private func takeSortingInRequest() {
+        guard requests.sortingIn else { return }
+        requests.sortingIn = false
+        placement = nil
+        startAssignment(nil)
     }
 
     private func startPlacement(_ copy: RecordCopy) {

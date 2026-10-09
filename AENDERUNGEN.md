@@ -1,3 +1,10 @@
+# Einsortieren per Knopf · 09.10.2026
+
+- Auf der Regalseite sitzt unten rechts jetzt auch der runde Knopf, als „+“ ohne Fächer. Ein Klick öffnet **Einsortieren**: alle Platten ohne Fach nach Interpret, jede mit „gehört in …“, ohne vorher ein Fach wählen zu müssen. Grund: Für eine neue Platte gab es bisher nur die Suche (Name muss bekannt sein) oder das „+“ eines beliebigen Fachs.
+- „+“ in der Zeile setzt die Platte an ihre alphabetische Stelle in ihrem Fach (zwischen zwei Fächern ans Ende des ersten), der Pfeil öffnet die Einsortier-Karte mit beiden Möglichkeiten. Die Karte oben nennt Fach und Nachbarn. Beim Schließen springt das Regal zur zuletzt einsortierten Platte.
+- Technisch dasselbe Fenster wie „Platte hinzufügen“ (`ShelfAssignmentSession` mit `shelf == nil`), Raster/Liste bleibt über dem Fachinhalt. Raster und Liste des Fachs lassen unten Platz für den Knopf. Neu `--preview-sortin`.
+- Englische Texte im Katalog ergänzt, ein Test für das Einsortieren ohne Fach. Demo in Klassisch angesehen. 206 Tests grün.
+
 # Version 1.0.5, Prüfung · 09.10.2026
 
 - Version 1.0.5, Build bleibt 102026. DMG neu erstellt.
