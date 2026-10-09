@@ -1,3 +1,7 @@
+# Version 1.0.6 · 09.10.2026
+
+- Version 1.0.6, Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.0.6.dmg`), mit „Einsortieren per Knopf“. README und STATISTIK.md: Version.
+
 # Einsortieren per Knopf · 09.10.2026
 
 - Auf der Regalseite sitzt unten rechts jetzt auch der runde Knopf, als „+“ ohne Fächer. Ein Klick öffnet **Einsortieren**: alle Platten ohne Fach nach Interpret, jede mit „gehört in …“, ohne vorher ein Fach wählen zu müssen. Grund: Für eine neue Platte gab es bisher nur die Suche (Name muss bekannt sein) oder das „+“ eines beliebigen Fachs.
