@@ -430,7 +430,11 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                             // Esc closes it, wherever the focus is.
                             .background { PanelEscapeMonitor { item = nil } }
                             .padding(AppStyle.pagePadding)
-                            .transition(.scale(scale: 0.96).combined(with: .opacity).combined(with: .releasesClicks))
+                            // Only a fade: scaling made AppKit lay out every
+                            // row of a table inside (and the window's drag
+                            // regions) on each frame – ~200 ms of a fully busy
+                            // main thread while "Platte hinzufügen" opened.
+                            .transition(.opacity.combined(with: .releasesClicks))
                             .id(shown.id)
                     }
                 }
