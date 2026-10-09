@@ -1259,6 +1259,11 @@ struct ActivityRing: View {
     var progress: Double?
     var size: CGFloat = 16
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// A page that isn't shown still draws (see `PageStack`): its ring stands
+    /// still there. Collection and wantlist both show the sync's, the hidden
+    /// statistics its own while calculating at launch – every frame of them
+    /// was drawn for nobody.
+    @Environment(\.pageVisibility) private var visibility
 
     var body: some View {
         ZStack {
@@ -1269,7 +1274,7 @@ struct ActivityRing: View {
             } else if reduceMotion {
                 arc(to: 0.3)
             } else {
-                TimelineView(.animation) { context in
+                TimelineView(.animation(paused: !(visibility?.isShown ?? true))) { context in
                     arc(to: 0.3)
                         .rotationEffect(.degrees(context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1) * 360))
                 }

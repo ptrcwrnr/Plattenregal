@@ -30,6 +30,10 @@ import AppKit
 ///   the top of a page makes SwiftUI re-check it for every text and control
 ///   below. Views that care ask `pageVisibility` (see `trackPageActivity`).
 /// - A page that isn't shown gets no clicks, shortcuts, focus or VoiceOver.
+/// - At launch only the page shown is built right away; the others follow
+///   one by one once the window stands (or at once when switched to first).
+///   Building all four up front kept the main thread busy for another ~0.6 s
+///   with a large collection before the window answered.
 struct PageStack<Page: Hashable, Content: View>: View {
     let pages: [Page]
     let selection: PageSelection<Page>
@@ -89,9 +93,10 @@ private struct PageStackRepresentable<Page: Hashable, Content: View>: NSViewRepr
             let visibility = PageVisibility { [selection] in
                 (parent?.isShown ?? true) && selection.current == page
             }
-            view.add(PageHost(visibility: visibility, searchRequests: searchRequests, content: content(page)), for: page)
+            view.add(page) { PageHost(visibility: visibility, searchRequests: searchRequests, content: content(page)) }
         }
         Self.follow(selection, in: view)
+        view.buildRemainingPages()
         return view
     }
 
@@ -142,13 +147,46 @@ extension View {
 
 final class PageStackView<Page: Hashable>: NSView {
     fileprivate(set) var hosts: [Page: any PageHosting] = [:]
+    /// Pages not built yet (see `host(for:)`).
+    private var builders: [Page: () -> any PageHosting] = [:]
     /// The pages in the order of the switch, for the direction of a switch.
     private var order: [Page] = []
     private var shown: Page?
 
     override var isFlipped: Bool { true }
 
-    fileprivate func add<Root: View>(_ root: Root, for page: Page) {
+    fileprivate func add<Root: View>(_ page: Page, root: @escaping () -> Root) {
+        order.append(page)
+        builders[page] = { [unowned self] in self.makeHost(root()) }
+    }
+
+    /// The page's hosting view, built on first use.
+    private func host(for page: Page) -> (any PageHosting)? {
+        if let host = hosts[page] { return host }
+        guard let build = builders.removeValue(forKey: page) else { return nil }
+        let host = build()
+        hosts[page] = host
+        return host
+    }
+
+    /// The pages not shown yet, one at a time whenever the main thread has
+    /// nothing else to do: each is ready by the time anyone switches to it,
+    /// and none of them holds up the first window.
+    fileprivate func buildRemainingPages(after delay: TimeInterval = 0.8) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            // Once the run loop is about to wait for the next event.
+            let observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeWaiting.rawValue, false, 0) { _, _ in
+                MainActor.assumeIsolated {
+                    guard let self, let next = self.order.first(where: { self.hosts[$0] == nil }) else { return }
+                    _ = self.host(for: next)
+                    self.buildRemainingPages(after: 0.2)
+                }
+            }
+            CFRunLoopAddObserver(CFRunLoopGetMain(), observer, .defaultMode)
+        }
+    }
+
+    private func makeHost<Root: View>(_ root: Root) -> any PageHosting {
         let host = PageHostingView(rootView: root)
         // The page fills the stack; it must not push its own size onto the window.
         host.sizingOptions = []
@@ -157,8 +195,7 @@ final class PageStackView<Page: Hashable>: NSView {
         host.wantsLayer = true
         host.alphaValue = 0
         addSubview(host)
-        hosts[page] = host
-        order.append(page)
+        return host
     }
 
     /// How far the incoming page travels: a nudge, not a full slide.
@@ -188,7 +225,7 @@ final class PageStackView<Page: Hashable>: NSView {
     /// clipped: pages draw their background up under the toolbar, past its
     /// top edge; sideways the window clips the push anyway.
     fileprivate func show(_ page: Page) {
-        guard page != shown, let incoming = hosts[page] else { return }
+        guard page != shown, let incoming = host(for: page) else { return }
         let outgoing = shown.flatMap { hosts[$0] }
         shown = page
 

@@ -398,6 +398,9 @@ struct RollingNumber: View {
     let value: Double
     let format: (Double) -> String
     @State private var shown: Double = 0
+    /// Only rolls where it can be seen: on the hidden page (at launch, after
+    /// a sync elsewhere) every frame of it was drawn for nobody.
+    @Environment(\.pageVisibility) private var visibility
     var body: some View {
         Text(format(shown))
             .monospacedDigit()
@@ -406,6 +409,6 @@ struct RollingNumber: View {
             .onChange(of: value) { _, _ in update() }
     }
     private func update() {
-        if AppStyle.reduceMotion { shown = value } else { withAnimation(.smooth(duration: 0.8)) { shown = value } }
+        if AppStyle.reduceMotion || !(visibility?.isShown ?? true) { shown = value } else { withAnimation(.smooth(duration: 0.8)) { shown = value } }
     }
 }

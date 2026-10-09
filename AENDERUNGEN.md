@@ -1,3 +1,17 @@
+# Start, verborgene Seiten, Speicher · 09.10.2026
+
+Gemessen in einer auf ~2.000 Platten vergrößerten Demo (Release-Build): Zeitstempel in der App über je drei Starts, Instruments (Time Profiler) und `footprint`. **Nach dem ersten Erscheinen des Fensters war der Hauptthread ~1,36 s beschäftigt, jetzt ~0,75–0,87 s.**
+
+- **Seiten beim Start nacheinander** (`PageStack`): Alle vier Seiten wurden sofort gebaut, angelegt und gezeichnet, auch die drei unsichtbaren (~0,6 s). Jetzt sofort nur die gezeigte; die übrigen folgen eine nach der anderen, sobald der Hauptthread nichts zu tun hat (ab ~0,8 s nach dem Start), oder sofort, wenn man vorher auf sie wechselt. Geprüft mit Fensterfotos: Wechsel 0,3 s nach dem Start zur noch nicht gebauten Statistik und spätere Wechsel auf Regal, Wantlist, Statistik zeigen jeweils die fertige Seite.
+- **Keine Animationen auf verborgenen Seiten**: Der Aktivitätsring (`ActivityRing`) drehte sich in jedem Bild auch auf verborgenen Seiten – beim Sync auf Collection *und* Wantlist, beim Start auf der rechnenden Statistik. Er steht dort jetzt still. Die großen Zahlen der Statistik rollen nur noch, wo man sie sieht; auf der verborgenen Seite stehen sie gleich auf ihrem Wert.
+- **Gemessen, ohne Änderung**:
+  - *Seitenwechsel*: ~40 ms am Stück beim Klick, insgesamt ~200 ms Hauptthread über die 0,3 s der Animation. Fast alles davon ist das Gleiten der Auswahl im Umschalter: Jede animierte Änderung in einem Toolbar-Element lässt AppKit die Toolbar in jedem Bild neu anordnen (ohne Animation ~28 ms). Eine verschobene statt gemorphte Linse änderte daran nichts; die gleitende Linse bleibt (Design).
+  - *Verborgene Seiten wirklich ausblenden* (`isHidden`) statt nur durchsichtig: beim Hovern keine messbare Ersparnis, daher nicht übernommen.
+  - *Speicher*: ~220 MB nach dem Start, ~300 MB nach dem Besuch aller Seiten und mehrerer Fächer, bis ~500 MB nach langem Scrollen durch die Collection, danach stabil. Davon Cover-Bitmaps bis ~150 MB (die Grenze von 320 Covern greift vor den 256 MB) und etwa ebenso viel Ebenen-Speicher von Core Animation, der mit den angezeigten Covern mitwächst. Echte Discogs-Cover vorab ins native Pixelformat von Core Animation (BGRX) umzurechnen änderte weder Speicher noch Scroll-Zeit (Gegenprobe mit echten Covern, je zwei Läufe).
+  - *Kurzansicht eines Covers öffnen*: ~70 ms. *Erstes Anzeigen der Statistik*: ~40 ms.
+  - *Nach einem Sync*: die verborgene Regal-Seite baut ihre Fachbeschriftungen neu (~140 ms), die Collection ihre Listen (~50 ms) – einmal pro Sync, daher belassen.
+- 205 Tests grün.
+
 # Statistik: Neuberechnung im Hintergrund, Hover ohne unsichtbare Seiten · 09.10.2026
 
 Gemessen mit Instruments (Time Profiler, Release-Build) in einer auf ~2.000 Platten vergrößerten Demo mit Discogs-Rohdaten je Release, Hauptthread-Zeit alt → neu: **Neuberechnung nach einem Sync-Speichern ~390 ms → ~5 ms; danach gleiten die Diagramme nicht mehr ~0,45 s bei voller Last zu den neuen Werten; insgesamt pro Sync-Speichern ~1,7 s → ~0,95 s. Mausbewegung über die Statistik (Fenster aktiv): über der Wertkurve 61 % → 30 % Hauptthread-Last, über einer Stelle ohne Hover-Effekt 30 % → 25 %.**
