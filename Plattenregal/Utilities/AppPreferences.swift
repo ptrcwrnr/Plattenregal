@@ -112,15 +112,34 @@ enum DisplaySettings {
     /// The "Vermisst" column beside "Platte hinzufügen" folded away.
     static let missingColumnCollapsedKey = "missingColumnCollapsed"
 
+    /// Klein, Mittel, Groß: the minimum cover width in the grid. The
+    /// columns always fill the width, so a size only shows once the column
+    /// count changes; the old 5-pt slider changed nothing on every second
+    /// step. These are far enough apart that each one changes the count at
+    /// usual window widths.
+    static let coverSizes: [Double] = [125, 155, 195]
     static let defaultCoverSize = 155.0
-    static let coverSizeRange = 120.0...220.0
 
-    /// The stored minimum cover size, kept within the slider's range – a
-    /// value from an older version or `defaults write` (NaN, 0, negative)
-    /// would otherwise break the column count.
+    /// The stored minimum cover size as one of `coverSizes` – the nearest,
+    /// for a value from the old slider; a broken one (NaN, `defaults
+    /// write`) is the default.
     static func coverSize(_ stored: Double) -> Double {
         guard stored.isFinite else { return defaultCoverSize }
-        return min(max(stored, coverSizeRange.lowerBound), coverSizeRange.upperBound)
+        return coverSizes.min { abs($0 - stored) < abs($1 - stored) } ?? defaultCoverSize
+    }
+
+    /// The size `offset` steps from `stored`, stopping at the ends (⌘+ / ⌘−).
+    static func coverSize(_ stored: Double, offset: Int) -> Double {
+        let index = coverSizes.firstIndex(of: coverSize(stored)) ?? 1
+        return coverSizes[min(max(index + offset, 0), coverSizes.count - 1)]
+    }
+
+    static func coverSizeName(_ size: Double) -> String {
+        switch coverSizes.firstIndex(of: coverSize(size)) {
+        case 0: String(localized: "Klein", comment: "Covergröße")
+        case 2: String(localized: "Groß", comment: "Covergröße")
+        default: String(localized: "Mittel", comment: "Covergröße")
+        }
     }
 }
 
@@ -329,8 +348,6 @@ enum AppShortcuts {
     static let largerCovers = KeyboardShortcut("+", modifiers: .command)
     static let smallerCovers = KeyboardShortcut("-", modifiers: .command)
     static let defaultCovers = KeyboardShortcut("0", modifiers: .command)
-    /// One step of ⌘+ / ⌘−, twice the slider's.
-    static let coverStep = 10.0
 
     struct Entry: Identifiable {
         let keys: String

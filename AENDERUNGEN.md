@@ -1,3 +1,8 @@
+# Covergröße: Klein, Mittel, Groß · 09.10.2026
+
+- **Drei Stufen statt Regler** (Einstellungen › Darstellung › Cover): Das Raster füllt die Fensterbreite immer ganz aus, eine Größe zeigt sich also erst, wenn sich die Spaltenzahl ändert – beim alten Regler (120–220 pt in 5-pt-Schritten) tat sich bei jedem zweiten Strich nichts. Jetzt ein Umschalter wie bei „Modus“: Klein 125 pt, Mittel 155 pt (der bisherige Standard), Groß 195 pt; die Abstände ändern bei üblichen Fensterbreiten bei jedem Schritt die Spaltenzahl. Ein gespeicherter Wert des alten Reglers wird zur nächsten Stufe. ⌘+ / ⌘− gehen eine Stufe weiter, ⌘0 auf Mittel. Der Zurücksetzen-Pfeil entfällt (Text im Katalog als veraltet markiert); „Klein“, „Mittel“, „Groß“ englisch übersetzt.
+- Geprüft mit Fensterfotos der Demo (Klassisch hell): Umschalter in der Cover-Karte, Auswahl „Groß“ (noch mit dem Regler-Zwischenstand). Test `coverSizeStaysInRange` auf die Stufen umgestellt. 205 Tests grün.
+
 # Wantlist scrollt wie die Collection · 09.10.2026
 
 Gemessen in einer auf ~2.200 Platten und ~2.200 Wantlist-Einträge vergrößerten Demo (Klassisch, Release-Build), Scrollen per Scrollrad-Ereignissen (40/s à 40 pt, 10 s), CPU-Zeit des Hauptthreads, je drei Läufe: **Wantlist 3,85–3,91 s → 3,51–3,59 s; Collection unverändert 3,35–3,47 s.** Ursachen per Time Profiler und Diagnose-Ausgaben gefunden.

@@ -954,9 +954,14 @@ extension AllTests {
         @Test func coverSizeStaysInRange() {
             #expect(DisplaySettings.coverSize(.nan) == DisplaySettings.defaultCoverSize)
             #expect(DisplaySettings.coverSize(.infinity) == DisplaySettings.defaultCoverSize)
-            #expect(DisplaySettings.coverSize(-50) == DisplaySettings.coverSizeRange.lowerBound)
-            #expect(DisplaySettings.coverSize(10_000) == DisplaySettings.coverSizeRange.upperBound)
-            #expect(DisplaySettings.coverSize(180) == 180)
+            #expect(DisplaySettings.coverSize(-50) == DisplaySettings.coverSizes.first)
+            #expect(DisplaySettings.coverSize(10_000) == DisplaySettings.coverSizes.last)
+            // A value of the old slider: the nearest step.
+            #expect(DisplaySettings.coverSize(180) == 195)
+            #expect(DisplaySettings.coverSize(155) == 155)
+            #expect(DisplaySettings.coverSize(155, offset: 1) == 195)
+            #expect(DisplaySettings.coverSize(195, offset: 1) == 195)
+            #expect(DisplaySettings.coverSize(125, offset: -1) == 125)
         }
 
         @Test func columnCountSurvivesOddMinimum() {

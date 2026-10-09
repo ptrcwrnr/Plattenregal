@@ -305,11 +305,11 @@ struct AppearanceSettingsView: View {
     @AppStorage(DisplaySettings.coverSizeKey) private var storedCoverSize = DisplaySettings.defaultCoverSize
     @AppStorage(DisplaySettings.statisticsOrderKey) private var statisticsOrder = ""
 
-    /// Always within the slider's range, even for an odd stored value, so
-    /// slider and label never disagree.
+    /// Klein, Mittel or Groß – always one of them, even for an odd stored
+    /// value, so the switch always shows a choice.
     private var coverSize: Binding<Double> {
         Binding(get: { DisplaySettings.coverSize(storedCoverSize) },
-                set: { storedCoverSize = DisplaySettings.coverSize($0) })
+                set: { storedCoverSize = $0 })
     }
 
     /// Klassisch brings its own colors; the choices stay stored for Modern.
@@ -368,29 +368,10 @@ struct AppearanceSettingsView: View {
             SettingsCard(title: String(localized: "Cover"),
                          subtitle: String(localized: "Die Spalten füllen die Fensterbreite immer ganz aus.")) {
                 SettingsRow(title: String(localized: "Mindestgröße im Raster")) {
-                    HStack(spacing: AppStyle.tightSpacing) {
-                        if coverSize.wrappedValue != DisplaySettings.defaultCoverSize {
-                            IconButton(systemImage: "arrow.counterclockwise",
-                                       help: String(localized: "Auf Standard (\(Int(DisplaySettings.defaultCoverSize)) pt) zurücksetzen")) {
-                                storedCoverSize = DisplaySettings.defaultCoverSize
-                            }
-                            .foregroundStyle(.secondary)
-                            .transition(.opacity)
-                        }
-                        Text("\(Int(coverSize.wrappedValue)) pt").monospacedDigit().foregroundStyle(.secondary)
-                            .contentTransition(.numericText())
+                    GlassSegmentedPicker(selection: coverSize, options: DisplaySettings.coverSizes) {
+                        Text(DisplaySettings.coverSizeName($0))
                     }
-                    .animation(AppStyle.quickAnimation, value: coverSize.wrappedValue)
-                }
-                HStack(spacing: AppStyle.rowSpacing) {
-                    Image(systemName: "square.fill").font(.caption2).foregroundStyle(.tertiary)
-                        .accessibilityHidden(true)
-                    Slider(value: coverSize, in: DisplaySettings.coverSizeRange, step: 5) {
-                        Text("Mindestgröße der Cover")
-                    }
-                    .labelsHidden()
-                    Image(systemName: "square.fill").font(.title3).foregroundStyle(.tertiary)
-                        .accessibilityHidden(true)
+                    .accessibilityLabel("Mindestgröße der Cover")
                 }
             }
             SettingsCard(title: String(localized: "Statistik")) {

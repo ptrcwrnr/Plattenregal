@@ -131,6 +131,39 @@
         }
       }
     },
+    "Groß" : {
+      "comment" : "Covergröße",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large"
+          }
+        }
+      }
+    },
+    "Klein" : {
+      "comment" : "Covergröße",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small"
+          }
+        }
+      }
+    },
+    "Mittel" : {
+      "comment" : "Covergröße",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
+          }
+        }
+      }
+    },
     "·" : {
       "shouldTranslate" : false
     },
@@ -1995,6 +2028,7 @@
       }
     },
     "Auf Standard (%lld pt) zurücksetzen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

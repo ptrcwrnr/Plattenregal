@@ -390,16 +390,16 @@ private struct GlobalShortcuts: View {
             Button("Liste") { layout?.wrappedValue = .list }
                 .keyboardShortcut(AppShortcuts.list)
                 .disabled(layout == nil)
-            Button("Cover größer") { storedCoverSize = DisplaySettings.coverSize(coverSize + AppShortcuts.coverStep) }
+            Button("Cover größer") { storedCoverSize = DisplaySettings.coverSize(coverSize, offset: 1) }
                 .keyboardShortcut(AppShortcuts.largerCovers)
-                .disabled(!showsGrid || coverSize >= DisplaySettings.coverSizeRange.upperBound)
+                .disabled(!showsGrid || coverSize == DisplaySettings.coverSizes.last)
             // ⌘= as well: on US keyboards "+" needs Shift.
-            Button("Cover größer") { storedCoverSize = DisplaySettings.coverSize(coverSize + AppShortcuts.coverStep) }
+            Button("Cover größer") { storedCoverSize = DisplaySettings.coverSize(coverSize, offset: 1) }
                 .keyboardShortcut("=", modifiers: .command)
-                .disabled(!showsGrid || coverSize >= DisplaySettings.coverSizeRange.upperBound)
-            Button("Cover kleiner") { storedCoverSize = DisplaySettings.coverSize(coverSize - AppShortcuts.coverStep) }
+                .disabled(!showsGrid || coverSize == DisplaySettings.coverSizes.last)
+            Button("Cover kleiner") { storedCoverSize = DisplaySettings.coverSize(coverSize, offset: -1) }
                 .keyboardShortcut(AppShortcuts.smallerCovers)
-                .disabled(!showsGrid || coverSize <= DisplaySettings.coverSizeRange.lowerBound)
+                .disabled(!showsGrid || coverSize == DisplaySettings.coverSizes.first)
             Button("Cover in Standardgröße") { storedCoverSize = DisplaySettings.defaultCoverSize }
                 .keyboardShortcut(AppShortcuts.defaultCovers)
                 .disabled(!showsGrid || coverSize == DisplaySettings.defaultCoverSize)
