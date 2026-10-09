@@ -347,7 +347,9 @@ struct SoundDonut: View {
                         switch phase {
                         case .active(let point):
                             guard let frame = proxy.plotFrame else { return }
-                            hovered = slice(at: point, in: geometry[frame], slices: slices, sum: sum)?.id
+                            // Only a new slice draws the chart again, not every pixel moved.
+                            let id = slice(at: point, in: geometry[frame], slices: slices, sum: sum)?.id
+                            if id != hovered { hovered = id }
                         case .ended: hovered = nil
                         }
                     }

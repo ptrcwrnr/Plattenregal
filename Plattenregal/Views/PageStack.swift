@@ -263,6 +263,14 @@ private final class PageHostingView<Root: View>: NSHostingView<Root>, PageHostin
     }
     override var acceptsFirstResponder: Bool { isShown && super.acceptsFirstResponder }
     override var canBecomeKeyView: Bool { isShown && super.canBecomeKeyView }
+    // No hover either: the page's tracking areas stay in the window, and every
+    // pointer movement over the page shown reached the invisible ones below
+    // it too – a compartment or cover there lit up and was drawn again, and
+    // the window worked out its drag regions anew each time (~70 % of the
+    // main thread while moving the pointer over the statistics).
+    override func mouseMoved(with event: NSEvent) { if isShown { super.mouseMoved(with: event) } }
+    override func mouseEntered(with event: NSEvent) { if isShown { super.mouseEntered(with: event) } }
+    override func mouseExited(with event: NSEvent) { if isShown { super.mouseExited(with: event) } }
 }
 
 /// Whether the page is shown, for pages that only need it in their handlers

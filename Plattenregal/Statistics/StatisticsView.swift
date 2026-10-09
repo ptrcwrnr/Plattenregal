@@ -108,8 +108,12 @@ struct StatisticsView: View {
                 .animation(AppStyle.standardAnimation, value: model.error)
             }
             .pullToRefresh(disabled: refreshBlocked, action: refresh)
-            .overlay(alignment: .top) { activityPill }
-            .animation(.spring(duration: 0.45, bounce: 0.2), value: model.busy || model.calculating)
+            // The spring belongs to the pill alone: on the page it also caught
+            // the new numbers committed with `calculating` and had every chart
+            // glide to them (~0.45 s of a fully busy main thread per update).
+            .overlay(alignment: .top) {
+                activityPill.animation(.spring(duration: 0.45, bounce: 0.2), value: model.busy || model.calculating)
+            }
         }
         .background { AmbientBackdrop(covers: ambientCovers) }
         // Loading starts eagerly at app launch (see RootView) so this page is
@@ -296,13 +300,9 @@ struct StatisticsView: View {
         RecentRecords(copies: model.statistics.recentlyAdded.compactMap { model.copiesByID[$0] }, open: open)
     }
     private func select(_ group: StatisticGroup) { filter = group }
-    /// The page's records come from the view model's own read context. The
-    /// detail sheet (and the editor inside it) saves through the app's main
-    /// context, so hand it the same record from there — edits made on the
-    /// read-context copy would silently never be saved.
-    private func open(_ copy: RecordCopy) {
-        opened = context.model(for: copy.persistentModelID) as? RecordCopy
-    }
+    /// The page's records are the app's own (see `StatisticsViewModel.reload`),
+    /// so the detail panel and its editor save them through the main context.
+    private func open(_ copy: RecordCopy) { opened = copy }
 }
 
 // MARK: - Card chrome

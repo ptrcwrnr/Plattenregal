@@ -260,6 +260,20 @@ extension AllTests {
             #expect(model.version > version)
             #expect(!model.calculating)
         }
+        /// The page reads and counts off the main thread, in a context of its
+        /// own; the records it shows are the app's, so the detail panel opened
+        /// from here saves its edits through the main context.
+        @Test @MainActor func statisticsShowTheAppsOwnRecords() async throws {
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            let kept = try makeCopy(); container.mainContext.insert(kept)
+            let gone = try makeCopy(id: 43, instance: 2); gone.discogsActive = false; container.mainContext.insert(gone)
+            try container.mainContext.save()
+            let model = StatisticsViewModel()
+            await model.reload(container: container)
+            #expect(model.statistics.totalItems == 1)
+            #expect(model.copies.map(\.id) == [kept.id])
+            #expect(model.copies.first === kept && model.copiesByID[kept.id] === kept)
+        }
         @Test func collectionValueAPIAndDailyOpenDoesNotRepeatRequest() async throws {
             let api = api(), container = try await authenticatedContainer(api)
             StatisticsURLProtocol.log.clear()

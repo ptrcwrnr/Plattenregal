@@ -72,7 +72,9 @@ struct HoverBarChart: View {
                         switch phase {
                         case .active(let point):
                             guard let frame = proxy.plotFrame else { return }
-                            hovered = proxy.value(atX: point.x - geometry[frame].minX, as: String.self)
+                            // Only a new bar draws the chart again, not every pixel moved.
+                            let bar = proxy.value(atX: point.x - geometry[frame].minX, as: String.self)
+                            if bar != hovered { hovered = bar }
                         case .ended: hovered = nil
                         }
                     }

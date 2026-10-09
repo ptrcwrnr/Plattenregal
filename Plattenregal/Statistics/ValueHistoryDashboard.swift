@@ -127,7 +127,10 @@ struct HistoryPoint: Identifiable { let id: UUID; let date: Date; let value: Dec
 struct HistoryLineChart: View {
     let points: [HistoryPoint]
     let currency: String?
-    @State private var selectedDate: Date?
+    /// The point under the pointer. Its ID, not the date there: the date
+    /// changes with every pixel the pointer moves, and each change drew the
+    /// whole chart again – the point only every few pixels.
+    @State private var selectedID: UUID?
     /// The chart's width: a half-width chart gets fewer dates on its axis,
     /// so they never run into each other.
     @State private var width: CGFloat = 0
@@ -144,9 +147,15 @@ struct HistoryLineChart: View {
     private var dateMarks: AxisMarkValues {
         monthStep.map { .stride(by: .month, count: $0) } ?? .automatic(desiredCount: dateLabelCount)
     }
-    private var selected: HistoryPoint? {
-        guard let selectedDate else { return nil }
-        return points.min { abs($0.date.timeIntervalSince(selectedDate)) < abs($1.date.timeIntervalSince(selectedDate)) }
+    private var selected: HistoryPoint? { selectedID.flatMap { id in points.first { $0.id == id } } }
+    /// The point closest to `date`.
+    private func nearest(_ date: Date?) -> HistoryPoint? {
+        guard let date else { return nil }
+        return points.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
+    }
+    private func select(_ date: Date?) {
+        let id = nearest(date)?.id
+        if id != selectedID { selectedID = id }
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -171,7 +180,7 @@ struct HistoryLineChart: View {
                     if let selected {
                         RuleMark(x: .value("Datum", selected.date)).foregroundStyle(.secondary.opacity(0.4))
                     }
-                }.chartXSelection(value: $selectedDate).chartYAxisLabel(currency ?? String(localized: "Exemplare"))
+                }.chartXSelection(value: Binding(get: { selected?.date }, set: { select($0) })).chartYAxisLabel(currency ?? String(localized: "Exemplare"))
                     .chartYScale(domain: .automatic(includesZero: false))
                     .chartXAxis {
                         AxisMarks(values: dateMarks) { value in
@@ -194,8 +203,8 @@ struct HistoryLineChart: View {
                         Rectangle().fill(.clear).contentShape(Rectangle()).onContinuousHover { phase in
                             switch phase {
                             case .active(let point):
-                                if let frame = proxy.plotFrame { selectedDate = proxy.value(atX: point.x - geometry[frame].minX) }
-                            case .ended: selectedDate = nil
+                                if let frame = proxy.plotFrame { select(proxy.value(atX: point.x - geometry[frame].minX)) }
+                            case .ended: select(nil)
                             }
                         }
                     }}

@@ -17,16 +17,13 @@ import Observation
     /// something derived from `copies` refresh on it.
     private(set) var version = 0
     private var generation = 0
-    /// Keeps the context of `copies` alive while they are shown.
-    @ObservationIgnored private var readContext: ModelContext?
 
     init() {
-        // `copies` live in their own context, which doesn't learn about
-        // deletions elsewhere: after "Alles zurücksetzen", loading a shelf or
-        // release of one of them crashes ("backing data could no longer be
-        // found"). The reset posts on the main thread before anything is drawn
-        // again, so everything is dropped right there; the page reloads on the
-        // save that came with it.
+        // After "Alles zurücksetzen" `copies` are deleted records: reading
+        // one of them, its shelf or release crashes ("backing data could no
+        // longer be found"). The reset posts on the main thread before
+        // anything is drawn again, so everything is dropped right there; the
+        // page reloads on the save that came with it.
         NotificationCenter.default.addObserver(forName: .plattenregalDidReset, object: nil, queue: nil) { [weak self] _ in
             MainActor.assumeIsolated { self?.forget() }
         }
@@ -37,7 +34,6 @@ import Observation
         generation += 1; calculating = false
         copies = []; copiesByID = [:]; history = []
         statistics = CollectionStatistics()
-        readContext = nil
         version += 1
     }
     func reload(container: ModelContainer) async {
@@ -45,19 +41,17 @@ import Observation
         calculating = true
         defer { if generation == current { calculating = false } }
         do {
-            let context = ModelContext(container)
-            let all = try context.fetch(FetchDescriptor<RecordCopy>())
-            // Same records as the collection (see `DiscogsAccount.current`), so a
-            // number here matches what the drill-down sheet then shows.
-            let selected = all.filter { $0.isInCurrentCollection(owner: owner.isEmpty ? nil : owner) }
-            let inputs = selected.map(AnalyticsItem.Raw.init)
-            let stats = await Self.calculate(inputs)
+            let loaded = try await Self.load(container, owner: owner.isEmpty ? nil : owner)
             guard current == generation, !Task.isCancelled else { return }
             // Fetch everything before committing any of it, so a failure here can't leave
             // `copies`/`statistics` reflecting a different owner than `history`.
-            let newHistory = try context.fetch(FetchDescriptor<CollectionValueSnapshot>(predicate: #Predicate { $0.owner == owner }, sortBy: [SortDescriptor(\.date)]))
-            readContext = context
-            copies = selected; statistics = stats
+            let newHistory = try ModelContext(container).fetch(FetchDescriptor<CollectionValueSnapshot>(predicate: #Predicate { $0.owner == owner }, sortBy: [SortDescriptor(\.date)]))
+            // The records shown (top artists, latest additions, random pick)
+            // are the app's own, already loaded for every page: the same
+            // objects the detail panel edits, and gone after a reset.
+            let all = Dictionary(LibraryRecords.of(container.mainContext).copies.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            let selected = loaded.ids.compactMap { all[$0] }
+            copies = selected; statistics = loaded.statistics
             copiesByID = Dictionary(selected.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             history = newHistory
             version += 1
@@ -100,9 +94,19 @@ import Observation
         await reload(container: container)
     }
 
-    /// Off the main actor, so large collections don't stall the UI.
-    /// Decoding each release's Discogs JSON happens here too.
-    @concurrent nonisolated private static func calculate(_ inputs: [AnalyticsItem.Raw]) async -> CollectionStatistics {
-        CollectionAnalyticsService.calculate(inputs.map(AnalyticsItem.init))
+    /// Off the main actor, in a context of its own, so large collections
+    /// don't stall the UI: reading every record and its release (~0.15 s for
+    /// 2 000 after each sync) as well as the calculation, which decodes each
+    /// release's Discogs JSON. Same records as the collection (see
+    /// `DiscogsAccount.current`), so a number here matches what the
+    /// drill-down then shows.
+    @concurrent nonisolated private static func load(_ container: ModelContainer, owner: String?) async throws -> (statistics: CollectionStatistics, ids: [UUID]) {
+        let context = ModelContext(container)
+        // Every release is read right below: in one fetch, not one request per release.
+        var descriptor = FetchDescriptor<RecordCopy>()
+        descriptor.relationshipKeyPathsForPrefetching = [\.release]
+        let selected = try context.fetch(descriptor).filter { $0.isInCurrentCollection(owner: owner) }
+        let inputs = selected.map(AnalyticsItem.Raw.init)
+        return (CollectionAnalyticsService.calculate(inputs.map(AnalyticsItem.init)), inputs.map(\.id))
     }
 }
