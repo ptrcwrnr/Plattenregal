@@ -1,4 +1,23 @@
-# Aktueller Stand · 08.10.2026 (Dokumentation, Fehlermeldungen, Fehlerprotokoll, Lokalisierung)
+# Aktueller Stand · 09.10.2026 (Version 1.0.5, Dokumentation, Fehlerprotokoll, Lokalisierung)
+
+Projektversion **1.0.5 (102026)**, Schema **V15**. Prüfung nach den Änderungen vom 09.10. (Regal, Statistik, Start, Scrollen, Einstellungen, DMG, Willkommensseite). Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+
+## Umfang und Befunde
+
+- **Doku:** AENDERUNGEN.md gegen alle Commits seit der letzten Durchsicht (`ddffd5c`) abgeglichen, jeder hat einen Eintrag. README nachgetragen: Ziehen zum Aktualisieren nur mit zwei Fingern auf dem Trackpad, Covergröße in drei Stufen, Version und Prüfdatum. STATISTIK.md: nur die Version, die Änderungen an der Statistik vom 09.10. standen schon darin.
+- **macOS-Absturzberichte:** kein neuer seit `Plattenregal-2026-10-08-101207.ips` (der absichtlich erzeugte aus der Prüfung vom 08.10.).
+- **App-Protokoll** 08.–09.10.: kein Absturzblock. `ERROR` nur „Schnappschuss … nach 30 s kein Fenster“ aus Aufnahmen der Willkommensseite in der Demo (`--snapshot`, per `open -n` neben der laufenden installierten App). Dieselbe Demo öffnete ihr Fenster ohne `--snapshot` normal; das zeitweise fehlende Fenster beim Schnappschuss ist damit weiter offen, betrifft aber nur das Debug-Werkzeug. Die Warnungen „Die vorige Sitzung wurde nicht normal beendet …“ stammen von per `kill` beendeten Demo-Läufen.
+- **Fehlermeldungen:** Die neuen Teile (Willkommensseite, Hilfe-Menü, Panel-Ausrichtung) haben keine Fehlerpfade. `Scripts/make-dmg.sh` meldet auf Deutsch, was zu tun ist (DMG schon eingehängt, App nicht gefunden, Finder hat das Layout nicht gespeichert).
+- **Lokalisierung:** per Skript – 892 Einträge, 58 veraltet (darunter die Tour-Texte), jeder aktive Eintrag mit englischer Übersetzung, auch Pluralformen; Platzhalter gleich (englisch teils mit Positionsangabe). Alle Texte der Willkommensseite stehen im Katalog. „Cover“ ist veraltet und kommt im Code nur noch als Kategorie des Protokolls vor, das nicht übersetzt wird.
+- **Willkommensseite** in der Demo angesehen: Deutsch hell (noch oben verankert) und Englisch dunkel (mittig), Klassisch. Die Knöpfe außerhalb der Demo („Später“, „Demo starten …“, „Token eintragen …“) nicht angesehen, um die echte Sammlung nicht zu öffnen.
+
+## Verifikation
+
+- `xcodebuild -scheme Plattenregal test` (Xcodes DerivedData): **205 Tests in 13 Suites bestanden**, keine Compilerwarnung im Code der App.
+- Release-Build und DMG mit `Scripts/make-dmg.sh` (`dist/Plattenregal-1.0.5.dmg`).
+- `git diff --check` ohne Befund.
+
+# Stand · 08.10.2026 (Dokumentation, Fehlermeldungen, Fehlerprotokoll, Lokalisierung)
 
 Projektversion **1.0.3 (102026)**, Schema **V15**. Prüfung nach den Scroll- und Datenänderungen vom Vormittag. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
 

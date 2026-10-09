@@ -1,3 +1,8 @@
+# Version 1.0.5, Prüfung · 09.10.2026
+
+- Version 1.0.5, Build bleibt 102026. DMG neu erstellt.
+- README: Ziehen zum Aktualisieren nur mit zwei Fingern auf dem Trackpad, Covergröße Klein/Mittel/Groß, Version und Prüfdatum. STATISTIK.md: Version. Befunde zu Protokoll, Absturzberichten und Lokalisierung in VALIDIERUNG.md, ohne Fehler im Code.
+
 # Willkommensseite statt Tour · 09.10.2026
 
 - Die Tour mit sechs Seiten und je zwei Bildschirmfotos ist durch eine Willkommensseite ersetzt: ein Satz zur App, drei nummerierte Schritte (Discogs verbinden, abgleichen, Regal einrichten), Knöpfe „Später“, „Demo starten …“ und „Token eintragen …“. In der Demo nur „Los geht’s“.
