@@ -1,3 +1,11 @@
+# DMG mit eigenem Fenster · 09.10.2026
+
+- `Scripts/make-dmg.sh` baut Release und packt die App in `dist/Plattenregal-<Version>.dmg`. Das Fenster ist 660 × 400 pt groß und zeigt die App und den Programme-Ordner mit Pfeil dazwischen, Symbole in 112 pt.
+- Hintergrund aus `Scripts/dmg-background.swift`: Papier, eine schwarze Platte mit goldenem Etikett unten, Equalizer und Noten in den Diagrammfarben, Hinweis auf Deutsch und Englisch. Erst ein Regal mit Plattenrücken, auf Wunsch entfernt.
+- Der Pfeil sitzt 7 pt unter der Mittellinie der Symbolrahmen. Genau auf der Linie wirkte er zu hoch, weil Ordnerkörper und Hülle im App-Symbol das Gewicht tiefer tragen.
+- Die Fenstergrenzen im AppleScript enthalten die Titelleiste (32 pt), sonst fehlt unten ein Streifen des Bildes.
+- Einmal speicherte der Finder Fenstergröße und Position, aber weder Hintergrund noch Symbolgröße. Deshalb liest das Skript die `.DS_Store` nach und legt das Layout bis zu dreimal an.
+
 # Einstellungen durchgesehen · 09.10.2026
 
 Alle acht Reiter auf Sinn, Doppelungen und Lücken geprüft.
