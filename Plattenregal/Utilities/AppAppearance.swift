@@ -1117,8 +1117,10 @@ enum CoverGrid {
 
 extension View {
     /// `.scrollPosition(id:anchor: .top)` bound to `anchor` (see `scrollPosition(tracking:)`).
+    /// The binding is made inside the modifier: making it reads `id`, and
+    /// made in a grid's closure it tied that closure to every new top row.
     func scrollPosition<ID: Hashable>(_ anchor: ScrollAnchor<ID>) -> some View {
-        scrollPosition(tracking: Bindable(anchor).id)
+        modifier(AnchoredScrollPosition(anchor: anchor))
     }
 
     /// `.scrollPosition(id:anchor: .top)` in a modifier of its own. The
@@ -1155,6 +1157,13 @@ private struct ObservedTask<ID: Equatable>: ViewModifier {
     let id: () -> ID
     let action: @MainActor () async -> Void
     func body(content: Content) -> some View { content.task(id: id(), action) }
+}
+
+private struct AnchoredScrollPosition<ID: Hashable>: ViewModifier {
+    let anchor: ScrollAnchor<ID>
+    func body(content: Content) -> some View {
+        content.scrollPosition(id: Bindable(anchor).id, anchor: .top)
+    }
 }
 
 private struct TrackedScrollPosition<ID: Hashable>: ViewModifier {

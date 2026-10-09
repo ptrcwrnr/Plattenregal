@@ -671,7 +671,6 @@ private struct WantlistCard: View {
                 fallbackTitle: String(localized: "Release #\(String(entry.releaseID))")
             )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
     }
 }

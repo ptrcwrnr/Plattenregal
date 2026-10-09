@@ -1,3 +1,13 @@
+# Wantlist scrollt wie die Collection · 09.10.2026
+
+Gemessen in einer auf ~2.200 Platten und ~2.200 Wantlist-Einträge vergrößerten Demo (Klassisch, Release-Build), Scrollen per Scrollrad-Ereignissen (40/s à 40 pt, 10 s), CPU-Zeit des Hauptthreads, je drei Läufe: **Wantlist 3,85–3,91 s → 3,51–3,59 s; Collection unverändert 3,35–3,47 s.** Ursachen per Time Profiler und Diagnose-Ausgaben gefunden.
+
+- **Scrollposition baute das Raster neu** (`scrollPosition(_:)`): Die Bindung an `ScrollAnchor.id` entstand im Closure des Rasters, und schon das Erzeugen liest `id`. Damit lief bei jeder neuen obersten Reihe der ganze Rasterinhalt samt aller sichtbaren Zellen neu (33-mal in 5 s Scrollen, die Collection 0-mal). Jetzt entsteht die Bindung im Modifier (`AnchoredScrollPosition`), das Raster bleibt unberührt. Gilt für jede Seite mit `ScrollAnchor`.
+- **Wantlist-Zelle ohne `frame(maxWidth: .infinity)`**, wie `RecordCard` in der Collection: Der flexible Rahmen ließ SwiftUI die Zelle bei jedem Vermessen auf dem langsamen Weg auslegen. Optik per Fensterfoto unverändert.
+- **Der verbleibende Abstand (~4 %)** ist das Mitführen der Scrollposition selbst: Bei jeder neuen obersten Reihe vermisst SwiftUI die sichtbaren Zellen einmal (~7 ms). Mit abgeschalteter Scrollposition lagen Wantlist und Collection gleichauf.
+- **Gefunden, nicht geändert:** Das Collection-Raster führt seine Scrollposition nicht mit – beim Scrollen kommt nur `nil` an, weil die Kacheln über die Release-Gruppe (`CollectionCoverGroup.Identity`) identifiziert sind, die Scrollposition aber die UUID der Platte erwartet (`.id(copy.id)` greift dafür nicht). Darum zahlt die Collection die Kosten oben nicht; nach einer Suche springt das Raster laut Code an den Anfang statt an die alte Stelle (nicht in der App ausprobiert).
+- 205 Tests grün.
+
 # Ziehen zum Aktualisieren, Suchfeld in der Toolbar, Wantlist-Raster · 09.10.2026
 
 - **Nur echtes Ziehen aktualisiert** (`PullToRefresh`): Ein schneller Wisch nach oben federte mit seinem Schwung über den oberen Rand und füllte den Ring wie ein Ziehen – Collection und Wantlist synchronisierten. Jetzt zählt die Überdehnung nur, solange die Finger auf dem Trackpad liegen (`onScrollPhaseChange`, `.interacting`); ein Rückfedern aus dem Schwung zeigt keinen Ring und bleibt wirkungslos, auch wenn die Finger währenddessen aufsetzen. Ziehen mit der Maus und ⌘R unverändert. Gilt auch für die Statistik.
