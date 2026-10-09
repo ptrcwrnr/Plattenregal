@@ -131,6 +131,66 @@
         }
       }
     },
+    "Ansicht Collection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection view"
+          }
+        }
+      }
+    },
+    "Ansicht Wantlist" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wantlist view"
+          }
+        }
+      }
+    },
+    "Automatischer Export" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic export"
+          }
+        }
+      }
+    },
+    "Covergröße im Raster" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cover size in grid"
+          }
+        }
+      }
+    },
+    "Die kleinste Breite eines Covers. Die Spalten füllen die Fensterbreite immer ganz aus." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The smallest width of a cover. The columns always fill the full window width."
+          }
+        }
+      }
+    },
+    "Einstellungen schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Settings"
+          }
+        }
+      }
+    },
     "Groß" : {
       "comment" : "Covergröße",
       "localizations" : {
@@ -138,6 +198,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Large"
+          }
+        }
+      }
+    },
+    "Immer zuerst nach Interpret. %@ Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always by artist first. %@ Applies to finding a spot, adding, “Check Order” and the alphabetical collection."
           }
         }
       }
@@ -160,6 +230,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medium"
+          }
+        }
+      }
+    },
+    "Raster oder Liste auch direkt auf der Seite über den runden Knopf unten rechts, die Covergröße mit ⌘+ und ⌘−." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grid or list also right on the page with the round button at the bottom right, cover size with ⌘+ and ⌘−."
+          }
+        }
+      }
+    },
+    "Sprache, Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language, appearance, start page, export and all other settings return to their defaults. Collection, shelves, locations, the Discogs token and the backup folder and retention are kept."
           }
         }
       }
@@ -3408,6 +3498,7 @@
       }
     },
     "Die Spalten füllen die Fensterbreite immer ganz aus." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4979,6 +5070,7 @@
       }
     },
     "Immer zuerst nach Interpret. %@ Gilt für Platzsuche, Hinzufügen und „Sortierung prüfen“." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5473,6 +5565,7 @@
       }
     },
     "Lässt sich auch direkt in Collection und Wantlist umschalten, über den runden Knopf unten rechts." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5690,6 +5783,7 @@
       }
     },
     "Mindestgröße im Raster" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7602,6 +7696,7 @@
       }
     },
     "Speicherplatz und Cover-Cache stehen unter „Daten“." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8235,6 +8330,7 @@
       }
     },
     "Übersicht" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

@@ -42,7 +42,10 @@ struct DataSettingsView: View {
             case .locations: String(localized: "Alle Platten stehen danach ohne Fach, gesperrte Fächer werden freigegeben, „Nicht im Regal“ und „Vermisst“ werden aufgehoben. Die Regale selbst bleiben.")
                 // "Vermisst" isn't part of a backup, so it doesn't come back with one.
                 + (DemoMode.isActive ? "" : String(localized: " Die aktuelle Belegung wird vorher gesichert und lässt sich unter „Sicherung“ wiederherstellen – ohne die „Vermisst“-Markierungen."))
-            case .settings: String(localized: "Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben.")
+            // The demo leaves the real app's language alone (see `AppPreferences.reset`).
+            case .settings: DemoMode.isActive
+                ? String(localized: "Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben.")
+                : String(localized: "Sprache, Darstellung, Startseite, Export und alle anderen Einstellungen gehen auf ihren Standard zurück. Sammlung, Regale, Standorte, der Discogs-Token sowie Speicherort und Aufbewahrung der Sicherungen bleiben.")
             case .everything: String(localized: "Sammlung, Wantlist, Statistik-Verlauf, zusätzliche Regale, Discogs-Konto samt Token, Cover und alle Einstellungen werden gelöscht – wie bei einer neuen Installation. Nur die Sicherungen der Fach-Belegung bleiben samt Speicherort und Aufbewahrung (eine aktuelle wird vorher geschrieben). Das lässt sich nicht rückgängig machen.")
             }
         }

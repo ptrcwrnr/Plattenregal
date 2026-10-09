@@ -1,3 +1,16 @@
+# Einstellungen durchgesehen · 09.10.2026
+
+Alle acht Reiter auf Sinn, Doppelungen und Lücken geprüft.
+
+- **Collection und Wantlist an einem Ort** (Darstellung): Die Reihenfolge stand unter Allgemein › Start, Raster/Liste und Covergröße unter Darstellung in zwei Karten („Übersicht“, „Cover“). Jetzt eine Karte „Collection und Wantlist“: Ansicht und Reihenfolge je Seite, darunter „Covergröße im Raster“. Unter Allgemein › Start bleibt nur „Beim Öffnen zeigen“.
+- **Regal › Bei gleichem Interpreten nach**: Der Hinweis nennt jetzt auch die alphabetische Collection, die diese Reihenfolge ebenfalls nutzt.
+- **Discogs › Hinweise**: Untertitel „Speicherplatz und Cover-Cache stehen unter ‚Daten‘“ entfernt – ein Überbleibsel, auf der Seite gibt es dazu nichts mehr.
+- **Export**: Karte heißt „Automatischer Export“ statt genauso wie ihr Schalter.
+- **Daten › Einstellungen zurücksetzen**: Die Rückfrage nennt die Sprache, die dabei auf „System“ zurückgeht (nicht in der Demo).
+- **Tastenkürzel**: neue Gruppe „Einstellungen“ mit esc / ⌘W zum Schließen.
+- Bewusst gelassen: Akzent- und Ambient-Farbe in Klassisch ausgegraut (dokumentierte Entscheidung), Protokoll unter Speicherplatz (Größe, Leeren) und Diagnose (Finder, Sichern), Demo unter Allgemein und im App-Menü. Kein Abgleich beim Start ergänzt – „Abgeglichen wird auf Wunsch“ ist so gewollt.
+- Texte englisch übersetzt, alte im Katalog als veraltet markiert. Fensterfotos der Demo: Allgemein; die neue Karte unter Darstellung liegt unterhalb des sichtbaren Bereichs und ist nicht im Bild. 205 Tests grün.
+
 # Umschalter in den Einstellungen: Animation geprüft, VoiceOver · 09.10.2026
 
 - **Animation geprüft, ohne Änderung**: Alle Umschalter der Einstellungen sind derselbe Baustein (`GlassSegmentedPicker`), dessen Auswahl in 0,3 s zur neuen Option gleitet. In der Demo (Klassisch) jeden per Bedienungshilfen gedrückt und sofort fotografiert – die Auswahl stand jedes Mal zwischen alter und neuer Option: Reiterleiste; Allgemein (Startseite, Reihenfolge Collection und Wantlist); Darstellung (Modus, Raster/Liste, Covergröße); Regal (Bei gleichem Interpreten nach, Beschriftung); Export (Collection/Wantlist, CSV/PDF, Wie im Regal/Alphabetisch); Sicherung (Letzte Stände). Nicht gedrückt: Sprache (fragt nach einem Neustart), Trennzeichen im Export.

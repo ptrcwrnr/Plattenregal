@@ -43,8 +43,8 @@ Die Tabs stehen als Umschalter in derselben Leiste wie im Hauptfenster, mitten i
 
 | Tab | Inhalt |
 |---|---|
-| Allgemein | Sprache, Startseite des Hauptfensters, Reihenfolge von Collection und Wantlist, Demo starten/beenden |
-| Darstellung | Design (Modern oder Klassisch), Hell/Dunkel, Akzent- und Ambient-Farbe, Raster oder Liste, Covergröße, Reihenfolge der Statistik |
+| Allgemein | Sprache, Startseite des Hauptfensters, Demo starten/beenden |
+| Darstellung | Design (Modern oder Klassisch), Hell/Dunkel, Akzent- und Ambient-Farbe; Collection und Wantlist (Raster oder Liste, Reihenfolge, Covergröße) in einer Karte; Reihenfolge der Statistik |
 | Regal | Regale anlegen, Größe ändern, umbenennen, (de)aktivieren, löschen; Fächer sperren und benennen (Klick aufs Fach öffnet dasselbe Menü wie im Regal); Einsortieren (Reihenfolge bei gleichem Interpreten, Vermisst-Liste an/aus); Beschriftung |
 | Discogs | Token, Verbindungstest, Synchronisierung |
 | Export | CSV/PDF von Collection oder Wantlist, automatischer Export in einen Ordner |

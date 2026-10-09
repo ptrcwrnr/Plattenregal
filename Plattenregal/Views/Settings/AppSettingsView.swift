@@ -211,16 +211,6 @@ struct SettingsNote: View {
 
 struct GeneralSettingsView: View {
     @State private var preferences = AppPreferences.shared
-    @AppStorage(DisplaySettings.collectionOrderKey) private var collectionOrder = OverviewOrder.alphabetical
-    @AppStorage(DisplaySettings.wantlistOrderKey) private var wantlistOrder = OverviewOrder.alphabetical
-
-    /// Switching to "Zufällig" shuffles anew, not only each launch.
-    private func order(_ stored: Binding<OverviewOrder>, scope: String) -> Binding<OverviewOrder> {
-        Binding(get: { stored.wrappedValue }, set: { new in
-            if new == .random && stored.wrappedValue != .random { OverviewOrder.reshuffle(scope) }
-            stored.wrappedValue = new
-        })
-    }
 
     var body: some View {
         @Bindable var preferences = preferences
@@ -245,16 +235,6 @@ struct GeneralSettingsView: View {
                 SettingsRow(title: String(localized: "Beim Öffnen zeigen"), hint: String(localized: "Die Seite, mit der das Hauptfenster startet.")) {
                     GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
                         .accessibilityLabel("Startseite")
-                }
-                Divider()
-                SettingsRow(title: String(localized: "Reihenfolge Collection"), hint: collectionOrder.hint) {
-                    GlassSegmentedPicker(selection: order($collectionOrder, scope: DisplaySettings.collectionOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
-                        .accessibilityLabel("Reihenfolge der Collection")
-                }
-                Divider()
-                SettingsRow(title: String(localized: "Reihenfolge Wantlist"), hint: wantlistOrder.hint) {
-                    GlassSegmentedPicker(selection: order($wantlistOrder, scope: DisplaySettings.wantlistOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
-                        .accessibilityLabel("Reihenfolge der Wantlist")
                 }
             }
             SettingsCard(title: String(localized: "Demo"), subtitle: String(localized: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.")) {
@@ -302,8 +282,18 @@ struct AppearanceSettingsView: View {
     @State private var preferences = AppPreferences.shared
     @AppStorage(DisplaySettings.collectionLayoutKey) private var collectionLayout = OverviewLayout.grid
     @AppStorage(DisplaySettings.wantlistLayoutKey) private var wantlistLayout = OverviewLayout.grid
+    @AppStorage(DisplaySettings.collectionOrderKey) private var collectionOrder = OverviewOrder.alphabetical
+    @AppStorage(DisplaySettings.wantlistOrderKey) private var wantlistOrder = OverviewOrder.alphabetical
     @AppStorage(DisplaySettings.coverSizeKey) private var storedCoverSize = DisplaySettings.defaultCoverSize
     @AppStorage(DisplaySettings.statisticsOrderKey) private var statisticsOrder = ""
+
+    /// Switching to "Zufällig" shuffles anew, not only each launch.
+    private func order(_ stored: Binding<OverviewOrder>, scope: String) -> Binding<OverviewOrder> {
+        Binding(get: { stored.wrappedValue }, set: { new in
+            if new == .random && stored.wrappedValue != .random { OverviewOrder.reshuffle(scope) }
+            stored.wrappedValue = new
+        })
+    }
 
     /// Klein, Mittel or Groß – always one of them, even for an odd stored
     /// value, so the switch always shows a choice.
@@ -359,15 +349,26 @@ struct AppearanceSettingsView: View {
                     .opacity(preferences.signatureDesign.usesColorChoices ? 1 : 0.4)
                 }
             }
-            SettingsCard(title: String(localized: "Übersicht"),
-                         subtitle: String(localized: "Lässt sich auch direkt in Collection und Wantlist umschalten, über den runden Knopf unten rechts.")) {
-                SettingsRow(title: String(localized: "Collection")) { OverviewLayoutPicker(selection: $collectionLayout) }
+            // Everything about how the two overview pages show their records,
+            // in one place: grid or list, order, cover size.
+            SettingsCard(title: String(localized: "Collection und Wantlist"),
+                         subtitle: String(localized: "Raster oder Liste auch direkt auf der Seite über den runden Knopf unten rechts, die Covergröße mit ⌘+ und ⌘−.")) {
+                SettingsRow(title: String(localized: "Ansicht Collection")) { OverviewLayoutPicker(selection: $collectionLayout) }
                 Divider()
-                SettingsRow(title: String(localized: "Wantlist")) { OverviewLayoutPicker(selection: $wantlistLayout) }
-            }
-            SettingsCard(title: String(localized: "Cover"),
-                         subtitle: String(localized: "Die Spalten füllen die Fensterbreite immer ganz aus.")) {
-                SettingsRow(title: String(localized: "Mindestgröße im Raster")) {
+                SettingsRow(title: String(localized: "Reihenfolge Collection"), hint: collectionOrder.hint) {
+                    GlassSegmentedPicker(selection: order($collectionOrder, scope: DisplaySettings.collectionOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
+                        .accessibilityLabel("Reihenfolge der Collection")
+                }
+                Divider()
+                SettingsRow(title: String(localized: "Ansicht Wantlist")) { OverviewLayoutPicker(selection: $wantlistLayout) }
+                Divider()
+                SettingsRow(title: String(localized: "Reihenfolge Wantlist"), hint: wantlistOrder.hint) {
+                    GlassSegmentedPicker(selection: order($wantlistOrder, scope: DisplaySettings.wantlistOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
+                        .accessibilityLabel("Reihenfolge der Wantlist")
+                }
+                Divider()
+                SettingsRow(title: String(localized: "Covergröße im Raster"),
+                            hint: String(localized: "Die kleinste Breite eines Covers. Die Spalten füllen die Fensterbreite immer ganz aus.")) {
                     GlassSegmentedPicker(selection: coverSize, options: DisplaySettings.coverSizes) {
                         Text(DisplaySettings.coverSizeName($0))
                     }

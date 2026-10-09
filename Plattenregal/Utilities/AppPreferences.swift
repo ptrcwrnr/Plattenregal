@@ -337,7 +337,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     }
 }
 
-/// The keyboard shortcuts, for the list under Einstellungen → Allgemein. The
+/// The keyboard shortcuts, for the list under Einstellungen → Tastenkürzel. The
 /// app-wide ones are registered with these values (see `GlobalShortcuts`), so
 /// the list can't drift from what the keys do.
 enum AppShortcuts {
@@ -382,6 +382,9 @@ enum AppShortcuts {
             ]),
             Group(title: String(localized: "Statistik"), entries: [
                 Entry(keys: "⇧⌘R", title: String(localized: "Zufallsfund: neue Platte ziehen")),
+            ]),
+            Group(title: String(localized: "Einstellungen"), entries: [
+                Entry(keys: "esc / ⌘W", title: String(localized: "Einstellungen schließen")),
             ]),
             Group(title: String(localized: "Einstellungen → Regal"), entries: [
                 Entry(keys: "← / →", title: String(localized: "Zwischen den Regalen wechseln")),

@@ -130,7 +130,7 @@ struct DiscogsSettingsView: View {
                 }
             }
 
-            SettingsCard(title: String(localized: "Hinweise"), subtitle: String(localized: "Speicherplatz und Cover-Cache stehen unter „Daten“.")) {
+            SettingsCard(title: String(localized: "Hinweise")) {
                 SettingsNote(String(localized: "Release-Daten werden bei jeder Synchronisierung aktualisiert; ältere Einträge lassen sich in der Detailansicht einzeln neu laden. Ohne Verbindung bleiben eigene Exemplar- und Standortdaten vollständig verfügbar."))
                 SettingsNote("This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. ‘Discogs’ is a trademark of Zink Media, LLC.")
                 Link("Discogs API-Nutzungsbedingungen ↗", destination: URL(string: "https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use")!)

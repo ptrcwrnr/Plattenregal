@@ -119,7 +119,7 @@ struct ShelfSettingsView: View {
 
             SettingsCard(title: String(localized: "Einsortieren"),
                          subtitle: String(localized: "Wie die Platten im Fach stehen und was beim Hinzufügen hilft.")) {
-                SettingsRow(title: String(localized: "Bei gleichem Interpreten nach"), hint: String(localized: "Immer zuerst nach Interpret. \(secondaryOrder.hint) Gilt für Platzsuche, Hinzufügen und „Sortierung prüfen“.")) {
+                SettingsRow(title: String(localized: "Bei gleichem Interpreten nach"), hint: String(localized: "Immer zuerst nach Interpret. \(secondaryOrder.hint) Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection.")) {
                     GlassSegmentedPicker(selection: $secondaryOrder, options: ShelfSecondaryOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Bei gleichem Interpreten nach")
                 }
