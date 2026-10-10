@@ -373,15 +373,18 @@ nonisolated struct DiscogsSyncSummary: Sendable {
             let accounts = try context.fetch(FetchDescriptor<DiscogsAccount>())
             let previousCurrent = DiscogsAccount.current(in: accounts)?.username
             let isNewAccount = !accounts.contains { $0.username == owner }
+            // Only what differs is written, here and below: a sync that confirms
+            // the store saves nothing but the account's dates, instead of every
+            // record – each of which the main context then reads again.
             let account = accounts.first { $0.username == owner } ?? DiscogsAccount(username: owner)
-            context.insert(account)
+            if isNewAccount { context.insert(account) }
             let releases = try context.fetch(FetchDescriptor<Release>())
             var byRelease: [Int: Release] = [:]
             for release in releases where byRelease[release.discogsID] == nil { byRelease[release.discogsID] = release }
-            func release(_ basic: DiscogsBasicInformation) throws -> Release {
+            func release(_ basic: DiscogsBasicInformation) throws -> (record: Release, changed: Bool) {
                 let record = byRelease[basic.id] ?? Release(discogsID: basic.id, artist: "", title: basic.title)
                 if byRelease[basic.id] == nil { context.insert(record); byRelease[basic.id] = record }
-                try basic.apply(to: record, at: now); return record
+                return (record, try basic.apply(to: record, at: now))
             }
             let copies = try context.fetch(FetchDescriptor<RecordCopy>())
             if let folders = snapshot.folders {
@@ -391,10 +394,15 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 var indexed = Dictionary(existing.map { ($0.folderID, $0) }, uniquingKeysWith: { first, _ in first })
                 let ids = Set(folders.map(\.id))
                 for dto in folders {
-                    let folder = indexed[dto.id] ?? DiscogsFolder(owner: owner, id: dto.id, name: dto.name, count: dto.count)
-                    if indexed[dto.id] == nil || folder.name != dto.name || folder.count != dto.count { result.foldersChanged += 1 }
-                    context.insert(folder); folder.name = dto.name; folder.count = dto.count
-                    indexed[dto.id] = folder
+                    guard let folder = indexed[dto.id] else {
+                        let folder = DiscogsFolder(owner: owner, id: dto.id, name: dto.name, count: dto.count)
+                        context.insert(folder); indexed[dto.id] = folder
+                        result.foldersChanged += 1
+                        continue
+                    }
+                    guard folder.name != dto.name || folder.count != dto.count else { continue }
+                    folder.name = dto.name; folder.count = dto.count
+                    result.foldersChanged += 1
                 }
                 for folder in existing where !ids.contains(folder.folderID) { context.delete(folder); result.foldersChanged += 1 }
                 for copy in copies where copy.discogsOwner == owner {
@@ -408,20 +416,22 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 let ids = Set(collection.map(\.instance_id))
                 for dto in collection {
                     try Task.checkCancellation()
-                    let metadataChanged = byRelease[dto.id]?.basicInformation != (try DiscogsEncoding.data(dto.basic_information))
-                    let metadata = try release(dto.basic_information)
-                    let copy: RecordCopy
-                    let isNew = byInstance[dto.instance_id] == nil
-                    if let existing = byInstance[dto.instance_id] { copy = existing }
-                    else {
-                        copy = RecordCopy(release: metadata, instanceID: dto.instance_id, owner: owner); context.insert(copy)
+                    let (metadata, metadataChanged) = try release(dto.basic_information)
+                    guard let copy = byInstance[dto.instance_id] else {
+                        let copy = RecordCopy(release: metadata, instanceID: dto.instance_id, owner: owner); context.insert(copy)
+                        // The release once more after the insert (see `Shelf.insert`).
+                        copy.release = metadata
+                        copy.discogsFolderID = dto.folder_id; copy.discogsDateAdded = dto.date_added
                         byInstance[dto.instance_id] = copy
                         result.collectionAdded += 1
+                        continue
                     }
-                    if !isNew && (metadataChanged || copy.discogsFolderID != dto.folder_id || !copy.discogsActive || copy.discogsDateAdded != dto.date_added) { result.collectionUpdated += 1 }
-                    copy.release = metadata; copy.discogsOwner = owner; copy.discogsInstanceID = dto.instance_id
-                    copy.discogsFolderID = dto.folder_id; copy.discogsDateAdded = dto.date_added
-                    copy.discogsActive = true
+                    var changed = metadataChanged
+                    if copy.release !== metadata { copy.release = metadata; changed = true }
+                    if copy.discogsFolderID != dto.folder_id { copy.discogsFolderID = dto.folder_id; changed = true }
+                    if copy.discogsDateAdded != dto.date_added { copy.discogsDateAdded = dto.date_added; changed = true }
+                    if !copy.discogsActive { copy.discogsActive = true; changed = true }
+                    if changed { result.collectionUpdated += 1 }
                     // Never write shelf or positionInShelf.
                 }
                 for copy in owned where copy.discogsActive && !ids.contains(copy.discogsInstanceID) {
@@ -440,15 +450,19 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 var indexed = Dictionary(existing.map { ($0.releaseID, $0) }, uniquingKeysWith: { first, _ in first })
                 let ids = Set(wants.map(\.id))
                 for dto in wants {
-                    let metadataChanged = byRelease[dto.id]?.basicInformation != (try DiscogsEncoding.data(dto.basic_information))
-                    let metadata = try release(dto.basic_information)
-                    let entry = indexed[dto.id] ?? WantlistEntry(owner: owner, release: metadata, releaseID: dto.id)
-                    if indexed[dto.id] == nil { result.wantsAdded += 1 }
-                    else if metadataChanged || entry.release?.persistentModelID != metadata.persistentModelID
-                                || entry.dateAdded != dto.date_added || entry.notes != dto.notes { result.otherChanges = true }
-                    context.insert(entry); entry.release = metadata; entry.dateAdded = dto.date_added
-                    entry.notes = dto.notes
-                    indexed[dto.id] = entry
+                    let (metadata, metadataChanged) = try release(dto.basic_information)
+                    guard let entry = indexed[dto.id] else {
+                        let entry = WantlistEntry(owner: owner, release: metadata, releaseID: dto.id)
+                        context.insert(entry); entry.release = metadata
+                        entry.dateAdded = dto.date_added; entry.notes = dto.notes
+                        indexed[dto.id] = entry
+                        result.wantsAdded += 1
+                        continue
+                    }
+                    if metadataChanged { result.otherChanges = true }
+                    if entry.release !== metadata { entry.release = metadata; result.otherChanges = true }
+                    if entry.dateAdded != dto.date_added { entry.dateAdded = dto.date_added; result.otherChanges = true }
+                    if entry.notes != dto.notes { entry.notes = dto.notes; result.otherChanges = true }
                 }
                 for entry in existing where !ids.contains(entry.releaseID) { context.delete(entry); result.wantsRemoved += 1 }
                 // A release that was only wanted (never owned) goes with its last want.
@@ -460,7 +474,8 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                 }
                 account.lastWantlistSync = now
             }
-            account.userID = snapshot.userID; account.credentialFingerprint = snapshot.fingerprint
+            if account.userID != snapshot.userID { account.userID = snapshot.userID }
+            if account.credentialFingerprint != snapshot.fingerprint { account.credentialFingerprint = snapshot.fingerprint }
             if snapshot.scope == .all { account.lastFullSync = now }
             // The first sync of an account, or another one becoming the current one.
             if isNewAccount || DiscogsAccount.current(in: accounts + (isNewAccount ? [account] : []))?.username != previousCurrent {

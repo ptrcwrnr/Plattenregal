@@ -212,8 +212,7 @@ struct CollectionExportService {
     /// back; records without a place follow alphabetically.
     private func ordered(_ copies: [RecordCopy], by order: ExportOrder) -> [RecordCopy] {
         // Same order as the collection page (alphabet index sections, then artist and title).
-        let alphabetical = SortingService.sortedByAlphabetSection(copies)
-        guard order == .shelf else { return alphabetical }
+        guard order == .shelf else { return SortingService.sortedByAlphabetSection(copies) }
         // Sort keys read once per record, not per comparison (`Shelf.physicalOrder`
         // plus the position; shelf numbers are unique).
         let placed = copies.compactMap { copy in
@@ -221,7 +220,8 @@ struct CollectionExportService {
         }
         .sorted { $0.key < $1.key }
         .map(\.copy)
-        return placed + alphabetical.filter { $0.shelf == nil }
+        // Only the records without a place are put in alphabetical order.
+        return placed + SortingService.sortedByAlphabetSection(copies.filter { $0.shelf == nil })
     }
 
     private func shelfLabel(_ shelf: Shelf, labels: ShelfLabels) -> String {

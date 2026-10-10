@@ -348,15 +348,19 @@ nonisolated enum ShelfSecondaryOrder: String, CaseIterable, Identifiable {
     /// The part of the sort key after the artist. Records without a year or
     /// label go behind the others; the title breaks every tie.
     func key(_ release: Release) -> String {
+        // The mark for "known" (0) or "missing" (1) stands alone before a tab:
+        // glued to the value it formed one number with its digits – "01999"
+        // counted as 1999 and sorted behind the "1" of a record without a
+        // year, "04AD" behind every label starting with a letter.
         switch self {
         case .title:
             return release.displayTitle
         case .year:
-            let year = release.year.map { "0" + String(format: "%04d", $0) } ?? "1"
+            let year = release.year.map { "0\t" + String(format: "%04d", $0) } ?? "1\t"
             return year + "\t" + release.displayTitle
         case .label:
             let label = release.label.trimmingCharacters(in: .whitespacesAndNewlines)
-            return (label.isEmpty ? "1" : "0" + label) + "\t" + release.catalogNumber + "\t" + release.displayTitle
+            return (label.isEmpty ? "1\t" : "0\t" + label) + "\t" + release.catalogNumber + "\t" + release.displayTitle
         }
     }
 }

@@ -1,4 +1,21 @@
-# Aktueller Stand · 09.10.2026 (Version 1.0.5, Dokumentation, Fehlerprotokoll, Lokalisierung)
+# Aktueller Stand · 10.10.2026 (Logik: Sortierung, Sync)
+
+Projektversion **1.0.6 (102026)**, Schema **V15**. Durchsicht der Logik unterhalb der Oberfläche. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen:** Modelle und Migrationen, `PositionService`, `CabinetService`, `LibraryChanges`/`LibraryRecords`, Sortierung und Platzsuche, Fachnamen, Discogs-Client und -Sync samt Tracklisten, Sicherung/Wiederherstellung, Zurücksetzen, Export (CSV, PDF, automatisch), Statistik und Sammlungswert, Cover-Cache, dazu die Logik in Collection, Wantlist und Regalseite.
+- **Fehler:** Sortierung nach „Jahr“ und „Label“ bei gleichem Interpreten – Platten ohne Jahr bzw. Label standen vorn statt hinten, Labels mit Ziffer am Anfang hinter allen anderen. Behoben, siehe AENDERUNGEN.md.
+- **Unnötige Arbeit:** Jeder Sync schrieb alle Einträge neu, auch ohne Änderung. Behoben; gemessen per Test an der Speicher-Mitteilung (`ModelContext.didSave`): vorher 8 geschriebene Einträge bei 2 Exemplaren, 3 Releases, 1 Ordner und 1 Wantlist-Eintrag, jetzt 1 (das Konto).
+- **Geprüft, unverändert gelassen:** Sortierschlüssel „Interpret + Tab + Titel“ (Tab sortiert vor Leerzeichen und Satzzeichen, per Skript gemessen). Datumsauswertung der Hinzufügedaten (10 000 Zeitstempel in 11 ms). Fachnummern gelöschter Regale werden neu vergeben; Sicherungen bauen ihre Regale samt Nummern selbst wieder auf, daher ohne Folgen.
+- **Nicht geprüft:** ein echter Abgleich mit Discogs und die App mit der echten Sammlung – nur Tests mit Speicher-Datenbanken.
+
+## Verifikation
+
+- `xcodebuild -scheme Plattenregal test` (Xcodes DerivedData): **208 Tests in 13 Suites bestanden**, keine Compilerwarnung im Code der App.
+- `git diff --check` ohne Befund.
+
+# Stand · 09.10.2026 (Version 1.0.5, Dokumentation, Fehlerprotokoll, Lokalisierung)
 
 Projektversion **1.0.5 (102026)**, Schema **V15**. Prüfung nach den Änderungen vom 09.10. (Regal, Statistik, Start, Scrollen, Einstellungen, DMG, Willkommensseite). Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
 

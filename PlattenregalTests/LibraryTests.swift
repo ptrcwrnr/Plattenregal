@@ -579,6 +579,24 @@ extension AllTests {
             try service.sortAlphabetically(shelves[0], by: .year)
             #expect(service.ordered(shelves[0]).map(\.id) == [older.id, newer.id])
         }
+        /// Without a year or label a record goes behind the artist's others,
+        /// and labels starting with a digit stay in front of the letters.
+        @Test func recordsWithoutYearOrLabelSortBehindTheOthers() throws {
+            let (container, shelves, service) = try fixture(); _ = container
+            let undated = try add(service, shelves[0], "Kraftwerk", "Autobahn")
+            undated.release?.year = nil
+            let dated = try add(service, shelves[0], "Kraftwerk", "Computerwelt")
+            dated.release?.year = 1981
+            #expect(ShelfSortCheck.sortedCopies(shelves[0].copies, by: .year).map(\.id) == [dated.id, undated.id])
+
+            let unlabelled = try add(service, shelves[1], "Pixies", "Bossanova")
+            unlabelled.release?.label = ""
+            let letters = try add(service, shelves[1], "Pixies", "Doolittle")
+            letters.release?.label = "Elektra"
+            let digits = try add(service, shelves[1], "Pixies", "Surfer Rosa")
+            digits.release?.label = "4AD"
+            #expect(ShelfSortCheck.sortedCopies(shelves[1].copies, by: .label).map(\.id) == [digits.id, letters.id, unlabelled.id])
+        }
         @Test func alphabetNavigationNormalizesArtistsAndGroupsNonLetters() {
             #expect(SortingService.alphabetNavigationSymbols.first == "#")
             #expect(SortingService.alphabetNavigationSymbols.count == 27)

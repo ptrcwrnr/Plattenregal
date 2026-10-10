@@ -48,20 +48,31 @@ nonisolated struct DiscogsBasicInformation: Codable, Sendable {
         return line
     }
 
-    func apply(to release: Release, at date: Date) throws {
-        release.discogsID = id; release.title = title
-        release.artist = Self.artistLine(artists ?? [])
-        release.year = year.flatMap { $0 > 0 ? $0 : nil }
-        release.label = (labels ?? []).map(\.name).joined(separator: ", ")
-        release.catalogNumber = (labels ?? []).compactMap(\.catno).joined(separator: ", ")
-        release.format = (formats ?? []).map { ([$0.qty, $0.name] + ($0.descriptions ?? []).map { Optional($0) }).compactMap { $0 }.joined(separator: " · ") }.joined(separator: ", ")
-        release.genres = genres ?? []; release.styles = styles ?? []
+    /// Writes only what differs and returns whether anything did: a sync that
+    /// confirms a release leaves it out of the save, so it isn't written and
+    /// read again by every page (see `LibraryRecords.refetch`). `fetchedAt`
+    /// is the last time the data changed.
+    @discardableResult func apply(to release: Release, at date: Date) throws -> Bool {
+        var changed = false
+        func set<T: Equatable>(_ keyPath: ReferenceWritableKeyPath<Release, T>, _ value: T) {
+            guard release[keyPath: keyPath] != value else { return }
+            release[keyPath: keyPath] = value
+            changed = true
+        }
+        set(\.discogsID, id); set(\.title, title)
+        set(\.artist, Self.artistLine(artists ?? []))
+        set(\.year, year.flatMap { $0 > 0 ? $0 : nil })
+        set(\.label, (labels ?? []).map(\.name).joined(separator: ", "))
+        set(\.catalogNumber, (labels ?? []).compactMap(\.catno).joined(separator: ", "))
+        set(\.format, (formats ?? []).map { ([$0.qty, $0.name] + ($0.descriptions ?? []).map { Optional($0) }).compactMap { $0 }.joined(separator: " · ") }.joined(separator: ", "))
+        set(\.genres, genres ?? []); set(\.styles, styles ?? [])
         // Discogs sends "" for releases without an image; the thumbnail stands in when only it exists.
-        release.coverURL = [cover_image, thumb].compactMap { $0?.trimmingCharacters(in: .whitespaces) }.first { !$0.isEmpty }
-        release.masterID = master_id
-        release.basicInformation = try DiscogsEncoding.data(self)
-        release.fetchedAt = date
+        set(\.coverURL, [cover_image, thumb].compactMap { $0?.trimmingCharacters(in: .whitespaces) }.first { !$0.isEmpty })
+        set(\.masterID, master_id)
+        set(\.basicInformation, try DiscogsEncoding.data(self))
+        if changed || release.fetchedAt == nil { release.fetchedAt = date }
         // Basic information does not contain tracks/country: preserve previously fetched details.
+        return changed
     }
 }
 nonisolated struct DiscogsCollectionDTO: Decodable, Sendable {

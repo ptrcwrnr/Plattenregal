@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 import SwiftData
+import Synchronization
 @testable import Plattenregal
 
 extension AllTests {
@@ -45,6 +46,25 @@ extension AllTests {
             let folders = [DiscogsFolderDTO(id: 1, name: "Alles", count: 1)]
             #expect(try merge(c, collection: [entry()], wants: [want(43)], folders: folders).hasChanges)
             #expect(try !merge(c, collection: [entry()], wants: [want(43)], folders: folders).hasChanges)
+        }
+        /// … and writes none of them again: only the account takes the new
+        /// sync dates. Every rewritten record is read again by the main
+        /// context afterwards (`LibraryRecords.refetch`).
+        @Test func unchangedSyncRewritesNoRecords() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let folders = [DiscogsFolderDTO(id: 1, name: "Alles", count: 2)]
+            let items = [entry(100, release: 42), entry(101, release: 43)]
+            try merge(c, collection: items, wants: [want(44)], folders: folders)
+            let written = Mutex<[String]>([])
+            let observer = NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: nil) { note in
+                guard (note.object as? ModelContext)?.container === c else { return }
+                let keys: [ModelContext.NotificationKey] = [.insertedIdentifiers, .updatedIdentifiers, .deletedIdentifiers]
+                let ids = keys.flatMap { (note.userInfo?[$0.rawValue] as? [PersistentIdentifier]) ?? [] }
+                written.withLock { $0 += ids.map(\.entityName) }
+            }
+            defer { NotificationCenter.default.removeObserver(observer) }
+            try merge(c, collection: items, wants: [want(44)], folders: folders)
+            #expect(written.withLock { $0 } == [Schema.entityName(for: DiscogsAccount.self)])
         }
         @Test func wantlistDetailsCountAsChanges() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
