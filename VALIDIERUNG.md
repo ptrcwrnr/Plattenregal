@@ -1,4 +1,4 @@
-# Aktueller Stand · 10.10.2026 (Logik: Sortierung, Sync)
+# Aktueller Stand · 10.10.2026 (Version 1.0.7: Logik, Tests, Dokumentation, Fehlerprotokoll, Lokalisierung)
 
 Projektversion **1.0.7 (102026)**, Schema **V15**. Durchsicht der Logik unterhalb der Oberfläche. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
 
@@ -9,6 +9,12 @@ Projektversion **1.0.7 (102026)**, Schema **V15**. Durchsicht der Logik unterhal
 - **Unnötige Arbeit:** Jeder Sync schrieb alle Einträge neu, auch ohne Änderung. Behoben; gemessen per Test an der Speicher-Mitteilung (`ModelContext.didSave`): vorher 8 geschriebene Einträge bei 2 Exemplaren, 3 Releases, 1 Ordner und 1 Wantlist-Eintrag, jetzt 1 (das Konto).
 - **Geprüft, unverändert gelassen:** Sortierschlüssel „Interpret + Tab + Titel“ (Tab sortiert vor Leerzeichen und Satzzeichen, per Skript gemessen). Datumsauswertung der Hinzufügedaten (10 000 Zeitstempel in 11 ms). Fachnummern gelöschter Regale werden neu vergeben; Sicherungen bauen ihre Regale samt Nummern selbst wieder auf, daher ohne Folgen.
 - **Nicht geprüft:** ein echter Abgleich mit Discogs und die App mit der echten Sammlung – nur Tests mit Speicher-Datenbanken.
+- **Tests:** alle 208 gelesen; 6 entfernt (5 doppelt, 1 für toten Code), 8 neu, 5 zu einem mit Argumenten zusammengefasst, 3 an ihren Platz verschoben – Einzelheiten in AENDERUNGEN.md.
+- **Doku:** README (Abgleich schreibt nur Geändertes, Platten ohne Jahr/Label hinten, Tests und ihre Dauer, Prüfdatum), STATISTIK.md (Prüfdatum, Testzahl; an der Neuberechnung ändert der sparsamere Abgleich nichts, sie hängt am Ende des Syncs), AENDERUNGEN.md je Commit ein Eintrag.
+- **macOS-Absturzberichte:** kein neuer seit `Plattenregal-2026-10-08-101207.ips`.
+- **App-Protokoll** 09.–10.10.: kein Absturzblock. Seit der letzten Durchsicht nur ein bekannter `ERROR` („Schnappschuss snap-page.png: nach 30 s kein Fenster“, Debug-Werkzeug in der Demo) und eine Warnung „vorige Sitzung nicht normal beendet“ nach einem gestoppten Lauf. Version 1.0.7 lief am 10.10. zweimal kurz mit der echten Sammlung (845 Exemplare, 876 Wantlist-Einträge geöffnet, „Tracklisten geladen“, normal beendet), ohne Sync.
+- **Fehlermeldungen:** Die Änderungen haben keine neuen Fehlerpfade und keine neuen Texte; die vorhandenen Meldungen zu Sync, Sortierung und Einsortieren gelten unverändert und sind getestet (`errorsReachTheUserInPlainGerman`, neu „… ist nicht mehr in der Collection“ in `recordThatLeftTheCollectionIsNotSortedIn`). Protokollzeilen des Syncs unverändert („Gespeichert …“, „Keine Änderungen, Seiten bleiben unverändert“).
+- **Lokalisierung:** per Skript – 903 Einträge, 58 veraltet, jeder aktive Eintrag mit englischer Übersetzung, Platzhalter gleich. Seit 1.0.6 kam kein Text hinzu.
 
 ## Verifikation
 

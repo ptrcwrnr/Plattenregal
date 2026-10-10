@@ -1,6 +1,6 @@
 # Plattenregal
 
-Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eigenen **Discogs-Collection**, Plattenregal weiß zusätzlich, **wo jede Platte im Regal steht**. Swift 6, SwiftUI, SwiftData und Swift Charts, ohne externe Abhängigkeiten. Deployment Target macOS 27.0. Aktueller Projektstand: **1.0.7 (102026)**; Dokumentation geprüft am **9. Oktober 2026**.
+Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eigenen **Discogs-Collection**, Plattenregal weiß zusätzlich, **wo jede Platte im Regal steht**. Swift 6, SwiftUI, SwiftData und Swift Charts, ohne externe Abhängigkeiten. Deployment Target macOS 27.0. Aktueller Projektstand: **1.0.7 (102026)**; Dokumentation geprüft am **10. Oktober 2026**.
 
 ## In Xcode starten
 
@@ -34,7 +34,7 @@ Das Projekt ist für lokales Ad-hoc-Signing eingerichtet und braucht kein bezahl
 
 Unter **Einstellungen → Discogs** einen persönlichen Token eintragen und die Verbindung testen. Den Token gibt es unter https://www.discogs.com/settings/developers. Er liegt ausschließlich im macOS-Schlüsselbund, nie in Quelldateien, Einstellungen oder im Protokoll; lokal gespeichert wird nur ein SHA-256-Fingerabdruck, um Daten dem richtigen Konto zuzuordnen.
 
-Die App liest nur aus Discogs und ändert dort nichts. Discogs erlaubt mit Token 60 Anfragen pro Minute; Plattenregal taktet seine Anfragen, beachtet `Retry-After` und wartet bei einer Bremse von selbst. Der Abgleich speichert erst, wenn alle Seiten vollständig geladen sind – in einem eigenen Hintergrund-Kontext und einem einzigen Speichervorgang. Abbruch, unvollständige Daten oder ein Tokenwechsel mittendrin verwerfen den Abgleich, statt halbe Daten zu speichern. Fach und Position schreibt der Abgleich nie.
+Die App liest nur aus Discogs und ändert dort nichts. Discogs erlaubt mit Token 60 Anfragen pro Minute; Plattenregal taktet seine Anfragen, beachtet `Retry-After` und wartet bei einer Bremse von selbst. Der Abgleich speichert erst, wenn alle Seiten vollständig geladen sind – in einem eigenen Hintergrund-Kontext und einem einzigen Speichervorgang. Abbruch, unvollständige Daten oder ein Tokenwechsel mittendrin verwerfen den Abgleich, statt halbe Daten zu speichern. Fach und Position schreibt der Abgleich nie. Er schreibt nur, was sich bei Discogs geändert hat: Ein Abgleich ohne Neuigkeiten speichert lediglich seinen Zeitpunkt am Konto, und die Seiten behalten, was sie berechnet haben.
 
 This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. ‘Discogs’ is a trademark of Zink Media, LLC.
 
@@ -141,7 +141,7 @@ atos -o Plattenregal.app/Contents/MacOS/Plattenregal -l <Ladeadresse> <Adresse> 
 | Oberfläche | `Views/`, `Views/Shelf/`, `Views/Settings/`, `Utilities/AppAppearance.swift` | Fenster, Regalseite (Seite, Suche, Regalbild, Fachinhalt als Raster/Liste, „Platte hinzufügen“), ein Einstellungs-Tab pro Datei, gemeinsame Glas-Bausteine (`GlassSegmentedPicker`, `GlassMenuPicker`, `AppMenu`, `AppSearchField`, `AmbientBackdrop`, `appPanel` mit eigener Esc-Abfrage, `appCardSurface`, Knöpfe). Die Designs (`SignatureDesign`; im Code heißt Klassisch noch `atelier`, seine Farben stehen in `AtelierPalette`) hängen sich in dieselben Bausteine ein (`AppStyle.isAtelier`), sodass Seiten nur an wenigen Stellen davon wissen |
 | Willkommen | `Views/WelcomeView.swift` | Willkommensseite beim ersten Start und das Hilfe-Menü |
 | Seiten | `Views/RootView.swift`, `Views/PageStack.swift` | Rubriken in der Toolbar, Suchfeld rechts in der Toolbar (`ToolbarSearchField`, Suchtexte in `LibrarySearch` und `ShelfSearch`), Knopf mit Aktionen unten rechts in Collection und Wantlist (`FloatingControls`), ⌘1–⌘4, ⌘F; jede Seite bleibt in einer eigenen Hosting-View eingehängt und wird nur durchgeblendet und leicht in Richtung des Umschalters hereingeschoben (ruckelfreier Wechsel); beim Start wird nur die gezeigte Seite sofort gebaut, die übrigen folgen nacheinander, sobald der Hauptthread frei ist; verborgene Seiten bekommen keine Mausbewegungen, ihre Aktivitätsringe stehen still |
-| Tests | `PlattenregalTests/` | Regal, „Platte hinzufügen“, „Sortierung prüfen“, Sicherung, Export, Discogs-Abgleich, Statistik, Einstellungen, Reihenfolge |
+| Tests | `PlattenregalTests/` | Regal und Regale, „Platte hinzufügen“, „Sortierung prüfen“, Sicherung, Export, Discogs-Abgleich und Tracklisten, Statistik, Einstellungen, Reihenfolge, Migrationen alter Datenbanken |
 
 ## Entwicklung und Prüfung
 
@@ -150,7 +150,7 @@ xcodebuild -project Plattenregal.xcodeproj -scheme Plattenregal -destination 'pl
 xcodebuild -project Plattenregal.xcodeproj -scheme Plattenregal -destination 'platform=macOS' test
 ```
 
-Die Tests laufen mit einer Datenbank im Arbeitsspeicher, schreiben nicht ins echte Protokoll und brauchen weder Internet noch Token: Discogs-Antworten kommen aus lokalen `URLProtocol`-Attrappen.
+Die Tests laufen mit einer Datenbank im Arbeitsspeicher, schreiben nicht ins echte Protokoll und brauchen weder Internet noch Token: Discogs-Antworten kommen aus lokalen `URLProtocol`-Attrappen (`DiscogsAPIClient.stubbed`, ohne die Pausen zwischen den Anfragen – ein Lauf dauert rund 25 Sekunden, gut die Hälfte davon der Test mit 10.000 Platten).
 
 Für einen Demo-Lauf aus Xcode unter **Edit Scheme → Run → Arguments** `--demo` ergänzen; `--statistics-demo` öffnet die Demo direkt auf der Statistik. `--settings-tab=Daten` zeigt im Debug-Build einen Einstellungs-Tab im Hauptfenster – zusammen mit `--demo`, sonst mit der echten Sammlung. Für Bildschirmfotos gibt es außerdem `--preview-page=Regal` (Startseite), `--preview-add` („Platte hinzufügen“ öffnen), `--preview-sortin` („Einsortieren“ des runden Knopfs), `--preview-place=Interpret` (Einsortier-Karte), `--preview-sortcheck` („Sortierung prüfen“ des ersten unsortierten Fachs, mit `--preview-sortcheck-done=N` die ersten N Schritte abgehakt), `--preview-welcome` (Willkommensseite auch in der Demo), `--preview-search=…` (Suche vorbelegt), `--preview-actions` (Aktionen aufgefächert) und `--screenshots` (ohne Demo-Hinweise). `--snapshot=name.png` zeichnet das Fenster nach ein paar Sekunden selbst in eine PNG-Datei im temporären Ordner des Containers und beendet die App (geht auch bei gesperrtem Bildschirm). Das Design lässt sich per Startargument wählen, etwa `--demo -signatureDesign atelier -appearanceMode dark`.
 

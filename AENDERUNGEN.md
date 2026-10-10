@@ -1,3 +1,8 @@
+# Abschlussprüfung 1.0.7 · 10.10.2026
+
+- README: Der Abgleich schreibt nur Geändertes; Tests brauchen rund 25 Sekunden und was sie abdecken; Prüfdatum. STATISTIK.md: Prüfdatum, Testzahl (31, der Test mit 2.000 Exemplaren entfiel). VALIDIERUNG.md: Befunde zu Tests, Doku, Absturzberichten, Protokoll, Fehlermeldungen und Lokalisierung – kein Fehler im Code, keine neuen Texte.
+- DMG aus dem Stand dieses Commits neu erstellt (`dist/Plattenregal-1.0.7.dmg`); gegenüber dem vom Vormittag ohne Unterschied im Verhalten.
+
 # Tests durchgesehen · 10.10.2026
 
 - Alle Tests laufen schon über Swift Testing (kein XCTest mehr), eine Umstellung entfiel. 208 Tests gelesen und gegen den Code abgeglichen; danach **205 Tests**, Laufzeit **24 s statt 78 s**.

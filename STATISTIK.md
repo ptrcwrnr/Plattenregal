@@ -1,6 +1,6 @@
 # Statistik
 
-Dokumentation geprüft am **09.10.2026**, Projektversion **1.0.7 (102026)**.
+Dokumentation geprüft am **10.10.2026**, Projektversion **1.0.7 (102026)**.
 
 Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf ihres Discogs-Sammlungswerts. Alles außer dem Sammlungswert wird lokal berechnet, ohne Anfrage an Discogs.
 
@@ -65,7 +65,7 @@ Nach **Alles zurücksetzen** sind die gezeigten Platten gelöscht; die Statistik
 | `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
-| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, 2.000 Exemplare, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen, Sammlungswert während eines Syncs, gezeigte Platten aus dem Hauptfenster (32 Tests) |
+| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen, Sammlungswert während eines Syncs, gezeigte Platten aus dem Hauptfenster (31 Tests; die Menge prüft `tenThousandRecords` in ScenarioTests) |
 
 Das Modell `ReleaseMarketValue` aus der früheren Einzelpreis-Funktion ist seit Schema V15 entfernt; die Migration verwirft seine Zeilen.
 
