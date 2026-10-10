@@ -1,6 +1,6 @@
 # Aktueller Stand · 10.10.2026 (Logik: Sortierung, Sync)
 
-Projektversion **1.0.6 (102026)**, Schema **V15**. Durchsicht der Logik unterhalb der Oberfläche. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+Projektversion **1.0.7 (102026)**, Schema **V15**. Durchsicht der Logik unterhalb der Oberfläche. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
 
 ## Umfang und Befunde
 

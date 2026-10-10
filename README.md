@@ -1,6 +1,6 @@
 # Plattenregal
 
-Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eigenen **Discogs-Collection**, Plattenregal weiß zusätzlich, **wo jede Platte im Regal steht**. Swift 6, SwiftUI, SwiftData und Swift Charts, ohne externe Abhängigkeiten. Deployment Target macOS 27.0. Aktueller Projektstand: **1.0.6 (102026)**; Dokumentation geprüft am **9. Oktober 2026**.
+Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eigenen **Discogs-Collection**, Plattenregal weiß zusätzlich, **wo jede Platte im Regal steht**. Swift 6, SwiftUI, SwiftData und Swift Charts, ohne externe Abhängigkeiten. Deployment Target macOS 27.0. Aktueller Projektstand: **1.0.7 (102026)**; Dokumentation geprüft am **9. Oktober 2026**.
 
 ## In Xcode starten
 
@@ -110,7 +110,7 @@ Weitere Fälle:
 
 Alle Fehlertypen der App (`DiscogsError`, `LibraryError`, `CabinetError`, `ResetError`, `StorageError`, `ShelfBackupError`, `FileTransferError`, `KeychainError`, `ReadError`) sind als nutzerlesbar markiert (`UserFacingError`); ein Test prüft, dass keiner auf „Da ist etwas schiefgelaufen“ zurückfällt.
 
-Das Protokoll lässt sich unter **Einstellungen → Daten → Diagnose** im Finder zeigen oder als Datei sichern. Wer einen Fehler meldet, gibt am besten diese Datei und die Version aus **Über Plattenregal** mit („Version 1.0.6 (102026)“, auswählbar zum Kopieren) – dieselbe Angabe steht in jeder Startzeile des Protokolls und in jedem Absturz-Block. Ist das Design „Klassisch“ gewählt, trägt die Startzeile zusätzlich „Design Klassisch“; ein Wechsel des Designs steht als eigene Zeile im Protokoll („Design: Klassisch statt Modern“).
+Das Protokoll lässt sich unter **Einstellungen → Daten → Diagnose** im Finder zeigen oder als Datei sichern. Wer einen Fehler meldet, gibt am besten diese Datei und die Version aus **Über Plattenregal** mit („Version 1.0.7 (102026)“, auswählbar zum Kopieren) – dieselbe Angabe steht in jeder Startzeile des Protokolls und in jedem Absturz-Block. Ist das Design „Klassisch“ gewählt, trägt die Startzeile zusätzlich „Design Klassisch“; ein Wechsel des Designs steht als eigene Zeile im Protokoll („Design: Klassisch statt Modern“).
 
 **Abstürze.** Die App versucht bei abgefangenen Absturzsignalen einen Block `==== ABSTURZ … ====` mit Signal, Uhrzeit, Version und Aufrufliste zu schreiben. Beim nächsten Start erklärt eine Zeile, welcher Absturz erkannt wurde und wo der Block steht. Ein solcher Eintrag ist nicht garantiert: Ein angehaltener Debugger, hartes Beenden oder ein beschädigter Prozess können den Eintrag verhindern. Der alternative Signal-Stack ist nur auf dem Hauptthread eingerichtet; eine Aufrufliste lässt sich bei beschädigtem Stack nicht zuverlässig gewinnen. Endete eine Sitzung ohne Absturz-Eintrag unerwartet, wird das anhand von `Logs/.running` vermerkt. Die genaue Ursache lässt sich daraus nicht ableiten. Eine zweite Instanz gibt diese Laufmarkierung an die laufende Instanz zurück.
 
@@ -160,6 +160,6 @@ Für einen Demo-Lauf aus Xcode unter **Edit Scheme → Run → Arguments** `--de
 
 ## Neues App-Symbol vom 5. Oktober 2026
 
-Das App-Symbol zeigt jetzt eine schwarze Schallplatte in einer hellen Papierhülle auf petrolblauem Grund, passend zu Media und Sync. Nur die Bilddateien in `Plattenregal/Assets.xcassets/AppIcon.appiconset` wurden ersetzt, der Code nicht. Bei dieser Änderung wurde die Version auf 1.0.2 (Build 102026) angehoben; aktuell ist 1.0.6. Vorlage, Prompt und das bisherige Symbol lagen in `outputs/AppIcon-Vinyl-2026-10-05/`; der Ordner ist gelöscht, die Dateien stehen in der Git-Historie (zuletzt in Commit `2b2152e`). Einzelheiten in [AENDERUNGEN.md](AENDERUNGEN.md).
+Das App-Symbol zeigt jetzt eine schwarze Schallplatte in einer hellen Papierhülle auf petrolblauem Grund, passend zu Media und Sync. Nur die Bilddateien in `Plattenregal/Assets.xcassets/AppIcon.appiconset` wurden ersetzt, der Code nicht. Bei dieser Änderung wurde die Version auf 1.0.2 (Build 102026) angehoben; aktuell ist 1.0.7. Vorlage, Prompt und das bisherige Symbol lagen in `outputs/AppIcon-Vinyl-2026-10-05/`; der Ordner ist gelöscht, die Dateien stehen in der Git-Historie (zuletzt in Commit `2b2152e`). Einzelheiten in [AENDERUNGEN.md](AENDERUNGEN.md).
 
 Änderungen im Detail: [AENDERUNGEN.md](AENDERUNGEN.md). Build- und Teststände: [VALIDIERUNG.md](VALIDIERUNG.md).

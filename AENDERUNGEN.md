@@ -1,3 +1,7 @@
+# Version 1.0.7 · 10.10.2026
+
+- Version 1.0.7, Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.0.7.dmg`), mit der korrigierten Sortierung nach Jahr/Label und dem sparsameren Sync. README, STATISTIK.md und VALIDIERUNG.md: Version.
+
 # Logik geprüft: Sortierung nach Jahr und Label, Sync schreibt nur Geändertes · 10.10.2026
 
 - **Fehler behoben – Reihenfolge bei gleichem Interpreten nach „Jahr“ oder „Label“:** Platten ohne Jahr standen vor statt hinter den übrigen des Interpreten, ebenso Platten ohne Label vor Labels, die mit einer Ziffer beginnen („4AD“, „2 Tone“); solche Labels standen außerdem hinter allen Labels mit Buchstaben. Ursache: Das Kennzeichen „bekannt/fehlt“ (0/1) klebte direkt am Wert, und der Vergleich (`localizedStandardCompare`) las „01999“ als Zahl 1999 und „04AD“ als 4 – beides größer als die 1 für „fehlt“. Jetzt steht das Kennzeichen allein vor einem Tabulator (`ShelfSecondaryOrder.key`). Betrifft Platzsuche, „Platte hinzufügen“, „Sortierung prüfen“ und die alphabetische Collection, jeweils nur bei „Jahr“ oder „Label“. Wer danach sortiert hat: „Sortierung prüfen“ zeigt die betroffenen Platten jetzt als Umstellung.
