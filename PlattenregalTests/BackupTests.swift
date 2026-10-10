@@ -178,6 +178,13 @@ extension AllTests {
             #expect(Set(kept) == Set(Array(0..<10) + Array(30..<43)))
         }
 
+        @Test func retentionWithoutDailyStatesKeepsOnlyTheLatest() {
+            let now = Date(timeIntervalSince1970: 1_790_000_000)
+            let dates = (0..<30).map { now.addingTimeInterval(-Double($0) * 86_400) }
+            #expect(ShelfAutoBackup.retained(dates, keptCount: 5, keptDays: 0) == Array(0..<5))
+            #expect(ShelfAutoBackup.retained(dates, keptCount: 5, keptDays: 7) == Array(0..<7))
+        }
+
         @Test func restoreBeforeSyncIsRefusedAndLeavesTheShelfAlone() throws {
             let (container, shelves, service) = try fixture()
             let current = try service.insert(release: Release(artist: "A", title: "1"), shelf: shelves[0], instanceID: 41)
@@ -202,7 +209,8 @@ extension AllTests {
             #expect(preview.message.contains("Mehr als die Hälfte"))
         }
 
-        @Test func demoStoresNeverWriteRealBackups() throws {
+        /// Only the app's real store is backed up automatically.
+        @Test func testStoresNeverWriteRealBackups() throws {
             let (container, _, _) = try fixture()
             #expect(try ShelfAutoBackup.shared.backUpNow(ShelfBackupService(context: container.mainContext)) == false)
         }

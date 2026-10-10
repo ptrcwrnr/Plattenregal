@@ -29,8 +29,15 @@ actor DiscogsAPIClient {
     private var nextRequest = Date.distantPast
     private var blockedUntil = Date.distantPast
     private let logger = Logger(subsystem: "de.private.Plattenregal", category: "Discogs")
-    init(session: URLSession? = nil, tokenProvider: @escaping @Sendable () throws -> String? = { try KeychainStore.load() }) {
+    /// Seconds between two requests (Discogs allows 60 a minute) and before
+    /// the first repeat of a failed one, doubled for the second. Only the
+    /// tests shorten them.
+    private let spacing: TimeInterval
+    private let retryPause: TimeInterval
+    init(session: URLSession? = nil, tokenProvider: @escaping @Sendable () throws -> String? = { try KeychainStore.load() },
+         spacing: TimeInterval = 1.1, retryPause: TimeInterval = 1) {
         self.tokenProvider = tokenProvider
+        self.spacing = spacing; self.retryPause = retryPause
         let config = URLSessionConfiguration.ephemeral
         config.urlCache = nil; config.timeoutIntervalForRequest = 25
         self.session = session ?? URLSession(configuration: config)
@@ -141,7 +148,7 @@ actor DiscogsAPIClient {
                 }
                 guard retry, attempt < 2 else { throw error }
                 logger.notice("Retrying Discogs GET, attempt \(attempt + 2)")
-                try await Task.sleep(for: .seconds(Double(1 << attempt)))
+                try await Task.sleep(for: .seconds(retryPause * Double(1 << attempt)))
             }
         }
         throw DiscogsError.invalidResponse
@@ -150,14 +157,14 @@ actor DiscogsAPIClient {
         guard let token = try tokenProvider(), !token.isEmpty else { throw DemoMode.isActive ? DiscogsError.demoMode : .missingToken }
         guard Self.isWellFormedToken(token) else { throw DiscogsError.unauthorized }
         // Reserve a slot before suspension, so concurrent clients cannot burst the rate limit.
-        let slot = max(Date(), nextRequest); nextRequest = slot.addingTimeInterval(1.1)
+        let slot = max(Date(), nextRequest); nextRequest = slot.addingTimeInterval(spacing)
         let delay = slot.timeIntervalSinceNow
         if delay > 0 { try await Task.sleep(for: .seconds(delay)) }
         // Re-check server cooldown after suspension; queued requests must respect it too.
         while blockedUntil > Date() {
             try await Task.sleep(for: .seconds(blockedUntil.timeIntervalSinceNow))
             let resumedSlot = max(Date(), nextRequest)
-            nextRequest = resumedSlot.addingTimeInterval(1.1)
+            nextRequest = resumedSlot.addingTimeInterval(spacing)
             if resumedSlot > Date() { try await Task.sleep(for: .seconds(resumedSlot.timeIntervalSinceNow)) }
         }
         try Task.checkCancellation()

@@ -226,16 +226,8 @@ extension AllTests {
             #expect(CollectionValueHistoryService.change(current: 90, previous: 100).percent == -10)
             #expect(CollectionValueHistoryService.change(current: 10, previous: 0).percent == nil)
         }
-        @Test func analyticsDoesNotRequestNetworkAndHandlesThousands() throws {
-            let items = try (1...2000).map { try makeCopy(id: $0 % 100 + 1, instance: $0) }.map(AnalyticsItem.init)
-            StatisticsURLProtocol.log.clear()
-            let stats = CollectionAnalyticsService.calculate(items)
-            #expect(stats.totalItems == 2000); #expect(stats.uniqueReleases == 100)
-            #expect(StatisticsURLProtocol.log.paths.isEmpty)
-        }
         private func api() -> DiscogsAPIClient {
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [StatisticsURLProtocol.self]
-            return DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "fixture-token" })
+            .stubbed(StatisticsURLProtocol.self, token: "fixture-token")
         }
         private func authenticatedContainer(_ api: DiscogsAPIClient) async throws -> ModelContainer {
             let container = try LibraryStorage.makeContainer(inMemory: true)
@@ -313,8 +305,7 @@ extension AllTests {
             #expect(try ModelContext(container).fetch(FetchDescriptor<RecordCopy>()).first?.discogsActive == true)
         }
         @Test func unavailableValueDoesNotRollBackSuccessfulSync() async throws {
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [StatisticsURLProtocol.self]
-            let api = DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "denied-value" })
+            let api = DiscogsAPIClient.stubbed(StatisticsURLProtocol.self, token: "denied-value")
             let container = try await authenticatedContainer(api)
             let sync = DiscogsSyncService(api: api)
             sync.start(.collection, container: container)

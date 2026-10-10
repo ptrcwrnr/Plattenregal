@@ -11,8 +11,7 @@ import SwiftData
 extension AllTests {
     @MainActor struct ScenarioTests {
         private func api() -> DiscogsAPIClient {
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [ScenarioProtocol.self]
-            return DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "scenario" })
+            .stubbed(ScenarioProtocol.self, token: "scenario")
         }
         private func waitUntilIdle(_ sync: DiscogsSyncService) async throws {
             for _ in 0..<600 where sync.isRunning { try await Task.sleep(for: .milliseconds(100)) }
@@ -60,6 +59,57 @@ extension AllTests {
             ScenarioProtocol.reset(online: true)
             #expect(await sync.loadTracklists(container: c, quiet: false))
             #expect(try c.mainContext.fetch(FetchDescriptor<Release>()).allSatisfy { !$0.tracks.isEmpty })
+        }
+
+        /// The "x" right after the click: nothing saved, no line left
+        /// behind, and the next sync runs as usual.
+        @Test func cancelledSyncSavesNothingAndClearsItsStatus() async throws {
+            ScenarioProtocol.reset(online: true)
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let sync = DiscogsSyncService(api: api())
+            sync.start(.collection, container: c)
+            sync.cancel()
+            try await waitUntilIdle(sync)
+            #expect(!sync.hasStatus && sync.error == nil)
+            #expect(try c.mainContext.fetchCount(FetchDescriptor<RecordCopy>()) == 0)
+            #expect(try c.mainContext.fetchCount(FetchDescriptor<DiscogsAccount>()) == 0)
+
+            sync.start(.collection, container: c)
+            try await waitUntilIdle(sync)
+            #expect(sync.error == nil)
+            #expect(try c.mainContext.fetchCount(FetchDescriptor<RecordCopy>()) == 2)
+        }
+
+        /// Which releases the download after a sync asks Discogs for: those
+        /// never asked and those asked long ago – not the rest, every time.
+        @Test func tracklistsAreLoadedOnlyWhenDue() async throws {
+            ScenarioProtocol.reset(online: true)
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let context = ModelContext(c)
+            func release(_ id: Int, tracks: [String], asked: Date?) {
+                let release = Release(discogsID: id, artist: "Artist", title: "Album \(id)")
+                release.tracks = tracks.map { Track(position: "", title: $0, duration: "") }
+                release.detailsFetchedAt = asked
+                context.insert(release)
+                context.insert(RecordCopy(release: release, instanceID: id, owner: "scenario"))
+            }
+            release(1, tracks: ["Alt"], asked: .now.addingTimeInterval(-DiscogsSyncService.tracklistRefreshAge - 86_400))
+            // Loaded before the date was kept: dated, not asked again.
+            release(2, tracks: ["Bleibt"], asked: nil)
+            // Asked the other day, Discogs has no tracklist for it.
+            release(3, tracks: [], asked: .now.addingTimeInterval(-86_400))
+            try context.save()
+
+            let sync = DiscogsSyncService(api: api())
+            #expect(await sync.loadTracklists(container: c, quiet: true))
+            #expect(ScenarioProtocol.requests == 1)
+            let releases = Dictionary(uniqueKeysWithValues: try ModelContext(c).fetch(FetchDescriptor<Release>()).map { ($0.discogsID, $0) })
+            #expect(releases[1]?.tracks.map(\.title) == ["Intro"])
+            #expect(releases[2]?.tracks.map(\.title) == ["Bleibt"] && releases[2]?.detailsFetchedAt != nil)
+            #expect(releases[3]?.tracks.isEmpty == true)
+            // Nothing is due any more.
+            #expect(await sync.loadTracklists(container: c, quiet: true) == false)
+            #expect(ScenarioProtocol.requests == 1)
         }
 
         @Test func discogsRateLimitIsWaitedOut() async throws {
@@ -121,6 +171,22 @@ extension AllTests {
             session.add(b, in: context)
             #expect(session.error == nil)
             #expect(b.shelf?.id == shelf.id && b.positionInShelf == 1)
+        }
+
+        /// The list is a snapshot: a record sold meanwhile (a sync) is not placed.
+        @Test func recordThatLeftTheCollectionIsNotSortedIn() throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let context = c.mainContext
+            let sold = try PositionService(context: context).insert(release: Release(artist: "Air", title: "Moon Safari"), shelf: nil)
+            let shelf = try #require(try context.fetch(FetchDescriptor<Shelf>()).first { $0.sortOrder == 1 })
+            let session = ShelfAssignmentSession(shelf: shelf)
+            session.load(context, owner: nil, labels: ShelfLabels())
+            #expect(session.candidates.map(\.id) == [sold.id])
+            sold.discogsActive = false
+            session.add(sold, in: context)
+            #expect(sold.shelf == nil && session.addedCount == 0)
+            #expect(session.error?.contains("nicht mehr in der Collection") == true)
+            #expect(session.candidates.isEmpty)
         }
 
         @Test func addingListsFittingRecordsFirstPausedInPlace() throws {

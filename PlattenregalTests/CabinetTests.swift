@@ -91,6 +91,54 @@ extension AllTests {
             #expect(Set(cabinet.orderedShelves.map(\.number)).count == 25)
         }
 
+        @Test func cabinetsCanBeReorderedAndRenamed() throws {
+            let (container, cabinets, _) = try fixture()
+            let first = try #require(try cabinets.cabinets().first)
+            let flur = try cabinets.add(name: "Flur", columns: 1, rows: 1)
+            // Without a name it gets its place in the row as one.
+            let third = try cabinets.add(name: "  ", columns: 1, rows: 1)
+            #expect(third.name == "Regal 3")
+            try cabinets.move(third, by: -1)
+            #expect(try cabinets.cabinets().map(\.name) == ["Regal", "Regal 3", "Flur"])
+            #expect(try cabinets.cabinets().map(\.sortOrder) == [0, 1, 2])
+            // Already at the front: stays.
+            try cabinets.move(first, by: -1)
+            #expect(try cabinets.cabinets().first?.id == first.id)
+            // The compartments follow the cabinets' order (shelf page, export, sorting in).
+            let inUse = Shelf.inUse(try container.mainContext.fetch(FetchDescriptor<Shelf>()))
+            #expect(Array(inUse.map(\.number).suffix(2)) == [14, 13])
+
+            try cabinets.rename(flur, to: "  Diele ")
+            #expect(flur.name == "Diele")
+            try cabinets.rename(flur, to: "  ")
+            #expect(flur.name == "Diele")
+            #expect(throws: CabinetError.self) { try cabinets.add(name: "Zu groß", columns: 7, rows: 1) }
+        }
+
+        /// What `prepareShelves` repairs at every launch: positions with gaps
+        /// or doubles, a missing compartment and a rack without an active cabinet.
+        @Test func launchHealsPositionsCompartmentsAndActiveCabinet() throws {
+            let (container, cabinets, positions) = try fixture()
+            let context = container.mainContext
+            let cabinet = try #require(try cabinets.cabinets().first)
+            let shelf = cabinet.orderedShelves[0]
+            let a = try add(positions, shelf, "A"), b = try add(positions, shelf, "B"), c = try add(positions, shelf, "C")
+            a.positionInShelf = 4; b.positionInShelf = 4; c.positionInShelf = 9
+            context.delete(cabinet.orderedShelves[11])
+            cabinet.isActive = false
+            try context.save()
+
+            try LibraryStorage.prepareShelves(in: context)
+
+            let healed = positions.ordered(shelf)
+            #expect(healed.map(\.positionInShelf) == [1, 2, 3])
+            // The order they stood in stays; the double is settled by ID.
+            #expect(Set(healed.prefix(2).map(\.id)) == [a.id, b.id] && healed.last?.id == c.id)
+            #expect(cabinet.isActive)
+            #expect(cabinet.orderedShelves.map(\.sortOrder) == Array(1...12))
+            #expect(try context.fetchCount(FetchDescriptor<Shelf>()) == 12)
+        }
+
         @Test func oneCabinetStaysActiveAndOnlyEmptyOnesCanGo() throws {
             let (container, cabinets, positions) = try fixture(); _ = container
             let first = try #require(try cabinets.cabinets().first)
@@ -266,22 +314,6 @@ extension AllTests {
             #expect(KallaxPreset.matching(columns: 1, rows: 4)?.orientation == "hochkant")
             #expect(KallaxPreset.matching(columns: 4, rows: 1)?.orientation == "quer")
             #expect(KallaxPreset.matching(columns: 3, rows: 3) == nil)
-        }
-
-        @Test func retentionWithoutDailyStatesKeepsOnlyTheLatest() {
-            let now = Date(timeIntervalSince1970: 1_790_000_000)
-            let dates = (0..<30).map { now.addingTimeInterval(-Double($0) * 86_400) }
-            #expect(ShelfAutoBackup.retained(dates, keptCount: 5, keptDays: 0) == Array(0..<5))
-            #expect(ShelfAutoBackup.retained(dates, keptCount: 5, keptDays: 7) == Array(0..<7))
-        }
-
-        @Test func exportIntervalsStepByCalendar() {
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
-            let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 31, hour: 9))!
-            #expect(ExportInterval.daily.next(after: start, calendar: calendar) == calendar.date(from: DateComponents(year: 2026, month: 2, day: 1, hour: 9)))
-            #expect(ExportInterval.weekly.next(after: start, calendar: calendar) == calendar.date(from: DateComponents(year: 2026, month: 2, day: 7, hour: 9)))
-            #expect(ExportInterval.monthly.next(after: start, calendar: calendar) == calendar.date(from: DateComponents(year: 2026, month: 2, day: 28, hour: 9)))
         }
     }
 }

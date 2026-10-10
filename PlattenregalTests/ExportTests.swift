@@ -85,6 +85,7 @@ extension AllTests {
             }
             let table = ExportTable(columns: [ExportColumn.artist, ExportColumn.title, ExportColumn.position], rows: rows)
             let data = try PDFListWriter.data(for: table, title: "Test", subtitle: "")
+            #expect(data.starts(with: Array("%PDF".utf8)))
             let document = try #require(CGPDFDocument(CGDataProvider(data: data as CFData)!))
             #expect(document.numberOfPages > 3)
             let empty = try PDFListWriter.data(for: ExportTable(columns: [ExportColumn.artist], rows: []), title: "Leer", subtitle: "")
@@ -149,7 +150,10 @@ extension AllTests {
             let release = Release(artist: "Moby (2)", title: "Play")
             release.masterID = 0
             release.tracks = [Track(position: "A1", title: "Honey", duration: "3:27")]
-            try service.insert(release: release, shelf: shelves[0])
+            let copy = try service.insert(release: release, shelf: shelves[0])
+            copy.discogsFolderID = 3; copy.discogsDateAdded = "2026-09-24T00:30:00+02:00"
+            container.mainContext.insert(DiscogsFolder(owner: copy.discogsOwner, id: 3, name: "Kiste", count: 1))
+            try container.mainContext.save()
 
             let exporter = CollectionExportService(context: container.mainContext)
             let plain = try exporter.table(ExportOptions(source: .collection, order: .artist, groups: []))
@@ -163,7 +167,9 @@ extension AllTests {
             let tracklist = try #require(full.column(ExportColumn.tracklist))
             #expect(full.rows.first?.values[tracklist] == "A1 Honey (3:27)")
             // The copy group holds only what Discogs provides.
-            #expect(full.column(ExportColumn.folder) != nil && full.column(ExportColumn.added) != nil)
+            #expect(full.rows.first?.values[try #require(full.column(ExportColumn.folder))] == "Kiste")
+            #expect(full.rows.first?.values[try #require(full.column(ExportColumn.added))]
+                    == ExportDate.day(try #require(DiscogsDate.parse(copy.discogsDateAdded))))
             #expect(full.columns.allSatisfy { !["Zustand Platte", "Zustand Hülle", "Notizen", "Bewertung"].contains($0) })
             let link = try #require(full.column(ExportColumn.link))
             #expect(full.rows.first?.values[link] == "https://www.discogs.com/release/\(release.discogsID)")
@@ -171,13 +177,22 @@ extension AllTests {
             #expect(full.rows.first?.values[try #require(full.column(ExportColumn.masterID))] == "")
         }
 
-        @Test func pdfIsProduced() throws {
-            let (container, shelves, service) = try fixture()
-            try service.insert(release: Release(artist: "Alpha", title: "A"), shelf: shelves[0])
-            let table = try CollectionExportService(context: container.mainContext)
-                .table(ExportOptions(source: .collection, order: .shelf, groups: [.location]))
-            let data = try PDFListWriter.data(for: table, title: "Test", subtitle: "Untertitel")
-            #expect(data.starts(with: Array("%PDF".utf8)))
+        @Test func scheduledExportIsDueAfterAClockSetBack() {
+            let now = Date(timeIntervalSince1970: 1_790_000_000)
+            #expect(ScheduledExport.nextRun(after: nil, interval: .weekly, now: now) == now)
+            #expect(ScheduledExport.nextRun(after: now.addingTimeInterval(-86400), interval: .daily, now: now)
+                    == ExportInterval.daily.next(after: now.addingTimeInterval(-86400)))
+            // Written while the clock stood years ahead: due now, not only in years.
+            #expect(ScheduledExport.nextRun(after: now.addingTimeInterval(3 * 365 * 86400), interval: .monthly, now: now) == now)
+        }
+
+        @Test func exportIntervalsStepByCalendar() {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
+            let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 31, hour: 9))!
+            #expect(ExportInterval.daily.next(after: start, calendar: calendar) == calendar.date(from: DateComponents(year: 2026, month: 2, day: 1, hour: 9)))
+            #expect(ExportInterval.weekly.next(after: start, calendar: calendar) == calendar.date(from: DateComponents(year: 2026, month: 2, day: 7, hour: 9)))
+            #expect(ExportInterval.monthly.next(after: start, calendar: calendar) == calendar.date(from: DateComponents(year: 2026, month: 2, day: 28, hour: 9)))
         }
     }
 }

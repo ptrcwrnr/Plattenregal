@@ -184,7 +184,6 @@ struct PositionService {
         }
         AppLog.info("Regal", "Gelöscht: \(description)")
     }
-    func normalize(_ shelf: Shelf) throws { try save { renumber(ordered(shelf)) } }
     /// Puts the shelf's records in alphabetical order (artist, then the
     /// chosen order for one artist's records, see `ShelfSecondaryOrder`).
     func sortAlphabetically(_ shelf: Shelf, by order: ShelfSecondaryOrder = .current) throws {

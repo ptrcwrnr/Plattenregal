@@ -13,6 +13,7 @@ Projektversion **1.0.7 (102026)**, Schema **V15**. Durchsicht der Logik unterhal
 ## Verifikation
 
 - `xcodebuild -scheme Plattenregal test` (Xcodes DerivedData): **208 Tests in 13 Suites bestanden**, keine Compilerwarnung im Code der App.
+- Nach der Durchsicht der Tests am selben Tag (siehe AENDERUNGEN.md): **205 Tests in 13 Suites bestanden**, 24 s. Nicht mit Tests abgedeckt bleiben die Ansichten selbst (Regalseite, Collection, Einstellungen), der Schlüsselbund und die Ordner-Lesezeichen.
 - `git diff --check` ohne Befund.
 
 # Stand · 09.10.2026 (Version 1.0.5, Dokumentation, Fehlerprotokoll, Lokalisierung)

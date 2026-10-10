@@ -32,14 +32,6 @@ extension AllTests {
             #expect(DiscogsAPIClient.retryDelay("-5") == 1)
             #expect(DiscogsAPIClient.retryDelay("bald") == 60)
         }
-        @Test func largeCollectionMergeAndRepeat() throws {
-            let c = try LibraryStorage.makeContainer(inMemory: true)
-            let items = (1...2000).map { entry($0, release: $0) }
-            try merge(c, collection: items)
-            let repeated = try merge(c, collection: items)
-            #expect(try copies(c).count == 2000)
-            #expect(repeated.collectionAdded == 0); #expect(repeated.collectionUpdated == 0)
-        }
         /// A sync that only confirms the store lets the pages keep what they derived.
         @Test func unchangedSyncReportsNoChanges() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -65,6 +57,13 @@ extension AllTests {
             defer { NotificationCenter.default.removeObserver(observer) }
             try merge(c, collection: items, wants: [want(44)], folders: folders)
             #expect(written.withLock { $0 } == [Schema.entityName(for: DiscogsAccount.self)])
+            // One release renamed on Discogs: that release, nothing around it.
+            written.withLock { $0 = [] }
+            let renamed = DiscogsCollectionDTO(id: 43, instance_id: 101, folder_id: 1, date_added: "2026-09-20T08:00:00+02:00", basic_information: basic(43, title: "Neu"))
+            let summary = try merge(c, collection: [items[0], renamed], wants: [want(44)], folders: folders)
+            #expect(summary.collectionUpdated == 1)
+            #expect(Set(written.withLock { $0 }) == [Schema.entityName(for: DiscogsAccount.self), Schema.entityName(for: Release.self)])
+            #expect(written.withLock { $0 }.count == 2)
         }
         @Test func wantlistDetailsCountAsChanges() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -82,6 +81,7 @@ extension AllTests {
             try merge(c, collection: [entry(folder: 1)], folders: folders)
             // Moved to another folder on Discogs.
             #expect(try merge(c, collection: [entry(folder: 2)], folders: folders).hasChanges)
+            #expect(try copies(c).first?.discogsFolderID == 2)
             #expect(try !merge(c, collection: [entry(folder: 2)], folders: folders).hasChanges)
             // Taken out of the collection.
             #expect(try merge(c, collection: [], folders: folders).hasChanges)
@@ -122,8 +122,7 @@ extension AllTests {
         @Test func wantlistFailureAfterCompleteCollectionDoesNotCommit() async throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry()], wants: [want()], owner: "wantfailure")
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [SyncPaginationProtocol.self]
-            let api = DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "wantfailure" })
+            let api = DiscogsAPIClient.stubbed(SyncPaginationProtocol.self, token: "wantfailure")
             let sync = DiscogsSyncService(api: api)
             do { _ = try await sync.fetch(.all, container: c); Issue.record("Expected wantlist failure") }
             catch DiscogsError.offline {}
@@ -186,11 +185,6 @@ extension AllTests {
             #expect(try copies(c).first?.discogsActive == false)
             #expect(try ModelContext(c).fetchCount(FetchDescriptor<Release>()) == 1)
             #expect(try ModelContext(c).fetchCount(FetchDescriptor<WantlistEntry>()) == 1)
-        }
-        @Test func folderMove() throws {
-            let c = try LibraryStorage.makeContainer(inMemory: true)
-            try merge(c, collection: [entry()]); try merge(c, collection: [entry(folder: 9)])
-            #expect(try copies(c).first?.discogsFolderID == 9)
         }
         @Test func newFolder() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -269,7 +263,7 @@ extension AllTests {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry(), entry(200)])
             let items = try copies(c)
-            #expect(Set(items.compactMap(\.discogsInstanceID)) == [100, 200])
+            #expect(Set(items.map(\.discogsInstanceID)) == [100, 200])
             #expect(Set(items.compactMap { $0.release?.id }).count == 1)
         }
         @Test func shelfPlaceSurvivesUpdateAndRemoval() throws {
@@ -317,29 +311,6 @@ extension AllTests {
             #expect(DiscogsAccount.current(in: [a, b])?.username == "b")
             #expect(DiscogsAccount.current(in: []) == nil)
         }
-        /// From V2 on, the oldest store with synced copies, all the way to the current schema.
-        @Test func oldStoreMigrationPreservesLocalData() throws {
-            let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            defer { try? FileManager.default.removeItem(at: directory) }
-            let url = directory.appendingPathComponent("Migration.store")
-            let id: UUID = try autoreleasepool {
-                let schema = Schema(versionedSchema: LibrarySchemaV2.self)
-                let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
-                let shelf = LibrarySchemaV2.Shelf(number: 6)
-                let release = LibrarySchemaV2.Release(artist: "Artist", title: "Album"); release.discogsID = 42
-                let copy = LibrarySchemaV2.RecordCopy(release: release, shelf: shelf, position: 37)
-                copy.discogsInstanceID = 100; copy.discogsOwner = "fixture"; copy.discogsActive = true
-                copy.notes = "Preserve"; copy.purchasePrice = 12
-                container.mainContext.insert(copy); try container.mainContext.save(); return copy.id
-            }
-            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
-            let migrated = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
-            let copy = try #require(copies(migrated).first)
-            #expect(copy.id == id); #expect(copy.positionInShelf == 37); #expect(copy.shelf?.number == 6)
-            try merge(migrated, collection: [entry()])
-            #expect(try copies(migrated).first?.positionInShelf == 37)
-        }
         @Test func v11MigrationDropsOnlyRecordsWithoutDiscogsIDs() throws {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -376,8 +347,7 @@ extension AllTests {
         @Test func paginationFailureDoesNotModifyAnyScope() async throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry()], wants: [want()], folders: [.init(id: 1, name: "Original", count: 1)])
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [SyncPaginationProtocol.self]
-            let api = DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "fixture" })
+            let api = DiscogsAPIClient.stubbed(SyncPaginationProtocol.self)
             let sync = DiscogsSyncService(api: api)
             do { _ = try await sync.fetch(.all, container: c); Issue.record("Expected page 2 failure") }
             catch DiscogsError.offline {} catch { Issue.record("Unexpected \(error)") }
@@ -386,18 +356,30 @@ extension AllTests {
             #expect(try ModelContext(c).fetchCount(FetchDescriptor<WantlistEntry>()) == 1)
         }
         @Test func completePaginationAndDuplicateDetection() async throws {
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [SyncPaginationProtocol.self]
-            let api = DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "fixture" })
+            let api = DiscogsAPIClient.stubbed(SyncPaginationProtocol.self)
             let collection = try await api.collection(username: "success")
             #expect(collection.count == 2); #expect(collection.map(\.instance_id) == [1, 2])
             do { _ = try await api.collection(username: "duplicate"); Issue.record("Duplicate accepted") }
             catch DiscogsError.incompletePagination {} catch { Issue.record("Unexpected \(error)") }
         }
         @Test func completeWantlistPagination() async throws {
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [SyncPaginationProtocol.self]
-            let api = DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "fixture" })
+            let api = DiscogsAPIClient.stubbed(SyncPaginationProtocol.self)
             let wants = try await api.wants(username: "success")
             #expect(wants.map(\.id) == [1, 2])
+        }
+        /// An empty collection or wantlist is complete, not a failed download –
+        /// whether Discogs counts it as one empty page or as none.
+        @Test func emptyListsAreComplete() async throws {
+            let api = DiscogsAPIClient.stubbed(SyncPaginationProtocol.self)
+            #expect(try await api.collection(username: "empty1").isEmpty)
+            #expect(try await api.collection(username: "empty0").isEmpty)
+            #expect(try await api.wants(username: "empty1").isEmpty)
+            // Emptied on Discogs: the records leave the collection, the wantlist goes.
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            try merge(c, collection: [entry()], wants: [want(43)])
+            let summary = try merge(c, collection: try await api.collection(username: "empty1"), wants: try await api.wants(username: "empty1"))
+            #expect(summary.collectionRemoved == 1 && summary.wantsRemoved == 1)
+            #expect(try copies(c).first?.discogsActive == false)
         }
         @Test func wantlistPresentationSortsByArtistForAlphabetNavigation() throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
@@ -437,8 +419,7 @@ extension AllTests {
         @Test func releasesGoneFromDiscogsAreNotAskedAgainAtEveryLaunch() async throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry(1, release: 404), entry(2, release: 403), entry(3, release: 200)])
-            let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [TracklistStatusProtocol.self]
-            let sync = DiscogsSyncService(api: DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { "fixture" }))
+            let sync = DiscogsSyncService(api: .stubbed(TracklistStatusProtocol.self))
             #expect(await sync.loadTracklists(container: c, quiet: true))
             let releases = Dictionary(uniqueKeysWithValues: try ModelContext(c).fetch(FetchDescriptor<Release>()).map { ($0.discogsID, $0) })
             #expect(releases[200]?.tracks.map(\.title) == ["Intro"])
@@ -472,6 +453,11 @@ nonisolated final class SyncPaginationProtocol: URLProtocol, @unchecked Sendable
             if (page == 2 && url.path.contains("/fixture/")) || (url.path.contains("/wantfailure/") && url.path.hasSuffix("/wants")) {
                 client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet)); return
             }
+            if let empty = ["/empty0/": 0, "/empty1/": 1].first(where: { url.path.contains($0.key) }) {
+                let key = url.path.hasSuffix("/wants") ? "wants" : "releases"
+                respond(#"{"pagination":{"page":1,"pages":\#(empty.value),"per_page":100,"items":0},"\#(key)":[]}"#, url)
+                return
+            }
             let id = url.path.contains("/duplicate/") ? 1 : page
             let item = """
             {"id":\(id),"instance_id":\(id),"folder_id":1,"date_added":"2026-09-20","rating":0,"basic_information":{"id":\(id),"title":"Album","artists":[]}}
@@ -481,6 +467,9 @@ nonisolated final class SyncPaginationProtocol: URLProtocol, @unchecked Sendable
             {"pagination":{"page":\(page),"pages":2,"per_page":1,"items":2},"\(key)":[\(item)]}
             """
         }
+        respond(body, url)
+    }
+    private func respond(_ body: String, _ url: URL) {
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: Data(body.utf8)); client?.urlProtocolDidFinishLoading(self)

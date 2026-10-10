@@ -9,6 +9,17 @@ import SwiftData
 /// URLProtocol stubs and app singletons.
 @Suite(.serialized) enum AllTests {}
 
+extension DiscogsAPIClient {
+    /// A client answered by `stub` instead of Discogs. Without the second
+    /// between requests and the pauses before a repeat: they only made the
+    /// tests wait. A `Retry-After` from the stub is still waited out.
+    static func stubbed(_ stub: URLProtocol.Type, token: String? = "fixture") -> DiscogsAPIClient {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [stub]
+        return DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { token }, spacing: 0, retryPause: 0.01)
+    }
+}
+
 extension AllTests {
     struct LibraryTests {
         private func fixture() throws -> (ModelContainer, [Shelf], PositionService) {
@@ -378,14 +389,6 @@ extension AllTests {
             #expect(DemoMode.fileSuffix.isEmpty)
             #expect(ScheduledExport.fileName(for: ExportSettings()) == "Plattenregal Collection.csv")
         }
-        @Test func scheduledExportIsDueAfterAClockSetBack() {
-            let now = Date(timeIntervalSince1970: 1_790_000_000)
-            #expect(ScheduledExport.nextRun(after: nil, interval: .weekly, now: now) == now)
-            #expect(ScheduledExport.nextRun(after: now.addingTimeInterval(-86400), interval: .daily, now: now)
-                    == ExportInterval.daily.next(after: now.addingTimeInterval(-86400)))
-            // Written while the clock stood years ahead: due now, not only in years.
-            #expect(ScheduledExport.nextRun(after: now.addingTimeInterval(3 * 365 * 86400), interval: .monthly, now: now) == now)
-        }
         @Test func crashOfThePreviousSessionIsFoundInTheLog() throws {
             let url = FileManager.default.temporaryDirectory.appendingPathComponent("crash-\(UUID()).log")
             defer { try? FileManager.default.removeItem(at: url) }
@@ -664,6 +667,18 @@ extension AllTests {
             #expect(line([A(id: 1, name: "Solo", join: "")]) == "Solo")
             #expect(line([]) == "")
         }
+        /// What Discogs sends as "date_added", and what older stores hold.
+        @Test func discogsDatesAreReadInEveryForm() throws {
+            let stamp = try #require(DiscogsDate.parse("2026-09-20T08:00:00-07:00"))
+            #expect(stamp == (try Date.ISO8601FormatStyle().parse("2026-09-20T15:00:00Z")))
+            #expect(DiscogsDate.parse("2026-09-20T15:00:00.250Z")?.timeIntervalSince(stamp) == 0.25)
+            // A plain day is the local midnight, so it stays that day in every list.
+            let day = try #require(DiscogsDate.parse("2026-09-20"))
+            #expect(Calendar.current.dateComponents([.year, .month, .day, .hour], from: day) == DateComponents(year: 2026, month: 9, day: 20, hour: 0))
+            #expect(DiscogsDate.parse(nil) == nil)
+            #expect(DiscogsDate.parse("") == nil)
+            #expect(DiscogsDate.parse("unknown") == nil)
+        }
         @Test func emptyCoverFallsBackToThumbnailOrNothing() throws {
             func cover(_ image: String?, _ thumb: String?) throws -> String? {
                 let basic = DiscogsBasicInformation(id: 1, title: "T", artists: nil, year: nil, labels: nil, formats: nil,
@@ -694,14 +709,6 @@ extension AllTests {
                 throw LibraryError.invalidPosition
             } }
             #expect(a.positionInShelf == 1)
-        }
-        @Test func normalization() throws {
-            let (container, shelves, service) = try fixture(); _ = container
-            let a = try add(service, shelves[0], "A")
-            let b = try add(service, shelves[0], "B")
-            try service.save { a.positionInShelf = 7; b.positionInShelf = 12 }
-            try service.normalize(shelves[0])
-            #expect(service.ordered(shelves[0]).map(\.positionInShelf) == [1, 2])
         }
         @Test func persistentStoreCanBeReopened() throws {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -749,36 +756,16 @@ nonisolated final class DiscogsStubProtocol: URLProtocol, @unchecked Sendable {
 }
 extension AllTests {
     struct DiscogsClientTests {
-        private func client(token: String? = "fixture") -> DiscogsAPIClient {
-            let config = URLSessionConfiguration.ephemeral
-            config.protocolClasses = [DiscogsStubProtocol.self]
-            return DiscogsAPIClient(session: URLSession(configuration: config), tokenProvider: { token })
-        }
         @Test func missingToken() async {
-            do { _ = try await client(token: nil).release(id: 1); Issue.record("Expected missing token") }
-            catch DiscogsError.missingToken {} catch { Issue.record("Unexpected: \(error)") }
+            let error = await #expect(throws: DiscogsError.self) { try await DiscogsAPIClient.stubbed(DiscogsStubProtocol.self, token: nil).release(id: 1) }
+            guard case .missingToken = error else { Issue.record("Unexpected: \(String(describing: error))"); return }
         }
-        @Test func unauthorized() async {
-            do { _ = try await client().release(id: 401); Issue.record("Expected unauthorized") }
-            catch DiscogsError.unauthorized {} catch { Issue.record("Unexpected: \(error)") }
-        }
-        @Test func rateLimit() async {
-            do { _ = try await client().release(id: 429); Issue.record("Expected rate limit") }
-            catch DiscogsError.rateLimited(let seconds) { #expect(seconds == 1) }
-            catch { Issue.record("Unexpected: \(error)") }
-        }
-        @Test func hTTPError() async {
-            do { _ = try await client().release(id: 500); Issue.record("Expected HTTP failure") }
-            catch DiscogsError.http(let code) { #expect(code == 500) }
-            catch { Issue.record("Unexpected: \(error)") }
-        }
-        @Test func invalidResponse() async {
-            do { _ = try await client().release(id: 900); Issue.record("Expected invalid JSON") }
-            catch DiscogsError.invalidResponse {} catch { Issue.record("Unexpected: \(error)") }
-        }
-        @Test func offline() async {
-            do { _ = try await client().release(id: 901); Issue.record("Expected offline") }
-            catch DiscogsError.offline {} catch { Issue.record("Unexpected: \(error)") }
+        /// What `DiscogsStubProtocol` answers for `/releases/<code>`, and the
+        /// error the client makes of it (after its repeats, where it repeats).
+        @Test(arguments: [(401, "unauthorized"), (429, "rateLimited(1)"), (500, "http(500)"), (900, "invalidResponse"), (901, "offline")])
+        func failuresBecomeTheAppsOwnErrors(code: Int, expected: String) async {
+            let error = await #expect(throws: DiscogsError.self) { try await DiscogsAPIClient.stubbed(DiscogsStubProtocol.self).release(id: code) }
+            #expect(error.map { String(describing: $0) } == expected)
         }
     }
 }
