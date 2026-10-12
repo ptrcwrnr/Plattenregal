@@ -74,13 +74,19 @@ final class ShelfAssignmentSession: Identifiable {
         return AlphabeticalPlacement.current(for: copy, in: shelves)
     }
 
-    /// Every place `copy` would stand, for the "i" in its row: in this shelf
-    /// when it fits here, else in the rack (two at a shelf boundary).
-    func places(for copy: RecordCopy) -> [AlphabeticalPlacement.Spot] {
-        guard !isGone(copy) else { return [] }
-        if shelf != nil, belongsElsewhere[copy.id] == nil { return spot(for: copy).map { [$0] } ?? [] }
-        return AlphabeticalPlacement.spots(for: copy, in: shelves)
+    /// Where `copy` would stand, shown on its tile: in this shelf when it
+    /// fits here, else in the rack (the first of two at a shelf boundary).
+    /// Kept until a record is added – every tile asks on each redraw, and
+    /// finding a place walks the rack.
+    func place(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
+        if let known = placeCache[copy.id] { return known }
+        guard !isGone(copy) else { return nil }
+        let spot = shelf != nil && belongsElsewhere[copy.id] == nil ? spot(for: copy)
+            : AlphabeticalPlacement.spots(for: copy, in: shelves).first
+        placeCache[copy.id] = .some(spot)
+        return spot
     }
+    @ObservationIgnored private var placeCache: [UUID: AlphabeticalPlacement.Spot?] = [:]
 
     var visible: [RecordCopy] { candidates }
 
@@ -137,6 +143,8 @@ final class ShelfAssignmentSession: Identifiable {
         do {
             // Its alphabetical place; standing in a shelf now, it turned up after all.
             try PositionService(context: context).move(copy, to: spot.shelf, position: spot.position, found: true)
+            // Positions behind it moved on.
+            placeCache = [:]
             missing.remove(copy.id)
             if hoveredID == copy.id { hoveredID = nil }
             candidates.removeAll { $0.id == copy.id }
@@ -166,8 +174,9 @@ final class ShelfAssignmentSession: Identifiable {
 /// "+" in the compartment header: pick records that don't have a shelf yet.
 /// Records marked "Gesucht" aren't offered; the settings list them.
 /// A glass panel over the page, closed by a click beside it or Esc: the
-/// target compartment on a glass card, below it the records as covers, as
-/// large as in the compartment's own grid. No title – the card says what
+/// target compartment on a glass card, below it the records as in the
+/// compartment's own grid – cover, position tag and caption, the position
+/// being the one each record would get. A click adds it. No title – the card says what
 /// the panel is for. All state is in the session.
 struct ShelfAssignmentView: View {
     @Bindable var session: ShelfAssignmentSession
@@ -214,7 +223,7 @@ struct ShelfAssignmentView: View {
                                     belongsElsewhere: session.belongsElsewhere,
                                     toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
                                     hover: { [session] copy, hovering in session.hover(copy, hovering) },
-                                    places: places) { [session, context] copy in
+                                    position: { [session] copy in session.place(for: copy)?.position }) { [session, context] copy in
                     session.add(copy, in: context)
                 }
                 if session.loaded && items.isEmpty {
@@ -261,7 +270,7 @@ struct ShelfAssignmentView: View {
                 guard let spot = session.spot(for: copy) else { return String(localized: "\(artist) – noch steht keine Platte im Regal") }
                 return String(localized: "\(artist) in „\(name(spot.shelf))“ \(place(spot))")
             }
-            if let other = session.belongsElsewhere[copy.id] { return String(localized: "\(artist) gehört in „\(other)“ – „i“ zeigt den Platz") }
+            if let other = session.belongsElsewhere[copy.id] { return String(localized: "\(artist) gehört in „\(other)“") }
             if let spot = session.spot(for: copy) { return String(localized: "\(artist) \(place(spot))") }
         }
         if let copy = session.lastAddedHere, let spot = session.placed(copy) {
@@ -280,15 +289,6 @@ struct ShelfAssignmentView: View {
         case let (nil, after?): return String(localized: "ganz vorn, vor \(name(after))")
         case let (before?, nil): return String(localized: "ans Ende, nach \(name(before))")
         case (nil, nil): return String(localized: "als erste Platte")
-        }
-    }
-
-    /// For the "i" of a row: each fitting shelf with position and neighbours.
-    private func places(for copy: RecordCopy) -> [AssignmentPlace] {
-        session.places(for: copy).map { spot in
-            let between = place(spot)
-            return AssignmentPlace(id: spot.shelf.id, shelf: labels.prefix(for: spot.shelf) + name(spot.shelf), position: spot.position,
-                                   neighbours: between.prefix(1).uppercased() + between.dropFirst())
         }
     }
 
@@ -313,28 +313,42 @@ private struct ShelfAssignmentGrid: View {
     let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
     let hover: (RecordCopy, Bool) -> Void
-    let places: (RecordCopy) -> [AssignmentPlace]
+    /// The position each record would get (see `ShelfAssignmentSession.place`).
+    let position: (RecordCopy) -> Int?
     let add: (RecordCopy) -> Void
+    /// The tile whose right-click menu is open, and where it was clicked.
+    @State private var menuFor: (id: UUID, anchor: UnitPoint)?
+    @State private var clicks = GridSecondaryClicks<UUID>()
 
     var body: some View {
         ScrollView {
             LazyVGrid(columns: CoverGrid.columns(count: ShelfAssignmentView.columns), alignment: .leading, spacing: CoverGrid.spacing) {
                 ForEach(items) { copy in
-                    ShelfAssignmentTile(copy: copy, missingEnabled: missingEnabled,
+                    ShelfAssignmentTile(copy: copy, position: position(copy),
                                         suggested: copy.id == suggestedID,
                                         belongsIn: belongsElsewhere[copy.id],
                                         rackWide: rackWide,
-                                        toggleMissing: { toggleMissing(copy) },
-                                        hover: { hover(copy, $0) },
-                                        places: { places(copy) }) { add(copy) }
+                                        hover: { hover(copy, $0) }) { add(copy) }
+                        .gridSecondaryClickCell(copy.id, in: clicks)
+                        .popover(isPresented: Binding(get: { menuFor?.id == copy.id }, set: { if !$0, menuFor?.id == copy.id { menuFor = nil } }),
+                                 attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+                            AppMenu(dismiss: { menuFor = nil }) {
+                                Button(rackWide ? "Einsortieren" : "Zum Fach hinzufügen") { add(copy) }
+                                if missingEnabled {
+                                    Button("Auf die Suchliste setzen") { toggleMissing(copy) }
+                                }
+                            }
+                        }
                         .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
             }
+            .gridSecondaryClickGrid(clicks)
             .padding(.horizontal, AppStyle.pagePadding)
             .padding(.top, AppStyle.rowSpacing)
             .padding(.bottom, AppStyle.pagePadding)
             .animation(AppStyle.layoutAnimation, value: items.map(\.id))
         }
+        .onGridSecondaryClick(clicks) { id, point in menuFor = (id, point) }
         .scrollIndicators(.automatic)
     }
 }
@@ -376,165 +390,81 @@ enum AssignmentRowMetrics {
     static let height: CGFloat = 52
 }
 
-/// One candidate: cover and caption as in a compartment's grid. Its actions
-/// – pause, "i", "+" – sit on the cover while the pointer is over it; a
-/// double click adds the record as well.
+/// One candidate, built like a tile of a compartment's grid: the cover with
+/// the position it would get, the caption, and – when it belongs elsewhere –
+/// the compartment it goes to. A click adds it; a right-click offers the
+/// search list.
 private struct ShelfAssignmentTile: View {
     let copy: RecordCopy
-    /// Off in the settings: no pause button.
-    let missingEnabled: Bool
+    /// Where it would stand in the compartment it belongs to.
+    let position: Int?
     /// The next one to add by artist: tagged on its cover.
     let suggested: Bool
     /// The shelf it fits alphabetically, when that isn't this one.
     let belongsIn: String?
     /// "Einsortieren": no shelf of its own, each record goes to `belongsIn`.
     let rackWide: Bool
-    let toggleMissing: () -> Void
     let hover: (Bool) -> Void
-    /// Where it would stand, read when the "i" is clicked.
-    let places: () -> [AssignmentPlace]
     let add: () -> Void
-    @State private var hovering = false
-    /// The popover of the "i": where the record would stand.
-    @State private var showsPlace = false
 
     var body: some View {
         let artist = copy.release?.displayArtist ?? "—"
         let title = copy.release?.displayTitle ?? "—"
-        VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
-            CoverView(url: copy.release?.coverURL, size: nil)
-                .atelierRecordSleeve()
-                .overlay(alignment: .topLeading) {
-                    if suggested {
-                        Text("Als Nächstes")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(AppStyle.accent)
-                            .padding(.horizontal, 7).padding(.vertical, 3)
-                            .appChipSurface(in: Capsule())
-                            .padding(AtelierCoverFrame.badgeInset)
-                            .help(rackWide ? String(localized: "Nach Interpret die nächste Platte") : String(localized: "Nach Interpret die nächste Platte für dieses Fach"))
+        // "Platte hinzufügen" puts every record into its own shelf: the
+        // position on the cover is only shown where it is the one it gets.
+        let showsPosition = rackWide || belongsIn == nil
+        Button(action: add) {
+            VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
+                CoverView(url: copy.release?.coverURL, size: nil)
+                    .atelierRecordSleeve()
+                    .overlay(alignment: .topLeading) {
+                        if showsPosition, let position {
+                            Text(String(position))
+                                .font(.caption.weight(.semibold)).monospacedDigit()
+                                .padding(.horizontal, 7).padding(.vertical, 3)
+                                .appChipSurface(in: Capsule())
+                                .padding(AtelierCoverFrame.badgeInset)
+                        }
+                    }
+                    .overlay(alignment: .topTrailing) {
+                        if suggested {
+                            Text("Als Nächstes")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(AppStyle.accent)
+                                .padding(.horizontal, 7).padding(.vertical, 3)
+                                .appChipSurface(in: Capsule())
+                                .padding(AtelierCoverFrame.badgeInset)
+                        }
+                    }
+                // The same caption as in the compartment, Collection and Wantlist.
+                RecordCaption(release: copy.release)
+                Group {
+                    if let belongsIn {
+                        if rackWide { Text(belongsIn) } else { Text("gehört in „\(belongsIn)“") }
                     }
                 }
-                .overlay(alignment: .bottom) {
-                    actions(artist: artist, title: title)
-                        .padding(AtelierCoverFrame.badgeInset)
-                        // Stays while its popover is open.
-                        .opacity(hovering || showsPlace ? 1 : 0)
-                }
-            // The same caption as in the compartment, Collection and Wantlist.
-            RecordCaption(release: copy.release)
-            Group {
-                if let belongsIn {
-                    Text("gehört in „\(belongsIn)“")
-                        .help(rackWide ? String(localized: "Passt alphabetisch in „\(belongsIn)“") : String(localized: "Passt alphabetisch in „\(belongsIn)“, nicht in dieses Fach"))
-                }
+                .font(.caption2.weight(.medium)).foregroundStyle(.tertiary)
+                // Cabinet and compartment: two lines rather than a cut-off name.
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(minHeight: 14, alignment: .topLeading)
             }
-            .font(.caption2.weight(.medium)).foregroundStyle(.tertiary)
-            // Cabinet and compartment: two lines rather than a cut-off name.
-            .lineLimit(2)
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(minHeight: 14, alignment: .topLeading)
-        }
-        .contentShape(Rectangle())
-        .help("\(artist) – \(title)")
-        .onTapGesture(count: 2, perform: add)
-        .onHover { hovering = $0; hover($0) }
-        .animation(AppStyle.fadeAnimation, value: hovering)
-    }
-
-    /// Pause, "i" and "+" in one glass capsule at the foot of the cover.
-    private func actions(artist: String, title: String) -> some View {
-        HStack(spacing: 2) {
-            if missingEnabled {
-                TileSymbolButton(systemImage: "pause.circle", color: .secondary, action: toggleMissing)
-                    .help("Gesucht – auf die Suchliste setzen")
-                    .accessibilityLabel(String(localized: "\(artist) – \(title) auf die Suchliste setzen"))
-            }
-            // Where it would stand once sorted in.
-            TileSymbolButton(systemImage: "info.circle", color: .secondary) { showsPlace = true }
-                .help("Zeigt, wo sie einsortiert stehen würde")
-                .accessibilityLabel("\(artist) – \(title): Platz im Regal")
-                .popover(isPresented: $showsPlace, arrowEdge: .bottom) {
-                    AssignmentPlacePopover(artist: artist, title: title, places: places())
-                }
-            if rackWide {
-                if let belongsIn {
-                    TileSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, action: add)
-                        .help("An ihrer alphabetischen Stelle in „\(belongsIn)“ einsortieren")
-                        .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
-                }
-            } else {
-                // The main action: accent in the glyph, like chosen options elsewhere.
-                TileSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, action: add)
-                    .help(belongsIn == nil ? String(localized: "An ihrer alphabetischen Stelle ins Fach hinzufügen") : String(localized: "Trotzdem in dieses Fach hinzufügen"))
-                    .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
-            }
-        }
-        .padding(.horizontal, 4)
-        .appChipSurface(in: Capsule())
-    }
-}
-
-/// A tile action as a bare symbol inside the capsule on the cover.
-private struct TileSymbolButton: View {
-    let systemImage: String
-    let color: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 17))
-                .foregroundStyle(color)
-                .frame(width: 30, height: 30)
-                .contentShape(Rectangle())
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .help(help(artist: artist, title: title))
+        .accessibilityLabel(rackWide ? String(localized: "\(artist) – \(title) einsortieren") : String(localized: "\(artist) – \(title) ins Fach hinzufügen"))
+        .onHover(perform: hover)
     }
-}
 
-/// A place a record without a shelf would stand, as the "i" of its row tells it.
-struct AssignmentPlace: Identifiable {
-    /// The shelf's ID: one entry per fitting shelf.
-    let id: UUID
-    let shelf: String
-    let position: Int
-    /// "Zwischen „Air“ und „Björk“".
-    let neighbours: String
-}
-
-/// The popover of a row's "i": the shelf and position the record would get
-/// (both, when it falls between two shelves).
-private struct AssignmentPlacePopover: View {
-    let artist: String
-    let title: String
-    let places: [AssignmentPlace]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Hier würde sie stehen").font(.callout.weight(.medium))
-                Text("\(artist) – \(title)").font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1).truncationMode(.middle)
-            }
-            if places.isEmpty {
-                Text("Es steht noch keine Platte im Regal, an der sie sich ausrichten könnte.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                ForEach(Array(places.enumerated()), id: \.element.id) { index, place in
-                    if index > 0 { Text("oder genauso gut").font(.caption).foregroundStyle(.tertiary) }
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("Fach „\(place.shelf)“ · Position \(place.position)").font(.callout).monospacedDigit()
-                        Text(place.neighbours).font(.caption).foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-            }
+    private func help(artist: String, title: String) -> String {
+        let record = "\(artist) · \(title)\n"
+        if rackWide {
+            guard let belongsIn, let position else { return record + String(localized: "Noch steht keine Platte im Regal, an der sie sich ausrichten könnte.") }
+            return record + String(localized: "Klick: in „\(belongsIn)“ an Position \(position) einsortieren. Rechtsklick: weitere Aktionen.")
         }
-        .padding(AppStyle.cardPadding)
-        .frame(width: 300, alignment: .leading)
-        .appPopoverSurface()
+        if let belongsIn { return record + String(localized: "Passt alphabetisch in „\(belongsIn)“. Klick: trotzdem in dieses Fach hinzufügen. Rechtsklick: weitere Aktionen.") }
+        return record + String(localized: "Klick: an ihrer alphabetischen Stelle ins Fach hinzufügen. Rechtsklick: weitere Aktionen.")
     }
 }
 

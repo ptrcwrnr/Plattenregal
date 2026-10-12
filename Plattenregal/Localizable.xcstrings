@@ -121,6 +121,16 @@
         }
       }
     },
+    "%@ gehört in „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ belongs in “%2$@”"
+          }
+        }
+      }
+    },
     "%@ – %@: %@" : {
       "localizations" : {
         "en" : {
@@ -241,6 +251,26 @@
         }
       }
     },
+    "Klick: an ihrer alphabetischen Stelle ins Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click: add to the compartment at its alphabetical place. Right-click: more actions."
+          }
+        }
+      }
+    },
+    "Klick: in „%@“ an Position %lld einsortieren. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click: place in “%1$@” at position %2$lld. Right-click: more actions."
+          }
+        }
+      }
+    },
     "Listen" : {
       "localizations" : {
         "en" : {
@@ -257,6 +287,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No longer for sale"
+          }
+        }
+      }
+    },
+    "Noch steht keine Platte im Regal, an der sie sich ausrichten könnte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No record stands on the shelf yet that it could line up with."
+          }
+        }
+      }
+    },
+    "Passt alphabetisch in „%@“. Klick: trotzdem in dieses Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fits alphabetically in “%@”. Click: add to this compartment anyway. Right-click: more actions."
           }
         }
       }
@@ -297,6 +347,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Take off the sale list"
+          }
+        }
+      }
+    },
+    "Zum Fach hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Compartment"
           }
         }
       }
@@ -420,28 +480,12 @@
       },
       "shouldTranslate" : false
     },
-    "%@ – %@ auf die Suchliste setzen" : {
+    "%@ – %@ einsortieren" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add %1$@ – %2$@ to the search list"
-          }
-        }
-      }
-    },
-    "%@ – %@ in „%@“ einsortieren" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ – %2$@ in „%3$@“ einsortieren"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Place %@ – %@ in “%@”"
+            "value" : "Place %1$@ – %2$@"
           }
         }
       }
@@ -475,16 +519,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ – %@ found again"
-          }
-        }
-      }
-    },
-    "%@ – %@: Platz im Regal" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ – %2$@: place on the shelf"
           }
         }
       }
@@ -596,16 +630,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ compartments · %@ placed%@"
-          }
-        }
-      }
-    },
-    "%@ gehört in „%@“ – „i“ zeigt den Platz" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ belongs in “%2$@” – “i” shows the place"
           }
         }
       }
@@ -2065,26 +2089,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "at the beginning"
-          }
-        }
-      }
-    },
-    "An ihrer alphabetischen Stelle in „%@“ einsortieren" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort into “%@” at its alphabetical place"
-          }
-        }
-      }
-    },
-    "An ihrer alphabetischen Stelle ins Fach hinzufügen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add to the compartment at its alphabetical spot"
           }
         }
       }
@@ -4384,16 +4388,6 @@
         }
       }
     },
-    "Es steht noch keine Platte im Regal, an der sie sich ausrichten könnte." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No record stands on the shelf yet that it could line up with."
-          }
-        }
-      }
-    },
     "Excel mit deutschen Einstellungen erwartet Semikolons." : {
       "localizations" : {
         "en" : {
@@ -4534,16 +4528,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compartment “%@” · %@ · %@ in the compartment"
-          }
-        }
-      }
-    },
-    "Fach „%@“ · Position %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compartment “%1$@” · position %2$lld"
           }
         }
       }
@@ -5085,16 +5069,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Located here"
-          }
-        }
-      }
-    },
-    "Hier würde sie stehen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This is where it would stand"
           }
         }
       }
@@ -6156,26 +6130,6 @@
         }
       }
     },
-    "Nach Interpret die nächste Platte" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next record by artist"
-          }
-        }
-      }
-    },
-    "Nach Interpret die nächste Platte für dieses Fach" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The next record for this compartment by artist"
-          }
-        }
-      }
-    },
     "Nach Interpret und Titel, wie auf der Collection-Seite." : {
       "localizations" : {
         "en" : {
@@ -6720,16 +6674,6 @@
         }
       }
     },
-    "oder genauso gut" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "or just as well"
-          }
-        }
-      }
-    },
     "Ohne Fach · Platz finden" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6827,26 +6771,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Folders organize the collection on Discogs. The compartments on the shelf are independent of them."
-          }
-        }
-      }
-    },
-    "Passt alphabetisch in „%@“" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fits alphabetically in “%@”"
-          }
-        }
-      }
-    },
-    "Passt alphabetisch in „%@“, nicht in dieses Fach" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fits alphabetically in “%@”, not in this compartment"
           }
         }
       }
@@ -8606,16 +8530,6 @@
         }
       }
     },
-    "Trotzdem in dieses Fach hinzufügen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add to this compartment anyway"
-          }
-        }
-      }
-    },
     "Über Plattenregal" : {
       "localizations" : {
         "en" : {
@@ -8744,16 +8658,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Looking for"
-          }
-        }
-      }
-    },
-    "Gesucht – auf die Suchliste setzen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Looking for it – add to the search list"
           }
         }
       }
@@ -9343,16 +9247,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shows where the record belongs alphabetically"
-          }
-        }
-      }
-    },
-    "Zeigt, wo sie einsortiert stehen würde" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shows where it would stand once placed"
           }
         }
       }

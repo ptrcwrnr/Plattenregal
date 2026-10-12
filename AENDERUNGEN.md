@@ -1,3 +1,10 @@
+# Einsortieren-Fenster: Kacheln wie im Fach, Klick statt Symbole · 12.10.2026
+
+- Die Symbole beim Überfahren (Pause, „i“, „+“) samt „i“-Popover sind entfallen. Jede Kachel ist aufgebaut wie im Fachinhalt: Cover mit Positions-Etikett (die Position, die die Platte bekäme), Beschriftung, darunter das Fach, in das sie gehört („Einsortieren“) bzw. „gehört in …“ („Platte hinzufügen“, dort ohne Position, weil der Klick ins offene Fach geht).
+- **Ein Klick auf die Kachel fügt hinzu** (bisher „+“ oder Doppelklick). Rechtsklick öffnet ein Menü mit „Einsortieren“ / „Zum Fach hinzufügen“ und „Auf die Suchliste setzen“ (nur bei eingeschalteter Suchliste).
+- Der Platz je Platte wird pro Fenster gemerkt und nach jedem Hinzufügen neu bestimmt (`ShelfAssignmentSession.place`).
+- Geprüft: Build, Tests, Fensterfotos beider Fenster (Demo, Modern hell). **Nicht angeklickt:** Klick auf eine Kachel und das Rechtsklick-Menü.
+
 # „Ohne Regalplatz“ und „Noch nicht einsortiert“ · 12.10.2026
 
 - **„Nicht im Regal“ heißt jetzt „Ohne Regalplatz“** (Rechtsklick-Menüs, Schalter in der Plattenansicht, Standortangabe, Export, Sicherungsübersicht, Texte bei „Alle verkauft“ und beim Zurücksetzen, Protokoll). Das Gegenstück bleibt „Wieder einsortieren“.
