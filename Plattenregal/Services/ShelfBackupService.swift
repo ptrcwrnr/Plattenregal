@@ -258,11 +258,11 @@ struct ShelfBackupService {
             for id in Set(backup.notInShelf).subtracting(placed) {
                 if let copy = byInstance[id] { context.insert(OptimizationExclusion(copyID: copy.id)); excluded.insert(copy.id) }
             }
-            // "Vermisst" isn't part of a backup and stays, except on
+            // "Gesucht" isn't part of a backup and stays, except on
             // records the backup keeps out of the shelves ("Nicht im Regal").
             let cleared = try context.fetch(FetchDescriptor<MissingCopyMark>()).filter { excluded.contains($0.copyID) }
             for row in cleared { context.delete(row) }
-            if !cleared.isEmpty { AppLog.info("Sicherung", "„Vermisst“ bei \(cleared.count) Platte(n) aufgehoben – laut Sicherung „Nicht im Regal“") }
+            if !cleared.isEmpty { AppLog.info("Sicherung", "Suchliste: \(cleared.count) Platte(n) entfernt – laut Sicherung „Nicht im Regal“") }
         }
     }
 }

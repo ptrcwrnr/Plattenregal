@@ -1,3 +1,9 @@
+# „Vermisst“ heißt jetzt Suchliste / „Gesucht“ · 12.10.2026
+
+- Überall in der App umbenannt: Etikett „Gesucht“, Menüeintrag „Auf die Suchliste setzen“ (statt „Als vermisst markieren“), Liste „Suchliste“ in den Einstellungen, Hinweise auf der Einsortier-Karte, in „Einsortieren“, beim Zurücksetzen und im Protokoll. „Wieder gefunden“ / „Gefunden“ bleiben. Intern heißen Modell und Schlüssel weiter `MissingCopyMark` / `missingListEnabled` – keine Migration, bestehende Markierungen bleiben. Ältere Abschnitte dieser Datei und von VALIDIERUNG.md nennen noch „Vermisst“.
+- **Einstellungen → Listen:** Die Karten haben keine eigene Überschrift mit Kurztext mehr; es bleibt je die Zeile mit Schalter („Suchliste“, „Verkaufsliste“) und Erklärung.
+- Englisch: „Search list“ / „Looking for“.
+
 # Vermisst und Verkauf einzeln abschaltbar · 12.10.2026
 
 - **Einstellungen → Listen:** je eine Karte „Vermisst“ und „Verkauf“ mit eigenem Schalter, darunter die Liste (nur wenn eingeschaltet). Neu ist der Schalter „Verkaufsliste“ (`saleListEnabled`, Vorgabe an).

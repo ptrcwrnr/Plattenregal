@@ -23,7 +23,7 @@ final class ShelfAssignmentSession: Identifiable {
     private(set) var loaded = false
     private(set) var addedCount = 0
     private(set) var lastAdded: RecordCopy?
-    /// Candidates marked "Vermisst": left out of the list until they are
+    /// Candidates marked "Gesucht": left out of the list until they are
     /// released in the settings.
     private(set) var missing: Set<UUID> = []
     /// For candidates that belong in another shelf alphabetically: its name,
@@ -164,7 +164,7 @@ final class ShelfAssignmentSession: Identifiable {
 }
 
 /// "+" in the compartment header: pick records that don't have a shelf yet.
-/// Records marked "Vermisst" aren't offered; the settings list them.
+/// Records marked "Gesucht" aren't offered; the settings list them.
 /// A glass panel over the page, closed by a click beside it or Esc: the
 /// target compartment on a glass card, below it the records as covers, as
 /// large as in the compartment's own grid. No title – the card says what
@@ -194,7 +194,7 @@ struct ShelfAssignmentView: View {
     }
 
     private var addColumn: some View {
-        // Records marked "Vermisst" wait in the settings, not here.
+        // Records marked "Gesucht" wait in the settings, not here.
         let items = missingEnabled ? session.visible.filter { !session.missing.contains($0.id) } : session.visible
         return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
@@ -219,9 +219,9 @@ struct ShelfAssignmentView: View {
                 }
                 if session.loaded && items.isEmpty {
                     if pausedCount > 0 {
-                        AppEmptyState(String(localized: "Nur noch vermisste Platten"), systemImage: "checkmark.circle",
-                                      description: Text("Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Listen“ markierst du sie als gefunden."),
-                                      actionTitle: String(localized: "Vermisste Platten …"), action: openMissing)
+                        AppEmptyState(String(localized: "Nur noch gesuchte Platten"), systemImage: "checkmark.circle",
+                                      description: Text("Alle übrigen Platten ohne Fach stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden."),
+                                      actionTitle: String(localized: "Suchliste …"), action: openMissing)
                     } else {
                         AppEmptyState(String(localized: "Alles einsortiert"), systemImage: "checkmark.circle",
                                       description: Text("Jede Platte der Sammlung liegt bereits in einem Fach."))
@@ -371,7 +371,7 @@ struct AssignmentCard<Trailing: View>: View {
     }
 }
 
-/// Rows of the shelf search and the "Vermisst" list: the same height and cover.
+/// Rows of the shelf search and the "Gesucht" list: the same height and cover.
 enum AssignmentRowMetrics {
     static let height: CGFloat = 52
 }
@@ -447,8 +447,8 @@ private struct ShelfAssignmentTile: View {
         HStack(spacing: 2) {
             if missingEnabled {
                 TileSymbolButton(systemImage: "pause.circle", color: .secondary, action: toggleMissing)
-                    .help("Vermisst – vorerst zurückstellen")
-                    .accessibilityLabel(String(localized: "\(artist) – \(title) als vermisst markieren"))
+                    .help("Gesucht – auf die Suchliste setzen")
+                    .accessibilityLabel(String(localized: "\(artist) – \(title) auf die Suchliste setzen"))
             }
             // Where it would stand once sorted in.
             TileSymbolButton(systemImage: "info.circle", color: .secondary) { showsPlace = true }

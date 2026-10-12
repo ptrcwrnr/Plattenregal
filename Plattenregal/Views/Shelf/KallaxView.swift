@@ -147,7 +147,7 @@ struct KallaxView: View {
         return allCopies.filter { $0.leftCurrentCollection(owner: owner) && ($0.shelf?.isInUse ?? false) }
     }
 
-    /// Empty while "Vermisst" is off in the settings: no marks shown anywhere
+    /// Empty while "Gesucht" is off in the settings: no marks shown anywhere
     /// on this page (they are kept, and return when it is switched on again).
     private var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
 
@@ -719,7 +719,7 @@ struct KallaxView: View {
     private func confirmPlacement() {
         guard let placement, let spot = placement.spot else { return }
         if placement.found {
-            // Standing where it should: a "Vermisst" mark is settled.
+            // Standing where it should: a "Gesucht" mark is settled.
             if placement.missing { setMissing(placement.copy, false) }
             withAnimation(AppStyle.standardAnimation) { self.placement = nil }
             return

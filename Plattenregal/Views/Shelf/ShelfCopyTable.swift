@@ -285,7 +285,7 @@ struct ShelfContentsView: View {
             if missing.contains(copy.id) {
                 Button("Wieder gefunden") { menuFor = nil; setMissing(copy, false) }
             } else {
-                Button("Als vermisst markieren") { menuFor = nil; setMissing(copy, true) }
+                Button("Auf die Suchliste setzen") { menuFor = nil; setMissing(copy, true) }
             }
         }
         if saleEnabled {

@@ -4,7 +4,7 @@ import SwiftData
 // MARK: - Listen
 
 /// The app's two lists of marked records.
-/// - "Vermisst": marked on the shelf page, and the way back – found, a
+/// - "Gesucht": marked on the shelf page, and the way back – found, a
 ///   record without a shelf is offered in "Einsortieren" and "Platte
 ///   hinzufügen" again; one standing in a shelf simply loses its mark.
 /// - "Verkauf": records to be sold some day. They stay where they stand
@@ -53,20 +53,19 @@ struct ListsSettingsView: View {
         let copies = copies
         let forSale = forSale
         SettingsPage {
-            SettingsCard(title: String(localized: "Vermisst"),
-                         subtitle: String(localized: "Für Platten, die beim Einsortieren gerade nicht zu finden sind.")) {
-                SettingsRow(title: String(localized: "Vermisst-Liste"),
+            ListCard {
+                SettingsRow(title: String(localized: "Suchliste"),
                             hint: missingEnabled
-                            ? String(localized: "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf eine Platte. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten.")
-                            : String(localized: "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest.")) {
-                    Toggle("Vermisst-Liste", isOn: $missingEnabled)
+                            ? String(localized: "Für Platten, die gerade nicht zu finden sind: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten.")
+                            : String(localized: "Aus: keine Suchliste. Bereits gesuchte Platten bleiben gemerkt, falls du sie wieder einschaltest.")) {
+                    Toggle("Suchliste", isOn: $missingEnabled)
                         .labelsHidden().toggleStyle(.switch)
                 }
                 // Off: the marks are kept, but nothing shows them.
                 if missingEnabled {
                     Divider()
                     if copies.isEmpty {
-                        SettingsNote(String(localized: "Keine Platte ist als vermisst markiert."))
+                        SettingsNote(String(localized: "Keine Platte steht auf der Suchliste."))
                     } else {
                         SettingsNote(String(localized: "\(AppStyle.records(copies.count)) · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“."))
                         LazyVStack(alignment: .leading, spacing: 0) {
@@ -87,12 +86,11 @@ struct ListsSettingsView: View {
                 if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
             }
 
-            SettingsCard(title: String(localized: "Verkauf"),
-                         subtitle: String(localized: "Für Platten, die du irgendwann verkaufen willst.")) {
+            ListCard {
                 SettingsRow(title: String(localized: "Verkaufsliste"),
                             hint: saleEnabled
-                            ? String(localized: "Platten lassen sich per Rechtsklick zum Verkauf vormerken. Sie bleiben im Regal, bis du alle verkauft hast.")
-                            : String(localized: "Aus: kein Vormerken und keine Liste. Bereits vorgemerkte Platten bleiben gemerkt, falls du es wieder einschaltest.")) {
+                            ? String(localized: "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast.")
+                            : String(localized: "Aus: keine Verkaufsliste. Bereits vorgemerkte Platten bleiben gemerkt, falls du sie wieder einschaltest.")) {
                     Toggle("Verkaufsliste", isOn: $saleEnabled)
                         .labelsHidden().toggleStyle(.switch)
                 }
@@ -135,7 +133,7 @@ struct ListsSettingsView: View {
             AppLog.info("Einstellungen", "Verkaufsliste \(on ? "eingeschaltet" : "ausgeschaltet – Vormerkungen bleiben gespeichert")")
         }
         .onChange(of: missingEnabled) { _, on in
-            AppLog.info("Einstellungen", "Vermisst-Liste \(on ? "eingeschaltet" : "ausgeschaltet – Markierungen bleiben gespeichert")")
+            AppLog.info("Einstellungen", "Suchliste \(on ? "eingeschaltet" : "ausgeschaltet – Markierungen bleiben gespeichert")")
         }
         .task(id: labelSignature) { labels = labelsCache.labels(for: records.shelves, style: labelStyle) }
     }
@@ -164,6 +162,17 @@ struct ListsSettingsView: View {
     private func sellAll() {
         do { try PositionService(context: context).sellAllForSale(); saleError = nil }
         catch { saleError = error.reportedMessage() }
+    }
+}
+
+/// A card without a heading: the switch row names the list already.
+private struct ListCard<Content: View>: View {
+    @ViewBuilder let content: Content
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) { content }
+            .padding(AppStyle.cardPadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .appCardSurface()
     }
 }
 

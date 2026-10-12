@@ -3,7 +3,7 @@ import SwiftData
 
 enum LibraryError: LocalizedError {
     case reserved, invalidPosition, missingRelease, reservedNotEmpty
-    /// Saving "Vermisst" / "Wieder gefunden" failed; the database
+    /// Saving "Gesucht" / "Wieder gefunden" failed; the database
     /// error is kept for the protocol.
     case missingMarkNotSaved(found: Bool, any Error)
     /// "Reihenfolge übernehmen" (Sortierung prüfen) couldn't be saved.
@@ -13,7 +13,7 @@ enum LibraryError: LocalizedError {
         case .orderNotSaved:
             String(localized: "Die neue Reihenfolge konnte nicht gespeichert werden – das Fach ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
         case .missingMarkNotSaved(let found, _):
-            String(localized: "\(found ? String(localized: "„Wieder gefunden“") : String(localized: "„Vermisst“")) konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
+            String(localized: "\(found ? String(localized: "„Wieder gefunden“") : String(localized: "„Gesucht“")) konnte nicht gespeichert werden – die Platte ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
         case .reserved: String(localized: "Dieses Fach ist gesperrt und nimmt keine Platten auf. Per Rechtsklick auf das Fach lässt es sich entsperren.")
         case .invalidPosition: String(localized: "Diese Position gibt es in dem Fach nicht. Wähle eine Zahl zwischen 1 und der Stelle direkt hinter der letzten Platte.")
         case .missingRelease: String(localized: "Die Platte oder das Fach gibt es nicht mehr – vielleicht wurde gerade etwas geändert. Bitte versuche es noch einmal.")
@@ -44,7 +44,7 @@ struct PositionService {
         for (index, copy) in copies.enumerated() where copy.positionInShelf != index + 1 { copy.positionInShelf = index + 1 }
     }
     /// `layoutChanged: false` for writes that touch neither places nor
-    /// anything a backup holds ("Vermisst" marks): no backup run, no new labels.
+    /// anything a backup holds ("Gesucht" marks): no backup run, no new labels.
     func save(layoutChanged: Bool = true, _ action: () throws -> Void) throws {
         do { try action(); try context.save() }
         catch { context.rollback(); throw error }
@@ -78,7 +78,7 @@ struct PositionService {
     }
     #endif
     /// `found`: the record was just taken in hand and put there (sorting in),
-    /// so a "Vermisst" mark goes in the same transaction. Plain
+    /// so a "Gesucht" mark goes in the same transaction. Plain
     /// moves (quick editor, undo) keep the mark.
     func move(_ copy: RecordCopy, to shelf: Shelf, position: Int, found: Bool = false) throws {
         try validate(shelf: shelf, position: position, excluding: copy.id)
@@ -94,7 +94,7 @@ struct PositionService {
             try markExcluded([copy.id], false)
             if found { foundAgain = try markMissing([copy.id], false) }
         }
-        AppLog.info("Regal", "\(Self.name(copy)): \(from) → \(Self.name(shelf)), Position \(position)\(foundAgain ? " · nicht mehr „Vermisst“" : "")")
+        AppLog.info("Regal", "\(Self.name(copy)): \(from) → \(Self.name(shelf)), Position \(position)\(foundAgain ? " · nicht mehr auf der Suchliste" : "")")
     }
     func unplace(_ copy: RecordCopy) throws {
         let from = copy.shelf.map(Self.name) ?? "ohne Fach"
@@ -132,7 +132,7 @@ struct PositionService {
             try markExcluded(Set(copies.map(\.id)), excluded)
             // Deliberately kept out of the shelves: nothing left to look for.
             if excluded, try markMissing(Set(copies.map(\.id)), false) {
-                AppLog.info("Regal", "„Vermisst“ aufgehoben, weil „Nicht im Regal“ gesetzt wurde")
+                AppLog.info("Regal", "Von der Suchliste genommen, weil „Nicht im Regal“ gesetzt wurde")
             }
         }
         AppLog.info("Regal", "\(excluded ? "Nicht im Regal" : "Wieder fürs Regal vorgesehen"): \(copies.map(Self.name).joined(separator: ", "))")
@@ -146,14 +146,14 @@ struct PositionService {
             for row in existing where ids.contains(row.copyID) { context.delete(row) }
         }
     }
-    /// Marks copies as "Vermisst" (they should stand in their shelf
+    /// Marks copies as "Gesucht" (they should stand in their shelf
     /// but weren't found there) or as found again. Only a note for the shelf
     /// page: shelf and position stay untouched. Stored as `MissingCopyMark` rows.
     func setMissing(_ copies: [RecordCopy], _ missing: Bool) throws {
         // Marks aren't part of a backup, and no place changes.
         do { try save(layoutChanged: false) { _ = try markMissing(Set(copies.map(\.id)), missing) } }
         catch { throw LibraryError.missingMarkNotSaved(found: !missing, error) }
-        AppLog.info("Regal", "\(missing ? "Vermisst" : "Wieder gefunden"): \(copies.map(Self.name).joined(separator: ", "))")
+        AppLog.info("Regal", "\(missing ? "Auf die Suchliste" : "Wieder gefunden"): \(copies.map(Self.name).joined(separator: ", "))")
     }
     /// Whether any mark changed, so callers can note it in the protocol.
     @discardableResult private func markMissing(_ ids: Set<UUID>, _ missing: Bool) throws -> Bool {

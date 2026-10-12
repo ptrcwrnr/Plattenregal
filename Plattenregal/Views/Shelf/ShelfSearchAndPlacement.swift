@@ -16,7 +16,7 @@ struct ShelfSearchResultsPanel: View {
     /// Matches beyond the listed ones.
     let hidden: Int
     let labels: ShelfLabels
-    /// Copies marked "Vermisst".
+    /// Copies marked "Gesucht".
     let missing: Set<UUID>
     let place: (RecordCopy) -> Void
 
@@ -187,7 +187,7 @@ struct Placement {
     var chosen = 0
     /// Marked "Nicht im Regal"; sorting it in lifts that.
     var excluded = false
-    /// Marked "Vermisst"; sorting it in counts as found.
+    /// Marked "Gesucht"; sorting it in counts as found.
     var missing = false
     /// Name of the deactivated cabinet the record stands in: its shelf isn't
     /// on this page, so there is no spot to show.
@@ -215,7 +215,7 @@ struct Placement {
 struct PlacementCard: View {
     let placement: Placement
     let labels: ShelfLabels
-    /// Copies marked "Vermisst": no help as a landmark at the shelf.
+    /// Copies marked "Gesucht": no help as a landmark at the shelf.
     let missing: Set<UUID>
     let choose: (Int) -> Void
     let confirm: () -> Void
@@ -239,8 +239,8 @@ struct PlacementCard: View {
                     }
                     if placement.missing && placement.putAwayIn == nil {
                         Label(placement.found
-                              ? "Als vermisst markiert – hier sollte sie stehen."
-                              : "Als vermisst markiert – beim Einsortieren gilt sie als gefunden.",
+                              ? "Steht auf der Suchliste – hier sollte sie stehen."
+                              : "Steht auf der Suchliste – beim Einsortieren gilt sie als gefunden.",
                               systemImage: "pause.circle")
                             .font(.callout)
                             .foregroundStyle(AppStyle.errorColor)
@@ -303,7 +303,7 @@ struct PlacementCard: View {
     private func neighbours(_ spot: AlphabeticalPlacement.Spot) -> String {
         func title(_ copy: RecordCopy) -> String {
             let text = String(localized: "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“")
-            let note = missing.contains(copy.id) ? String(localized: " – vermisst") : ""
+            let note = missing.contains(copy.id) ? String(localized: " – gesucht") : ""
             guard let shelf = copy.shelf, shelf.id != spot.shelf.id else { return text + note }
             return text + String(localized: " (Fach „\(name(shelf))“\(note))")
         }

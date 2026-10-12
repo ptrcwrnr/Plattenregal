@@ -206,7 +206,7 @@ extension AllTests {
             let session = ShelfAssignmentSession(shelf: first)
             session.load(context, owner: nil, labels: ShelfLabels())
             // Fits here, then belongs elsewhere; a paused one keeps its place
-            // (the view lists it under "Vermisst"), so found again it returns there.
+            // (the view lists it under "Gesucht"), so found again it returns there.
             #expect(session.candidates.map(\.id) == [abba.id, aphex.id, zappa.id])
             #expect(session.missing == [aphex.id])
             #expect(session.belongsElsewhere[zappa.id] != nil)

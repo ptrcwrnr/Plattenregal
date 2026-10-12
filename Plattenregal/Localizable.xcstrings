@@ -24,12 +24,12 @@
         }
       }
     },
-    " – vermisst" : {
+    " – gesucht" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " – missing"
+            "value" : " – on search list"
           }
         }
       }
@@ -90,12 +90,12 @@
         }
       }
     },
-    " Die aktuelle Belegung wird vorher gesichert und lässt sich unter „Sicherung“ wiederherstellen – ohne die „Vermisst“-Markierungen." : {
+    " Die aktuelle Belegung wird vorher gesichert und lässt sich unter „Sicherung“ wiederherstellen – ohne die Suchliste." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : " The current layout is backed up first and can be restored under “Backup” – without the “Missing” marks."
+            "value" : " The current layout is backed up first and can be restored under “Backup” – without the search list."
           }
         }
       }
@@ -171,22 +171,32 @@
         }
       }
     },
-    "Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
+    "Alle übrigen Platten ohne Fach stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All remaining records without a compartment are marked as missing. Mark them as found in Settings under “Lists”."
+            "value" : "All remaining records without a compartment are on the search list. Mark them as found in Settings under “Lists”."
           }
         }
       }
     },
-    "Aus: kein Vormerken und keine Liste. Bereits vorgemerkte Platten bleiben gemerkt, falls du es wieder einschaltest." : {
+    "Aus: keine Suchliste. Bereits gesuchte Platten bleiben gemerkt, falls du sie wieder einschaltest." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Off: no marking and no list. Records already marked are remembered in case you switch it back on."
+            "value" : "Off: no search list. Records already on it are remembered in case you switch it back on."
+          }
+        }
+      }
+    },
+    "Aus: keine Verkaufsliste. Bereits vorgemerkte Platten bleiben gemerkt, falls du sie wieder einschaltest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off: no sale list. Records already marked are remembered in case you switch it back on."
           }
         }
       }
@@ -201,12 +211,22 @@
         }
       }
     },
-    "Für Platten, die du irgendwann verkaufen willst." : {
+    "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "For records you want to sell some day."
+            "value" : "For records you want to sell some day: right-click to mark them. They stay on the shelf until you have sold them all."
+          }
+        }
+      }
+    },
+    "Für Platten, die gerade nicht zu finden sind: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For records you can't find right now: add them to the search list with the pause button in “Add Record” or by right-clicking. Until you mark them as found here, they are not offered for placing."
           }
         }
       }
@@ -237,26 +257,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No longer for sale"
-          }
-        }
-      }
-    },
-    "Platten lassen sich per Rechtsklick zum Verkauf vormerken. Sie bleiben im Regal, bis du alle verkauft hast." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Right-click a record to mark it for sale. Marked records stay on the shelf until you have sold them all."
-          }
-        }
-      }
-    },
-    "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf eine Platte. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Records can be set aside: with the pause button in “Add Record” or by right-clicking a record. Until you mark them as found here, they are no longer offered for placing."
           }
         }
       }
@@ -386,12 +386,12 @@
         }
       }
     },
-    "„Vermisst“" : {
+    "„Gesucht“" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Missing”"
+            "value" : "“Looking for”"
           }
         }
       }
@@ -420,18 +420,12 @@
       },
       "shouldTranslate" : false
     },
-    "%@ – %@ als vermisst markieren" : {
+    "%@ – %@ auf die Suchliste setzen" : {
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ – %2$@ als vermisst markieren"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mark %@ – %@ as missing"
+            "value" : "Add %1$@ – %2$@ to the search list"
           }
         }
       }
@@ -1759,12 +1753,12 @@
         }
       }
     },
-    "Alle Platten stehen danach ohne Fach, gesperrte Fächer werden freigegeben, „Nicht im Regal“ und „Vermisst“ werden aufgehoben. Die Regale selbst bleiben." : {
+    "Alle Platten stehen danach ohne Fach, gesperrte Fächer werden freigegeben, „Nicht im Regal“ und die Suchliste werden aufgehoben. Die Regale selbst bleiben." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All records will have no compartment afterwards, locked compartments are unlocked, “Not on shelf” and “Missing” are cleared. The shelves themselves remain."
+            "value" : "All records will have no compartment afterwards, locked compartments are unlocked, “Not on shelf” and the search list are cleared. The shelves themselves remain."
           }
         }
       }
@@ -2021,32 +2015,32 @@
         }
       }
     },
-    "Als vermisst markieren" : {
+    "Auf die Suchliste setzen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mark as Missing"
+            "value" : "Add to Search List"
           }
         }
       }
     },
-    "Als vermisst markiert – beim Einsortieren gilt sie als gefunden." : {
+    "Steht auf der Suchliste – beim Einsortieren gilt sie als gefunden." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marked as missing – it counts as found when placed."
+            "value" : "On the search list – it counts as found when placed."
           }
         }
       }
     },
-    "Als vermisst markiert – hier sollte sie stehen." : {
+    "Steht auf der Suchliste – hier sollte sie stehen." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marked as missing – this is where it should be."
+            "value" : "On the search list – this is where it should be."
           }
         }
       }
@@ -2358,16 +2352,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete from Collection…"
-          }
-        }
-      }
-    },
-    "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Off: no setting aside and no list. Records already marked as missing stay remembered in case you turn it back on."
           }
         }
       }
@@ -4780,16 +4764,6 @@
         }
       }
     },
-    "Für Platten, die beim Einsortieren gerade nicht zu finden sind." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For records you can't find right now while placing."
-          }
-        }
-      }
-    },
     "ganz links" : {
       "localizations" : {
         "en" : {
@@ -5697,12 +5671,12 @@
         }
       }
     },
-    "Keine Platte ist als vermisst markiert." : {
+    "Keine Platte steht auf der Suchliste." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No record is marked as missing."
+            "value" : "No record is on the search list."
           }
         }
       }
@@ -6772,12 +6746,12 @@
         }
       }
     },
-    "Nur noch vermisste Platten" : {
+    "Nur noch gesuchte Platten" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only missing records left"
+            "value" : "Only records on the search list left"
           }
         }
       }
@@ -8830,42 +8804,42 @@
         }
       }
     },
-    "Vermisst" : {
+    "Gesucht" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Missing"
+            "value" : "Looking for"
           }
         }
       }
     },
-    "Vermisst – vorerst zurückstellen" : {
+    "Gesucht – auf die Suchliste setzen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Missing – set aside for now"
+            "value" : "Looking for it – add to the search list"
           }
         }
       }
     },
-    "Vermisst-Liste" : {
+    "Suchliste" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Missing list"
+            "value" : "Search list"
           }
         }
       }
     },
-    "Vermisste Platten …" : {
+    "Suchliste …" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Missing records …"
+            "value" : "Search list …"
           }
         }
       }

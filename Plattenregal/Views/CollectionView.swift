@@ -541,10 +541,10 @@ struct CollectionView: View {
         if missingEnabled { missingButton(for: copy) }
         if saleEnabled { saleButton(for: copy) }
     }
-    /// Marks the copy "Vermisst" (settings tab "Listen") or found again.
+    /// Marks the copy "Gesucht" (settings tab "Listen") or found again.
     @ViewBuilder private func missingButton(for copy: RecordCopy) -> some View {
         let missing = records.missingMarks.contains { $0.copyID == copy.id }
-        Button(missing ? "Wieder gefunden" : "Als vermisst markieren") {
+        Button(missing ? "Wieder gefunden" : "Auf die Suchliste setzen") {
             perform { try PositionService(context: context).setMissing([copy], !missing) }
         }
     }

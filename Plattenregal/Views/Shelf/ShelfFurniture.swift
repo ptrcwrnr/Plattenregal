@@ -19,7 +19,7 @@ struct ShelfStatusControl: View {
     }
 }
 
-/// Small colored tag beside a record's title ("Vermisst", "Nicht in der
+/// Small colored tag beside a record's title ("Gesucht", "Nicht in der
 /// Collection", "Als Nächstes"), the same everywhere on the shelf page.
 struct StatusTag: View {
     let text: String
@@ -34,9 +34,9 @@ struct StatusTag: View {
     }
 }
 
-/// Small tag on a record marked "Vermisst" (table, search, "Platte hinzufügen").
+/// Small tag on a record marked "Gesucht" (table, search, "Platte hinzufügen").
 struct MissingBadge: View {
-    var body: some View { StatusTag(text: String(localized: "Vermisst"), color: AppStyle.errorColor) }
+    var body: some View { StatusTag(text: String(localized: "Gesucht"), color: AppStyle.errorColor) }
 }
 
 /// Small tag on a record on the "Verkauf" list (compartment grid and table).
@@ -47,7 +47,7 @@ struct SaleBadge: View {
     }
 }
 
-/// The records marked "Vermisst" that the app lists (settings tab "Listen")
+/// The records marked "Gesucht" that the app lists (settings tab "Listen")
 enum MissingCopies {
     /// Those still standing in a shelf in use (shelf order), then those
     /// waiting to be sorted in (by artist).

@@ -105,7 +105,7 @@ enum DisplaySettings {
     static let wantlistOrderKey = "wantlistOrder"
     static let coverSizeKey = "coverSize"
     static let statisticsOrderKey = "statisticsSectionOrder"
-    /// "Vermisst" on the shelf page: marking records not found while sorting
+    /// "Gesucht" on the shelf page: marking records not found while sorting
     /// in; the settings list them. Off hides the marks; they are kept.
     static let missingListKey = "missingListEnabled"
     /// "Verkauf": marking records to be sold some day; the settings list
