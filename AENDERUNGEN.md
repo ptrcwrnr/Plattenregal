@@ -1,3 +1,7 @@
+# Version 1.0.8 · 12.10.2026
+
+- Version 1.0.8, Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.0.8.dmg`), mit der Verkaufsliste (Schema V16), dem Export mit eigener Listenauswahl und den Korrekturen aus der Durchsicht vom 12.10. README, STATISTIK.md und VALIDIERUNG.md: Version.
+
 # Abschluss der Durchsicht: Doku, Fehlermeldungen, Protokoll, Lokalisierung · 12.10.2026
 
 - **README:** Abbruch eines Abgleichs beschrieben (vor dem Speichern wird nichts übernommen, danach endet er still und die Tracklisten folgen später); „Alles zurücksetzen“ nennt, dass die Seiten ihre Platten sofort loslassen; die Zeile zu den Discogs-Dateien spricht nicht mehr vom „Einzel-Nachladen“, das es nicht mehr gibt.

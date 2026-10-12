@@ -1,6 +1,6 @@
 # Aktueller Stand · 12.10.2026 (Durchsicht der ganzen App, Dokumentation, Fehlermeldungen, Fehlerprotokoll, Lokalisierung)
 
-Projektversion **1.0.7 (102026)**, Schema **V16**. Alle Quelltexte der App gelesen. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+Projektversion **1.0.8 (102026)**, Schema **V16**. Alle Quelltexte der App gelesen. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
 
 ## Umfang und Befunde
 
