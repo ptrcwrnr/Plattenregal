@@ -221,12 +221,12 @@
         }
       }
     },
-    "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast." : {
+    "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast. Als CSV oder PDF gibt es die Liste unter „Export“." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "For records you want to sell some day: right-click to mark them. They stay on the shelf until you have sold them all."
+            "value" : "For records you want to sell some day: right-click to mark them. They stay on the shelf until you have sold them all. Export the list as CSV or PDF under “Export”."
           }
         }
       }
@@ -4572,12 +4572,12 @@
         }
       }
     },
-    "Fach für Fach, jeweils von vorne nach hinten; noch nicht einsortierte Platten am Ende." : {
+    "Fach für Fach, jeweils von vorne nach hinten; am Ende die noch nicht einsortierten Platten, dann die ohne Regalplatz." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Compartment by compartment, each from front to back; records not placed yet at the end."
+            "value" : "Compartment by compartment, each from front to back; at the end the records not placed yet, then those kept off shelf."
           }
         }
       }

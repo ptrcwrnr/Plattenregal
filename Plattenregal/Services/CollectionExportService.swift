@@ -186,7 +186,7 @@ struct CollectionExportService {
         if groups.contains(.discogs) { columns += [ExportColumn.releaseID, ExportColumn.masterID, ExportColumn.link] }
         if groups.contains(.tracklist) { columns.append(ExportColumn.tracklist) }
 
-        let rows = ordered(copies, by: options.order).map { copy in
+        let rows = ordered(copies, by: options.order, excluded: excluded).map { copy in
             var values = Self.releaseValues(copy.release)
             if groups.contains(.location) {
                 if let shelf = copy.shelf {
@@ -202,7 +202,9 @@ struct CollectionExportService {
             }
             if groups.contains(.discogs) { values += Self.discogsValues(copy.release) }
             if groups.contains(.tracklist) { values.append(Self.tracklist(copy.release)) }
-            let section = options.order == .shelf ? copy.shelf.map { sectionTitle($0, labels: labels) } ?? String(localized: "Noch nicht einsortiert") : nil
+            // Kept out of the shelves on purpose is not "waiting to be sorted in": a heading of its own.
+            let section = options.order == .shelf ? copy.shelf.map { sectionTitle($0, labels: labels) }
+                ?? (excluded.contains(copy.id) ? String(localized: "Ohne Regalplatz") : String(localized: "Noch nicht einsortiert")) : nil
             let place = groups.contains(.location) ? copy.shelf.map { labels.prefix(for: $0) + "\($0.sortOrder)" } ?? "–" : nil
             return ExportTable.Row(section: section, values: values, place: place)
         }
@@ -232,8 +234,10 @@ struct CollectionExportService {
     }
 
     /// Shelf order walks cabinet by cabinet, the compartments in reading order and each one front to
-    /// back; records without a place follow alphabetically.
-    private func ordered(_ copies: [RecordCopy], by order: ExportOrder) -> [RecordCopy] {
+    /// back; records without a place follow alphabetically – first those still
+    /// to be sorted in, then those kept out of the shelves ("Ohne Regalplatz"),
+    /// so each group stands under its own heading.
+    private func ordered(_ copies: [RecordCopy], by order: ExportOrder, excluded: Set<UUID>) -> [RecordCopy] {
         // Same order as the collection page (alphabet index sections, then artist and title).
         guard order == .shelf else { return SortingService.sortedByAlphabetSection(copies) }
         // Sort keys read once per record, not per comparison (`Shelf.physicalOrder`
@@ -244,7 +248,9 @@ struct CollectionExportService {
         .sorted { $0.key < $1.key }
         .map(\.copy)
         // Only the records without a place are put in alphabetical order.
-        return placed + SortingService.sortedByAlphabetSection(copies.filter { $0.shelf == nil })
+        let unplaced = copies.filter { $0.shelf == nil }
+        return placed + SortingService.sortedByAlphabetSection(unplaced.filter { !excluded.contains($0.id) })
+            + SortingService.sortedByAlphabetSection(unplaced.filter { excluded.contains($0.id) })
     }
 
     private func shelfLabel(_ shelf: Shelf, labels: ShelfLabels) -> String {

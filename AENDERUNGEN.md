@@ -1,3 +1,11 @@
+# Export durchgesehen: „Ohne Regalplatz“ mit eigener Überschrift · 12.10.2026
+
+- **Reihenfolge „Wie im Regal“:** Platten ohne Fach standen alle unter „Noch nicht einsortiert“ – auch die bewusst herausgenommenen („Ohne Regalplatz“). Seit der Umbenennung sind das zwei verschiedene Dinge. Jetzt folgen nach den Fächern erst die noch nicht einsortierten, dann die ohne Regalplatz, jede Gruppe alphabetisch und in der PDF mit eigener Überschrift (CSV: dieselbe Reihenfolge; die Spalte „Fach“ nannte den Unterschied schon). Gilt für Collection und Verkaufsliste. Erklärung der Reihenfolge im Export-Reiter angepasst.
+- **Einstellungen → Listen:** Die Erklärung der Verkaufsliste nennt jetzt, wo es sie als CSV oder PDF gibt („Export“).
+- Tests: Reihenfolge und Überschriften mit einer Platte „Ohne Regalplatz“; die Verkaufsliste wird als PDF und CSV wirklich erzeugt und der Inhalt der CSV geprüft; Dateiname des automatischen Exports für die Verkaufsliste.
+- Sonst ohne Befund durchgesehen: CSV (BOM, Zeilenenden, Anführungszeichen, Formel-Schutz), PDF (Seitenumbruch, „Fortsetzung“, leere Liste), Dateinamen, automatischer Export (leere Liste ersetzt nichts, kein Lauf während der Synchronisierung, Fehler nur einmal im Protokoll).
+- Geprüft: Build ohne Warnungen, 207 Tests. Nicht angeklickt; die erzeugte PDF wurde nicht angesehen, nur ihr Entstehen geprüft.
+
 # Export: Verkaufsliste als CSV oder PDF · 12.10.2026
 
 - Einstellungen → Export → „Daten“ hat eine dritte Wahl: **Verkaufsliste**. Die Datei enthält nur die zum Verkauf vorgemerkten Platten – dieselben wie unter Einstellungen → Listen, also auch eine, die inzwischen nicht mehr in der Discogs-Collection ist. Format, Spalten, Reihenfolge (wie im Regal / alphabetisch) und der automatische Export arbeiten wie bei der Collection; die PDF heißt „Plattenregal – Verkaufsliste“, die Datei des automatischen Exports „Plattenregal Verkaufsliste“.

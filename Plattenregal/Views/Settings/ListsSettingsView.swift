@@ -93,7 +93,7 @@ struct ListsSettingsView: View {
             ListCard {
                 SettingsRow(title: String(localized: "Verkaufsliste"),
                             hint: saleEnabled
-                            ? String(localized: "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast.")
+                            ? String(localized: "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast. Als CSV oder PDF gibt es die Liste unter „Export“.")
                             : String(localized: "Aus: keine Verkaufsliste. Bereits vorgemerkte Platten bleiben gemerkt, falls du sie wieder einschaltest.")) {
                     Toggle("Verkaufsliste", isOn: $saleEnabled.animation(AppStyle.standardAnimation))
                         .labelsHidden().toggleStyle(.switch)

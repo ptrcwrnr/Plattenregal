@@ -415,6 +415,7 @@ extension AllTests {
             #expect(!DemoMode.accepts(request: now, now: now, isTest: true))
             #expect(DemoMode.fileSuffix.isEmpty)
             #expect(ScheduledExport.fileName(for: ExportSettings()) == "Plattenregal Collection.csv")
+            #expect(ScheduledExport.fileName(for: ExportSettings(format: .pdf, source: .sale)) == "Plattenregal Verkaufsliste.pdf")
         }
         @Test func crashOfThePreviousSessionIsFoundInTheLog() throws {
             let url = FileManager.default.temporaryDirectory.appendingPathComponent("crash-\(UUID()).log")

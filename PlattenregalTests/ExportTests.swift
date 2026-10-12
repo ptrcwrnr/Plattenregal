@@ -131,6 +131,15 @@ extension AllTests {
             // The collection export stays complete.
             #expect(exporter.count(.collection) == 3)
 
+            // Both files are built from it, as the export tab does.
+            let pdf = try ExportSettings(format: .pdf, source: .sale).prepare(context: container.mainContext, labelStyle: .range)
+            #expect(pdf.rows == 2)
+            #expect(try pdf.render().starts(with: Array("%PDF".utf8)))
+            let csv = try ExportSettings(format: .csv, source: .sale, order: .artist, delimiter: .semicolon)
+                .prepare(context: container.mainContext, labelStyle: .range).render()
+            let lines = String(decoding: csv.dropFirst(3), as: UTF8.self).components(separatedBy: "\r\n")
+            #expect(lines.count == 4 && lines[1].hasPrefix("Abba;U;") && lines[2].hasPrefix("Beta;B;"))
+
             try service.sellAllForSale()
             #expect(exporter.count(.sale) == 0)
         }
@@ -166,6 +175,15 @@ extension AllTests {
             #expect(table.rows.map { $0.values[shelf] } == ["1", "1", "2", "Noch nicht einsortiert", "Noch nicht einsortiert"])
             #expect(table.rows.map { $0.values[position] } == ["1", "2", "1", "", ""])
             #expect(table.rows.last?.section == "Noch nicht einsortiert")
+
+            // Kept out of the shelves on purpose: after those still to be sorted in, under its own heading.
+            let abba = try #require(try container.mainContext.fetch(FetchDescriptor<RecordCopy>()).first { $0.release?.artist == "Abba" })
+            try service.setExcluded([abba], true)
+            let later = try CollectionExportService(context: container.mainContext)
+                .table(ExportOptions(source: .collection, order: .shelf, groups: [.location]))
+            #expect(later.rows.map { $0.values[artist] } == ["Alpha", "Amber", "Beta", "Zappa", "Abba"])
+            #expect(later.rows.suffix(2).map(\.section) == ["Noch nicht einsortiert", "Ohne Regalplatz"])
+            #expect(later.rows.last?.values[shelf] == "Ohne Regalplatz")
             #expect(table.rows.first?.section?.hasPrefix("Fach 1") == true)
         }
 
