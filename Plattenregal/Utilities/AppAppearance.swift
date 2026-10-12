@@ -1350,7 +1350,10 @@ extension View {
 /// release). ⌘R triggers the same action. Leave the mouse drag off where
 /// dragging already means something (e.g. rubber-band selection).
 private struct PullToRefresh: ViewModifier {
-    let disabled: Bool
+    /// Asked when needed, not handed in as a value: read in a page's `body`,
+    /// the sync starting and ending re-ran the whole page with all its cover
+    /// cells – right when the sync capsule animates in (see `onObservedChange`).
+    let disabled: () -> Bool
     let allowsMouseDrag: Bool
     let action: () -> Void
     /// The trackpad's rubber band is damped, so a few points more threshold
@@ -1390,7 +1393,7 @@ private struct PullToRefresh: ViewModifier {
                     bouncing = true
                 }
                 overscroll = travel
-                if overscroll >= trackpadThreshold, armed, pulling, !bouncing, !disabled {
+                if overscroll >= trackpadThreshold, armed, pulling, !bouncing, !disabled() {
                     armed = false
                     NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
                     action()
@@ -1412,7 +1415,7 @@ private struct PullToRefresh: ViewModifier {
                 mousePull = damped
             }
             .onEnded { _ in
-                if mousePull >= mouseThreshold, !disabled { action() }
+                if mousePull >= mouseThreshold, !disabled() { action() }
                 withAnimation(AppStyle.standardAnimation) { mousePull = 0 }
             }
     }
@@ -1444,19 +1447,29 @@ private struct PullToRefresh: ViewModifier {
 extension View {
     /// ⌘R runs `action` — part of `pullToRefresh`, and on its own for views
     /// that can't be pulled (e.g. tables), so the shortcut works in every layout.
-    func refreshShortcut(disabled: Bool = false, action: @escaping () -> Void) -> some View {
-        background {
+    func refreshShortcut(disabled: @escaping () -> Bool = { false }, action: @escaping () -> Void) -> some View {
+        modifier(RefreshShortcut(disabled: disabled, action: action))
+    }
+
+    /// See `PullToRefresh`. Apply to the ScrollView itself.
+    func pullToRefresh(disabled: @escaping () -> Bool = { false }, allowsMouseDrag: Bool = true, action: @escaping () -> Void) -> some View {
+        modifier(PullToRefresh(disabled: disabled, allowsMouseDrag: allowsMouseDrag, action: action))
+    }
+}
+
+/// `disabled` is read here, in a modifier of its own (see `PullToRefresh`).
+private struct RefreshShortcut: ViewModifier {
+    let disabled: () -> Bool
+    let action: () -> Void
+    func body(content: Content) -> some View {
+        let disabled = disabled()
+        content.background {
             Button("Aktualisieren", action: { if !disabled { action() } })
                 .keyboardShortcut("r", modifiers: .command)
                 .disabled(disabled)
                 .opacity(0).frame(width: 0, height: 0)
                 .accessibilityHidden(true)
         }
-    }
-
-    /// See `PullToRefresh`. Apply to the ScrollView itself.
-    func pullToRefresh(disabled: Bool = false, allowsMouseDrag: Bool = true, action: @escaping () -> Void) -> some View {
-        modifier(PullToRefresh(disabled: disabled, allowsMouseDrag: allowsMouseDrag, action: action))
     }
 }
 

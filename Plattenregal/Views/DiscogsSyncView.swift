@@ -522,7 +522,7 @@ struct WantlistView: View {
                     menuFor = (id, point)
                 }
             }
-            .pullToRefresh(disabled: sync.busy, action: syncWantlist)
+            .pullToRefresh(disabled: { sync.busy }, action: syncWantlist)
         }
     }
 
@@ -582,7 +582,7 @@ struct WantlistView: View {
         .alternatingRowBackgrounds(.disabled)
         .scrollContentBackground(.hidden)
         .scrollPosition(scroll)
-        .refreshShortcut(disabled: sync.busy, action: syncWantlist)
+        .refreshShortcut(disabled: { sync.busy }, action: syncWantlist)
         // The app's own menu, and on double-click the popover – as in the collection.
         .overlay(TableRowClicks(secondary: { row, point in
             guard rows.indices.contains(row), sourceURL(rows[row].entry) != nil else { return }

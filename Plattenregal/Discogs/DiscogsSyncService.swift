@@ -214,8 +214,8 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     // release is asked once (even if Discogs has no tracklist) and refreshed
     // after `tracklistRefreshAge`, at most `tracklistRefreshesPerRun` per run.
 
-    static let tracklistRefreshAge: TimeInterval = 180 * 86400
-    static let tracklistRefreshesPerRun = 100
+    nonisolated static let tracklistRefreshAge: TimeInterval = 180 * 86400
+    nonisolated static let tracklistRefreshesPerRun = 100
 
     /// `fromSync`: part of a sync — shown right away, "abgeschlossen" at the
     /// end, problems reported. Otherwise (app launch) it stays invisible
@@ -277,33 +277,17 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     /// Returns whether anything had to be loaded. Internal for the tests.
     func loadTracklists(container: ModelContainer, quiet: Bool) async -> Bool {
         let context = ModelContext(container)
-        let copies: [RecordCopy], wants: [WantlistEntry]
+        let pending: [Release]
         do {
-            copies = try context.fetch(FetchDescriptor<RecordCopy>())
-            wants = try context.fetch(FetchDescriptor<WantlistEntry>())
+            let due = try await Self.dueTracklists(container: container)
+            guard !due.isEmpty else { return false }
+            let releases = try context.fetch(FetchDescriptor<Release>(predicate: #Predicate { due.contains($0.persistentModelID) }))
+            let byID = Dictionary(releases.map { ($0.persistentModelID, $0) }, uniquingKeysWith: { first, _ in first })
+            pending = due.compactMap { byID[$0] }
         } catch {
             if !quiet { self.error = String(localized: "Die Tracklisten konnten nicht geladen werden. ") + ReadError.wrapping(error).reportedMessage() }
             return false
         }
-        let now = Date()
-        var seen = Set<PersistentIdentifier>()
-        var missing: [Release] = [], stale: [Release] = []
-        // Collection first, then the wantlist (its tracks make search find wanted records too).
-        for release in copies.filter(\.discogsActive).compactMap(\.release) + wants.compactMap(\.release)
-        where seen.insert(release.persistentModelID).inserted {
-            if let fetched = release.detailsFetchedAt {
-                if now.timeIntervalSince(fetched) > Self.tracklistRefreshAge { stale.append(release) }
-            } else if release.tracks.isEmpty {
-                missing.append(release)
-            } else {
-                // Loaded before details were stamped: date it somewhere in the
-                // refresh window, so refreshes trickle in instead of all at once.
-                release.detailsFetchedAt = now.addingTimeInterval(-.random(in: 0..<Self.tracklistRefreshAge))
-            }
-        }
-        if context.hasChanges { try? context.save() }
-        stale.sort { ($0.detailsFetchedAt ?? now) < ($1.detailsFetchedAt ?? now) }
-        let pending = missing + stale.prefix(Self.tracklistRefreshesPerRun)
         guard !pending.isEmpty else { return false }
 
         showsTracklists = true
@@ -355,6 +339,39 @@ nonisolated struct DiscogsSyncSummary: Sendable {
         }
         save()
         return true
+    }
+
+    /// The releases to ask Discogs for, in that order. Off the main actor and
+    /// with the releases in one fetch: this looks at every record after each
+    /// sync and at launch – on the main actor, one release at a time, right
+    /// while the sync capsule changes to its next step.
+    @concurrent nonisolated private static func dueTracklists(container: ModelContainer) async throws -> [PersistentIdentifier] {
+        let context = ModelContext(container); context.autosaveEnabled = false
+        var copyDescriptor = FetchDescriptor<RecordCopy>()
+        copyDescriptor.relationshipKeyPathsForPrefetching = [\.release]
+        var wantDescriptor = FetchDescriptor<WantlistEntry>()
+        wantDescriptor.relationshipKeyPathsForPrefetching = [\.release]
+        let copies = try context.fetch(copyDescriptor)
+        let wants = try context.fetch(wantDescriptor)
+        let now = Date()
+        var seen = Set<PersistentIdentifier>()
+        var missing: [Release] = [], stale: [Release] = []
+        // Collection first, then the wantlist (its tracks make search find wanted records too).
+        for release in copies.filter(\.discogsActive).compactMap(\.release) + wants.compactMap(\.release)
+        where seen.insert(release.persistentModelID).inserted {
+            if let fetched = release.detailsFetchedAt {
+                if now.timeIntervalSince(fetched) > tracklistRefreshAge { stale.append(release) }
+            } else if release.tracks.isEmpty {
+                missing.append(release)
+            } else {
+                // Loaded before details were stamped: date it somewhere in the
+                // refresh window, so refreshes trickle in instead of all at once.
+                release.detailsFetchedAt = now.addingTimeInterval(-.random(in: 0..<tracklistRefreshAge))
+            }
+        }
+        if context.hasChanges { try? context.save() }
+        stale.sort { ($0.detailsFetchedAt ?? now) < ($1.detailsFetchedAt ?? now) }
+        return (missing + stale.prefix(tracklistRefreshesPerRun)).map(\.persistentModelID)
     }
 
     /// Off the main actor; cancelling the sync cancels the merge with it.

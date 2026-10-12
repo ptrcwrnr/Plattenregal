@@ -315,7 +315,7 @@ struct CollectionView: View {
                                 quickLook = nil
                                 contextMenu = (id, point)
                             }
-                            .pullToRefresh(disabled: sync.busy) {
+                            .pullToRefresh(disabled: { sync.busy }) {
                                 sync.start(.collection, container: context.container)
                             }
                         }
@@ -370,7 +370,7 @@ struct CollectionView: View {
                             }
                         }
                         .scrollPosition(scroll)
-                        .refreshShortcut(disabled: sync.busy) {
+                        .refreshShortcut(disabled: { sync.busy }) {
                             sync.start(.collection, container: context.container)
                         }
                     }

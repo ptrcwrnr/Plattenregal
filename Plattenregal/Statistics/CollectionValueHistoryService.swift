@@ -5,7 +5,7 @@ import CryptoKit
 final class CollectionValueHistoryService {
     static let shared = CollectionValueHistoryService()
     private var pending: Set<String> = []
-    static func signature(_ copies: [RecordCopy]) -> String {
+    nonisolated static func signature(_ copies: [RecordCopy]) -> String {
         let ids = copies.map { "\($0.discogsInstanceID):\($0.release?.discogsID ?? 0)" }.sorted().joined(separator: "|")
         return SHA256.hash(data: Data(ids.utf8)).map { String(format: "%02x", $0) }.joined()
     }
@@ -22,8 +22,10 @@ final class CollectionValueHistoryService {
         return significant(last.minimumValue, value.minimum.amount) || significant(last.medianValue, value.median.amount) || significant(last.maximumValue, value.maximum.amount)
     }
     @discardableResult static func store(value: DiscogsCollectionValue, owner: String, copies: [RecordCopy], context: ModelContext, date: Date = .now) throws -> Bool {
+        try store(value: value, owner: owner, count: copies.count, signature: signature(copies), context: context, date: date)
+    }
+    @discardableResult static func store(value: DiscogsCollectionValue, owner: String, count: Int, signature: String, context: ModelContext, date: Date = .now) throws -> Bool {
         let last = try latest(owner: owner, in: context)
-        let signature = signature(copies)
         guard shouldStore(last: last, value: value, signature: signature, date: date) else {
             // Keep today's displayed valuation current without adding near-identical history points.
             if let last, last.minimumValue != value.minimum.amount || last.medianValue != value.median.amount || last.maximumValue != value.maximum.amount {
@@ -33,7 +35,7 @@ final class CollectionValueHistoryService {
             }
             return false
         }
-        context.insert(CollectionValueSnapshot(owner: owner, date: date, value: value, count: copies.count, signature: signature))
+        context.insert(CollectionValueSnapshot(owner: owner, date: date, value: value, count: count, signature: signature))
         try context.save(); return true
     }
     func refresh(owner: String, container: ModelContainer, api: DiscogsAPIClient = .shared, force: Bool = false) async throws {
@@ -45,12 +47,9 @@ final class CollectionValueHistoryService {
         guard let account = accounts.first(where: { $0.username == owner && $0.credentialFingerprint == fingerprint }) else { throw DiscogsError.accountChanged }
         // Only the wantlist synced so far: no collection to value yet – not a changed token.
         guard account.lastCollectionSync != nil else { return }
-        func activeCopies() throws -> [RecordCopy] {
-            try context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.discogsOwner == owner && $0.discogsActive == true }))
-        }
-        var copies = try activeCopies(), signature = Self.signature(copies)
+        var collection = try await Self.activeCollection(owner: owner, container: container)
         let last = try Self.latest(owner: owner, in: context)
-        if !force, let last, Calendar.current.isDateInToday(last.date), last.collectionSignature == signature { return }
+        if !force, let last, Calendar.current.isDateInToday(last.date), last.collectionSignature == collection.signature { return }
         // A sync saving meanwhile changes the collection under the request
         // (and skips its own refresh while this one runs): ask once more for
         // the new collection instead of storing a value that fits neither.
@@ -58,14 +57,23 @@ final class CollectionValueHistoryService {
             let value = try await api.fetchCollectionValue(username: owner)
             try Task.checkCancellation()
             guard try await api.credentialFingerprint() == fingerprint else { throw DiscogsError.accountChanged }
-            let now = try activeCopies()
-            if Self.signature(now) == signature {
-                try Self.store(value: value, owner: owner, copies: copies, context: context)
+            let now = try await Self.activeCollection(owner: owner, container: container)
+            if now.signature == collection.signature {
+                try Self.store(value: value, owner: owner, count: collection.count, signature: collection.signature, context: context)
                 return
             }
             AppLog.info("Statistik", "Sammlung hat sich beim Laden des Werts geändert\(attempt == 1 ? " – neuer Versuch" : ", Wert diesmal nicht gespeichert")")
-            copies = now; signature = Self.signature(now)
+            collection = now
         }
+    }
+    /// What the value belongs to, read off the main actor and with the
+    /// releases in one fetch: on the main actor this read every record and,
+    /// one by one, its release – twice per sync, while its capsule is shown.
+    @concurrent nonisolated private static func activeCollection(owner: String, container: ModelContainer) async throws -> (signature: String, count: Int) {
+        var descriptor = FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.discogsOwner == owner && $0.discogsActive == true })
+        descriptor.relationshipKeyPathsForPrefetching = [\.release]
+        let copies = try ModelContext(container).fetch(descriptor)
+        return (signature(copies), copies.count)
     }
     static func change(current: Decimal, previous: Decimal) -> (amount: Decimal, percent: Decimal?) {
         (current - previous, previous == 0 ? nil : (current - previous) / abs(previous) * 100)

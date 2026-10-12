@@ -107,7 +107,7 @@ struct StatisticsView: View {
                 .environment(\.statisticsColumns, StatisticsLayout.columnCount(contentWidth: cardContentWidth(for: geometry.size.width)))
                 .animation(AppStyle.standardAnimation, value: model.error)
             }
-            .pullToRefresh(disabled: refreshBlocked, action: refresh)
+            .pullToRefresh(disabled: { refreshBlocked }, action: refresh)
             // The spring belongs to the pill alone: on the page it also caught
             // the new numbers committed with `calculating` and had every chart
             // glide to them (~0.45 s of a fully busy main thread per update).
@@ -121,8 +121,10 @@ struct StatisticsView: View {
         .onChange(of: model.owner) { _, _ in Task { await model.reload(container: context.container) } }
         // After a sync: the account may be new or changed, and the numbers are.
         // Once more when the tracklist download after it is through (countries).
-        .onChange(of: DiscogsSyncService.shared.busy) { _, busy in if !busy { reloadAfterSync() } }
-        .onChange(of: DiscogsSyncService.shared.isRunning) { _, running in if !running { reloadAfterSync() } }
+        // Read in modifiers of their own: the sync starting and ending must
+        // not re-run this page (see `onObservedChange`).
+        .onObservedChange(of: { DiscogsSyncService.shared.busy }) { _, busy in if !busy { reloadAfterSync() } }
+        .onObservedChange(of: { DiscogsSyncService.shared.isRunning }) { _, running in if !running { reloadAfterSync() } }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { notification in
             // Sorting in, moving and marks change nothing counted here; the
             // random pick follows places on its own (see `RandomRecordCard`).
@@ -194,7 +196,12 @@ struct StatisticsView: View {
             let before = model.owner
             await model.resolveOwner(container: context.container)
             // A changed owner already reloads via `onChange(of: model.owner)`.
-            if model.owner == before { await model.reload(container: context.container) }
+            guard model.owner == before else { return }
+            // Hidden: the sync capsule on the page shown is just changing to
+            // "Synchronisiert" – all charts redrawn underneath made it stutter.
+            // Once when this page is shown again is enough, as for other saves.
+            guard activity.isActive else { stale = true; return }
+            await model.reload(container: context.container)
         }
     }
     private func refresh() {

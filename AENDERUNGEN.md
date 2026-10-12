@@ -1,3 +1,13 @@
+# Sync-Kapsel: weniger Arbeit auf dem Hauptthread · 12.10.2026
+
+Die Kapsel selbst war in Ordnung; geruckelt hat, was im selben Moment auf dem Hauptthread lief.
+
+- **Start und Ende der Synchronisierung bauen die Seiten nicht mehr neu.** Collection, Wantlist und Statistik lasen `sync.busy` in ihrem `body` (für „Ziehen zum Aktualisieren“ und ⌘R) und liefen deshalb komplett neu durch – genau beim Hereinkommen der Kapsel. `pullToRefresh` / `refreshShortcut` fragen den Zustand jetzt selbst ab (`disabled:` als Closure, eigener Modifier `RefreshShortcut`); die Statistik beobachtet das Sync-Ende über `onObservedChange`.
+- **Statistik rechnet nach einer Synchronisierung nur noch neu, wenn sie gezeigt wird.** Verborgen merkt sie es sich und holt es beim nächsten Anzeigen nach (wie schon bei anderen Speichervorgängen). Bisher wurden alle Diagramme im Hintergrund neu gezeichnet, während die Kapsel auf „Synchronisiert“ wechselte.
+- **Tracklisten-Prüfung im Hintergrund** (`DiscogsSyncService.dueTracklists`): Welche Releases fällig sind, wurde nach jeder Synchronisierung und bei jedem Start auf dem Hauptthread ermittelt – jede Platte, jedes Release einzeln gelesen. Jetzt abseits des Hauptthreads, Releases in einer Abfrage.
+- **Sammlungswert:** Die Signatur der Sammlung (zweimal pro Synchronisierung) wird ebenfalls im Hintergrund und mit einer Abfrage gebildet (`CollectionValueHistoryService.activeCollection`).
+- Geprüft: Build, 206 Tests. **Nicht gemessen:** kein Profil mit Instruments und keine Synchronisierung gegen die echte Sammlung – die Wirkung auf das Ruckeln ist aus dem Code abgeleitet, nicht belegt.
+
 # Einsortieren-Fenster: eine Zeile je Platte, Standort groß · 12.10.2026
 
 - Statt vier Kacheln nebeneinander steht jede Platte in einer Zeile über die Fensterbreite: Cover (132 pt, wie im Fachinhalt), daneben Beschriftung und darunter groß der Standort – Regal · Fach in der Akzentfarbe, dann „Position n · zwischen … und …“. In „Platte hinzufügen“ heißt es bei Platten für ein anderes Fach „Gehört in „…““ in Grau. „Als Nächstes“ steht als Etikett unter der Beschriftung, das Positions-Etikett auf dem Cover entfällt. Klick und Rechtsklick-Menü wie zuvor.
