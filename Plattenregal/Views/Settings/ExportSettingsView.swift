@@ -266,7 +266,11 @@ struct ExportSettingsView: View {
             autoStatus = nil
             scheduled.settingsChanged()
             AppLog.info("Export", "Ordner für den automatischen Export: \(FolderAccess.displayName(of: url))")
-        } catch { autoStatus = (FileTransferError.readFailed(error).reportedMessage(), true) }
+        } catch {
+            // Not "the file couldn't be opened": it is the folder that can't be remembered.
+            AppLog.error("Export", "Ordner für den automatischen Export nicht übernommen: \(error)")
+            autoStatus = (FileTransferError.folderUnavailable.userMessage, true)
+        }
     }
 
     private func binding(for group: ExportColumnGroup) -> Binding<Bool> {

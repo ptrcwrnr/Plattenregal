@@ -578,28 +578,21 @@ struct IconButton: View {
 struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
-    var onSubmit: (() -> Void)?
     /// Focus of the text field, for the search field in the toolbar (⌘F).
-    var focus: FocusState<Bool>.Binding?
-    /// Shown at the end of the field, before the clear button.
-    var accessory: AnyView?
+    let focus: FocusState<Bool>.Binding
     /// Sits on the window's toolbar (see `searchBarChrome(onToolbar:)`).
     var onToolbar = false
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            focusable(TextField(placeholder, text: $text).textFieldStyle(.plain).noTextAutoFill())
-                .onSubmit { onSubmit?() }
-                // Esc clears the query; with an empty field it gives up the
-                // focus (which hides a revealed search bar) or, without one,
-                // passes through (e.g. to close the sheet the field sits in).
+            TextField(placeholder, text: $text).textFieldStyle(.plain).noTextAutoFill()
+                .focused(focus)
+                // Esc clears the query; with an empty field it gives up the focus.
                 .onKeyPress(.escape) {
                     if !text.isEmpty { text = ""; return .handled }
-                    guard let focus else { return .ignored }
                     focus.wrappedValue = false
                     return .handled
                 }
-            if let accessory { accessory }
             if !text.isEmpty {
                 Button { text = "" } label: {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
@@ -609,10 +602,6 @@ struct AppSearchField: View {
             }
         }
         .searchBarChrome(onToolbar: onToolbar)
-    }
-
-    @ViewBuilder private func focusable(_ field: some View) -> some View {
-        if let focus { field.focused(focus) } else { field }
     }
 }
 
@@ -788,12 +777,10 @@ extension View {
 }
 
 
-/// Capsule badge/pill used for genres, styles and filters. `prominent` marks the
-/// active/selected state; both use the same tokens as card selection elsewhere.
+/// Capsule badge/pill used for styles and notes on a record.
 struct AppBadge: View {
     let title: String
     var systemImage: String?
-    var prominent: Bool = false
     var body: some View {
         Group {
             if let systemImage {
@@ -802,24 +789,13 @@ struct AppBadge: View {
                 Text(title)
             }
         }
-        .font(.caption2.weight(prominent ? .semibold : .regular))
-        .foregroundStyle(prominent ? AppStyle.accent : .secondary)
+        .font(.caption2)
+        .foregroundStyle(.secondary)
         .padding(.horizontal, AppStyle.itemSpacing + 2)
         .padding(.vertical, AppStyle.tightSpacing)
         // Like every other tag: glass in Modern, paper with a rim in
         // Klassisch – no gray fill of its own.
-        .modifier(BadgeSurface(prominent: prominent))
-    }
-}
-
-private struct BadgeSurface: ViewModifier {
-    let prominent: Bool
-    func body(content: Content) -> some View {
-        if prominent {
-            content.background(AppStyle.selectedBackground, in: Capsule())
-        } else {
-            content.appChipSurface(in: Capsule())
-        }
+        .appChipSurface(in: Capsule())
     }
 }
 
@@ -1079,10 +1055,9 @@ struct GlassMenuPicker<Value: Hashable, Options: View>: View {
 /// Grid or list, as two icons.
 struct OverviewLayoutPicker: View {
     @Binding var selection: OverviewLayout
-    var glass = true
 
     var body: some View {
-        GlassSegmentedPicker(selection: $selection, options: OverviewLayout.allCases, glass: glass) { layout in
+        GlassSegmentedPicker(selection: $selection, options: OverviewLayout.allCases) { layout in
             Image(systemName: layout.systemImage)
                 .accessibilityLabel(layout.title)
                 .help(layout.title)
@@ -1257,10 +1232,9 @@ struct GlassStepper: View {
     }
 }
 
-/// A small round icon button inside a glass capsule (stepper, nudges).
-struct GlassStepButton: View {
+/// A small round icon button inside a glass capsule (stepper).
+private struct GlassStepButton: View {
     let systemImage: String
-    var help: String = ""
     let action: () -> Void
     @Environment(\.isEnabled) private var isEnabled
     @State private var hovering = false
@@ -1277,7 +1251,6 @@ struct GlassStepButton: View {
         .buttonStyle(.plain)
         .opacity(isEnabled ? 1 : 0.35)
         .onHover { hovering = $0 }
-        .help(help)
     }
 }
 
@@ -1344,17 +1317,14 @@ extension View {
 /// Pull-to-refresh for a ScrollView: pulling the page down past its top edge
 /// fills a small ring; a full ring runs `action`. Works with the trackpad's
 /// rubber band (fires as soon as the ring is full, but only while the fingers
-/// pull – a fast swipe whose momentum bounces off the top doesn't count) and,
-/// when `allowsMouseDrag`
-/// is on, with a click-drag of the page while it's at the top (fires on
-/// release). ⌘R triggers the same action. Leave the mouse drag off where
-/// dragging already means something (e.g. rubber-band selection).
+/// pull – a fast swipe whose momentum bounces off the top doesn't count) and
+/// with a click-drag of the page while it's at the top (fires on release).
+/// ⌘R triggers the same action.
 private struct PullToRefresh: ViewModifier {
     /// Asked when needed, not handed in as a value: read in a page's `body`,
     /// the sync starting and ending re-ran the whole page with all its cover
     /// cells – right when the sync capsule animates in (see `onObservedChange`).
     let disabled: () -> Bool
-    let allowsMouseDrag: Bool
     let action: () -> Void
     /// The trackpad's rubber band is damped, so a few points more threshold
     /// already take a noticeably longer swipe.
@@ -1399,7 +1369,7 @@ private struct PullToRefresh: ViewModifier {
                     action()
                 }
             }
-            .simultaneousGesture(mouseDrag, including: allowsMouseDrag ? .all : .subviews)
+            .simultaneousGesture(mouseDrag)
             .overlay(alignment: .top) { indicator }
             .refreshShortcut(disabled: disabled, action: action)
     }
@@ -1452,8 +1422,8 @@ extension View {
     }
 
     /// See `PullToRefresh`. Apply to the ScrollView itself.
-    func pullToRefresh(disabled: @escaping () -> Bool = { false }, allowsMouseDrag: Bool = true, action: @escaping () -> Void) -> some View {
-        modifier(PullToRefresh(disabled: disabled, allowsMouseDrag: allowsMouseDrag, action: action))
+    func pullToRefresh(disabled: @escaping () -> Bool = { false }, action: @escaping () -> Void) -> some View {
+        modifier(PullToRefresh(disabled: disabled, action: action))
     }
 }
 
@@ -1565,14 +1535,18 @@ final class GridSecondaryClicks<ID: Hashable> {
 extension View {
     /// On each cell of the grid.
     func gridSecondaryClickCell<ID: Hashable>(_ id: ID, in clicks: GridSecondaryClicks<ID>) -> some View {
-        onGeometryChange(for: CGRect.self, of: { $0.frame(in: .named(clicks.gridSpace)) }) { clicks.cells[id] = $0 }
+        // The space's name alone goes into the geometry closure, which runs
+        // off the main actor and must not take `clicks` (or `ID`) along.
+        let space = clicks.gridSpace
+        return onGeometryChange(for: CGRect.self, of: { $0.frame(in: .named(space)) }) { clicks.cells[id] = $0 }
             .onDisappear { clicks.cells[id] = nil }
     }
 
     /// On the lazy grid inside the scroll view.
     func gridSecondaryClickGrid<ID: Hashable>(_ clicks: GridSecondaryClicks<ID>) -> some View {
-        coordinateSpace(.named(clicks.gridSpace))
-            .onGeometryChange(for: CGPoint.self, of: { $0.frame(in: .named(clicks.scrollSpace)).origin }) { clicks.gridOrigin = $0 }
+        let space = clicks.scrollSpace
+        return coordinateSpace(.named(clicks.gridSpace))
+            .onGeometryChange(for: CGPoint.self, of: { $0.frame(in: .named(space)).origin }) { clicks.gridOrigin = $0 }
     }
 
     /// On the scroll view: a right-click on a cell runs `action` with the

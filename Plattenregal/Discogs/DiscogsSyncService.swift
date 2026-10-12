@@ -152,8 +152,20 @@ nonisolated struct DiscogsSyncSummary: Sendable {
                     try await CollectionValueHistoryService.shared.refresh(owner: snapshot.username, container: container, api: api, force: true)
                 } catch {
                     // Collection merge is committed. A valuation failure must not roll it back or claim it failed.
-                    self.error = String(localized: "Die Sammlung ist aktualisiert, nur der Sammlungswert konnte nicht geladen werden. ") + error.reportedMessage()
+                    // The "x" during this step is no failure either (see below).
+                    if !cancelledByUser {
+                        self.error = String(localized: "Die Sammlung ist aktualisiert, nur der Sammlungswert konnte nicht geladen werden. ") + error.reportedMessage()
+                    }
                 }
+            }
+            // The "x" after the merge was committed: nothing to roll back and
+            // nothing to report. The tracklists aren't started behind a status
+            // that is gone (and couldn't be stopped); the next sync or launch
+            // loads them.
+            if cancelledByUser {
+                AppLog.info("Sync", "Nach dem Speichern abgebrochen, Tracklisten folgen später (\(scope.logName))")
+                dismissStatus()
+                return true
             }
             // "abgeschlossen" only once the tracklists are through as well.
             startTracklists(container: container)

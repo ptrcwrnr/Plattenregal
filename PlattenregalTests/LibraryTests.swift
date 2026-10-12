@@ -169,7 +169,7 @@ extension AllTests {
                 let full = ShelfRangeLabels.compute(for: shelves)
                 return shelves.allSatisfy { shelf in
                     let stats = cache.stats(for: shelf), fresh = ShelfStatistics(shelf: shelf)
-                    return cached[shelf.id] == full[shelf.id] && stats.count == fresh.count && stats.isReserved == fresh.isReserved
+                    return cached[shelf.id] == full[shelf.id] && stats.count == fresh.count
                 }
             }
             #expect(matchesFullRecompute())
@@ -457,7 +457,6 @@ extension AllTests {
             try service.configure(shelf, name: "  Vivian ", isReserved: true)
             #expect(shelf.name == "Vivian")
             #expect(shelf.isReserved)
-            #expect(ShelfStatistics(shelf: shelf).isReserved)
         }
         @Test func deletionCompactsAndPreservesOtherCopyOfRelease() throws {
             let (container, shelves, service) = try fixture()
@@ -672,18 +671,34 @@ extension AllTests {
             #expect(index.matches(lona.id, SearchIndex<UUID>.words("lona")))
             #expect(!index.matches(lona.id, SearchIndex<UUID>.words("mo")))
         }
-        @Test func discogsMappingWithOptionalFields() throws {
-            let data = Data(#"{"id":123,"title":"Computerwelt","year":1981,"artists":[{"name":"Kraftwerk (2)","anv":"Kraftwerk"}],"labels":[{"name":"EMI","catno":"1C 064"}],"formats":[{"name":"Vinyl","qty":"1","descriptions":["LP"]}],"genres":["Electronic"],"tracklist":[{"position":"A1","title":"Computerwelt","duration":"5:05"}],"images":[{"type":"primary","uri":"https://example.com/cover.jpg"}]}"#.utf8)
-            let release = try JSONDecoder().decode(DiscogsReleaseDTO.self, from: data).mappedRelease()
+        @Test func basicInformationWithOptionalFields() throws {
+            let data = Data(#"{"id":123,"title":"Computerwelt","year":0,"artists":[{"name":"Kraftwerk (2)","anv":"Kraftwerk"}],"labels":[{"name":"EMI","catno":"1C 064"}],"formats":[{"name":"Vinyl","qty":"1","descriptions":["LP"]}],"genres":["Electronic"],"cover_image":"","thumb":"https://example.com/thumb.jpg"}"#.utf8)
+            let release = Release(artist: "", title: "")
+            try JSONDecoder().decode(DiscogsBasicInformation.self, from: data).apply(to: release, at: .now)
             #expect(release.artist == "Kraftwerk"); #expect(release.discogsID == 123)
-            #expect(release.catalogNumber == "1C 064"); #expect(release.tracks.count == 1)
+            #expect(release.catalogNumber == "1C 064"); #expect(release.year == nil)
             #expect(release.format == "1 · Vinyl · LP"); #expect(release.fetchedAt != nil)
-            let minimal = try JSONDecoder().decode(DiscogsReleaseDTO.self, from: Data(#"{"id":1,"title":"Untitled","year":0}"#.utf8)).mappedRelease()
-            #expect(minimal.year == nil); #expect(minimal.tracks.isEmpty)
-            #expect(minimal.artist == "Unbekannter Interpret")
             #expect(release.displayArtist == "Kraftwerk")
             #expect(release.displayTitle == "Computerwelt")
-            #expect(release.coverURL == "https://example.com/cover.jpg")
+            // Discogs sends "" without an image; the thumbnail stands in.
+            #expect(release.coverURL == "https://example.com/thumb.jpg")
+            let minimal = Release(artist: "", title: "")
+            try JSONDecoder().decode(DiscogsBasicInformation.self, from: Data(#"{"id":1,"title":"Untitled"}"#.utf8)).apply(to: minimal, at: .now)
+            #expect(minimal.artist.isEmpty && minimal.label.isEmpty && minimal.coverURL == nil)
+            #expect(minimal.displayArtist == String(localized: "Unbekannter Interpret"))
+        }
+        @Test func releaseDetailsOnlyTouchTracklistAndCountry() throws {
+            let data = Data(#"{"id":123,"title":"Computerwelt","country":"Germany","tracklist":[{"position":"A1","title":"Computerwelt","duration":"5:05"},{"title":"Nummern"}]}"#.utf8)
+            let release = Release(artist: "Kraftwerk", title: "Computerwelt")
+            try JSONDecoder().decode(DiscogsReleaseDTO.self, from: data).applyDetails(to: release)
+            #expect(release.tracks.map(\.title) == ["Computerwelt", "Nummern"])
+            #expect(release.tracks[0].position == "A1" && release.tracks[1].position.isEmpty && release.tracks[1].duration.isEmpty)
+            #expect(release.country == "Germany"); #expect(release.detailsFetchedAt != nil)
+            // What the collection sync wrote stays.
+            #expect(release.artist == "Kraftwerk" && release.title == "Computerwelt")
+            let minimal = Release(artist: "", title: "Untitled")
+            try JSONDecoder().decode(DiscogsReleaseDTO.self, from: Data(#"{"id":1}"#.utf8)).applyDetails(to: minimal)
+            #expect(minimal.tracks.isEmpty && minimal.country.isEmpty && minimal.detailsFetchedAt != nil)
         }
         @Test func artistLineFollowsDiscogsJoins() {
             typealias A = DiscogsBasicInformation.Artist
@@ -948,14 +963,6 @@ extension AllTests.LibraryTests {
         #expect(labels[shelves[1].id] == "Th · 2")
         #expect(labels[shelves[2].id] == "Th · 3")
         #expect(labels[shelves[3].id] == "U")
-    }
-}
-
-private extension DiscogsReleaseDTO {
-    /// A fresh release filled from this DTO, the way a sync applies it.
-    @MainActor func mappedRelease() -> Release {
-        let release = Release(artist: "", title: title)
-        apply(to: release); return release
     }
 }
 

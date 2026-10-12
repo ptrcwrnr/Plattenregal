@@ -5,15 +5,10 @@ import SwiftData
 /// always recomputed from the live collection so it can't drift from the
 /// actual shelf contents. Reads only the copies, never their releases.
 struct ShelfStatistics {
-    let shelfID: UUID
     let count: Int
-    /// Reserved compartments hold no records (e.g. a named slot for something else).
-    let isReserved: Bool
 
     init(shelf: Shelf) {
-        shelfID = shelf.id
         count = shelf.copies.count
-        isReserved = shelf.isReserved
     }
 }
 

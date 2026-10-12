@@ -428,6 +428,23 @@ extension AllTests {
             // 403 may be the token, not the release: tried again next time.
             #expect(releases[403]?.detailsFetchedAt == nil)
         }
+        /// The "x" while the collection value is fetched: the merge is saved
+        /// by then, so there is no error to show – and no tracklist download
+        /// starting behind a status that is gone.
+        @Test @MainActor func cancellingAfterTheMergeIsNoErrorAndLoadsNoTracklists() async throws {
+            let c = try LibraryStorage.makeContainer(inMemory: true)
+            let sync = DiscogsSyncService(api: .stubbed(CancelDuringValueProtocol.self))
+            CancelDuringValueProtocol.onValueRequest.withLock { $0 = { Task { @MainActor in sync.cancel() } } }
+            sync.start(.collection, container: c)
+            let deadline = ContinuousClock.now + .seconds(10)
+            while sync.busy, ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
+            #expect(!sync.busy)
+            #expect(try copies(c).map(\.discogsInstanceID) == [1])
+            #expect(sync.error == nil)
+            #expect(!sync.hasStatus && !sync.isRunning)
+            try await Task.sleep(for: .milliseconds(100))
+            #expect(CancelDuringValueProtocol.releaseRequests.withLock { $0 } == 0)
+        }
         @Test func syncSummaryOnlyMentionsTheRequestedScope() {
             var summary = DiscogsSyncSummary()
             summary.collectionAdded = 2; summary.wantsAdded = 3; summary.foldersChanged = 1
@@ -486,6 +503,31 @@ nonisolated final class TracklistStatusProtocol: URLProtocol, @unchecked Sendabl
         let status = Int(url.lastPathComponent) ?? 500
         let body = status == 200 ? #"{"id":200,"title":"Album","tracklist":[{"position":"A1","title":"Intro","duration":"1:00"}]}"# : "{}"
         let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil)!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data(body.utf8)); client?.urlProtocolDidFinishLoading(self)
+    }
+    override func stopLoading() {}
+}
+
+
+/// One record in the collection; the request for its value tells the test
+/// and is never answered, a release request is counted.
+nonisolated final class CancelDuringValueProtocol: URLProtocol, @unchecked Sendable {
+    static let onValueRequest = Mutex<(@Sendable () -> Void)?>(nil)
+    static let releaseRequests = Mutex(0)
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        guard let url = request.url else { return }
+        let body: String
+        if url.path == "/oauth/identity" { body = #"{"id":7,"username":"fixture"}"# }
+        else if url.path.hasSuffix("/collection/folders") { body = #"{"folders":[{"id":0,"name":"All","count":1},{"id":1,"name":"Uncategorized","count":1}]}"# }
+        else if url.path.hasSuffix("/collection/value") { Self.onValueRequest.withLock { $0 }?(); return }
+        else if url.path.hasPrefix("/releases/") { Self.releaseRequests.withLock { $0 += 1 }; body = #"{"id":1,"tracklist":[]}"# }
+        else {
+            body = #"{"pagination":{"page":1,"pages":1,"per_page":100,"items":1},"releases":[{"id":1,"instance_id":1,"folder_id":1,"date_added":"2026-09-20","basic_information":{"id":1,"title":"Album","artists":[]}}]}"#
+        }
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: Data(body.utf8)); client?.urlProtocolDidFinishLoading(self)
     }

@@ -81,28 +81,26 @@ actor DiscogsAPIClient {
         guard Set(response.folders.map(\.id)).count == response.folders.count else { throw DiscogsError.invalidResponse }
         return response.folders
     }
-    func collection(username: String, folderID: Int = 0,
-                    progress: @Sendable (Int, Int) async -> Void = { _, _ in }) async throws -> [DiscogsCollectionDTO] {
+    func collection(username: String, folderID: Int = 0) async throws -> [DiscogsCollectionDTO] {
         var all: [DiscogsCollectionDTO] = []; var expected: DiscogsPagination?
         var page = 1
         repeat {
             let result: DiscogsCollectionPage = try await request(path: userPath(username) + "/collection/folders/\(folderID)/releases", items: pageItems(page))
             try validate(result.pagination, page: page, expected: expected, count: result.releases.count)
             expected = result.pagination; all += result.releases
-            await progress(page, max(1, result.pagination.pages))
             page += 1
         } while page <= (expected?.pages ?? 0)
         guard all.count == expected?.items, Set(all.map(\.instance_id)).count == all.count,
               all.allSatisfy({ $0.id == $0.basic_information.id && $0.instance_id > 0 && (folderID == 0 || $0.folder_id == folderID) }) else { throw DiscogsError.incompletePagination }
         return all
     }
-    func wants(username: String, progress: @Sendable (Int, Int) async -> Void = { _, _ in }) async throws -> [DiscogsWantDTO] {
+    func wants(username: String) async throws -> [DiscogsWantDTO] {
         var all: [DiscogsWantDTO] = []; var expected: DiscogsPagination?; var page = 1
         repeat {
             let result: DiscogsWantPage = try await request(path: userPath(username) + "/wants", items: pageItems(page))
             try validate(result.pagination, page: page, expected: expected, count: result.wants.count)
             expected = result.pagination; all += result.wants
-            await progress(page, max(1, result.pagination.pages)); page += 1
+            page += 1
         } while page <= (expected?.pages ?? 0)
         guard all.count == expected?.items, Set(all.map(\.id)).count == all.count,
               all.allSatisfy({ $0.id == $0.basic_information.id }) else { throw DiscogsError.incompletePagination }
@@ -113,7 +111,9 @@ actor DiscogsAPIClient {
          URLQueryItem(name: "sort", value: "added"), URLQueryItem(name: "sort_order", value: "asc")]
     }
     private func validate(_ p: DiscogsPagination, page: Int, expected: DiscogsPagination?, count: Int) throws {
-        guard p.page == page, p.items >= 0, p.per_page > 0, p.pages >= 0, p.pages <= 100_000,
+        // Bounded before any arithmetic: absurd numbers in a broken answer
+        // would overflow below and trap instead of failing the sync.
+        guard p.page == page, (0...100_000_000).contains(p.items), (1...1_000).contains(p.per_page), (0...100_000).contains(p.pages),
               p.pages == (p.items == 0 ? p.pages : (p.items + p.per_page - 1) / p.per_page),
               (p.items > 0 || p.pages <= 1),
               count == min(p.per_page, max(0, p.items - (page - 1) * p.per_page)) else { throw DiscogsError.incompletePagination }

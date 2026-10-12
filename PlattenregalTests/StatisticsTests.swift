@@ -3,6 +3,12 @@ import Testing
 import SwiftData
 @testable import Plattenregal
 
+extension AnalyticsItem {
+    /// What a copy counts as, in one step (the app reads `Raw` on the main
+    /// actor and decodes it off it).
+    init(_ copy: RecordCopy) { self.init(Raw(copy)) }
+}
+
 extension AllTests {
     struct StatisticsTests {
         private func value(_ median: Decimal = 100, currency: String = "EUR") throws -> DiscogsCollectionValue {

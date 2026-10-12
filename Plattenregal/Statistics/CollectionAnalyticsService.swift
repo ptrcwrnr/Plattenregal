@@ -50,8 +50,6 @@ nonisolated struct AnalyticsItem: Sendable {
         }
     }
 
-    init(_ copy: RecordCopy) { self.init(Raw(copy)) }
-
     init(_ raw: Raw) {
         id = raw.id
         releaseKey = raw.releaseKey

@@ -7526,12 +7526,12 @@
         }
       }
     },
-    "Release-Daten werden bei jeder Synchronisierung aktualisiert; ältere Einträge lassen sich in der Detailansicht einzeln neu laden. Ohne Verbindung bleiben eigene Exemplar- und Standortdaten vollständig verfügbar." : {
+    "Release-Daten werden bei jeder Synchronisierung aktualisiert; die Tracklisten folgen danach im Hintergrund. Ohne Verbindung bleiben Sammlung und Standorte vollständig verfügbar." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Release data is updated with every sync; older entries can be reloaded individually in the detail view. Without a connection, your own copy and location data remains fully available."
+            "value" : "Release data is updated with every sync; the tracklists follow in the background. Without a connection, your collection and its locations remain fully available."
           }
         }
       }

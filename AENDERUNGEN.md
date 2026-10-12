@@ -1,3 +1,19 @@
+# Durchsicht der ganzen App: zwei Fehler, toter Code, Randfälle · 12.10.2026
+
+Alle Quelltexte der App gelesen (Modelle, Sync, Dienste, Seiten, Einstellungen, Statistik, Design).
+
+- **Fehler – „Alles zurücksetzen“:** Die Seiten erfuhren erst nach dem Leeren des Cover-Caches, dass alle Platten gelöscht sind. In dieser Wartezeit zeichnete das Hauptfenster weiter und konnte dabei noch eine gelöschte Platte anfassen (offene Platzkarte, ausgewähltes Exemplar, Suchtreffer im Regal) – das beendet die App. Jetzt werden die Seiten sofort nach dem Löschen benachrichtigt, noch bevor irgendetwas neu gezeichnet wird; die Cover werden danach geleert.
+- **Fehler – „x“ nach dem Speichern eines Syncs:** Wer die Synchronisierung abbrach, während nur noch der Sammlungswert geladen wurde, bekam die Meldung „… nur der Sammlungswert konnte nicht geladen werden. Der Vorgang wurde abgebrochen.“ – und dahinter lief der Trackliste-Download unsichtbar weiter, ohne dass er sich stoppen ließ (⌘. war aus). Jetzt endet der Sync an dieser Stelle still: Die Sammlung ist gespeichert, es gibt keine Meldung, die Tracklisten holt der nächste Sync oder Start nach. Test `DiscogsSyncTests.cancellingAfterTheMergeIsNoErrorAndLoadsNoTracklists` (schlägt ohne die Korrektur fehl).
+- **Veralteter Text:** Unter Einstellungen → Discogs → Hinweise stand, ältere Einträge ließen sich „in der Detailansicht einzeln neu laden“ – das gibt es nicht mehr. Der Hinweis nennt jetzt die Tracklisten, die nach dem Sync im Hintergrund folgen (de/en).
+- **Toter Code entfernt:** das vollständige Neuladen eines einzelnen Release (`DiscogsReleaseDTO.apply(to:)` samt aller dafür gelesenen Felder – die App liest von dort nur noch Trackliste und Land); die nie genutzten Fortschritts-Rückrufe von `collection`/`wants`; `ShelfStatistics.shelfID`/`isReserved`; `AppSearchField.accessory`/`onSubmit` und sein Zweig ohne Fokus; `AppBadge.prominent`; `OverviewLayoutPicker.glass`; `GlassStepButton.help`; `pullToRefresh(allowsMouseDrag:)`; `CoverTile.size`/`showsAddedDate`. `AnalyticsItem.init(_ copy:)` nutzten nur die Tests – dort liegt er jetzt.
+- **Randfälle gehärtet:**
+  - Paginierung von Discogs: unsinnig große Zahlen in einer kaputten Antwort führten in der Prüfung zu einem Überlauf (Absturz) statt zu „Liste hat sich verändert“. Jetzt begrenzt.
+  - „Neuzugänge“ in der Statistik: Die Balken wurden Monat für Monat weitergezählt; beginnt ein Monat mit einer Zeitumstellung, lagen alle späteren Balken neben ihren Zählungen (0 Platten). Jeder Balken nimmt jetzt den echten Monatsanfang.
+  - Positionsregler im Fach: prüft beim Schließen auch, ob die Platte inzwischen gelöscht und gespeichert ist.
+  - Ordner für den automatischen Export lässt sich nicht merken: Die Meldung sprach von einer Datei, die sich nicht öffnen lässt; jetzt vom Ordner.
+- Zwei Compiler-Warnungen (Rechtsklick im Cover-Raster) behoben.
+- Geprüft: Build ohne Warnungen, 210 Tests. Demo gestartet, Statistik und Collection mit Suche als Bild angesehen. **Nicht angesehen:** „Alles zurücksetzen“ und der Abbruch während des Sammlungswerts in der laufenden App mit echter Sammlung (beides nur über Code und Test belegt; das Zurücksetzen bewusst nicht ausgeführt).
+
 # Automatischer Export: eigene Auswahl der Listen · 12.10.2026
 
 - Bisher schrieb der automatische Export, was unter „Daten“ gewählt war. Wer dort für eine einzelne Datei auf „Verkaufsliste“ oder „Wantlist“ stellte, beendete damit unbemerkt den automatischen Export der Collection.

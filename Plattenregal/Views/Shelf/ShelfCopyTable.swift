@@ -846,8 +846,9 @@ private struct ShelfCopyQuickEditor: View {
     }
 
     private func setPosition(_ value: Int) {
-        // A sync may have removed the copy while the popover was open.
-        guard !copy.isDeleted, let shelf = copy.shelf else { return }
+        // Removed while the popover was open ("Alles zurücksetzen"): once
+        // saved, a deleted record only shows in its missing context.
+        guard !copy.isDeleted, copy.modelContext != nil, let shelf = copy.shelf else { return }
         do {
             let clamped = min(max(value, 1), currentMaxPosition)
             if clamped != copy.positionInShelf {

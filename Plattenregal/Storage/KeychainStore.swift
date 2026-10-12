@@ -10,7 +10,7 @@ nonisolated enum KeychainStore {
     /// sync then reports the actual problem.
     static var hasToken: Bool {
         // The demo never touches the keychain.
-        if DemoMode.isActive { return true }
+        if isDemo { return true }
         // Unreadable: offer the sync, which then says what's wrong.
         do { return !(try load() ?? "").isEmpty } catch {
             AppLog.warning("Discogs", "Schlüsselbund nicht lesbar, Token wird als vorhanden angenommen: \(error)")

@@ -171,8 +171,12 @@ struct AcquisitionChart: View {
         while date <= last {
             let label = byYear ? date.formatted(.dateTime.year()) : date.formatted(.dateTime.month(.abbreviated).year(.twoDigits))
             bars.append(.init(id: label, label: label, count: counts[date] ?? 0))
-            guard let next = calendar.date(byAdding: component, value: 1, to: date) else { break }
-            date = next
+            // The period's own start, as the bins are keyed: where a month
+            // begins with a clock change, adding one lands beside it and
+            // every later bar would miss its count.
+            guard let next = calendar.date(byAdding: component, value: 1, to: date),
+                  let start = calendar.dateInterval(of: component, for: next)?.start, start > date else { break }
+            date = start
         }
         return bars
     }
@@ -180,7 +184,6 @@ struct AcquisitionChart: View {
 
 // MARK: - Shared rows
 
-/// A record as a cover with artist, title and (optionally) the date it was added.
 /// The ten latest additions on the shared column grid (two rows at full width).
 struct RecentRecords: View {
     let copies: [RecordCopy]
@@ -189,38 +192,34 @@ struct RecentRecords: View {
     var body: some View {
         LazyVGrid(columns: StatisticsLayout.columns(columns), alignment: .leading, spacing: StatisticsLayout.gutter) {
             ForEach(copies.prefix(10)) { copy in
-                Button { open(copy) } label: { CoverTile(copy: copy, showsAddedDate: true) }
+                Button { open(copy) } label: { CoverTile(copy: copy) }
                     .buttonStyle(.plain)
             }
         }
     }
 }
 
-struct CoverTile: View {
+/// A record as a cover filling its grid cell, with artist, title and the
+/// date it was added.
+private struct CoverTile: View {
     let copy: RecordCopy
-    /// `nil` fills the available width (grid cells).
-    var size: CGFloat?
-    var showsAddedDate = false
     @State private var hovering = false
     var body: some View {
         let artist = copy.release?.displayArtist ?? String(localized: "Unbekannt")
         let title = copy.release?.displayTitle ?? String(localized: "Unbekannte Veröffentlichung")
         VStack(alignment: .leading, spacing: 6) {
-            CoverView(url: copy.release?.coverURL, size: size)
+            CoverView(url: copy.release?.coverURL, size: nil)
                 .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
                 .scaleEffect(hovering ? 1.04 : 1)
             VStack(alignment: .leading, spacing: 1) {
                 Text(artist).font(.callout.weight(.medium)).lineLimit(1)
                 Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                if showsAddedDate {
-                    let date = DiscogsDate.parse(copy.discogsDateAdded)
-                    Text(date.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? String(localized: "Datum unbekannt"))
-                        .font(.caption2).foregroundStyle(.tertiary)
-                }
+                let date = DiscogsDate.parse(copy.discogsDateAdded)
+                Text(date.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? String(localized: "Datum unbekannt"))
+                    .font(.caption2).foregroundStyle(.tertiary)
             }
         }
-        .frame(width: size, alignment: .leading)
-        .frame(maxWidth: size == nil ? .infinity : nil, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
         .animation(AppStyle.quickAnimation, value: hovering)

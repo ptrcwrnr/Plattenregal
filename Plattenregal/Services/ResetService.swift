@@ -82,7 +82,7 @@ struct ResetService {
         guard !sync.busy else { throw ResetError.syncRunning }
         try safetyBackup()
         // Whatever happened to the store, the views must see its real state.
-        defer {
+        func tellViews() {
             sync.dismissStatus()
             LibraryChanges.shared.libraryDidChange()
             LibraryChanges.shared.shelvesDidChange()
@@ -90,6 +90,7 @@ struct ResetService {
         }
         do { try deleteLibrary() } catch {
             AppLog.error("Zurücksetzen", "Alles zurücksetzen abgebrochen: \(error)")
+            tellViews()
             throw error
         }
 
@@ -101,6 +102,9 @@ struct ResetService {
         do { try KeychainStore.store("") } catch { tokenError = error }
         sync.tokenChanged()
         Self.resetSettings()
+        // Also before the first await: while the covers are cleared the pages
+        // draw again, and none may still hold a deleted record by then.
+        tellViews()
         await CoverCache.shared.clear()
         AppLog.warning("Zurücksetzen", "Alles zurückgesetzt: Sammlung, Wantlist, Statistik-Verlauf, Discogs-Konto, Cover und Einstellungen")
         if let tokenError {
