@@ -1,4 +1,29 @@
-# Aktueller Stand · 10.10.2026 (Version 1.0.7: Logik, Tests, Dokumentation, Fehlerprotokoll, Lokalisierung)
+# Aktueller Stand · 12.10.2026 (Durchsicht der ganzen App, Dokumentation, Fehlermeldungen, Fehlerprotokoll, Lokalisierung)
+
+Projektversion **1.0.7 (102026)**, Schema **V16**. Alle Quelltexte der App gelesen. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen:** alle Swift-Dateien der App – Modelle und Migrationen, Speicher, Discogs-Client und -Sync, alle Dienste (Positionen, Regale, Sicherung, Export, Zurücksetzen, Cover), Statistik, alle Seiten und Einstellungen, das Design-Modul.
+- **Fehler (behoben):** „Alles zurücksetzen“ benachrichtigte die Seiten erst nach dem Leeren des Cover-Caches – in der Wartezeit konnte das Hauptfenster eine gelöschte Platte anfassen. „x“ nach dem Speichern eines Syncs (während des Sammlungswerts) zeigte eine Fehlermeldung und ließ die Tracklisten unsichtbar weiterladen. Einzelheiten in AENDERUNGEN.md.
+- **Toter Code (entfernt):** Einzel-Neuladen eines Release samt seiner Felder, ungenutzte Parameter und Felder; per Skript zusätzlich nach nur einmal vorkommenden Deklarationen gesucht (keine weiteren).
+- **Randfälle (gehärtet):** Überlauf bei unsinniger Paginierung, Monatsbalken der „Neuzugänge“ bei Zeitumstellung zum Monatsanfang, Positionsregler bei gelöschter Platte, Meldung beim Merken des Export-Ordners.
+- **Geprüft, unverändert gelassen:** Abgleich (Merge schreibt nur Geändertes, ein Speichervorgang, Abbruch vor dem Speichern), Positionen 1…n je Fach, Sicherung und Wiederherstellung samt Regal-Neuaufbau, automatischer Export (leere Liste ersetzt keine Datei), Taktung und `Retry-After`, Protokoll und Absturz-Handler.
+- **Bekannt, nicht geändert:** Eine Sicherung ganz ohne Platten (nur gesperrte Fächer) lässt sich nicht wiederherstellen – die Meldung spricht dann von fehlenden Platten. Automatische Sicherungen schreiben so etwas nie.
+- **Nicht geprüft:** „Alles zurücksetzen“ und der Abbruch während des Sammlungswerts in der laufenden App mit echter Sammlung; ein echter Abgleich mit Discogs. Das Zurücksetzen ist bewusst nicht automatisiert (es löscht den echten Token).
+- **Doku:** README (Abbruch nach dem Speichern, Zurücksetzen, Discogs-Dateien ohne „Einzel-Nachladen“), STATISTIK.md (Prüfdatum, Zurücksetzen, Neuzugänge, Schema V16), AENDERUNGEN.md.
+- **macOS-Absturzberichte:** kein neuer seit `Plattenregal-2026-10-08-101207.ips`.
+- **App-Protokoll** 12.10.: kein Absturzblock, kein `ERROR`. Mehrere Warnungen „vorige Sitzung nicht normal beendet“ nach gestoppten Läufen aus Xcode bzw. der Demo. Die beiden Prüfläufe in der Demo (Schnappschuss Statistik, Collection mit Suche) starteten und endeten normal.
+- **Fehlermeldungen:** Kein neuer Text. Der Abbruch nach dem Speichern zeigt bewusst keine Meldung mehr (vorher „… Der Vorgang wurde abgebrochen.“); neu im Protokoll: „Nach dem Speichern abgebrochen, Tracklisten folgen später (…)“. Lässt sich der Export-Ordner nicht merken, erscheint die vorhandene, getestete Meldung „Der gewählte Ordner ist nicht erreichbar …“ statt „Die Datei konnte nicht geöffnet werden“; die technische Ursache steht als `ERROR` im Protokoll („Ordner für den automatischen Export nicht übernommen“).
+- **Lokalisierung:** per Skript – 909 Einträge, 59 veraltet, jeder aktive Eintrag mit englischer Übersetzung, Platzhalter gleich. Ein Text geändert (Hinweis unter Einstellungen → Discogs), deutsch und englisch.
+
+## Verifikation
+
+- `xcodebuild -scheme Plattenregal test` (Xcodes DerivedData): **210 Tests in 13 Suites bestanden**, 24 s, keine Compilerwarnung (zwei im Cover-Raster behoben).
+- Gegenprobe: `DiscogsSyncTests.cancellingAfterTheMergeIsNoErrorAndLoadsNoTracklists` schlägt ohne die Korrektur mit drei Befunden fehl.
+- Demo gestartet, Statistik und Collection mit Suche als Bild angesehen.
+
+# Stand · 10.10.2026 (Version 1.0.7: Logik, Tests, Dokumentation, Fehlerprotokoll, Lokalisierung)
 
 Projektversion **1.0.7 (102026)**, Schema **V15**. Durchsicht der Logik unterhalb der Oberfläche. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
 

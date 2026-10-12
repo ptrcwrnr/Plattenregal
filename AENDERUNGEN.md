@@ -1,3 +1,13 @@
+# Abschluss der Durchsicht: Doku, Fehlermeldungen, Protokoll, Lokalisierung · 12.10.2026
+
+- **README:** Abbruch eines Abgleichs beschrieben (vor dem Speichern wird nichts übernommen, danach endet er still und die Tracklisten folgen später); „Alles zurücksetzen“ nennt, dass die Seiten ihre Platten sofort loslassen; die Zeile zu den Discogs-Dateien spricht nicht mehr vom „Einzel-Nachladen“, das es nicht mehr gibt.
+- **STATISTIK.md:** Prüfdatum, Zurücksetzen (Mitteilung vor dem Leeren des Cover-Caches), „Neuzugänge“ lückenlos, Tests bis Schema V16 (stand noch auf V15).
+- **VALIDIERUNG.md:** neuer Stand 12.10. mit Umfang, Befunden, einem bekannten, nicht geänderten Randfall (Sicherung ganz ohne Platten) und dem, was nicht geprüft ist.
+- **Fehlermeldungen:** kein neuer Text. Geprüft: Der stille Abbruch nach dem Speichern, die Ordner-Meldung beim automatischen Export (vorhandener, getesteter Text).
+- **Protokoll und Absturzberichte:** kein Absturzblock und kein `ERROR` am 12.10., kein neuer macOS-Absturzbericht seit dem 08.10. Neue Protokollzeilen: „Nach dem Speichern abgebrochen, Tracklisten folgen später“ und „Ordner für den automatischen Export nicht übernommen“.
+- **Lokalisierung:** per Skript 909 Einträge, 59 veraltet, jeder aktive mit englischer Übersetzung, Platzhalter gleich.
+- Kein Code geändert; es gilt der Teststand von eben (210 Tests).
+
 # Durchsicht der ganzen App: zwei Fehler, toter Code, Randfälle · 12.10.2026
 
 Alle Quelltexte der App gelesen (Modelle, Sync, Dienste, Seiten, Einstellungen, Statistik, Design).

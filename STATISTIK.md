@@ -1,6 +1,6 @@
 # Statistik
 
-Dokumentation geprüft am **10.10.2026**, Projektversion **1.0.7 (102026)**.
+Dokumentation geprüft am **12.10.2026**, Projektversion **1.0.7 (102026)**.
 
 Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf ihres Discogs-Sammlungswerts. Alles außer dem Sammlungswert wird lokal berechnet, ohne Anfrage an Discogs.
 
@@ -26,7 +26,7 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 | Top-Künstler, Labels | Die häufigsten, ausklappbar |
 | Zufallsfund | Eine zufällige Platte mit Weg ins Regal |
 | Zeitreise | Veröffentlichungen nach Jahrzehnten oder Jahren |
-| Neuzugänge | Zugänge pro Monat oder Jahr |
+| Neuzugänge | Zugänge pro Monat oder Jahr, lückenlos vom ersten bis zum letzten Zeitraum (leere eingeschlossen) |
 | Zuletzt hinzugefügt | Die neuesten Platten |
 
 ## Sammlungswert
@@ -51,7 +51,7 @@ Die Berechnung läuft ganz im Hintergrund, in einem eigenen Datenbank-Kontext: P
 
 Die Seite rechnet neu, wenn sich die Sammlung ändert: nach einem Sync einmal (und noch einmal nach den Tracklisten), sonst kurz nach jedem Speichern, das ihre Zahlen betrifft – neue oder entfernte Platten, geänderte Releases, Sammlungswert, Konten (`StatisticsView.affectsStatistics`). Einsortieren, Verschieben und „Gesucht“ lösen kein Neuladen aus. Solange die Seite verborgen ist, wird erst beim nächsten Anzeigen neu gerechnet. Der Zufallsfund folgt Platzänderungen sofort, solange die Statistik zu sehen ist; Verschiebungen auf der Regalseite rechnet er erst beim nächsten Anzeigen nach. Lassen sich die gespeicherten Daten nicht lesen, steht oben „Die gespeicherten Daten konnten gerade nicht gelesen werden …“ (Ursache im Protokoll). Fehler beim Abruf des Sammlungswerts erscheinen als wegklickbarer Hinweis; bereits gespeicherte Auswertungen und Verlaufspunkte bleiben erhalten. Ein Abbruch wird nicht als Verbindungsfehler ausgegeben. Eine von hier geöffnete Platte ist dieselbe wie auf den anderen Seiten; Bearbeitungen in der Detailansicht werden also über das Hauptfenster gespeichert (Test `statisticsShowTheAppsOwnRecords`).
 
-Nach **Alles zurücksetzen** sind die gezeigten Platten gelöscht; die Statistik lässt sie deshalb sofort los (`StatisticsViewModel.forget`), schließt offene Detail- und Filterfenster und lädt neu, samt Konto. Vorher konnte das Nachladen von Fach oder Release einer gelöschten Platte die App zum Absturz bringen. Test: `StatisticsTests.statisticsForgetTheirRecordsOnReset`.
+Nach **Alles zurücksetzen** sind die gezeigten Platten gelöscht; die Statistik lässt sie deshalb sofort los (`StatisticsViewModel.forget`), schließt offene Detail- und Filterfenster und lädt neu, samt Konto. Vorher konnte das Nachladen von Fach oder Release einer gelöschten Platte die App zum Absturz bringen. Die Mitteilung kommt unmittelbar nach dem Löschen, vor dem Leeren des Cover-Caches – in dieser Wartezeit wird schon wieder gezeichnet. Test: `StatisticsTests.statisticsForgetTheirRecordsOnReset`.
 
 ## Dateien
 
@@ -65,7 +65,7 @@ Nach **Alles zurücksetzen** sind die gezeigten Platten gelöscht; die Statistik
 | `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
-| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, Migrationen bis zum aktuellen Schema V15, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen, Sammlungswert während eines Syncs, gezeigte Platten aus dem Hauptfenster (31 Tests; die Menge prüft `tenThousandRecords` in ScenarioTests) |
+| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, Migrationen bis zum aktuellen Schema V16, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen, Sammlungswert während eines Syncs, gezeigte Platten aus dem Hauptfenster (31 Tests; die Menge prüft `tenThousandRecords` in ScenarioTests) |
 
 Das Modell `ReleaseMarketValue` aus der früheren Einzelpreis-Funktion ist seit Schema V15 entfernt; die Migration verwirft seine Zeilen.
 
