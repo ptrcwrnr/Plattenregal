@@ -152,8 +152,9 @@ struct CollectionExportService {
             if let owner { descriptor.predicate = #Predicate { $0.owner == owner } }
             return (try? context.fetchCount(descriptor)) ?? 0
         case .sale:
-            guard let ids = try? saleIDs(), !ids.isEmpty else { return 0 }
-            return ((try? context.fetch(FetchDescriptor<RecordCopy>())) ?? []).count { ids.contains($0.id) }
+            // Counted in the store as well: the export tab asks on every redraw.
+            guard let ids = (try? saleIDs()).map(Array.init), !ids.isEmpty else { return 0 }
+            return (try? context.fetchCount(FetchDescriptor<RecordCopy>(predicate: #Predicate { ids.contains($0.id) }))) ?? 0
         }
     }
 

@@ -158,8 +158,11 @@ enum ExportInterval: String, CaseIterable, Identifiable {
         // An empty list (before the first sync, after "Alles zurücksetzen" or
         // a lost database) must never replace the last good file. Tried again
         // on the next check.
-        guard CollectionExportService(context: container.mainContext).count(ExportSettings.stored.source) > 0 else {
-            AppLog.warning("Export", "Automatischer Export übersprungen: keine Platten in der \(ExportSettings.stored.source.title)")
+        let source = ExportSettings.stored.source
+        guard CollectionExportService(context: container.mainContext).count(source) > 0 else {
+            // An empty "Verkauf" list is nothing unusual (all sold): no
+            // warning on every check until a record is marked again.
+            if source != .sale { AppLog.warning("Export", "Automatischer Export übersprungen: keine Platten in der \(source.title)") }
             return
         }
         _ = try? await run(container: container)

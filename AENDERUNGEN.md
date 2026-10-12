@@ -2,6 +2,7 @@
 
 - Einstellungen → Export → „Daten“ hat eine dritte Wahl: **Verkaufsliste**. Die Datei enthält nur die zum Verkauf vorgemerkten Platten – dieselben wie unter Einstellungen → Listen, also auch eine, die inzwischen nicht mehr in der Discogs-Collection ist. Format, Spalten, Reihenfolge (wie im Regal / alphabetisch) und der automatische Export arbeiten wie bei der Collection; die PDF heißt „Plattenregal – Verkaufsliste“, die Datei des automatischen Exports „Plattenregal Verkaufsliste“.
 - Ist die Verkaufsliste unter „Listen“ abgeschaltet, fehlt die Wahl; war sie gewählt, gilt wieder die Collection (auch für den automatischen Export). Eine leere Liste ersetzt wie bisher keine vorhandene Datei.
+- Nachgebessert bei der Durchsicht: Die Anzahl der Verkaufsliste wird in der Datenbank gezählt (der Export-Reiter fragt bei jedem Neuzeichnen; vorher wurden dafür alle Platten geladen). Eine leere Verkaufsliste schreibt beim automatischen Export keine Warnung mehr ins Protokoll – sie ist nach „Alle verkauft“ der Normalfall und wäre sonst alle 30 Minuten gemeldet worden.
 - Technik: `ExportSource.sale`, `CollectionExportService.collectionTable(only:)`; Test `ExportTests.saleListExportsOnlyMarkedRecords`.
 - Geprüft: Build ohne Warnungen, 207 Tests. Nicht angeklickt, keine Datei in der laufenden App erzeugt.
 
