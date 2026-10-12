@@ -1,3 +1,10 @@
+# „Einsortieren“ als Cover-Raster · 12.10.2026
+
+- **„Platte hinzufügen“ / „Einsortieren“** zeigt die Platten jetzt als Cover-Raster wie der Fachinhalt darunter: vier Cover nebeneinander (Fenster 660 statt 460 pt breit), darunter dieselbe Beschriftung wie im Fach (Interpret, Titel, Jahr · Label) und „gehört in …“. Pause, „i“ und „+“ liegen beim Überfahren in einer Glaskapsel unten auf dem Cover, „Als Nächstes“ als Etikett oben links; ein Doppelklick fügt weiterhin hinzu. Eine hinzugefügte Platte blendet aus, die übrigen rücken nach.
+- Die Überschrift („Einsortieren“ bzw. „Platte hinzufügen“) und der Knopf „x vermisst“ sind entfallen; die Karte oben nennt weiter Fach und Platz. Zum Reiter „Vermisst“ führt nur noch der Knopf im leeren Zustand „Nur noch vermisste Platten“.
+- Technisch: Die AppKit-Tabelle (`ShelfAssignmentTableController`) ist durch ein SwiftUI-Raster ersetzt (`ShelfAssignmentGrid`, `ShelfAssignmentTile`).
+- Geprüft: Build ohne Warnungen, Tests grün, Fensterfotos der Demo von beiden Fenstern (Modern hell), eines mit der Kapsel unter dem Zeiger. **Nicht angeklickt:** „+“, Pause und das „i“-Popover; Klassisch nicht fotografiert; nicht mit einer langen Liste (hunderte Platten ohne Fach) ausprobiert.
+
 # Vermisst in den Einstellungen, „i“ beim Einsortieren · 12.10.2026
 
 - **Neuer Reiter „Vermisst“ in den Einstellungen** (`MissingSettingsView`): Schalter „Vermisst-Liste“ (bisher unter „Regal“) und die Liste aller vermissten Platten mit Cover, Standort und „Freigeben“, dazu „Alle freigeben“. Freigegebene Platten ohne Fach stehen sofort wieder unter „Einsortieren“ und „Platte hinzufügen“, auch im offenen Fenster.

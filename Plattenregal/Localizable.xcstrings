@@ -361,16 +361,6 @@
         }
       }
     },
-    "Vermisste Platten in den Einstellungen ansehen und freigeben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View and release missing records in Settings"
-          }
-        }
-      }
-    },
     "Vermisste Platten …" : {
       "localizations" : {
         "en" : {
@@ -1366,16 +1356,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "%lld vermisst" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld missing"
           }
         }
       }

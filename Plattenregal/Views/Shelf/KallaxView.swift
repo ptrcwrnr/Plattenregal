@@ -151,11 +151,6 @@ struct KallaxView: View {
     /// on this page (they are kept, and return when it is switched on again).
     private var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
 
-    /// How many records the settings list under "Vermisst".
-    private var missingCount: Int {
-        MissingCopies.listed(missingIDs, in: allCopies, owner: owner, excluding: Set(exclusions.map(\.copyID))).count
-    }
-
     private func forgetCopies() {
         closingAssignment = nil; assignment = nil; sortCheck = nil
         focusCopy = nil; placement = nil; recentUnplace = nil
@@ -349,7 +344,6 @@ struct KallaxView: View {
                                     startPlacement(copy)
                                 },
                                 missingIDs: missingIDs,
-                                missingCount: missingCount,
                                 missingEnabled: missingEnabled,
                                 openMissing: { settingsTab = .missing })
         }

@@ -3,12 +3,9 @@ import SwiftData
 
 /// One opening of the "Platte hinzufügen" sheet.
 ///
-/// The list must never move under the pointer while records are added one
-/// after another. SwiftUI may rebuild the sheet's content at any time (e.g.
-/// when the first save refreshes the shelf page behind it), so nothing that
-/// matters lives in the view: the snapshot of candidates, the additions and
-/// the AppKit table with its scroll offset all live here, and a rebuilt view
-/// just shows the same table again.
+/// SwiftUI may rebuild the sheet's content at any time (e.g. when the first
+/// save refreshes the shelf page behind it), so nothing that matters lives
+/// in the view: the snapshot of candidates and the additions live here.
 @MainActor @Observable
 final class ShelfAssignmentSession: Identifiable {
     let id = UUID()
@@ -36,7 +33,6 @@ final class ShelfAssignmentSession: Identifiable {
     /// The row under the pointer; the target card tells where it would go.
     private(set) var hoveredID: UUID?
     var error: String?
-    @ObservationIgnored let table = ShelfAssignmentTableController()
 
     init(shelf: Shelf?) {
         self.shelf = shelf
@@ -169,9 +165,10 @@ final class ShelfAssignmentSession: Identifiable {
 
 /// "+" in the compartment header: pick records that don't have a shelf yet.
 /// Records marked "Vermisst" aren't offered; the settings list them.
-/// Built like the record detail card: a glass panel over the page, closed by a click beside it or Esc,
-/// the target compartment on a tinted glass card, the shared search bar and
-/// compact rows with glass buttons. All state is in the session.
+/// A glass panel over the page, closed by a click beside it or Esc: the
+/// target compartment on a glass card, below it the records as covers, as
+/// large as in the compartment's own grid. No title – the card says what
+/// the panel is for. All state is in the session.
 struct ShelfAssignmentView: View {
     @Bindable var session: ShelfAssignmentSession
     let owner: String?
@@ -182,15 +179,15 @@ struct ShelfAssignmentView: View {
     let findPlace: (RecordCopy) -> Void
     /// Every mark in the rack; a record released in the settings returns to the list.
     var missingIDs: Set<UUID> = []
-    /// Records the settings list under "Vermisst".
-    var missingCount = 0
     /// Off in the settings: no pause buttons, marked records are listed like the rest.
     var missingEnabled = true
     /// Opens the settings on "Vermisst".
     var openMissing: () -> Void = {}
     @Environment(\.modelContext) private var context
 
-    static let listWidth: CGFloat = 460
+    /// Four covers side by side, about as wide as in the compartment below.
+    static let columns = 4
+    static let listWidth: CGFloat = 660
 
     var body: some View {
         addColumn
@@ -203,25 +200,6 @@ struct ShelfAssignmentView: View {
         let items = missingEnabled ? session.visible.filter { !session.missing.contains($0.id) } : session.visible
         return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(session.isRackWide ? "Einsortieren" : "Platte hinzufügen").font(AppStyle.dialogTitle)
-                    Spacer()
-                    // Where the paused records went, and the way to them.
-                    if missingEnabled && missingCount > 0 {
-                        Button(action: openMissing) {
-                            Text("\(missingCount) vermisst").monospacedDigit()
-                                .font(.callout)
-                                .foregroundStyle(AppStyle.errorColor)
-                                .lineLimit(1)
-                                .fixedSize()
-                        }
-                        .appGlassButton()
-                        .help("Vermisste Platten in den Einstellungen ansehen und freigeben")
-                        .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
-                        .transition(.opacity)
-                    }
-                }
-                .animation(AppStyle.standardAnimation, value: missingCount)
                 targetCard
                 if let error = session.error {
                     AppBanner(message: error, kind: .error)
@@ -231,16 +209,15 @@ struct ShelfAssignmentView: View {
             .padding(.horizontal, AppStyle.pagePadding)
             .padding(.top, AppStyle.pagePadding)
             ZStack {
-                ShelfAssignmentTable(controller: session.table, items: items, missing: missingEnabled ? session.missing : [],
-                                     missingEnabled: missingEnabled,
-                                     rackWide: session.isRackWide,
-                                     // The next one by artist that fits here: where to go on.
-                                     suggestedID: session.isRackWide ? items.first?.id : items.first { session.belongsElsewhere[$0.id] == nil }?.id,
-                                     belongsElsewhere: session.belongsElsewhere,
-                                     toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
-                                     hover: { [session] copy, hovering in session.hover(copy, hovering) },
-                                     places: places,
-                                     findPlace: findPlace) { [session, context] copy in
+                ShelfAssignmentGrid(items: items, missingEnabled: missingEnabled,
+                                    rackWide: session.isRackWide,
+                                    // The next one by artist that fits here: where to go on.
+                                    suggestedID: session.isRackWide ? items.first?.id : items.first { session.belongsElsewhere[$0.id] == nil }?.id,
+                                    belongsElsewhere: session.belongsElsewhere,
+                                    toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
+                                    hover: { [session] copy, hovering in session.hover(copy, hovering) },
+                                    places: places,
+                                    findPlace: findPlace) { [session, context] copy in
                     session.add(copy, in: context)
                 }
                 if session.loaded && items.isEmpty {
@@ -328,13 +305,11 @@ struct ShelfAssignmentView: View {
     }
 }
 
-/// Shows the session's table. SwiftUI may create and drop this wrapper as
-/// often as it likes; it always hands back the same scroll view, so the
-/// offset and the rows shown survive any rebuild of the sheet.
-private struct ShelfAssignmentTable: NSViewRepresentable {
-    let controller: ShelfAssignmentTableController
+/// The candidates as covers with their captions, like a compartment's grid.
+/// An added (or paused) record fades out and the rest move up, so the next
+/// one lands under the pointer.
+private struct ShelfAssignmentGrid: View {
     let items: [RecordCopy]
-    let missing: Set<UUID>
     let missingEnabled: Bool
     let rackWide: Bool
     let suggestedID: UUID?
@@ -345,174 +320,31 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
     let findPlace: (RecordCopy) -> Void
     let add: (RecordCopy) -> Void
 
-    // A fresh container each time, holding the one shared scroll view: when
-    // SwiftUI tears down an old wrapper it only takes its own container along.
-    func makeNSView(context: Context) -> NSView {
-        let container = NSView()
-        update(container)
-        return container
-    }
-
-    func updateNSView(_ container: NSView, context: Context) { update(container) }
-
-    private func update(_ container: NSView) {
-        let scroll = controller.scrollView
-        if scroll.superview !== container {
-            scroll.frame = container.bounds
-            scroll.autoresizingMask = [.width, .height]
-            container.addSubview(scroll)
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: CoverGrid.columns(count: ShelfAssignmentView.columns), alignment: .leading, spacing: CoverGrid.spacing) {
+                ForEach(items) { copy in
+                    ShelfAssignmentTile(copy: copy, missingEnabled: missingEnabled,
+                                        suggested: copy.id == suggestedID,
+                                        belongsIn: belongsElsewhere[copy.id],
+                                        rackWide: rackWide,
+                                        toggleMissing: { toggleMissing(copy) },
+                                        hover: { hover(copy, $0) },
+                                        places: { places(copy) },
+                                        findPlace: { findPlace(copy) }) { add(copy) }
+                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                }
+            }
+            .padding(.horizontal, AppStyle.pagePadding)
+            .padding(.top, AppStyle.rowSpacing)
+            .padding(.bottom, AppStyle.pagePadding)
+            .animation(AppStyle.layoutAnimation, value: items.map(\.id))
         }
-        controller.add = add
-        controller.toggleMissing = toggleMissing
-        controller.hover = hover
-        controller.places = places
-        controller.findPlace = findPlace
-        controller.belongsElsewhere = belongsElsewhere
-        controller.rackWide = rackWide
-        controller.setMissingEnabled(missingEnabled)
-        controller.setMissing(missing)
-        controller.apply(items)
-        controller.setSuggested(suggestedID)
+        .scrollIndicators(.automatic)
     }
 }
 
-/// The candidate list as a plain NSTableView. Removing a row there keeps the
-/// clip view's origin as is: the row fades, the rows below slide up, and the
-/// next "+" ends up exactly under the pointer.
-@MainActor
-final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NSTableViewDelegate {
-    static let rowHeight = AssignmentRowMetrics.height
-    let scrollView = NSScrollView()
-    private let table = NSTableView()
-    private var items: [RecordCopy] = []
-    private var missing: Set<UUID> = []
-    private var missingEnabled = true
-    private var suggestedID: UUID?
-    /// Fixed for a session (see `ShelfAssignmentSession.load`).
-    fileprivate var belongsElsewhere: [UUID: String] = [:]
-    fileprivate var rackWide = false
-    fileprivate var add: (RecordCopy) -> Void = { _ in }
-    fileprivate var toggleMissing: (RecordCopy) -> Void = { _ in }
-    fileprivate var hover: (RecordCopy, Bool) -> Void = { _, _ in }
-    fileprivate var places: (RecordCopy) -> [AssignmentPlace] = { _ in [] }
-    fileprivate var findPlace: (RecordCopy) -> Void = { _ in }
-
-    override init() {
-        super.init()
-        table.addTableColumn(NSTableColumn(identifier: .init("record")))
-        table.headerView = nil
-        table.style = .plain
-        table.rowHeight = Self.rowHeight
-        table.usesAutomaticRowHeights = false
-        table.intercellSpacing = .zero
-        table.selectionHighlightStyle = .none
-        table.backgroundColor = .clear
-        table.gridStyleMask = []
-        table.focusRingType = .none
-        table.columnAutoresizingStyle = .uniformColumnAutoresizingStyle
-        table.target = self
-        table.doubleAction = #selector(doubleClicked(_:))
-        table.dataSource = self
-        table.delegate = self
-
-        scrollView.documentView = table
-        scrollView.drawsBackground = false
-        scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = true
-        scrollView.scrollerStyle = .overlay
-        scrollView.automaticallyAdjustsContentInsets = false
-        scrollView.contentInsets = NSEdgeInsets(top: AppStyle.tightSpacing, left: 0, bottom: AppStyle.tightSpacing, right: 0)
-    }
-
-    /// The setting changed while open: every row loses or gains its pause button.
-    func setMissingEnabled(_ enabled: Bool) {
-        guard enabled != missingEnabled else { return }
-        missingEnabled = enabled
-        table.reloadData()
-    }
-
-    /// Moves the "Als Nächstes" mark, redrawing just the two rows.
-    func setSuggested(_ id: UUID?) {
-        guard id != suggestedID else { return }
-        let changed: Set<UUID?> = [suggestedID, id]
-        suggestedID = id
-        let rows = IndexSet(items.indices.filter { changed.contains(items[$0].id) })
-        if !rows.isEmpty { table.reloadData(forRowIndexes: rows, columnIndexes: IndexSet(integer: 0)) }
-    }
-
-    /// Redraws only the rows whose "Vermisst" state changed.
-    func setMissing(_ new: Set<UUID>) {
-        guard new != missing else { return }
-        let changed = new.symmetricDifference(missing)
-        missing = new
-        let rows = IndexSet(items.indices.filter { changed.contains(items[$0].id) })
-        if !rows.isEmpty { table.reloadData(forRowIndexes: rows, columnIndexes: IndexSet(integer: 0)) }
-    }
-
-    func apply(_ new: [RecordCopy]) {
-        let oldIDs = items.map(\.id)
-        let newIDs = new.map(\.id)
-        guard oldIDs != newIDs else { items = new; return }
-        items = new
-        if let removed = Self.removedIndexes(from: oldIDs, to: newIDs) {
-            // Records added here (or marked "Vermisst"): animate just those
-            // rows; everything else, including the scroll offset, stays in place.
-            table.removeRows(at: removed, withAnimation: [.effectFade, .slideUp])
-        } else if let inserted = Self.removedIndexes(from: newIDs, to: oldIDs) {
-            // Found again: back at its place, sliding in.
-            table.insertRows(at: inserted, withAnimation: [.effectFade, .slideDown])
-        } else {
-            // First load or a new search: show the results from the top.
-            table.reloadData()
-            table.scrollRowToVisible(0)
-        }
-    }
-
-    /// Indexes dropped from `old` if `new` is `old` minus some elements in
-    /// the same order; `nil` otherwise.
-    static func removedIndexes(from old: [UUID], to new: [UUID]) -> IndexSet? {
-        guard new.count < old.count else { return nil }
-        var removed = IndexSet()
-        var next = 0
-        for (index, id) in old.enumerated() {
-            if next < new.count, new[next] == id { next += 1 } else { removed.insert(index) }
-        }
-        return next == new.count ? removed : nil
-    }
-
-    func numberOfRows(in tableView: NSTableView) -> Int { items.count }
-
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let copy = items[row]
-        let rowView = ShelfAssignmentRow(copy: copy, missing: missing.contains(copy.id), missingEnabled: missingEnabled,
-                                         suggested: copy.id == suggestedID,
-                                         belongsIn: belongsElsewhere[copy.id],
-                                         rackWide: rackWide,
-                                         toggleMissing: { [weak self] in self?.toggleMissing(copy) },
-                                         hover: { [weak self] in self?.hover(copy, $0) },
-                                         places: { [weak self] in self?.places(copy) ?? [] },
-                                         findPlace: { [weak self] in self?.findPlace(copy) }) { [weak self] in self?.add(copy) }
-        let id = NSUserInterfaceItemIdentifier("ShelfAssignmentRow")
-        if let host = tableView.makeView(withIdentifier: id, owner: nil) as? NSHostingView<ShelfAssignmentRow> {
-            host.rootView = rowView
-            return host
-        }
-        let host = NSHostingView(rootView: rowView)
-        host.identifier = id
-        host.sizingOptions = []
-        return host
-    }
-
-    func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool { false }
-
-    @objc private func doubleClicked(_ sender: NSTableView) {
-        let row = sender.clickedRow
-        guard items.indices.contains(row) else { return }
-        add(items[row])
-    }
-}
-
-/// The card over the list of "Platte hinzufügen": the shelf the records go to.
+/// The card over the covers of "Platte hinzufügen": the shelf the records go to.
 struct AssignmentCard<Trailing: View>: View {
     /// Covers in the lists below; the symbol is centered above them.
     static var coverSize: CGFloat { 38 }
@@ -548,23 +380,23 @@ struct AssignmentCard<Trailing: View>: View {
     }
 }
 
-/// Rows of "Platte hinzufügen" and the shelf search: the same height and cover.
+/// Rows of the shelf search and the "Vermisst" list: the same height and cover.
 enum AssignmentRowMetrics {
     static let height: CGFloat = 52
 }
 
-private struct ShelfAssignmentRow: View {
-    static let coverSize = AssignmentCard<EmptyView>.coverSize
+/// One candidate: cover and caption as in a compartment's grid. Its actions
+/// – pause, "i", "+" – sit on the cover while the pointer is over it; a
+/// double click adds the record as well.
+private struct ShelfAssignmentTile: View {
     let copy: RecordCopy
-    /// Marked "Vermisst": shown paused, still addable once it turns up.
-    let missing: Bool
     /// Off in the settings: no pause button.
     let missingEnabled: Bool
-    /// The next one to add by artist: lightly marked.
+    /// The next one to add by artist: tagged on its cover.
     let suggested: Bool
     /// The shelf it fits alphabetically, when that isn't this one.
     let belongsIn: String?
-    /// "Einsortieren": no shelf of its own, each row goes to `belongsIn`.
+    /// "Einsortieren": no shelf of its own, each record goes to `belongsIn`.
     let rackWide: Bool
     let toggleMissing: () -> Void
     let hover: (Bool) -> Void
@@ -579,42 +411,57 @@ private struct ShelfAssignmentRow: View {
     var body: some View {
         let artist = copy.release?.displayArtist ?? "—"
         let title = copy.release?.displayTitle ?? "—"
-        HStack(spacing: AppStyle.rowSpacing) {
-            CoverView(url: copy.release?.coverURL, size: Self.coverSize)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(artist).font(.callout.weight(.medium)).lineLimit(1)
+        VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
+            CoverView(url: copy.release?.coverURL, size: nil)
+                .atelierRecordSleeve()
+                .overlay(alignment: .topLeading) {
                     if suggested {
-                        StatusTag(text: String(localized: "Als Nächstes"), color: AppStyle.accent)
+                        Text("Als Nächstes")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(AppStyle.accent)
+                            .padding(.horizontal, 7).padding(.vertical, 3)
+                            .appChipSurface(in: Capsule())
+                            .padding(AtelierCoverFrame.badgeInset)
                             .help(rackWide ? String(localized: "Nach Interpret die nächste Platte") : String(localized: "Nach Interpret die nächste Platte für dieses Fach"))
                     }
                 }
-                HStack(spacing: 6) {
-                    Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                    if missing { MissingBadge() }
-                    if let belongsIn {
-                        Text("gehört in „\(belongsIn)“")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            .lineLimit(1)
-                            .fixedSize()
-                            .help(rackWide ? String(localized: "Passt alphabetisch in „\(belongsIn)“") : String(localized: "Passt alphabetisch in „\(belongsIn)“, nicht in dieses Fach"))
-                    }
+                .overlay(alignment: .bottom) {
+                    actions(artist: artist, title: title)
+                        .padding(AtelierCoverFrame.badgeInset)
+                        // Stays while its popover is open.
+                        .opacity(hovering || showsPlace ? 1 : 0)
+                }
+            // The same caption as in the compartment, Collection and Wantlist.
+            RecordCaption(release: copy.release)
+            Group {
+                if let belongsIn {
+                    Text("gehört in „\(belongsIn)“")
+                        .help(rackWide ? String(localized: "Passt alphabetisch in „\(belongsIn)“") : String(localized: "Passt alphabetisch in „\(belongsIn)“, nicht in dieses Fach"))
                 }
             }
-            .opacity(missing ? 0.55 : 1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .help("\(artist) – \(title)")
-            Spacer(minLength: AppStyle.itemSpacing)
+            .font(.caption2.weight(.medium)).foregroundStyle(.tertiary)
+            // Cabinet and compartment: two lines rather than a cut-off name.
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(minHeight: 14, alignment: .topLeading)
+        }
+        .contentShape(Rectangle())
+        .help("\(artist) – \(title)")
+        .onTapGesture(count: 2, perform: add)
+        .onHover { hovering = $0; hover($0) }
+        .animation(AppStyle.fadeAnimation, value: hovering)
+    }
+
+    /// Pause, "i" and "+" in one glass capsule at the foot of the cover.
+    private func actions(artist: String, title: String) -> some View {
+        HStack(spacing: 2) {
             if missingEnabled {
-                RowSymbolButton(systemImage: missing ? "pause.circle.fill" : "pause.circle",
-                                color: missing ? AppStyle.errorColor : .secondary,
-                                visible: hovering || missing, action: toggleMissing)
-                    .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
-                    .accessibilityLabel(missing ? String(localized: "\(artist) – \(title) wieder gefunden") : String(localized: "\(artist) – \(title) als vermisst markieren"))
+                TileSymbolButton(systemImage: "pause.circle", color: .secondary, action: toggleMissing)
+                    .help("Vermisst – vorerst zurückstellen")
+                    .accessibilityLabel(String(localized: "\(artist) – \(title) als vermisst markieren"))
             }
-            // Where it would stand once sorted in; stays while its popover is open.
-            RowSymbolButton(systemImage: "info.circle", color: .secondary, visible: hovering || showsPlace) { showsPlace = true }
+            // Where it would stand once sorted in.
+            TileSymbolButton(systemImage: "info.circle", color: .secondary) { showsPlace = true }
                 .help("Zeigt, wo sie einsortiert stehen würde")
                 .accessibilityLabel("\(artist) – \(title): Platz im Regal")
                 .popover(isPresented: $showsPlace, arrowEdge: .bottom) {
@@ -625,52 +472,37 @@ private struct ShelfAssignmentRow: View {
                 }
             if rackWide {
                 if let belongsIn {
-                    RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
+                    TileSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, action: add)
                         .help("An ihrer alphabetischen Stelle in „\(belongsIn)“ einsortieren")
                         .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
                 }
             } else {
                 // The main action: accent in the glyph, like chosen options elsewhere.
-                RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
+                TileSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, action: add)
                     .help(belongsIn == nil ? String(localized: "An ihrer alphabetischen Stelle ins Fach hinzufügen") : String(localized: "Trotzdem in dieses Fach hinzufügen"))
                     .accessibilityLabel("\(artist) – \(title) ins Fach hinzufügen")
             }
         }
-        .padding(.horizontal, AppStyle.pagePadding)
-        .frame(height: ShelfAssignmentTableController.rowHeight)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        // The suggested row: a faint accent wash behind it.
-        .background {
-            if suggested {
-                RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                    .fill(AppStyle.accent.opacity(0.07))
-                    .padding(.horizontal, AppStyle.pagePadding - 10)
-                    .padding(.vertical, 2)
-            }
-        }
-        .contentShape(Rectangle())
-        .onHover { hovering = $0; hover($0) }
-        .animation(AppStyle.fadeAnimation, value: hovering)
+        .padding(.horizontal, 4)
+        .appChipSurface(in: Capsule())
     }
 }
 
-/// A row action as a bare symbol: only shown while the pointer is over the row.
-private struct RowSymbolButton: View {
+/// A tile action as a bare symbol inside the capsule on the cover.
+private struct TileSymbolButton: View {
     let systemImage: String
     let color: Color
-    let visible: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 15))
+                .font(.system(size: 17))
                 .foregroundStyle(color)
-                .frame(width: 24, height: 24)
+                .frame(width: 30, height: 30)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .opacity(visible ? 1 : 0)
     }
 }
 
