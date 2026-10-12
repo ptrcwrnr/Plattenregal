@@ -4496,6 +4496,16 @@
         }
       }
     },
+    "Exportiert werden nur die zum Verkauf vorgemerkten Platten (Einstellungen → Listen)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only the records marked for sale are exported (Settings → Lists)."
+          }
+        }
+      }
+    },
     "Exportiert wird die Collection bzw. Wantlist des aktuellen Discogs-Kontos." : {
       "localizations" : {
         "en" : {

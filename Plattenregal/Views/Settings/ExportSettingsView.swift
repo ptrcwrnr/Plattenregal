@@ -9,7 +9,9 @@ struct ExportSettingsView: View {
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
     @AppStorage(ExportSettings.formatKey) private var format = ExportFormat.csv
-    @AppStorage(ExportSettings.sourceKey) private var source = ExportSource.collection
+    @AppStorage(ExportSettings.sourceKey) private var storedSource = ExportSource.collection
+    /// Off: no "Verkaufsliste" among the data to export.
+    @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
     @AppStorage(ExportSettings.orderKey) private var order = ExportOrder.shelf
     @AppStorage(ExportSettings.delimiterKey) private var delimiter = ExportDelimiter.standard
     @AppStorage(ExportSettings.groupsKey) private var storedGroups = ""
@@ -30,6 +32,10 @@ struct ExportSettingsView: View {
     @State private var status: (message: String, failed: Bool)?
     @State private var autoStatus: (message: String, failed: Bool)?
 
+    /// "Verkaufsliste" chosen and the list switched off since: the collection
+    /// (as `ExportSettings.stored` reads it for the automatic export).
+    private var source: ExportSource { storedSource == .sale && !saleEnabled ? .collection : storedSource }
+    private var sources: [ExportSource] { ExportSource.allCases.filter { $0 != .sale || saleEnabled } }
     private var groups: Set<ExportColumnGroup> { ExportSettings.parseGroups(storedGroups) }
     private var settings: ExportSettings {
         ExportSettings(format: format, source: source, order: order, delimiter: delimiter, groups: groups)
@@ -38,20 +44,22 @@ struct ExportSettingsView: View {
     var body: some View {
         let total = count
         SettingsPage {
-            SettingsCard(title: String(localized: "Inhalt"), subtitle: String(localized: "Exportiert wird die Collection bzw. Wantlist des aktuellen Discogs-Kontos.")) {
+            SettingsCard(title: String(localized: "Inhalt"), subtitle: source == .sale
+                         ? String(localized: "Exportiert werden nur die zum Verkauf vorgemerkten Platten (Einstellungen → Listen).")
+                         : String(localized: "Exportiert wird die Collection bzw. Wantlist des aktuellen Discogs-Kontos.")) {
                 SettingsRow(title: String(localized: "Daten")) {
-                    segmented($source, ExportSource.allCases) { $0.title }
+                    segmented(Binding(get: { source }, set: { storedSource = $0 }), sources) { $0.title }
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Format"),
                             hint: format == .csv
                                 ? String(localized: "Für Numbers, Excel oder Google Sheets – mit den unten gewählten Spalten.")
-                                : source == .collection
+                                : source.hasPlaces
                                     ? String(localized: "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer, Format und Fach.")
                                     : String(localized: "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer und Format.")) {
                     segmented($format, ExportFormat.allCases) { $0.title }
                 }
-                if source == .collection {
+                if source.hasPlaces {
                     Divider()
                     SettingsRow(title: String(localized: "Reihenfolge"),
                                 hint: order == .shelf
@@ -115,9 +123,10 @@ struct ExportSettingsView: View {
         }
     }
 
-    /// Re-counted after every committed sync.
+    /// Re-counted after every committed sync, and when the "Verkauf" list changes.
     private var count: Int {
         _ = changes.libraryVersion
+        if source == .sale { _ = LibraryRecords.of(context).saleMarks.count }
         return CollectionExportService(context: context).count(source)
     }
 

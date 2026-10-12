@@ -111,6 +111,7 @@ enum DisplaySettings {
     /// "Verkauf": marking records to be sold some day; the settings list
     /// them. Off hides the marks and the menu entries; the marks are kept.
     static let saleListKey = "saleListEnabled"
+    static var saleListEnabled: Bool { AppDefaults.store.object(forKey: saleListKey) as? Bool ?? true }
 
     /// Klein, Mittel, Groß: the minimum cover width in the grid. The
     /// columns always fill the width, so a size only shows once the column

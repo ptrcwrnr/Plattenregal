@@ -23,13 +23,22 @@ enum ExportFormat: String, CaseIterable, Identifiable {
 }
 
 enum ExportSource: String, CaseIterable, Identifiable {
-    case collection, wantlist
+    /// `sale`: only the records on the "Verkauf" list (settings tab "Listen"),
+    /// with the same columns and orders as the collection.
+    case collection, wantlist, sale
     var id: Self { self }
     var title: String {
         switch self {
         case .collection: String(localized: "Collection")
         case .wantlist: String(localized: "Wantlist")
+        case .sale: String(localized: "Verkaufsliste")
         }
+    }
+    /// Records standing in shelves (collection, "Verkauf" list) – not the wantlist.
+    var hasPlaces: Bool { self != .wantlist }
+    /// What the export tab offers: no "Verkauf" list while it is switched off.
+    static var offered: [Self] {
+        allCases.filter { $0 != .sale || DisplaySettings.saleListEnabled }
     }
 }
 
@@ -79,7 +88,7 @@ enum ExportColumnGroup: String, CaseIterable, Identifiable {
         self == .copy && source == .wantlist ? String(localized: "Hinzufügedatum") : hint
     }
     /// The wantlist has no shelf places.
-    func applies(to source: ExportSource) -> Bool { source == .collection || self != .location }
+    func applies(to source: ExportSource) -> Bool { source.hasPlaces || self != .location }
 }
 
 struct ExportOptions {
@@ -122,6 +131,7 @@ struct CollectionExportService {
         let owner = DiscogsAccount.current(in: try context.fetch(FetchDescriptor<DiscogsAccount>()))?.username
         switch options.source {
         case .collection: return try collectionTable(owner: owner, options: options)
+        case .sale: return try collectionTable(owner: owner, options: options, only: try saleIDs())
         case .wantlist: return try wantlistTable(owner: owner, options: options)
         }
     }
@@ -141,11 +151,23 @@ struct CollectionExportService {
             var descriptor = FetchDescriptor<WantlistEntry>()
             if let owner { descriptor.predicate = #Predicate { $0.owner == owner } }
             return (try? context.fetchCount(descriptor)) ?? 0
+        case .sale:
+            guard let ids = try? saleIDs(), !ids.isEmpty else { return 0 }
+            return ((try? context.fetch(FetchDescriptor<RecordCopy>())) ?? []).count { ids.contains($0.id) }
         }
     }
 
-    private func collectionTable(owner: String?, options: ExportOptions) throws -> ExportTable {
-        let copies = try context.fetch(RecordCopy.fetchingReleases()).filter { $0.isInCurrentCollection(owner: owner) }
+    private func saleIDs() throws -> Set<UUID> {
+        Set(try context.fetch(FetchDescriptor<SaleCopyMark>()).map(\.copyID))
+    }
+
+    /// `only`: just these copies – the "Verkauf" list, as the settings show
+    /// it (every marked record, also one that has left the Discogs collection
+    /// meanwhile: it is still to be sold).
+    private func collectionTable(owner: String?, options: ExportOptions, only: Set<UUID>? = nil) throws -> ExportTable {
+        let copies = try context.fetch(RecordCopy.fetchingReleases()).filter { copy in
+            only.map { $0.contains(copy.id) } ?? copy.isInCurrentCollection(owner: owner)
+        }
         let shelves = try context.fetch(FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\Shelf.number)]))
         let labels = ShelfRangeLabels.compute(for: shelves, style: labelStyle)
         let excluded = Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID))

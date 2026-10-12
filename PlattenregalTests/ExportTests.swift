@@ -111,6 +111,30 @@ extension AllTests {
             #expect(exporter.count(.wantlist) == 0)
         }
 
+        @Test func saleListExportsOnlyMarkedRecords() throws {
+            let (container, shelves, service) = try fixture()
+            try service.insert(release: Release(artist: "Alpha", title: "A"), shelf: shelves[0], owner: "me")
+            let placed = try service.insert(release: Release(artist: "Beta", title: "B"), shelf: shelves[1], owner: "me")
+            let waiting = try service.insert(release: Release(artist: "Abba", title: "U"), shelf: nil, owner: "me")
+            let exporter = CollectionExportService(context: container.mainContext)
+            #expect(exporter.count(.sale) == 0)
+            #expect(try exporter.table(ExportOptions(source: .sale)).rows.isEmpty)
+
+            try service.setForSale([placed, waiting], true)
+            #expect(exporter.count(.sale) == 2)
+            let table = try exporter.table(ExportOptions(source: .sale, order: .shelf, groups: [.location]))
+            let artist = try #require(table.column(ExportColumn.artist))
+            let shelf = try #require(table.column(ExportColumn.shelf))
+            #expect(table.rows.map { $0.values[artist] } == ["Beta", "Abba"])
+            #expect(table.rows.map { $0.values[shelf] } == ["2", "Noch nicht einsortiert"])
+            #expect(try exporter.table(ExportOptions(source: .sale, order: .artist)).rows.map { $0.values[artist] } == ["Abba", "Beta"])
+            // The collection export stays complete.
+            #expect(exporter.count(.collection) == 3)
+
+            try service.sellAllForSale()
+            #expect(exporter.count(.sale) == 0)
+        }
+
         @Test func datesUseTheLocalDay() throws {
             // 00:30 in Berlin is still the previous day in UTC.
             let date = try Date.ISO8601FormatStyle().parse("2026-09-23T22:30:00Z")

@@ -1,3 +1,10 @@
+# Export: Verkaufsliste als CSV oder PDF · 12.10.2026
+
+- Einstellungen → Export → „Daten“ hat eine dritte Wahl: **Verkaufsliste**. Die Datei enthält nur die zum Verkauf vorgemerkten Platten – dieselben wie unter Einstellungen → Listen, also auch eine, die inzwischen nicht mehr in der Discogs-Collection ist. Format, Spalten, Reihenfolge (wie im Regal / alphabetisch) und der automatische Export arbeiten wie bei der Collection; die PDF heißt „Plattenregal – Verkaufsliste“, die Datei des automatischen Exports „Plattenregal Verkaufsliste“.
+- Ist die Verkaufsliste unter „Listen“ abgeschaltet, fehlt die Wahl; war sie gewählt, gilt wieder die Collection (auch für den automatischen Export). Eine leere Liste ersetzt wie bisher keine vorhandene Datei.
+- Technik: `ExportSource.sale`, `CollectionExportService.collectionTable(only:)`; Test `ExportTests.saleListExportsOnlyMarkedRecords`.
+- Geprüft: Build ohne Warnungen, 207 Tests. Nicht angeklickt, keine Datei in der laufenden App erzeugt.
+
 # Durchsicht der Änderungen vom 12.10.: vier Korrekturen · 12.10.2026
 
 - **„Im Regal zeigen“ wieder englisch.** Beim Entfernen aus dem „i“-Popover ging die Übersetzung im Katalog verloren; der Knopf der Zufallsplatte in der Statistik benutzt den Text aber weiter und stand in der englischen Oberfläche auf Deutsch.

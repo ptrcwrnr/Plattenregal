@@ -50,7 +50,7 @@ Die Tabs stehen als Umschalter in derselben Leiste wie im Hauptfenster, mitten i
 | Regal | Regale anlegen, Größe ändern, umbenennen, (de)aktivieren, löschen; Fächer sperren und benennen (Klick aufs Fach öffnet dasselbe Menü wie im Regal); Einsortieren (Reihenfolge bei gleichem Interpreten); Beschriftung |
 | Listen | Suchliste und Verkaufsliste je an/aus (wirkt auf die Rechtsklick-Menüs); alle gesuchten Platten mit Standort, einzeln oder alle als gefunden markieren; Verkaufsliste mit „Entfernen“ und „Alle verkauft …“ |
 | Discogs | Token, Verbindungstest, Synchronisierung |
-| Export | CSV/PDF von Collection oder Wantlist, automatischer Export in einen Ordner |
+| Export | CSV/PDF von Collection, Wantlist oder Verkaufsliste, automatischer Export in einen Ordner |
 | Sicherung | Belegung sichern und wiederherstellen, automatische Sicherung, Aufbewahrung, Speicherort |
 | Daten | Speicherplatz, Cover-Cache, Protokoll, Discogs-Anfragen, Zurücksetzen |
 | Tastenkürzel | Alle Kürzel der App nach Ort (nur zum Nachschlagen) |
@@ -75,7 +75,7 @@ Eine vorhandene Datenbank wird beim Start geöffnet und bei Bedarf migriert. Sch
 
 **Sicherung.** Die Platten selbst kommen jederzeit wieder aus Discogs – wo sie stehen, gibt es nur lokal. Die Sicherung hält genau das fest: Regale, Fach und Position jedes Exemplars, gesperrte Fächer und „Ohne Regalplatz“, als JSON. „Gesucht“ gehört nicht dazu: Es beschreibt die Suche im Moment, nicht die Belegung, und bleibt beim Wiederherstellen stehen (außer bei Platten, die laut Sicherung „Ohne Regalplatz“ sind). Automatisch einige Sekunden nach jeder Regal-Änderung und beim Beenden (Standard: die letzten 10 Stände plus der letzte Stand jedes Tages der vergangenen 14 Tage), auf Wunsch in einem eigenen Ordner, z. B. in iCloud Drive. Ein leeres Regal wird nie automatisch gesichert, damit es nach einem Datenverlust keine guten Stände verdrängt. Wiederhergestellt wird über die Discogs-Exemplar-ID; vorher zeigt eine Vorschau, was passiert, und der aktuelle Stand wird gesichert.
 
-**Export.** CSV (Spalten wählbar, Semikolon oder Komma – voreingestellt, was Excel bei den Systemeinstellungen erwartet –, UTF-8 mit BOM für Excel, Formel-Schutz) oder druckfertige PDF-Liste, in Regal- oder alphabetischer Reihenfolge. Der automatische Export schreibt täglich, wöchentlich oder monatlich in einen Ordner und ersetzt dort immer dieselbe Datei – außer die Liste wäre leer.
+**Export.** CSV (Spalten wählbar, Semikolon oder Komma – voreingestellt, was Excel bei den Systemeinstellungen erwartet –, UTF-8 mit BOM für Excel, Formel-Schutz) oder druckfertige PDF-Liste, in Regal- oder alphabetischer Reihenfolge. Unter „Daten“ stehen Collection, Wantlist und – solange die Verkaufsliste eingeschaltet ist – „Verkaufsliste“: nur die zum Verkauf vorgemerkten Platten, mit denselben Spalten und Reihenfolgen wie die Collection. Der automatische Export schreibt täglich, wöchentlich oder monatlich in einen Ordner und ersetzt dort immer dieselbe Datei – außer die Liste wäre leer.
 
 **Zurücksetzen** (Tab „Daten“): Standorte (samt „Ohne Regalplatz“ und „Gesucht“), Einstellungen oder alles. Vor jedem Zurücksetzen, das die Belegung betrifft, wird gesichert; Sicherungen samt Speicherort und Aufbewahrung bleiben immer erhalten.
 

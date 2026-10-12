@@ -17,7 +17,8 @@ struct ExportSettings {
         let defaults = AppDefaults.store
         var settings = ExportSettings()
         if let value = defaults.string(forKey: formatKey).flatMap(ExportFormat.init) { settings.format = value }
-        if let value = defaults.string(forKey: sourceKey).flatMap(ExportSource.init) { settings.source = value }
+        // The "Verkauf" list switched off meanwhile: back to the collection, as the export tab shows it.
+        if let value = defaults.string(forKey: sourceKey).flatMap(ExportSource.init), ExportSource.offered.contains(value) { settings.source = value }
         if let value = defaults.string(forKey: orderKey).flatMap(ExportOrder.init) { settings.order = value }
         if let value = defaults.string(forKey: delimiterKey).flatMap(ExportDelimiter.init) { settings.delimiter = value }
         if let value = defaults.string(forKey: groupsKey) { settings.groups = parseGroups(value) }
@@ -34,7 +35,7 @@ struct ExportSettings {
     /// `ExportJob.render()`, which can then run off the main actor.
     func prepare(context: ModelContext, labelStyle: ShelfLabelStyle) throws -> ExportJob {
         // The PDF always shows where each record stands.
-        var options = ExportOptions(source: source, order: source == .collection ? order : .artist,
+        var options = ExportOptions(source: source, order: source.hasPlaces ? order : .artist,
                                     groups: format == .pdf ? [.location] : groups, delimiter: delimiter)
         if source == .wantlist { options.groups.remove(.location) }
         let table = try CollectionExportService(context: context, labelStyle: labelStyle).table(options)
@@ -128,7 +129,11 @@ enum ExportInterval: String, CaseIterable, Identifiable {
     /// Not translated: the file is replaced on every run, so its name must
     /// stay the same whatever language the app shows.
     static func fileName(for settings: ExportSettings) -> String {
-        let source = settings.source == .collection ? "Collection" : "Wantlist"
+        let source = switch settings.source {
+        case .collection: "Collection"
+        case .wantlist: "Wantlist"
+        case .sale: "Verkaufsliste"
+        }
         return "Plattenregal \(source)\(DemoMode.fileSuffix).\(settings.fileExtension)"
     }
 
