@@ -203,13 +203,10 @@ struct KallaxView: View {
         )
     }
 
-    /// Space between the page's big blocks: banners, header, rack, compartment.
-    private static let blockSpacing: CGFloat = 28
-
     var body: some View {
         GeometryReader { geometry in
             let lit = searchResults.litShelfIDs
-            VStack(alignment: .leading, spacing: Self.blockSpacing) {
+            VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
                 if DemoMode.showsBanner { DemoBanner() }
                 if nothingPlaced {
                     // Typically right after a new install and the first sync.
@@ -220,7 +217,7 @@ struct KallaxView: View {
                 // header leaves no gap (see `header`).
                 VStack(alignment: .leading, spacing: 0) {
                     header
-                    VStack(alignment: .leading, spacing: Self.blockSpacing) {
+                    VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
                         if activeCabinets.count > 1 { cabinetSwitcher }
                         ShelfFurniture(
                             shelves: shownCabinet.map { cabinet in shelves.filter { $0.cabinet?.id == cabinet.id } } ?? shelves,
@@ -247,7 +244,7 @@ struct KallaxView: View {
                     }
                 }
             }
-            .padding(.horizontal, AppStyle.pagePadding + 4)
+            .padding(.horizontal, AppStyle.pageMargin)
             .padding(.top, AppStyle.pagePadding)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
@@ -398,8 +395,8 @@ struct KallaxView: View {
                 .keyboardShortcut(.rightArrow, modifiers: .command)
                 .hidden().frame(width: 0)
         }
-        // Tabs and rack belong together: half the usual gap.
-        .padding(.bottom, -Self.blockSpacing / 2)
+        // Tabs and rack belong together: a row's gap instead of a block's.
+        .padding(.bottom, AppStyle.rowSpacing - AppStyle.blockSpacing)
         .help("Zwischen den Regalen wechseln: ⌘← / ⌘→")
     }
 
@@ -456,7 +453,7 @@ struct KallaxView: View {
             ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
                 .frame(height: AppStyle.controlHeight)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.bottom, Self.blockSpacing)
+                .padding(.bottom, AppStyle.blockSpacing)
         }
     }
 
@@ -476,8 +473,8 @@ struct KallaxView: View {
             .opacity(searchQuery == search.text ? 1 : 0.6)
             .animation(AppStyle.quickAnimation, value: searchQuery == search.text)
             .frame(width: AppStyle.toolbarSearchWidth + 60)
-            .padding(.trailing, AppStyle.pagePadding + 4)
-            .padding(.top, 6)
+            .padding(.trailing, AppStyle.pageMargin)
+            .padding(.top, AppStyle.itemSpacing)
             .transition(.opacity)
         }
     }
@@ -561,10 +558,10 @@ struct KallaxView: View {
                 }
             }
             .font(.callout)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.horizontal, AppStyle.cardPadding)
+            .padding(.vertical, AppStyle.itemSpacing)
             .appChipSurface(in: Capsule())
-            .padding(.bottom, 16)
+            .padding(.bottom, AppStyle.cardPadding)
             .transition(AppStyle.funnelTransition(from: .bottom))
             .task(id: entry.id) {
                 try? await Task.sleep(for: .seconds(6))

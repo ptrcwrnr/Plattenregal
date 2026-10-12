@@ -33,8 +33,8 @@ struct ShelfSearchResultsPanel: View {
             Text("Keine Treffer im Regal.")
                 .font(.callout)
                 .foregroundStyle(SearchPanelInk.muted)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
+                .padding(.horizontal, AppStyle.cardPadding)
+                .padding(.vertical, AppStyle.rowSpacing)
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             VStack(alignment: .leading, spacing: 0) {
@@ -49,9 +49,9 @@ struct ShelfSearchResultsPanel: View {
                     Text("Noch nicht einsortiert")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(SearchPanelInk.muted)
-                        .padding(.horizontal, 10)
-                        .padding(.top, matches.isEmpty ? 4 : 12)
-                        .padding(.bottom, 4)
+                        .padding(.horizontal, AppStyle.itemSpacing)
+                        .padding(.top, matches.isEmpty ? AppStyle.tightSpacing : AppStyle.rowSpacing)
+                        .padding(.bottom, AppStyle.tightSpacing)
                     ForEach(unplaced) { copy in
                         Button { place(copy) } label: {
                             SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id), placeable: true)
@@ -66,11 +66,11 @@ struct ShelfSearchResultsPanel: View {
                         .font(.caption.weight(.medium))
                         .foregroundStyle(AppStyle.accent)
                         .frame(maxWidth: .infinity)
-                        .padding(.top, 8)
-                        .padding(.bottom, 4)
+                        .padding(.top, AppStyle.itemSpacing)
+                        .padding(.bottom, AppStyle.tightSpacing)
                 }
             }
-            .padding(6)
+            .padding(AppStyle.itemSpacing)
         }
     }
 }
@@ -109,11 +109,11 @@ private struct SearchResultRow: View {
     var body: some View {
         HStack(spacing: AppStyle.rowSpacing) {
             CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(copy.release?.displayArtist ?? "—")
                     .font(.callout.weight(.medium))
                     .foregroundStyle(SearchPanelInk.ink)
-                HStack(spacing: 6) {
+                HStack(spacing: AppStyle.itemSpacing) {
                     Text(copy.release?.displayTitle ?? "—")
                         .font(.caption)
                         .foregroundStyle(SearchPanelInk.muted)
@@ -125,7 +125,7 @@ private struct SearchResultRow: View {
             Spacer(minLength: AppStyle.itemSpacing)
             place
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, AppStyle.itemSpacing)
         .frame(height: AssignmentRowMetrics.height)
         .contentShape(Rectangle())
         .appHoverable(hovering, cornerRadius: 8)
@@ -135,7 +135,7 @@ private struct SearchResultRow: View {
     /// Where it stands, in two short lines instead of one cut-off one: the
     /// compartment, then cabinet and position. Without a shelf: the way to one.
     private var place: some View {
-        VStack(alignment: .trailing, spacing: 2) {
+        VStack(alignment: .trailing, spacing: AppStyle.hairSpacing) {
             if placeable || copy.shelf == nil {
                 // "Noch nicht einsortiert" already heads the section.
                 Text("Platz finden").font(.caption.weight(.medium)).foregroundStyle(AppStyle.accent)
@@ -262,7 +262,7 @@ struct PlacementCard: View {
                                 }
                                 .appLinkButton()
                                 .font(.callout)
-                                .padding(.top, 2)
+                                .padding(.top, AppStyle.hairSpacing)
                             }
                         }
                     } else if let cabinet = placement.putAwayIn {

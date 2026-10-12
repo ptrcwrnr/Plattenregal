@@ -198,7 +198,7 @@ private struct ListSettingsRow: View {
         let title = copy.release?.displayTitle ?? "—"
         HStack(spacing: AppStyle.rowSpacing) {
             CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(artist).font(.callout.weight(.medium))
                 Text(title).font(.caption).foregroundStyle(.secondary)
             }

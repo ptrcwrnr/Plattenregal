@@ -40,7 +40,7 @@ struct RecordDetailView: View {
             Image(systemName: "square.grid.3x3.fill")
                 .font(.system(size: 30))
                 .foregroundStyle(copy.shelf == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text("Standort").font(.callout).foregroundStyle(.secondary)
                 Text(location).font(AppStyle.pageTitle).lineLimit(2)
             }
@@ -61,7 +61,7 @@ struct RecordDetailView: View {
                   .labelsHidden().toggleStyle(.switch)
           }
         }
-        .padding(AppStyle.cardPadding + 4)
+        .padding(AppStyle.sectionSpacing)
         .accentGlassCard()
     }
 
@@ -85,8 +85,8 @@ struct ReleaseHeaderView: View {
         HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
             CoverView(url: release.coverURL, size: 220)
                 .shadow(color: .black.opacity(0.2), radius: 14, y: 6)
-            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing - 4) {
-                VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: AppStyle.cardPadding) {
+                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text(release.displayArtist).font(.title2).foregroundStyle(.secondary).lineLimit(2)
                     Text(release.displayTitle).font(AppStyle.pageTitle).lineLimit(3)
                 }
@@ -104,7 +104,7 @@ struct ReleaseHeaderView: View {
                     }
                 }
                 if !release.styles.isEmpty || removedFromDiscogs {
-                    HStack(spacing: 6) {
+                    HStack(spacing: AppStyle.itemSpacing) {
                         ForEach(release.styles.prefix(5), id: \.self) { AppBadge(title: $0) }
                         if removedFromDiscogs { AppBadge(title: String(localized: "Nicht mehr in der Discogs-Collection"), systemImage: "exclamationmark.circle") }
                     }
@@ -121,7 +121,7 @@ struct ReleaseHeaderView: View {
     }
 
     @ViewBuilder private func detail(_ title: String, _ value: String?) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
+        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(title).font(.caption).foregroundStyle(.secondary)
             Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(.callout.weight(.medium)).lineLimit(2)
                 .textSelection(.enabled)
@@ -153,7 +153,7 @@ struct RecordPopover: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            HStack(alignment: .top, spacing: AppStyle.rowSpacing + 2) {
+            HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
                 CoverView(url: release?.coverURL, size: 128)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text(release?.displayArtist ?? String(localized: "Unbekannt"))

@@ -35,7 +35,7 @@ struct StatisticsHero: View {
 
     @ViewBuilder private var valueBlock: some View {
         if let latest = sameCurrency.last {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
                 Text("Sammlungswert · Median").font(.callout).foregroundStyle(.secondary)
                 RollingNumber(value: NSDecimalNumber(decimal: latest.medianValue).doubleValue) {
                     DiscogsMoney.format(Decimal($0.rounded()), currency: latest.currency)
@@ -45,7 +45,7 @@ struct StatisticsHero: View {
                 // the edge of the words above and below it.
                 .padding(.leading, -3)
                 .lineLimit(1).minimumScaleFactor(0.6)
-                HStack(spacing: 10) {
+                HStack(spacing: AppStyle.itemSpacing) {
                     if sameCurrency.count >= 2 { DeltaChip(current: latest.medianValue, previous: sameCurrency[sameCurrency.count - 2].medianValue, currency: latest.currency) }
                     Text("Spanne \(DiscogsMoney.format(latest.minimumValue, currency: latest.currency)) – \(DiscogsMoney.format(latest.maximumValue, currency: latest.currency))")
                         .font(.caption).foregroundStyle(.secondary)
@@ -55,7 +55,7 @@ struct StatisticsHero: View {
                     .font(.caption).foregroundStyle(.tertiary)
             }
         } else {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
                 Text("Schallplatten in der Sammlung").font(.callout).foregroundStyle(.secondary)
                 RollingNumber(value: Double(statistics.totalItems)) { Int($0.rounded()).formatted() }
                     .font(.system(size: 44, weight: .bold, design: AppStyle.figureDesign))
@@ -90,7 +90,7 @@ struct StatisticsHero: View {
     }
 
     private func figure(_ title: String, _ value: Int, _ systemImage: String) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: AppStyle.rowSpacing) {
             Image(systemName: systemImage)
                 .font(.body.weight(.semibold))
                 .foregroundStyle(AppStyle.accent)
@@ -116,7 +116,7 @@ private struct DeltaChip: View {
     var body: some View {
         let change = CollectionValueHistoryService.change(current: current, previous: previous)
         let color: Color = change.amount > 0 ? AppStyle.successColor : change.amount < 0 ? AppStyle.errorColor : .secondary
-        HStack(spacing: 4) {
+        HStack(spacing: AppStyle.tightSpacing) {
             Image(systemName: change.amount > 0 ? "arrow.up.right" : change.amount < 0 ? "arrow.down.right" : "equal")
             Text((change.amount > 0 ? "+" : "") + DiscogsMoney.format(change.amount, currency: currency))
             if let percent = change.percent {
@@ -125,7 +125,7 @@ private struct DeltaChip: View {
         }
         .font(.caption.weight(.semibold)).monospacedDigit()
         .foregroundStyle(color)
-        .padding(.horizontal, 8).padding(.vertical, 3)
+        .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
         .background(color.opacity(0.12), in: Capsule())
         .help("Veränderung seit der letzten Momentaufnahme")
     }
@@ -188,8 +188,8 @@ struct StatisticsFacts: View {
         @State private var hovering = false
         var body: some View {
             Button { if let group = fact.group { select(group) } } label: {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+                    HStack(spacing: AppStyle.itemSpacing) {
                         // Klassisch: one petrol for all, no rainbow.
                         Image(systemName: fact.systemImage)
                             .font(.callout.weight(.semibold))
@@ -203,7 +203,7 @@ struct StatisticsFacts: View {
                                 .opacity(hovering ? 1 : 0)
                         }
                     }
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                         Text(fact.value).font(.headline).lineLimit(1)
                         Text(fact.detail).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
@@ -381,14 +381,14 @@ struct SoundDonut: View {
 
     @ViewBuilder private func center(_ slices: [Slice]) -> some View {
         if let hovered, let slice = slices.first(where: { $0.id == hovered }) {
-            VStack(spacing: 2) {
+            VStack(spacing: AppStyle.hairSpacing) {
                 Text(slice.group.percentage(of: statistics.totalItems))
                     .font(.system(.title, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(slice.color)
                 Text(slice.label).font(.callout.weight(.medium)).lineLimit(2).multilineTextAlignment(.center)
                 Text("\(AppStyle.records(slice.group.count))").font(.caption).foregroundStyle(.secondary)
             }
         } else {
-            VStack(spacing: 2) {
+            VStack(spacing: AppStyle.hairSpacing) {
                 // All of them, including those under "Weitere".
                 Text(groups.count.formatted())
                     .font(.system(.title, design: AppStyle.figureDesign, weight: .bold))
@@ -402,13 +402,13 @@ struct SoundDonut: View {
         // would shrink every real bar to a few pixels; it is capped at full.
         let named = slices.filter { !$0.id.hasPrefix("weitere:") }
         let maximum = CGFloat(max(1, (named.isEmpty ? slices : named).map(\.group.count).max() ?? 1))
-        return VStack(alignment: .leading, spacing: 4) {
+        return VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
             ForEach(slices) { slice in
                 Button { select(slice.group) } label: {
-                    HStack(spacing: 10) {
+                    HStack(spacing: AppStyle.itemSpacing) {
                         RoundedRectangle(cornerRadius: 3).fill(slice.color).frame(width: 10, height: 10)
                         Text(slice.label).lineLimit(1)
-                        Spacer(minLength: 8)
+                        Spacer(minLength: AppStyle.itemSpacing)
                         Capsule().fill(slice.color.opacity(0.5))
                             .frame(width: 70 * min(1, CGFloat(slice.group.count) / maximum), height: 4)
                             .frame(width: 70, alignment: .leading)
@@ -417,7 +417,7 @@ struct SoundDonut: View {
                             .frame(minWidth: 40, alignment: .trailing)
                     }
                     .font(.callout)
-                    .padding(.vertical, 5)
+                    .padding(.vertical, AppStyle.tightSpacing)
                     .background(hovered == slice.id ? slice.color.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 8).inset(by: -8))
                     .contentShape(Rectangle())
                 }
@@ -489,15 +489,15 @@ struct ArtistPodium: View {
         @State private var hovering = false
         var body: some View {
             Button { select(group) } label: {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
                     // The rank sits by the name, as on the label tiles: on
                     // the cover it hid the artwork's own lettering.
                     CoverView(url: cover, size: nil)
                         .atelierRecordSleeve()
                         .shadow(color: .black.opacity(AppStyle.isAtelier ? 0 : hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
                         .scaleEffect(hovering ? 1.03 : 1)
-                    VStack(alignment: .leading, spacing: 1) {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
+                        HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                             Text("\(rank)").font(.system(.caption, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(AppStyle.accent)
                             Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
                         }
@@ -589,7 +589,7 @@ struct RandomRecordCard: View {
 
     private func details(_ pick: RecordCopy, _ release: Release) -> some View {
         VStack(alignment: .leading, spacing: StatisticsLayout.gutter) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                 Text("Heute aus deiner Sammlung").font(.caption.weight(.semibold)).foregroundStyle(AppStyle.accent)
                 Text(release.displayArtist)
                     .font(.system(.largeTitle, design: AppStyle.figureDesign, weight: .bold))
@@ -597,7 +597,7 @@ struct RandomRecordCard: View {
                 Text(release.displayTitle).font(.title2).foregroundStyle(.secondary).lineLimit(2)
             }
             // Same columns as the page grid to the right of the cover.
-            LazyVGrid(columns: StatisticsLayout.columns(max(1, columns - coverSpan)), alignment: .leading, spacing: 14) {
+            LazyVGrid(columns: StatisticsLayout.columns(max(1, columns - coverSpan)), alignment: .leading, spacing: AppStyle.rowSpacing) {
                 detail(String(localized: "Jahr"), release.year.map(String.init))
                 detail(String(localized: "Label"), release.displayLabel)
                 detail(String(localized: "Land"), release.country)
@@ -606,7 +606,7 @@ struct RandomRecordCard: View {
                 detail(String(localized: "Fach"), placement?.location)
             }
             if !release.styles.isEmpty {
-                HStack(spacing: 6) { ForEach(release.styles.prefix(4), id: \.self) { AppBadge(title: $0) } }
+                HStack(spacing: AppStyle.itemSpacing) { ForEach(release.styles.prefix(4), id: \.self) { AppBadge(title: $0) } }
             }
             HStack(spacing: AppStyle.itemSpacing) {
                 Button { reroll() } label: {
@@ -625,7 +625,7 @@ struct RandomRecordCard: View {
     }
 
     @ViewBuilder private func detail(_ title: String, _ value: String?) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
+        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(title).font(.caption).foregroundStyle(.secondary)
             Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(.callout.weight(.medium)).lineLimit(1)
         }
@@ -695,12 +695,12 @@ struct LabelBoard: View {
         @State private var grown = false
         var body: some View {
             Button { select(group) } label: {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+                    HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                         Text("\(rank)").font(.system(.caption, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(AppStyle.accent)
                         Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
                     }
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                         Text(group.count.formatted()).font(.system(.title3, design: AppStyle.figureDesign, weight: .semibold)).monospacedDigit()
                         Text("\(group.count == 1 ? String(localized: "Platte") : String(localized: "Platten")) · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
                     }

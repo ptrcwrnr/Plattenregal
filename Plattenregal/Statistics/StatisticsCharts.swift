@@ -19,7 +19,7 @@ struct HoverBarChart: View {
     @State private var hovered: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             chart
             readout
         }
@@ -29,7 +29,7 @@ struct HoverBarChart: View {
     private var readout: some View {
         Group {
             if let bar = bars.first(where: { $0.id == hovered }) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                     Text(bar.label).font(.callout.weight(.semibold))
                     Text(AppStyle.records(bar.count)).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
@@ -207,11 +207,11 @@ private struct CoverTile: View {
     var body: some View {
         let artist = copy.release?.displayArtist ?? String(localized: "Unbekannt")
         let title = copy.release?.displayTitle ?? String(localized: "Unbekannte Veröffentlichung")
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
             CoverView(url: copy.release?.coverURL, size: nil)
                 .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
                 .scaleEffect(hovering ? 1.04 : 1)
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(artist).font(.callout.weight(.medium)).lineLimit(1)
                 Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 let date = DiscogsDate.parse(copy.discogsDateAdded)
@@ -232,7 +232,7 @@ struct StatFigure: View {
     let title: String
     let value: String
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(value)
                 .font(.system(.title, design: AppStyle.figureDesign, weight: .semibold))
                 .monospacedDigit()
@@ -255,7 +255,7 @@ struct GroupStatisticsList: View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             if groups.isEmpty { Text("Keine Angaben vorhanden").font(.callout).foregroundStyle(.secondary) }
             let maximum = CGFloat(max(1, groups.map(\.count).max() ?? 1))
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 28, alignment: .topLeading), count: columnCount), spacing: 4) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: StatisticsLayout.gutter, alignment: .topLeading), count: columnCount), spacing: AppStyle.tightSpacing) {
                 ForEach(expanded ? groups : Array(groups.prefix(initialLimit))) { group in
                     GroupRow(group: group, total: total, ratio: CGFloat(group.count) / maximum, select: select)
                 }
@@ -278,10 +278,10 @@ struct GroupStatisticsList: View {
         @State private var grown = false
         var body: some View {
             Button { select(group) } label: {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                    HStack(spacing: AppStyle.itemSpacing) {
                         Text(group.name).lineLimit(1)
-                        Spacer(minLength: 4)
+                        Spacer(minLength: AppStyle.tightSpacing)
                         Text(group.count.formatted()).monospacedDigit()
                         Text(group.percentage(of: total)).monospacedDigit().foregroundStyle(.secondary)
                             .frame(minWidth: 36, alignment: .trailing)
@@ -294,7 +294,7 @@ struct GroupStatisticsList: View {
                     }
                     .frame(height: hovering ? 5 : 3)
                 }
-                .padding(.vertical, 5)
+                .padding(.vertical, AppStyle.tightSpacing)
                 // The hover tint bleeds outward so names stay flush with the card title.
                 .background(hovering ? AppStyle.hoverBackground : .clear, in: RoundedRectangle(cornerRadius: 8).inset(by: -6))
                 .contentShape(Rectangle())

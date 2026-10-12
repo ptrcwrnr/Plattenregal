@@ -34,9 +34,9 @@ enum StatisticsSection: String, CaseIterable, Identifiable {
 /// and between columns, and one column count shared by every tiled row
 /// (figures, facts, artists, recent records), so tiles line up across cards.
 enum StatisticsLayout {
-    static let gutter: CGFloat = 20
-    static let tilePadding: CGFloat = 12
-    static let titleSpacing: CGFloat = 16
+    static let gutter: CGFloat = AppStyle.sectionSpacing
+    static let tilePadding: CGFloat = AppStyle.rowSpacing
+    static let titleSpacing: CGFloat = AppStyle.cardPadding
     static let maxWidth: CGFloat = 1200
     /// Columns for a card whose content (inside its padding) is `width` wide.
     static func columnCount(contentWidth width: CGFloat) -> Int { width >= 860 ? 5 : 3 }
@@ -100,7 +100,7 @@ struct StatisticsView: View {
                     }
                     footnotes.padding(.top, AppStyle.itemSpacing)
                 }
-                .padding(.horizontal, AppStyle.pagePadding + 4)
+                .padding(.horizontal, AppStyle.pageMargin)
                 .padding(.vertical, AppStyle.pagePadding)
                 .frame(maxWidth: StatisticsLayout.maxWidth, alignment: .leading)
                 .frame(maxWidth: .infinity)
@@ -228,7 +228,7 @@ struct StatisticsView: View {
     }
 
     private var footnotes: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
             if model.statistics.totalItems > 0 {
                 Text("Anteile beziehen sich auf Exemplare. Mehrere Styles, Künstler oder Labels pro Release werden einzeln gezählt; die Anteile können zusammen über 100 % liegen.")
             }
@@ -243,7 +243,7 @@ struct StatisticsView: View {
     /// Content width of a full-width section for a page `width` wide: the
     /// sections lie flush with the page margins (no card padding).
     private func cardContentWidth(for width: CGFloat) -> CGFloat {
-        min(max(0, width - 2 * (AppStyle.pagePadding + 4)), StatisticsLayout.maxWidth)
+        min(max(0, width - 2 * AppStyle.pageMargin), StatisticsLayout.maxWidth)
     }
     private var orderedSections: [StatisticsSection] { StatisticsSection.ordered(from: savedSectionOrder) }
     private var visibleSections: [StatisticsSection] {

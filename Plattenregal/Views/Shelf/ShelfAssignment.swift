@@ -384,7 +384,7 @@ struct AssignmentCard<Trailing: View>: View {
                 .frame(width: 24, height: 24)
                 .foregroundStyle(AppStyle.accent)
                 .frame(width: Self.coverSize)
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(title).font(.headline).lineLimit(1)
                 // One line, so long names never grow the card.
                 Text(detail).font(.caption).foregroundStyle(.secondary)
@@ -401,7 +401,7 @@ struct AssignmentCard<Trailing: View>: View {
     }
 }
 
-/// Rows of the shelf search and the "Gesucht" list: the same height and cover.
+/// Rows of the shelf search, the "Gesucht" list and the sort check: the same height.
 enum AssignmentRowMetrics {
     static let height: CGFloat = 52
 }
@@ -429,11 +429,11 @@ private struct ShelfAssignmentRow: View {
         let artist = copy.release?.displayArtist ?? "—"
         let title = copy.release?.displayTitle ?? "—"
         Button(action: add) {
-            HStack(alignment: .center, spacing: AppStyle.pagePadding - 4) {
+            HStack(alignment: .center, spacing: AppStyle.sectionSpacing) {
                 CoverView(url: copy.release?.coverURL, size: Self.coverSize)
                     .atelierRecordSleeve()
                 VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                         // The same caption as in the compartment, Collection and Wantlist.
                         RecordCaption(release: copy.release)
                         if suggested { StatusTag(text: String(localized: "Als Nächstes"), color: AppStyle.accent) }
@@ -442,13 +442,13 @@ private struct ShelfAssignmentRow: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(8)
+            .padding(AppStyle.itemSpacing)
             .contentShape(Rectangle())
             .appHoverable(hovering, cornerRadius: AppStyle.cardRadius + 8)
         }
         .buttonStyle(.plain)
         // The hover surface reaches out, so covers stay flush with the card above.
-        .padding(-8)
+        .padding(-AppStyle.itemSpacing)
         .help(help)
         .accessibilityLabel(rackWide ? String(localized: "\(artist) – \(title) einsortieren") : String(localized: "\(artist) – \(title) ins Fach hinzufügen"))
         .onHover { hovering = $0; hover($0) }
@@ -457,7 +457,7 @@ private struct ShelfAssignmentRow: View {
     /// Where it goes, the largest text of the row.
     @ViewBuilder private var place: some View {
         if let location {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(elsewhere ? String(localized: "Gehört in „\(location.shelf)“") : location.shelf)
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(elsewhere ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.accent))
@@ -537,12 +537,12 @@ struct ShelfSortCheckView: View {
         let copies = gone ? [] : PositionService.inShelfOrder(shelf.copies.filter { !$0.isDeleted && $0.modelContext != nil })
         let steps = ShelfSortCheck.steps(copies, by: order)
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text("Sortierung prüfen").font(AppStyle.dialogTitle)
                 Text("\(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")) · \(AppStyle.records(copies.count)) · Plätze von links gezählt")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            VStack(alignment: .trailing, spacing: 4) {
+            VStack(alignment: .trailing, spacing: AppStyle.tightSpacing) {
                 HStack(spacing: AppStyle.rowSpacing) {
                     Text("Nach Interpret, bei gleichem Interpreten nach").font(.callout).foregroundStyle(.secondary)
                     Spacer(minLength: 0)
@@ -561,7 +561,7 @@ struct ShelfSortCheckView: View {
             } else {
                 summary(steps)
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                         let current = steps.first { !done.contains($0.id) }?.id
                         ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
                             SortStepRow(number: index + 1, step: step, done: done.contains(step.id), current: step.id == current) {
@@ -598,7 +598,7 @@ struct ShelfSortCheckView: View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             HStack(spacing: AppStyle.rowSpacing) {
                 Image(systemName: "checkmark.circle.fill").font(.system(size: 22)).foregroundStyle(AppStyle.successColor)
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text("Alles in Ordnung").font(.headline)
                     Text(count < 2 ? String(localized: "Zu wenige Platten, um etwas zu prüfen.") : String(localized: "Alle \(count) Platten stehen in der richtigen Reihenfolge."))
                         .font(.caption).foregroundStyle(.secondary)
@@ -714,12 +714,12 @@ private struct SortStepRow: View {
                 }
                 .frame(width: 22, height: 22)
                 CoverView(url: release?.coverURL, size: 40)
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text("\(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
                         .font(.callout.weight(.medium)).lineLimit(1).truncationMode(.middle)
                     // Where it goes is what matters at the shelf: in the text's
                     // own color, only the current place muted.
-                    HStack(spacing: 5) {
+                    HStack(spacing: AppStyle.tightSpacing) {
                         Text("Platz \(step.position)").monospacedDigit().foregroundStyle(.secondary)
                         Image(systemName: "arrow.right").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                         if let neighbour = step.before ?? step.after {
@@ -731,7 +731,7 @@ private struct SortStepRow: View {
                 }
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 8).padding(.vertical, 6)
+            .padding(.horizontal, AppStyle.itemSpacing).frame(minHeight: AssignmentRowMetrics.height)
             .opacity(done ? 0.45 : 1)
             .contentShape(Rectangle())
             .appHoverable(hovering && !current, cornerRadius: 8)

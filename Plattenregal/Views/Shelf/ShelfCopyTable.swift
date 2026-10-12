@@ -311,9 +311,9 @@ struct ShelfContentsView: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 10) {
-                    Spacer(minLength: 12)
+            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                HStack(spacing: AppStyle.itemSpacing) {
+                    Spacer(minLength: AppStyle.rowSpacing)
                     OverviewLayoutPicker(selection: layoutSelection.animation(AppStyle.fadeAnimation))
                         .accessibilityLabel("Ansicht der Fachinhalte")
                 }
@@ -416,8 +416,8 @@ struct ShelfContentsView: View {
                     // Room for the covers' shadows inside the scroll view, which
                     // clips; the negative padding below keeps the covers flush
                     // with the rack.
-                    .padding(.horizontal, 2 + CoverGrid.shadowRoom)
-                    .padding(.top, 2)
+                    .padding(.horizontal, AppStyle.hairSpacing + CoverGrid.shadowRoom)
+                    .padding(.top, AppStyle.hairSpacing)
                     // The last covers scroll clear of the round button.
                     .padding(.bottom, CoverGrid.spacing + AppStyle.floatingClearance)
                 }
@@ -479,13 +479,13 @@ struct ShelfContentsView: View {
                 .overlay(alignment: .topLeading) {
                     Text(String(item.position))
                         .font(.caption.weight(.semibold)).monospacedDigit()
-                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
                         .appChipSurface(in: Capsule())
                         .padding(AtelierCoverFrame.badgeInset)
                 }
             // The same caption as in Collection and Wantlist.
             RecordCaption(release: item.copy.release, emphasized: selected)
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                 if item.missing { MissingBadge() }
                 if item.forSale { SaleBadge() }
                 if item.sold {
@@ -518,7 +518,7 @@ struct ShelfContentsView: View {
             }
             .width(min: 120, ideal: 220)
             TableColumn("Titel", value: \.title) { item in
-                HStack(spacing: 6) {
+                HStack(spacing: AppStyle.itemSpacing) {
                     Text(item.title).lineLimit(1).help(item.title)
                     if item.missing {
                         MissingBadge()
@@ -766,7 +766,7 @@ private struct ShelfCopyQuickEditor: View {
             HStack(spacing: AppStyle.rowSpacing) {
                 CoverView(url: copy.release?.coverURL, size: 44)
                     .atelierRecordSleeve()
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text(copy.release?.displayArtist ?? "—")
                         .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     Text(copy.release?.displayTitle ?? "—")
@@ -829,7 +829,7 @@ private struct ShelfCopyQuickEditor: View {
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
             }
-            .padding(.top, 14)
+            .padding(.top, AppStyle.cardPadding)
             .padding(.bottom, AppStyle.tightSpacing)
             if let error {
                 Text(error).font(.caption).foregroundStyle(AppStyle.errorColor)

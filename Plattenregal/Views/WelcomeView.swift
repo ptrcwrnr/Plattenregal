@@ -77,7 +77,7 @@ struct WelcomeView: View {
                     .resizable()
                     .frame(width: 64, height: 64)
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text("Willkommen bei Plattenregal").font(AppStyle.dialogTitle)
                     Text("Deine Schallplatten auf dem Mac: die ganze Sammlung auf einen Blick und immer die Antwort, wo eine Platte im Regal steht.")
                         .font(.body).foregroundStyle(.secondary)
@@ -88,7 +88,7 @@ struct WelcomeView: View {
                 ForEach(steps) { step in
                     HStack(alignment: .firstTextBaseline, spacing: AppStyle.rowSpacing) {
                         number(step.id)
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                             Text(step.title).font(.headline)
                             Text(step.text)
                                 .font(.callout).foregroundStyle(.secondary)

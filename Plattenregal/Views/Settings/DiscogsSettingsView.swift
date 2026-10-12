@@ -124,7 +124,7 @@ struct DiscogsSettingsView: View {
                                 }
                                 .disabled(sync.busy || model.busy || !canSync)
                             }
-                            .padding(.vertical, 2)
+                            .padding(.vertical, AppStyle.hairSpacing)
                         }
                     }
                 }
@@ -179,7 +179,7 @@ struct DiscogsSettingsView: View {
     private func start(_ scope: DiscogsSyncScope) { sync.start(scope, container: context.container) }
 
     private func syncTile(_ title: String, count: Int, date: Date?, systemImage: String) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: AppStyle.rowSpacing) {
             Image(systemName: systemImage)
                 .font(.callout.weight(.semibold))
                 .foregroundStyle(AppStyle.accent)

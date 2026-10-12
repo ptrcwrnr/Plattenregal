@@ -43,7 +43,7 @@ struct CollectionView: View {
     /// size on every layout pass — never cached, so it can't go stale when the
     /// window changes size.
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
-        width - 2 * (AppStyle.pagePadding + 4)
+        width - 2 * AppStyle.pageMargin
     }
     @AppStorage(DisplaySettings.collectionOrderKey) private var order = OverviewOrder.alphabetical
     /// One artist's records follow the shelf's order (Einstellungen › Regal).
@@ -209,13 +209,13 @@ struct CollectionView: View {
             // Not in the drill-down sheets of the statistics: only on the page itself.
             if DemoMode.showsBanner && analyticsFilter == nil {
                 DemoBanner()
-                    .padding(.horizontal, AppStyle.pagePadding + 4)
+                    .padding(.horizontal, AppStyle.pageMargin)
                     .padding(.top, AppStyle.pagePadding)
             }
             if showsControls {
                 collectionControls(items: items)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, AppStyle.pagePadding + 4)
+                    .padding(.horizontal, AppStyle.pageMargin)
                     .padding(.top, DemoMode.showsBanner && analyticsFilter == nil ? AppStyle.rowSpacing : AppStyle.pagePadding)
                     .transition(AppStyle.funnelTransition())
             }
@@ -305,7 +305,7 @@ struct CollectionView: View {
                                     .gridSecondaryClickGrid(gridClicks)
                                     .coverGridMotion(width: width, columnCount: columnCount)
                                 }
-                                .padding(.horizontal, AppStyle.pagePadding + 4)
+                                .padding(.horizontal, AppStyle.pageMargin)
                                 .padding(.vertical, CoverGrid.spacing)
                             }
                             .scrollPosition(scroll)
@@ -343,7 +343,7 @@ struct CollectionView: View {
                         .alternatingRowBackgrounds(.disabled)
                         .scrollContentBackground(.hidden)
                         .appTableCard()
-                        .padding(.horizontal, AppStyle.pagePadding + 4)
+                        .padding(.horizontal, AppStyle.pageMargin)
                         // The app's own menu and, on double-click, the quick look – as in the grid.
                         .overlay(TableRowClicks(secondary: { row, point in
                             guard items.indices.contains(row) else { return }
@@ -505,7 +505,7 @@ struct CollectionView: View {
     }
 
     /// Above the content, right under the toolbar: the grid's covers start
-    /// the same 18 pt below it in both designs (see `CoverGrid.topSpace`).
+    /// one `CoverGrid.spacing` below it in both designs (see `CoverGrid.topSpace`).
     private var topSpace: CGFloat { layout == .grid ? CoverGrid.topSpace : AppStyle.pagePadding }
 
     /// In the window the page has no header bar: page switch, grid/list and
@@ -617,8 +617,8 @@ struct RecordCard: View {
                     Text("\(copyCount)×")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
+                        .padding(.horizontal, AppStyle.itemSpacing)
+                        .padding(.vertical, AppStyle.tightSpacing)
                         .appChipSurface(in: Capsule())
                         .padding(AtelierCoverFrame.badgeInset)
                 }
@@ -681,7 +681,7 @@ extension View {
 struct MatchedTrackLine: View {
     let track: Track
     var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: AppStyle.tightSpacing) {
             Image(systemName: "music.note")
             Text(track.position.isEmpty ? track.title : "\(track.position) · \(track.title)")
         }
@@ -702,7 +702,7 @@ struct PlacementBadge: View {
     let show: (Destination) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
             if inCollection { tag(.collection) }
             if inWantlist { tag(.wantlist) }
         }
@@ -726,8 +726,8 @@ struct PlacementBadge: View {
             // The link's color only where a click leads somewhere.
             .foregroundStyle(interactive ? AnyShapeStyle(AppStyle.accent)
                                          : AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
-            .padding(.horizontal, 7)
-            .padding(.vertical, 3)
+            .padding(.horizontal, AppStyle.itemSpacing)
+            .padding(.vertical, AppStyle.tightSpacing)
             .appChipSurface(in: Capsule(), interactive: interactive)
     }
 }

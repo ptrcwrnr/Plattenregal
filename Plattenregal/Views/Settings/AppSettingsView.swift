@@ -187,7 +187,7 @@ struct SettingsRow<Control: View>: View {
     @ViewBuilder let control: Control
     var body: some View {
         HStack(alignment: .center, spacing: AppStyle.rowSpacing) {
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(title)
                 if let hint {
                     Text(hint).font(.caption).foregroundStyle(.secondary)
@@ -326,7 +326,7 @@ struct AppearanceSettingsView: View {
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Akzentfarbe"), hint: colorHint) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: AppStyle.itemSpacing) {
                         ForEach(AccentChoice.allCases) { choice in
                             ColorSwatch(title: choice.title, color: choice.color, rainbow: choice == .system,
                                         selected: preferences.accent == choice) {
@@ -339,7 +339,7 @@ struct AppearanceSettingsView: View {
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Ambient-Farbe"), hint: colorHint) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: AppStyle.itemSpacing) {
                         ForEach(AmbientChoice.allCases) { choice in
                             ColorSwatch(title: choice.title, color: choice.color ?? .secondary, off: choice == .off,
                                         selected: preferences.ambient == choice) {
@@ -414,7 +414,7 @@ private struct SignatureDesignOption: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 14) {
+            HStack(spacing: AppStyle.rowSpacing) {
                 Group {
                     switch design {
                     case .liquidGlass: LiquidGlassDesignPreview()
@@ -422,7 +422,7 @@ private struct SignatureDesignOption: View {
                     }
                 }
                 .frame(width: 112, height: 72)
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text(design.title).font(.body.weight(.semibold))
                         .foregroundStyle(.primary)
                     Text(design == .atelier
@@ -431,25 +431,25 @@ private struct SignatureDesignOption: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    HStack(spacing: 5) {
+                    HStack(spacing: AppStyle.tightSpacing) {
                         ForEach(Array(swatches.enumerated()), id: \.offset) { _, color in
                             Circle().fill(color)
                                 .frame(width: 12, height: 12)
                                 .overlay(Circle().strokeBorder(design == .atelier ? AtelierPalette.border : Color.primary.opacity(0.15), lineWidth: 0.5))
                         }
                     }
-                    .padding(.top, 2)
+                    .padding(.top, AppStyle.hairSpacing)
                     .animation(AppStyle.quickAnimation, value: preferences.accent)
                     .animation(AppStyle.quickAnimation, value: preferences.ambient)
                     .accessibilityHidden(true)
                 }
-                Spacer(minLength: 8)
+                Spacer(minLength: AppStyle.itemSpacing)
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
                     .foregroundStyle(selected ? AppStyle.accent : Color.secondary.opacity(0.5))
                     .accessibilityHidden(true)
             }
-            .padding(12)
+            .padding(AppStyle.rowSpacing)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(selected ? AppStyle.selectedBackground : Color.clear,
                         in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))

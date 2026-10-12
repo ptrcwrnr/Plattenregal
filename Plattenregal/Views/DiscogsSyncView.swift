@@ -9,8 +9,8 @@ struct DiscogsSyncStatusView: View {
     @State private var sync = DiscogsSyncService.shared
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
+            HStack(spacing: AppStyle.itemSpacing) {
                 if sync.isRunning {
                     ActivityRing(size: 13)
                     Text("Synchronisierung läuft")
@@ -27,7 +27,7 @@ struct DiscogsSyncStatusView: View {
                 // Step on the second line, its counter on the third.
                 // Gentle motion: steps blend into each other, counters roll,
                 // and the counter line eases in and out instead of popping.
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text(detail.text)
                         .foregroundStyle(detail.isError ? AnyShapeStyle(AppStyle.errorColor) : AnyShapeStyle(.secondary))
                         .lineLimit(2)
@@ -194,7 +194,7 @@ struct DiscogsSyncPill: View {
             icon(content)
                 .transition(.scale(scale: 0.4).combined(with: .opacity))
                 .id(content.isRunning ? Phase.loading : content.phase)
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(content.title)
                     .font(.callout)
                     .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
@@ -314,11 +314,9 @@ struct WantlistView: View {
     /// The window's page switch, to jump to the collection's hits.
     let pages: PageSelection<Destination>
 
-    /// Same margins as the collection (see CollectionView).
-    private var pageMargin: CGFloat { AppStyle.pagePadding + 4 }
     @AppStorage(DisplaySettings.wantlistOrderKey) private var order = OverviewOrder.alphabetical
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
-        width - 2 * pageMargin
+        width - 2 * AppStyle.pageMargin
     }
 
     var body: some View {
@@ -327,7 +325,7 @@ struct WantlistView: View {
         VStack(alignment: .leading, spacing: 0) {
             if DemoMode.showsBanner {
                 DemoBanner()
-                    .padding(.horizontal, pageMargin)
+                    .padding(.horizontal, AppStyle.pageMargin)
                     .padding(.top, AppStyle.pagePadding)
             }
             // The grid right under the toolbar (see CollectionView).
@@ -364,7 +362,7 @@ struct WantlistView: View {
                     } else {
                         table(visibleEntries)
                             .appTableCard()
-                            .padding(.horizontal, pageMargin)
+                            .padding(.horizontal, AppStyle.pageMargin)
                     }
                 }
             }
@@ -514,7 +512,7 @@ struct WantlistView: View {
                 .gridSecondaryClickGrid(gridClicks)
                 .coverGridMotion(width: width, columnCount: columnCount)
                 .padding(.vertical, CoverGrid.spacing)
-                .padding(.horizontal, pageMargin)
+                .padding(.horizontal, AppStyle.pageMargin)
             }
             .scrollPosition(scroll)
             .onGridSecondaryClick(gridClicks) { id, point in

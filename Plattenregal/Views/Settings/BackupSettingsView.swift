@@ -108,7 +108,7 @@ struct BackupSettingsView: View {
                         ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                             if index > 0 { Divider() }
                             HStack {
-                                VStack(alignment: .leading, spacing: 1) {
+                                VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                                     Text(entry.backup.createdAt.formatted(date: .abbreviated, time: .shortened))
                                     Text(entry.backup.summary).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                                 }
@@ -116,7 +116,7 @@ struct BackupSettingsView: View {
                                 GhostButton(title: String(localized: "Wiederherstellen …")) { prepareRestore(entry.backup) }
                                     .disabled(sync.busy)
                             }
-                            .padding(.vertical, 4)
+                            .padding(.vertical, AppStyle.tightSpacing)
                         }
                     }
                 } else {

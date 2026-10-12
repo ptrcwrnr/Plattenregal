@@ -61,7 +61,7 @@ struct RecordCaption: View {
         let _ = LibraryChanges.shared.libraryVersion
         let ink = AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary)
         let muted = AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary)
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(release?.displayArtist ?? fallbackArtist)
                 .font(.callout.weight(.medium)).foregroundStyle(emphasized ? AnyShapeStyle(AppStyle.accent) : ink)
                 .lineLimit(1)
@@ -88,7 +88,7 @@ private struct AtelierButtonStyle: ButtonStyle {
         configuration.label
             .font(.callout)
             .foregroundStyle(primary ? AtelierPalette.goldForeground : AtelierPalette.ink)
-            .padding(.horizontal, 11).padding(.vertical, 6)
+            .padding(.horizontal, AppStyle.rowSpacing).padding(.vertical, 6)
             .background(primary ? AtelierPalette.gold : configuration.isPressed ? AtelierPalette.soft : AtelierPalette.surface,
                         in: RoundedRectangle(cornerRadius: 9))
             .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(primary ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
@@ -125,7 +125,21 @@ struct SignatureToolbarAppearance: View {
 /// their own literals, so the whole app reads as one consistent design system.
 enum AppStyle {
     // MARK: Spacing
+    // One scale for every distance: steps of 4, and 2 for the lines of one
+    // caption. Views take a step from here instead of a number of their own,
+    // so edges that belong together land on the same line.
+    /// Lines of one caption: a title and what stands under it.
+    static let hairSpacing: CGFloat = 2
+    static let tightSpacing: CGFloat = 4
+    static let itemSpacing: CGFloat = 8
+    static let rowSpacing: CGFloat = 12
+    static let cardPadding: CGFloat = 16
+    static let sectionSpacing: CGFloat = 20
     static let pagePadding: CGFloat = 24
+    /// A page's side margins: its covers, cards and tables start here.
+    static let pageMargin: CGFloat = 28
+    /// Between the big blocks of a page: banners, header, rack, compartment.
+    static let blockSpacing: CGFloat = pageMargin
     /// Corners of a panel over the page (see `AppPanelModifier`).
     static let panelRadius: CGFloat = 20
     /// Height of every header-bar control, matching the segmented pickers.
@@ -135,26 +149,21 @@ enum AppStyle {
     /// The search field at the right end of the toolbar (see `ToolbarSearchField`).
     static let toolbarSearchWidth: CGFloat = 300
     /// Topped up to the toolbar's own right margin (8, measured), so the
-    /// field ends at the pages' margin (`pagePadding + 4`), flush with the
+    /// field ends at the pages' margin (`pageMargin`), flush with the
     /// covers below it.
-    static let toolbarSearchInset: CGFloat = pagePadding + 4 - 8
+    static let toolbarSearchInset: CGFloat = pageMargin - 8
     /// The round button at the bottom right and the actions around it.
     static let floatingButtonSize: CGFloat = 52
     static let floatingItemSize: CGFloat = 40
     /// Its distance from the window's edges.
     static let floatingMargin: CGFloat = 20
     /// Room at the end of every page, so content scrolls clear of the button.
-    static let floatingClearance: CGFloat = floatingButtonSize + floatingMargin + 8
+    static let floatingClearance: CGFloat = floatingButtonSize + floatingMargin + itemSpacing
     /// Leaving a search: the hits fade out quickly, then the whole list fades
     /// in where it was before the search – timed like a page switch (see
     /// `PageStackView.show`). Gliding hundreds of covers back in looked busy.
     static var searchExitFadeOut: Animation { .easeIn(duration: 0.1) }
     static var searchExitFadeIn: Animation { .easeOut(duration: 0.22) }
-    static let cardPadding: CGFloat = 16
-    static let sectionSpacing: CGFloat = 20
-    static let rowSpacing: CGFloat = 12
-    static let itemSpacing: CGFloat = 8
-    static let tightSpacing: CGFloat = 4
 
     // MARK: Corner radii
     // Shared corner radius for secondary surfaces (search fields, result
@@ -583,7 +592,7 @@ struct AppSearchField: View {
     /// Sits on the window's toolbar (see `searchBarChrome(onToolbar:)`).
     var onToolbar = false
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: AppStyle.itemSpacing) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
             TextField(placeholder, text: $text).textFieldStyle(.plain).noTextAutoFill()
                 .focused(focus)
@@ -747,7 +756,7 @@ extension View {
     /// Klassisch always dark on the petrol bar, with fixed colors and scheme
     /// instead of following the toolbar's (see `AtelierPalette.toolbarField`).
     @ViewBuilder func searchBarChrome(onToolbar: Bool = false) -> some View {
-        let field = padding(.horizontal, 12)
+        let field = padding(.horizontal, AppStyle.rowSpacing)
             .frame(height: AppStyle.searchBarHeight)
             .background {
                 if AppStyle.isAtelier {
@@ -791,7 +800,7 @@ struct AppBadge: View {
         }
         .font(.caption2)
         .foregroundStyle(.secondary)
-        .padding(.horizontal, AppStyle.itemSpacing + 2)
+        .padding(.horizontal, AppStyle.itemSpacing)
         .padding(.vertical, AppStyle.tightSpacing)
         // Like every other tag: glass in Modern, paper with a rim in
         // Klassisch – no gray fill of its own.
@@ -838,7 +847,7 @@ struct AppBanner: View {
             }
         }
         .font(.callout)
-        .padding(AppStyle.itemSpacing + 2)
+        .padding(AppStyle.rowSpacing)
         .background {
             let shape = RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
             if AppStyle.isAtelier {
@@ -867,7 +876,7 @@ struct AppEmptyState: View {
         self.actionTitle = actionTitle; self.action = action
     }
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AppStyle.rowSpacing) {
             Image(systemName: systemImage)
                 .font(.system(size: 40, weight: .light)).foregroundStyle(.tertiary)
                 .frame(width: 56, height: 56).accessibilityHidden(true)
@@ -875,7 +884,7 @@ struct AppEmptyState: View {
             description.font(.body).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             if let actionTitle, let action {
-                PrimaryButton(title: actionTitle, action: action).padding(.top, 4)
+                PrimaryButton(title: actionTitle, action: action).padding(.top, AppStyle.tightSpacing)
             }
         }
         .multilineTextAlignment(.center)
@@ -959,7 +968,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                         .foregroundStyle(AppStyle.isAtelier
                             ? AnyShapeStyle(selected ? (glass ? AtelierPalette.ink : AtelierPalette.toolbarInk) : glass ? AtelierPalette.muted : Color.white.opacity(0.8))
                             : selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.secondary))
-                        .padding(.horizontal, small ? 9 : 12)
+                        .padding(.horizontal, small ? AppStyle.itemSpacing : AppStyle.rowSpacing)
                         .frame(height: small ? 24 : 30)
                         .background {
                             if selected {
@@ -1026,7 +1035,7 @@ struct GlassMenuPicker<Value: Hashable, Options: View>: View {
                 .pickerStyle(.inline)
                 .labelsHidden()
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: AppStyle.itemSpacing) {
                 Text(current)
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption2.weight(.semibold))
@@ -1038,7 +1047,7 @@ struct GlassMenuPicker<Value: Hashable, Options: View>: View {
         .menuStyle(.button)
         .buttonStyle(.plain)
         .menuIndicator(.hidden)
-        .padding(.horizontal, 14)
+        .padding(.horizontal, AppStyle.cardPadding)
         .frame(height: 30)
         .background {
             if AppStyle.isAtelier {
@@ -1067,12 +1076,12 @@ struct OverviewLayoutPicker: View {
 
 enum CoverGrid {
     /// The same in both designs (Modern used to be tighter, 8 pt).
-    static let spacing: CGFloat = 18
+    static let spacing: CGFloat = AppStyle.sectionSpacing
     /// Space between a cover and its caption.
-    static let captionSpacing: CGFloat = 9
-    /// Extra room above the grid's own padding (`spacing`), so the first
-    /// covers start 18 pt below the toolbar.
-    static var topSpace: CGFloat { max(0, 18 - spacing) }
+    static let captionSpacing: CGFloat = AppStyle.itemSpacing
+    /// Extra room above the grid's own padding (`spacing`): none, the first
+    /// covers start one `spacing` below the toolbar.
+    static let topSpace: CGFloat = 0
     /// How far a cover's shadow reaches beyond it (`atelierRecordSleeve`).
     static let shadowRoom: CGFloat = 16
 
@@ -1201,16 +1210,16 @@ struct GlassStepper: View {
     let label: (Int) -> String
 
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: AppStyle.hairSpacing) {
             step("minus", by: -1).disabled(value <= range.lowerBound)
             Text(label(value))
                 .monospacedDigit()
                 .contentTransition(.numericText(value: Double(value)))
-                .padding(.horizontal, 4)
+                .padding(.horizontal, AppStyle.tightSpacing)
             step("plus", by: 1).disabled(value >= range.upperBound)
         }
         .animation(AppStyle.quickAnimation, value: value)
-        .padding(.horizontal, 6)
+        .padding(.horizontal, AppStyle.itemSpacing)
         .frame(height: 30)
         .appChipSurface(in: Capsule(), interactive: true)
         .fixedSize()
@@ -1298,7 +1307,7 @@ extension View {
     /// A floating status at the top of a page (sync, value refresh): a
     /// Liquid Glass capsule sliding in from where the pull ring was.
     func activityPillChrome() -> some View {
-        padding(.horizontal, 14).padding(.vertical, 8)
+        padding(.horizontal, AppStyle.cardPadding).padding(.vertical, AppStyle.itemSpacing)
             // Klassisch: matte paper. Modern: tinted with the window color –
             // still glass, but covers underneath don't run through the text.
             .background {
@@ -1310,7 +1319,7 @@ extension View {
             .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .capsule)
             // Lifts it off bright covers underneath.
             .shadow(color: .black.opacity(0.15), radius: 10, y: 3)
-            .padding(.top, 12)
+            .padding(.top, AppStyle.rowSpacing)
     }
 }
 
@@ -1451,9 +1460,9 @@ struct AppMenu<Content: View>: View {
     let dismiss: () -> Void
     @ViewBuilder let content: Content
     var body: some View {
-        VStack(alignment: .leading, spacing: 1) { content }
+        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) { content }
             .buttonStyle(AppMenuButtonStyle(dismiss: dismiss))
-            .padding(5)
+            .padding(AppStyle.tightSpacing)
             .frame(minWidth: 220, alignment: .leading)
             .fixedSize()
             .appPopoverSurface()
@@ -1468,9 +1477,9 @@ struct AppMenuSection: View {
             .font(.caption2.weight(.semibold))
             .foregroundStyle(.secondary)
             .lineLimit(1)
-            .padding(.horizontal, 8)
-            .padding(.top, 6)
-            .padding(.bottom, 2)
+            .padding(.horizontal, AppStyle.itemSpacing)
+            .padding(.top, AppStyle.itemSpacing)
+            .padding(.bottom, AppStyle.hairSpacing)
     }
 }
 
@@ -1493,8 +1502,8 @@ private struct AppMenuRow: View {
         } label: {
             configuration.label
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
+                .padding(.horizontal, AppStyle.itemSpacing)
+                .padding(.vertical, AppStyle.tightSpacing)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

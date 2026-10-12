@@ -157,7 +157,7 @@ struct ShelfSettingsView: View {
                     }
                     Button { withAnimation(AppStyle.standardAnimation) { adding = true }; error = nil } label: {
                         Label("Regal hinzufügen", systemImage: "plus")
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, AppStyle.rowSpacing)
                             .frame(minHeight: 52)
                             .background(Color.primary.opacity(adding ? 0.08 : 0.03), in: RoundedRectangle(cornerRadius: 8))
                             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppStyle.borderColor, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
@@ -165,7 +165,7 @@ struct ShelfSettingsView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(2)
+                .padding(AppStyle.hairSpacing)
             }
             .focusable()
             .focused($stripFocused)
@@ -219,8 +219,8 @@ private struct CabinetChip: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 5) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
+                HStack(spacing: AppStyle.tightSpacing) {
                     Circle().fill(cabinet.isActive ? AppStyle.successColor : Color.secondary.opacity(0.5))
                         .frame(width: 7, height: 7)
                     Text(cabinet.name).font(.callout.weight(.semibold)).lineLimit(1)
@@ -229,7 +229,7 @@ private struct CabinetChip: View {
                     .font(.caption).foregroundStyle(.secondary).monospacedDigit().lineLimit(1)
             }
             .foregroundStyle(cabinet.isActive ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
-            .padding(.horizontal, 12).padding(.vertical, 8)
+            .padding(.horizontal, AppStyle.rowSpacing).padding(.vertical, AppStyle.itemSpacing)
             .frame(minWidth: 120, maxWidth: 240, minHeight: 52, alignment: .leading)
             .background(selected ? AppStyle.selectedBackground : (hovering ? AppStyle.hoverBackground : Color.primary.opacity(0.03)),
                         in: RoundedRectangle(cornerRadius: 8))
@@ -476,15 +476,15 @@ private struct ShelfTile: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
+                HStack(spacing: AppStyle.tightSpacing) {
                     if shelf.isReserved { Image(systemName: "lock.fill").font(.caption2) }
                     Text(title).font(.callout.weight(.semibold)).lineLimit(1)
                 }
                 Text(detail).font(.caption).foregroundStyle(.secondary).monospacedDigit().lineLimit(1)
             }
             .foregroundStyle(shelf.isReserved ? AnyShapeStyle(.secondary) : AnyShapeStyle(.primary))
-            .padding(10)
+            .padding(.horizontal, AppStyle.rowSpacing).padding(.vertical, AppStyle.itemSpacing)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .topLeading)
             .background(selected ? AppStyle.selectedBackground : (hovering ? AppStyle.hoverBackground : Color.primary.opacity(0.03)),
                         in: RoundedRectangle(cornerRadius: 8))

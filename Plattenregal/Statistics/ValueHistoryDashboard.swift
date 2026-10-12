@@ -48,7 +48,7 @@ struct ValueHistoryDashboard: View {
     private var sameCurrency: [CollectionValueSnapshot] { snapshots.filter { $0.currency == currency } }
     private var visible: [CollectionValueSnapshot] { sameCurrency.filter { $0.date >= period.start() } }
     var body: some View {
-        VStack(alignment: .leading, spacing: 28) {
+        VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
             // The current value itself is shown in the statistics hero.
             if sameCurrency.isEmpty {
                 Text("Noch kein Sammlungswert. Zum Laden die Seite nach unten ziehen oder ⌘R drücken – eine Historie entsteht ab dem ersten erfolgreichen Abruf.")
@@ -67,7 +67,7 @@ struct ValueHistoryDashboard: View {
                     }
                     changes
                 }
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: StatisticsLayout.gutter, alignment: .top), count: 2), alignment: .leading, spacing: 28) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: StatisticsLayout.gutter, alignment: .top), count: 2), alignment: .leading, spacing: AppStyle.blockSpacing) {
                     VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                         subheading(String(localized: "Durchschnittlicher Wert pro Platte"))
                         if let average = sameCurrency.last?.averagePerItem { StatFigure(title: String(localized: "pro Platte"), value: money(average)) }
@@ -158,7 +158,7 @@ struct HistoryLineChart: View {
         if id != selectedID { selectedID = id }
     }
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             if points.isEmpty { Text("Noch keine Daten im Zeitraum").foregroundStyle(.secondary).frame(height: 180) }
             else {
                 Chart {
@@ -212,7 +212,7 @@ struct HistoryLineChart: View {
                 // of a box wandering along inside it.
                 Group {
                     if let selected {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                             Text(formatted(selected.value)).font(.callout.weight(.semibold)).monospacedDigit()
                             Text(selected.date.formatted(date: .abbreviated, time: .omitted)).font(.caption).foregroundStyle(.secondary)
                         }
@@ -244,9 +244,9 @@ struct ChangeLabel: View {
     let currency: String
     var body: some View {
         let change = CollectionValueHistoryService.change(current: current, previous: previous)
-        VStack(alignment: .leading, spacing: 3) {
+        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(title).font(.caption).foregroundStyle(.secondary)
-            HStack(alignment: .firstTextBaseline, spacing: 5) {
+            HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                 if change.amount != 0 {
                     Image(systemName: change.amount > 0 ? "arrow.up.right" : "arrow.down.right")
                         .font(.caption.weight(.semibold))

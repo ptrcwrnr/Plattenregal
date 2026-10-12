@@ -1,3 +1,11 @@
+# Einheitliche Abstandsskala · 12.10.2026
+
+- **Eine Skala für alle Abstände** (`AppStyle`, `Utilities/AppAppearance.swift`): 2 · 4 · 8 · 12 · 16 · 20 · 24 · 28. Neu sind `hairSpacing` (2, Zeilen einer Beschriftung), `pageMargin` (28, Seitenrand; bisher überall `pagePadding + 4`) und `blockSpacing` (28, zwischen den großen Blöcken einer Seite). Rund 180 freie Zahlen in 19 Dateien nehmen jetzt eine Stufe daraus; Werte wie 3, 5, 7, 9, 11, 13 und 14 gibt es bei Abständen nicht mehr. `CoverGrid` und `StatisticsLayout` leiten sich aus der Skala ab.
+- **Sichtbar** (jeweils 1–2 pt, beide Designs): Cover-Raster 20 statt 18 (wie die Karten der Statistik), Cover zu Beschriftung 8 statt 9; alle Marken und Positionsnummern 8 × 4 (bisher 10 × 4, 7 × 3, 8 × 3, 5 × 1); Statuskapseln und Menüknopf 16 seitlich statt 14; Symbol zu Text 8 statt 6, Zahl zu Einheit 4 statt 5/6; Spalten der Statistik-Listen im selben Abstand wie die Karten (20 statt 28); Regal-Tabs 12 statt 14 über dem Regal.
+- **Bündig:** Im Panel der Regalsuche standen Zwischenüberschrift und „Keine Treffer“ 2 pt neben den Covern; jetzt alles auf einer Linie (16).
+- **Unverändert:** Maße innerhalb von Bedienelementen (Höhe der Knöpfe, Pille der Umschalter, Auswahlring der Farbfelder), das Regalbild (Brettstärke 5), die Miniaturen der Designs in den Einstellungen, optische Korrekturen (−3 an der großen Zahl) und der PDF-Export.
+- In der Demo angesehen (Klassisch hell): Collection, Regal, Statistik, Regalsuche, „Sortierung prüfen“, „Platte hinzufügen“. Debug-Build und 210 Tests erfolgreich.
+
 # Verkaufsliste: Knopf heißt „Verkauft“ · 12.10.2026
 
 - Der Knopf unter der Verkaufsliste (Einstellungen → Listen) heißt jetzt **„Verkauft“** statt „Alle verkauft …“, ohne die drei Punkte; ebenso der Knopf in der Rückfrage. Die Rückfrage selbst bleibt. Texte de/en, README.

@@ -8,7 +8,7 @@ struct ShelfStatusControl: View {
     let removeSold: () -> Void
 
     var body: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: AppStyle.tightSpacing) {
             Text("\(soldInShelves) nicht in der Collection").monospacedDigit().foregroundStyle(AppStyle.warningColor)
                 .help("Nicht (mehr) in deiner Discogs-Collection – verkauft, verschenkt oder aus einem anderen Konto –, aber noch im Regal")
             Text("·").foregroundStyle(.tertiary)
@@ -28,7 +28,7 @@ struct StatusTag: View {
         Text(text)
             .font(.caption2.weight(.medium))
             .foregroundStyle(color)
-            .padding(.horizontal, 5).padding(.vertical, 1)
+            .padding(.horizontal, AppStyle.tightSpacing).padding(.vertical, AppStyle.hairSpacing)
             .background(color.opacity(0.12), in: Capsule())
             .fixedSize()
     }
@@ -132,8 +132,8 @@ struct ShelfFurniture<Menu: View>: View {
                             .overlay(alignment: .topTrailing) {
                                 CompartmentAddButton(shelf: shelf, lockPreview: lockPreview,
                                                      shown: hoveredID == shelf.id || selectedID == shelf.id) { add(shelf) }
-                                    .padding(.top, 5)
-                                    .padding(.trailing, 7)
+                                    .padding(.top, AppStyle.tightSpacing)
+                                    .padding(.trailing, AppStyle.itemSpacing)
                             }
                             .onHover { inside in
                                 if inside { hoveredID = shelf.id } else if hoveredID == shelf.id { hoveredID = nil }
@@ -335,7 +335,7 @@ private struct ShelfCompartment: View {
 
     @ViewBuilder private var content: some View {
         if isReserved {
-            VStack(spacing: 3) {
+            VStack(spacing: AppStyle.tightSpacing) {
                 Image(systemName: "lock.fill").font(.callout)
                 if !shelf.name.isEmpty { Text(shelf.name).font(.caption).lineLimit(1) }
             }
@@ -343,14 +343,14 @@ private struct ShelfCompartment: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if stats.count > 0 {
             // The range in the top left corner, the count in the top right.
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                 Text(rangeLabel ?? "—")
                     .font(.system(.title3, design: .rounded, weight: .semibold))
                     // The accent marks the choice, in the text only.
                     .foregroundStyle(selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.primary))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                Spacer(minLength: 4)
+                Spacer(minLength: AppStyle.tightSpacing)
                 Text(stats.count.formatted())
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
@@ -359,8 +359,8 @@ private struct ShelfCompartment: View {
                     .opacity(hovered || selected ? 0 : 1)
                     .animation(AppStyle.standardAnimation, value: hovered || selected)
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 9)
+            .padding(.horizontal, AppStyle.rowSpacing)
+            .padding(.top, AppStyle.itemSpacing)
         } else {
             // Without a view here the compartment collapses to nothing and
             // can't be clicked, so empty shelves get a quiet placeholder –
