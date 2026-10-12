@@ -220,7 +220,7 @@ struct ShelfAssignmentView: View {
                 if session.loaded && items.isEmpty {
                     if pausedCount > 0 {
                         AppEmptyState(String(localized: "Nur noch gesuchte Platten"), systemImage: "checkmark.circle",
-                                      description: Text("Alle übrigen Platten ohne Fach stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden."),
+                                      description: Text("Alle übrigen noch nicht einsortierten Platten stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden."),
                                       actionTitle: String(localized: "Suchliste …"), action: openMissing)
                     } else {
                         AppEmptyState(String(localized: "Alles einsortiert"), systemImage: "checkmark.circle",
@@ -238,7 +238,7 @@ struct ShelfAssignmentView: View {
     /// and – for the row under the pointer, else the last one added – the
     /// two records it goes between. The count of additions on the right.
     private var targetCard: some View {
-        AssignmentCard(title: session.isRackWide ? String(localized: "Platten ohne Fach")
+        AssignmentCard(title: session.isRackWide ? String(localized: "Noch nicht einsortiert")
                            : rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach"),
                        detail: detail) {
             if session.addedCount > 0 {
@@ -539,7 +539,7 @@ private struct AssignmentPlacePopover: View {
 }
 
 enum ShelfAssignmentPresentation {
-    /// Only copies without a shelf that aren't marked "Nicht im Regal". Moving
+    /// Only copies without a shelf that aren't marked "Ohne Regalplatz". Moving
     /// between shelves happens by taking a copy out (trash) and adding it
     /// here. Reads the copy → shelf side of the relationship, which
     /// PositionService writes directly; the inverse `shelf.copies` can lag
@@ -548,7 +548,7 @@ enum ShelfAssignmentPresentation {
         copies.filter { isCandidate($0, owner: owner, excluding: excluded) }
     }
 
-    /// Without a shelf, in the current collection and not "Nicht im Regal".
+    /// Without a shelf, in the current collection and not "Ohne Regalplatz".
     static func isCandidate(_ copy: RecordCopy, owner: String?, excluding excluded: Set<UUID>) -> Bool {
         copy.shelf == nil && copy.isInCurrentCollection(owner: owner) && !excluded.contains(copy.id)
     }

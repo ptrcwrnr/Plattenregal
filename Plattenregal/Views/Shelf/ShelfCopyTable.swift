@@ -301,7 +301,7 @@ struct ShelfContentsView: View {
                 try PositionService(context: context).setExcluded([copy], true)
                 placed(copy)
             } catch { self.error = error.reportedMessage() }
-        } label: { Text("Nicht im Regal") }
+        } label: { Text("Ohne Regalplatz") }
         Button("Aus Fach entfernen") { menuFor = nil; unplace(copy) }
         // An active copy would return on the next sync as a new copy.
         if !copy.isInCurrentCollection(owner: owner) {

@@ -118,7 +118,7 @@ struct PositionService {
         }
         AppLog.info("Regal", "\(copies.count) Platte(n) gesammelt aus dem Regal genommen: \(copies.map(Self.name).joined(separator: ", "))")
     }
-    /// Takes copies out of the shelf allocation entirely ("Nicht im Regal") or
+    /// Takes copies out of the shelf allocation entirely ("Ohne Regalplatz") or
     /// back in. Excluded copies are removed from their shelf and no longer count
     /// as waiting to be sorted in. Stored as `OptimizationExclusion` rows.
     func setExcluded(_ copies: [RecordCopy], _ excluded: Bool) throws {
@@ -132,10 +132,10 @@ struct PositionService {
             try markExcluded(Set(copies.map(\.id)), excluded)
             // Deliberately kept out of the shelves: nothing left to look for.
             if excluded, try markMissing(Set(copies.map(\.id)), false) {
-                AppLog.info("Regal", "Von der Suchliste genommen, weil „Nicht im Regal“ gesetzt wurde")
+                AppLog.info("Regal", "Von der Suchliste genommen, weil „Ohne Regalplatz“ gesetzt wurde")
             }
         }
-        AppLog.info("Regal", "\(excluded ? "Nicht im Regal" : "Wieder fürs Regal vorgesehen"): \(copies.map(Self.name).joined(separator: ", "))")
+        AppLog.info("Regal", "\(excluded ? "Ohne Regalplatz" : "Wieder fürs Regal vorgesehen"): \(copies.map(Self.name).joined(separator: ", "))")
     }
     private func markExcluded(_ ids: Set<UUID>, _ excluded: Bool) throws {
         let existing = try context.fetch(FetchDescriptor<OptimizationExclusion>())
@@ -183,7 +183,7 @@ struct PositionService {
         }
     }
     /// "Alle verkauft": the whole "Verkauf" list at once. The records leave
-    /// their shelves and are kept out of them ("Nicht im Regal"), so they
+    /// their shelves and are kept out of them ("Ohne Regalplatz"), so they
     /// aren't offered for sorting in while they are still in the Discogs
     /// collection; the list is emptied. One transaction.
     func sellAllForSale() throws {
@@ -200,7 +200,7 @@ struct PositionService {
             // Marks of records a sync removed meanwhile go as well.
             for row in marks { context.delete(row) }
         }
-        AppLog.info("Regal", "Verkauf abgeschlossen, aus dem Regal genommen und „Nicht im Regal“: \(sold.map(Self.name).joined(separator: ", "))")
+        AppLog.info("Regal", "Verkauf abgeschlossen, aus dem Regal genommen und „Ohne Regalplatz“: \(sold.map(Self.name).joined(separator: ", "))")
     }
     func delete(_ copy: RecordCopy) throws {
         let description = "\(Self.name(copy)) aus \(copy.shelf.map(Self.name) ?? "ohne Fach")"

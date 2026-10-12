@@ -46,7 +46,7 @@ struct ShelfSearchResultsPanel: View {
                     .help("Zeigt, zwischen welchen Platten sie steht")
                 }
                 if !unplaced.isEmpty {
-                    Text("Ohne Fach")
+                    Text("Noch nicht einsortiert")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(SearchPanelInk.muted)
                         .padding(.horizontal, 10)
@@ -137,7 +137,7 @@ private struct SearchResultRow: View {
     private var place: some View {
         VStack(alignment: .trailing, spacing: 2) {
             if placeable || copy.shelf == nil {
-                // "Ohne Fach" already heads the section.
+                // "Noch nicht einsortiert" already heads the section.
                 Text("Platz finden").font(.caption.weight(.medium)).foregroundStyle(AppStyle.accent)
             } else if let shelf = copy.shelf {
                 let prefix = labels.prefix(for: shelf)
@@ -185,7 +185,7 @@ struct Placement {
     let found: Bool
     let spots: [AlphabeticalPlacement.Spot]
     var chosen = 0
-    /// Marked "Nicht im Regal"; sorting it in lifts that.
+    /// Marked "Ohne Regalplatz"; sorting it in lifts that.
     var excluded = false
     /// Marked "Gesucht"; sorting it in counts as found.
     var missing = false
@@ -233,7 +233,7 @@ struct PlacementCard: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                     if placement.excluded && !placement.found {
-                        Label("Steht auf „Nicht im Regal“ – beim Einsortieren wird das aufgehoben.", systemImage: "info.circle")
+                        Label("Steht auf „Ohne Regalplatz“ – beim Einsortieren wird das aufgehoben.", systemImage: "info.circle")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }

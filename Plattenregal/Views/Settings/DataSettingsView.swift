@@ -39,7 +39,7 @@ struct DataSettingsView: View {
         }
         var message: String {
             switch self {
-            case .locations: String(localized: "Alle Platten stehen danach ohne Fach, gesperrte Fächer werden freigegeben, „Nicht im Regal“ und die Suchliste werden aufgehoben. Die Regale selbst bleiben.")
+            case .locations: String(localized: "Alle Platten sind danach nicht mehr einsortiert, gesperrte Fächer werden freigegeben, „Ohne Regalplatz“ und die Suchliste werden aufgehoben. Die Regale selbst bleiben.")
                 // "Gesucht" isn't part of a backup, so it doesn't come back with one.
                 + (DemoMode.isActive ? "" : String(localized: " Die aktuelle Belegung wird vorher gesichert und lässt sich unter „Sicherung“ wiederherstellen – ohne die Suchliste."))
             // The demo leaves the real app's language alone (see `AppPreferences.reset`).

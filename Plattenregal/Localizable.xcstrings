@@ -171,12 +171,12 @@
         }
       }
     },
-    "Alle übrigen Platten ohne Fach stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
+    "Alle übrigen noch nicht einsortierten Platten stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All remaining records without a compartment are on the search list. Mark them as found in Settings under “Lists”."
+            "value" : "All remaining records not placed yet are on the search list. Mark them as found in Settings under “Lists”."
           }
         }
       }
@@ -261,12 +261,12 @@
         }
       }
     },
-    "Sie werden aus ihren Fächern genommen und auf „Nicht im Regal“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst." : {
+    "Sie werden aus ihren Fächern genommen und auf „Ohne Regalplatz“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "They are taken out of their compartments and set to “Not on shelf”, the remaining records move up, and the list is emptied. They only leave the collection once you remove them on Discogs and sync."
+            "value" : "They are taken out of their compartments and set to “Kept off shelf”, the remaining records move up, and the list is emptied. They only leave the collection once you remove them on Discogs and sync."
           }
         }
       }
@@ -553,12 +553,12 @@
       },
       "shouldTranslate" : false
     },
-    "%@ · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“." : {
+    "%@ · Gefundene, noch nicht einsortierte Platten stehen wieder unter „Einsortieren“." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ · Found records without a compartment are listed under “Placing” again."
+            "value" : "%@ · Found records that are not placed yet are listed under “Placing” again."
           }
         }
       }
@@ -965,12 +965,12 @@
         }
       }
     },
-    "%lld nicht im Regal" : {
+    "%lld ohne Regalplatz" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld not on the shelf"
+            "value" : "%lld kept off shelf"
           }
         }
       }
@@ -1045,7 +1045,7 @@
         }
       }
     },
-    "%lld Platten kommen in der Sicherung nicht vor und stehen danach ohne Fach." : {
+    "%lld Platten kommen in der Sicherung nicht vor und sind danach noch nicht einsortiert." : {
       "localizations" : {
         "de" : {
           "variations" : {
@@ -1053,13 +1053,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "1 Platte kommt in der Sicherung nicht vor und steht danach ohne Fach."
+                  "value" : "1 Platte kommt in der Sicherung nicht vor und ist danach noch nicht einsortiert."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Platten kommen in der Sicherung nicht vor und stehen danach ohne Fach."
+                  "value" : "%lld Platten kommen in der Sicherung nicht vor und sind danach noch nicht einsortiert."
                 }
               }
             }
@@ -1737,12 +1737,12 @@
         }
       }
     },
-    "Alle Platten stehen danach ohne Fach, gesperrte Fächer werden freigegeben, „Nicht im Regal“ und die Suchliste werden aufgehoben. Die Regale selbst bleiben." : {
+    "Alle Platten sind danach nicht mehr einsortiert, gesperrte Fächer werden freigegeben, „Ohne Regalplatz“ und die Suchliste werden aufgehoben. Die Regale selbst bleiben." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All records will have no compartment afterwards, locked compartments are unlocked, “Not on shelf” and the search list are cleared. The shelves themselves remain."
+            "value" : "All records are no longer placed afterwards, locked compartments are unlocked, “Kept off shelf” and the search list are cleared. The shelves themselves remain."
           }
         }
       }
@@ -4168,12 +4168,12 @@
         }
       }
     },
-    "Einsortieren – Platten ohne Fach und wohin sie gehören" : {
+    "Einsortieren – noch nicht einsortierte Platten und wohin sie gehören" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sort In – records without a compartment and where they belong"
+            "value" : "Placing – records not placed yet and where they belong"
           }
         }
       }
@@ -4568,12 +4568,12 @@
         }
       }
     },
-    "Fach für Fach, jeweils von vorne nach hinten; Platten ohne Fach am Ende." : {
+    "Fach für Fach, jeweils von vorne nach hinten; noch nicht einsortierte Platten am Ende." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Compartment by compartment, each from front to back; records without a compartment at the end."
+            "value" : "Compartment by compartment, each from front to back; records not placed yet at the end."
           }
         }
       }
@@ -6398,12 +6398,12 @@
         }
       }
     },
-    "Nicht im Regal" : {
+    "Ohne Regalplatz" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not on shelf"
+            "value" : "Kept off shelf"
           }
         }
       }
@@ -6568,12 +6568,12 @@
         }
       }
     },
-    "Noch keinem Fach zugeordnet" : {
+    "Noch nicht einsortiert" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not assigned to a compartment yet"
+            "value" : "Not placed yet"
           }
         }
       }
@@ -6726,16 +6726,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "or just as well"
-          }
-        }
-      }
-    },
-    "Ohne Fach" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No compartment"
           }
         }
       }
@@ -6954,16 +6944,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "records"
-          }
-        }
-      }
-    },
-    "Platten ohne Fach" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Records without a compartment"
           }
         }
       }
@@ -8172,12 +8152,12 @@
         }
       }
     },
-    "Steht auf „Nicht im Regal“ – beim Einsortieren wird das aufgehoben." : {
+    "Steht auf „Ohne Regalplatz“ – beim Einsortieren wird das aufgehoben." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Marked “Not on shelf” – placing it clears that."
+            "value" : "Marked “Kept off shelf” – placing it clears that."
           }
         }
       }

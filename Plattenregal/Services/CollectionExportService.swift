@@ -169,7 +169,7 @@ struct CollectionExportService {
                 if let shelf = copy.shelf {
                     values += [shelf.cabinet?.name ?? "", "\(shelf.sortOrder)", shelf.isReserved ? "" : "\(copy.positionInShelf)"]
                 } else {
-                    // "Nicht im Regal" or "Noch keinem Fach zugeordnet" instead of an empty place.
+                    // "Ohne Regalplatz" or "Noch nicht einsortiert" instead of an empty place.
                     values += ["", ShelfRangeLabels.location(of: copy, labels: labels, excluded: excluded.contains(copy.id)), ""]
                 }
             }
@@ -179,7 +179,7 @@ struct CollectionExportService {
             }
             if groups.contains(.discogs) { values += Self.discogsValues(copy.release) }
             if groups.contains(.tracklist) { values.append(Self.tracklist(copy.release)) }
-            let section = options.order == .shelf ? copy.shelf.map { sectionTitle($0, labels: labels) } ?? String(localized: "Ohne Fach") : nil
+            let section = options.order == .shelf ? copy.shelf.map { sectionTitle($0, labels: labels) } ?? String(localized: "Noch nicht einsortiert") : nil
             let place = groups.contains(.location) ? copy.shelf.map { labels.prefix(for: $0) + "\($0.sortOrder)" } ?? "–" : nil
             return ExportTable.Row(section: section, values: values, place: place)
         }

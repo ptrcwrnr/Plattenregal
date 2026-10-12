@@ -1,3 +1,9 @@
+# „Ohne Regalplatz“ und „Noch nicht einsortiert“ · 12.10.2026
+
+- **„Nicht im Regal“ heißt jetzt „Ohne Regalplatz“** (Rechtsklick-Menüs, Schalter in der Plattenansicht, Standortangabe, Export, Sicherungsübersicht, Texte bei „Alle verkauft“ und beim Zurücksetzen, Protokoll). Das Gegenstück bleibt „Wieder einsortieren“.
+- **„Ohne Fach“ heißt jetzt „Noch nicht einsortiert“**: Überschrift über den Suchtreffern, Karte im Einsortieren-Fenster (bisher „Platten ohne Fach“), Standortangabe (bisher „Noch keinem Fach zugeordnet“), Spalte im Export; Hinweistexte entsprechend. Im Protokoll steht weiter „ohne Fach“.
+- Nur Texte (deutsch/englisch: „Kept off shelf“, „Not placed yet“), keine Änderung an Daten oder Sicherungsformat. Ältere Abschnitte dieser Datei und von VALIDIERUNG.md nennen noch die alten Begriffe.
+
 # „Discogs-Daten aktualisieren“ entfernt · 12.10.2026
 
 - Der Eintrag ist aus dem Rechtsklick-Menü der Collection entfallen. Er war die einzige Stelle, die einzelne Releases sofort neu lud; `MetadataRefreshService` und seine Texte sind deshalb mit entfernt. Release-Daten kommen weiter mit der normalen Synchronisierung.

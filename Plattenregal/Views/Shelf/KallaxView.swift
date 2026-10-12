@@ -187,7 +187,7 @@ struct KallaxView: View {
         for copy in allCopies where searchIndex.matches(copy.id, words) {
             // Records in an inactive cabinet are put away: neither shown nor offered for placing.
             if let shelf = copy.shelf { if shelf.isInUse { placed.append(copy) } }
-            // "Nicht im Regal" and records outside the current collection
+            // "Ohne Regalplatz" and records outside the current collection
             // aren't meant to be placed (same rule as "Platte hinzufügen").
             else if ShelfAssignmentPresentation.isCandidate(copy, owner: owner, excluding: excluded) { unplaced.append(copy) }
         }
@@ -553,7 +553,7 @@ struct KallaxView: View {
             HStack(spacing: AppStyle.rowSpacing) {
                 Text("Aus Fach entfernt")
                 // A shelf locked meanwhile takes no records, and a record marked
-                // "Nicht im Regal" meanwhile stays out; nothing to undo then.
+                // "Ohne Regalplatz" meanwhile stays out; nothing to undo then.
                 if canUndo(entry) {
                     Button("Rückgängig", action: undoUnplace)
                         .appLinkButton()

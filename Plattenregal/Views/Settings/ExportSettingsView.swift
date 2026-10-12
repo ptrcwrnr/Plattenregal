@@ -55,7 +55,7 @@ struct ExportSettingsView: View {
                     Divider()
                     SettingsRow(title: String(localized: "Reihenfolge"),
                                 hint: order == .shelf
-                                    ? String(localized: "Fach für Fach, jeweils von vorne nach hinten; Platten ohne Fach am Ende.")
+                                    ? String(localized: "Fach für Fach, jeweils von vorne nach hinten; noch nicht einsortierte Platten am Ende.")
                                     : String(localized: "Nach Interpret und Titel, wie auf der Collection-Seite.")) {
                         segmented($order, ExportOrder.allCases) { $0.title }
                     }

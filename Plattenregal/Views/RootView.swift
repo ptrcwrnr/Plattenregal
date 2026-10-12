@@ -265,7 +265,7 @@ private struct FloatingControls: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .help("Einsortieren – Platten ohne Fach und wohin sie gehören")
+        .help("Einsortieren – noch nicht einsortierte Platten und wohin sie gehören")
         .accessibilityLabel(String(localized: "Einsortieren"))
         .padding(AppStyle.floatingMargin)
     }

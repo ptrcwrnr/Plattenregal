@@ -69,7 +69,7 @@ struct ListsSettingsView: View {
                         if copies.isEmpty {
                             SettingsNote(String(localized: "Keine Platte steht auf der Suchliste."))
                         } else {
-                            SettingsNote(String(localized: "\(AppStyle.records(copies.count)) · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“."))
+                            SettingsNote(String(localized: "\(AppStyle.records(copies.count)) · Gefundene, noch nicht einsortierte Platten stehen wieder unter „Einsortieren“."))
                             LazyVStack(alignment: .leading, spacing: 0) {
                                 ForEach(copies) { copy in
                                     ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Gefunden"),
@@ -129,7 +129,7 @@ struct ListsSettingsView: View {
             Button("Alle verkauft") { sellAll() }
             Button("Abbrechen", role: .cancel) {}
         } message: {
-            Text("Sie werden aus ihren Fächern genommen und auf „Nicht im Regal“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst.")
+            Text("Sie werden aus ihren Fächern genommen und auf „Ohne Regalplatz“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst.")
         }
         .animation(AppStyle.standardAnimation, value: copies.map(\.id))
         .animation(AppStyle.standardAnimation, value: forSale.map(\.id))

@@ -195,7 +195,7 @@ struct CollectionView: View {
     @State private var labelsCache = ShelfLabelsCache()
     private func placeLabel(for copy: RecordCopy) -> String {
         guard let shelf = copy.shelf else {
-            return excludedIDs.contains(copy.id) ? String(localized: "Nicht im Regal") : "–"
+            return excludedIDs.contains(copy.id) ? String(localized: "Ohne Regalplatz") : "–"
         }
         if shelf.isReserved { return shelfLabels.prefix(for: shelf) + (shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name) }
         return shelfLabels.prefix(for: shelf) + (shelfLabels[shelf.id] ?? "–")
@@ -451,14 +451,14 @@ struct CollectionView: View {
 
     // No "Löschen" here: every record shown comes from the Discogs collection,
     // and the next sync would bring a locally deleted copy back as a new one
-    // (without its shelf place). Records leave via Discogs; "Nicht im Regal"
+    // (without its shelf place). Records leave via Discogs; "Ohne Regalplatz"
     // keeps one off the shelf.
 
-    /// "Nicht im Regal" / "Wieder einsortieren", depending on whether all
+    /// "Ohne Regalplatz" / "Wieder einsortieren", depending on whether all
     /// of the given copies are already kept out of the shelves.
     @ViewBuilder private func exclusionButton(for selectedCopies: [RecordCopy]) -> some View {
         let allExcluded = !selectedCopies.isEmpty && selectedCopies.allSatisfy { excludedIDs.contains($0.id) }
-        Button(allExcluded ? "Wieder einsortieren" : "Nicht im Regal") {
+        Button(allExcluded ? "Wieder einsortieren" : "Ohne Regalplatz") {
             perform { try PositionService(context: context).setExcluded(selectedCopies, !allExcluded) }
         }
     }

@@ -77,7 +77,7 @@ enum DemoData {
     private static let unplaced: Set<String> = ["Bonobo", "Kendrick Lamar", "Ólafur Arnalds", "Tycho", "Nils Frahm"]
     /// Standing in the hallway cabinet rather than the living room.
     private static let hallway: Set<String> = ["Dave Brubeck Quartet", "Herbie Hancock", "John Coltrane", "Miles Davis"]
-    /// Set aside on purpose ("Nicht im Regal"), e.g. lent out.
+    /// Set aside on purpose ("Ohne Regalplatz"), e.g. lent out.
     private static let setAside: Set<String> = ["ABBA"]
 
     private static let wants: [(artist: String, title: String, year: Int, label: String)] = [

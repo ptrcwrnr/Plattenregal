@@ -139,9 +139,9 @@ extension AllTests {
             let shelf = try #require(table.column(ExportColumn.shelf))
             let position = try #require(table.column(ExportColumn.position))
             #expect(table.rows.map { $0.values[artist] } == ["Alpha", "Amber", "Beta", "Abba", "Zappa"])
-            #expect(table.rows.map { $0.values[shelf] } == ["1", "1", "2", "Noch keinem Fach zugeordnet", "Noch keinem Fach zugeordnet"])
+            #expect(table.rows.map { $0.values[shelf] } == ["1", "1", "2", "Noch nicht einsortiert", "Noch nicht einsortiert"])
             #expect(table.rows.map { $0.values[position] } == ["1", "2", "1", "", ""])
-            #expect(table.rows.last?.section == "Ohne Fach")
+            #expect(table.rows.last?.section == "Noch nicht einsortiert")
             #expect(table.rows.first?.section?.hasPrefix("Fach 1") == true)
         }
 

@@ -300,7 +300,7 @@ extension AllTests {
             try service.unplace(a)
             try service.move(a, to: shelves[1], position: 1, found: true)
             #expect(try marks() == [b.id, c.id])
-            // "Nicht im Regal" and deleting leave nothing to look for.
+            // "Ohne Regalplatz" and deleting leave nothing to look for.
             try service.setExcluded([b], true)
             try service.delete(c)
             #expect(try marks().isEmpty)

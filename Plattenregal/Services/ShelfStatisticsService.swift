@@ -272,9 +272,9 @@ enum ShelfRangeLabels {
     }
 
     /// Where a copy stands, in words: "A – B · Position 12", a reserved
-    /// shelf's name, "Nicht im Regal" or "Noch keinem Fach zugeordnet".
+    /// shelf's name, "Ohne Regalplatz" or "Noch nicht einsortiert".
     static func location(of copy: RecordCopy, labels: ShelfLabels, excluded: Bool = false) -> String {
-        guard let shelf = copy.shelf else { return excluded ? String(localized: "Nicht im Regal") : String(localized: "Noch keinem Fach zugeordnet") }
+        guard let shelf = copy.shelf else { return excluded ? String(localized: "Ohne Regalplatz") : String(localized: "Noch nicht einsortiert") }
         let prefix = labels.prefix(for: shelf)
         if shelf.isReserved { return prefix + (shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name) }
         return String(localized: "\(prefix)\(labels[shelf.id] ?? String(localized: "Leeres Fach")) · Position \(copy.positionInShelf)")

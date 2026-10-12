@@ -28,7 +28,7 @@ struct RecordDetailView: View {
     private var excluded: Bool { exclusions.contains { $0.copyID == copy.id } }
 
     /// Where the copy stands, large and with the way to the shelf right next to
-    /// it, and whether it belongs in the shelf at all ("Nicht im Regal").
+    /// it, and whether it belongs in the shelf at all ("Ohne Regalplatz").
     private var locationCard: some View {
         let location = ShelfRangeLabels.location(
             of: copy,
@@ -54,10 +54,10 @@ struct RecordDetailView: View {
             }
           }
           Divider()
-          SettingsRow(title: String(localized: "Nicht im Regal"), hint: excluded
+          SettingsRow(title: String(localized: "Ohne Regalplatz"), hint: excluded
                       ? String(localized: "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen.")
                       : String(localized: "Fach und Position vergibst du in der Rubrik Regal.")) {
-              Toggle("Nicht im Regal", isOn: Binding(get: { excluded }, set: setExcluded))
+              Toggle("Ohne Regalplatz", isOn: Binding(get: { excluded }, set: setExcluded))
                   .labelsHidden().toggleStyle(.switch)
           }
         }

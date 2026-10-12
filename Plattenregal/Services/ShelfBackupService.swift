@@ -4,7 +4,7 @@ import SwiftData
 
 /// Everything about the shelf that exists only in this app and not at
 /// Discogs: which copy stands where, locked compartments and records marked
-/// "Nicht im Regal". Copies are identified by their Discogs instance ID,
+/// "Ohne Regalplatz". Copies are identified by their Discogs instance ID,
 /// which survives a lost database and a fresh sync.
 nonisolated struct ShelfBackup: Codable, Equatable, Sendable {
     struct ShelfSetting: Codable, Equatable, Sendable {
@@ -77,7 +77,7 @@ nonisolated struct ShelfBackup: Codable, Equatable, Sendable {
         var parts = [String(localized: "\(AppStyle.records(placements.count)) in \(occupied == 1 ? String(localized: "1 Fach") : String(localized: "\(occupied) Fächern"))")]
         let locked = shelves.filter(\.isReserved).count
         if locked > 0 { parts.append(locked == 1 ? String(localized: "1 gesperrtes Fach") : String(localized: "\(locked) gesperrte Fächer")) }
-        if !notInShelf.isEmpty { parts.append(String(localized: "\(notInShelf.count) nicht im Regal")) }
+        if !notInShelf.isEmpty { parts.append(String(localized: "\(notInShelf.count) ohne Regalplatz")) }
         if let cabinets, cabinets.count > 1 { parts.append(String(localized: "\(cabinets.count) Regale")) }
         return parts.joined(separator: " · ")
     }
@@ -114,7 +114,7 @@ struct ShelfRestorePreview {
     var message: String {
         if unchanged { return String(localized: "Die Belegung entspricht bereits dieser Sicherung – es würde sich nichts ändern.") }
         var lines = [String(localized: "\(placed) Platten werden wieder einsortiert.")]
-        if unplaced > 0 { lines.append(String(localized: "\(unplaced) Platten kommen in der Sicherung nicht vor und stehen danach ohne Fach.")) }
+        if unplaced > 0 { lines.append(String(localized: "\(unplaced) Platten kommen in der Sicherung nicht vor und sind danach noch nicht einsortiert.")) }
         if missing > 0 { lines.append(String(localized: "\(missing) Platten aus der Sicherung sind nicht mehr in der Sammlung und werden übersprungen.")) }
         if missing > placed {
             lines.append(String(localized: "Mehr als die Hälfte der Platten aus der Sicherung fehlt. Ist die Collection noch nicht vollständig synchronisiert, brich ab und synchronisiere zuerst."))
@@ -216,7 +216,7 @@ struct ShelfBackupService {
     }
 
     /// Replaces the whole layout in one transaction: shelf locks and names,
-    /// every copy's place and the "Nicht im Regal" marks. Positions are
+    /// every copy's place and the "Ohne Regalplatz" marks. Positions are
     /// renumbered 1…n per shelf in the backup's order, closing the gaps left
     /// by copies that are gone.
     func restore(_ backup: ShelfBackup) throws {
@@ -259,10 +259,10 @@ struct ShelfBackupService {
                 if let copy = byInstance[id] { context.insert(OptimizationExclusion(copyID: copy.id)); excluded.insert(copy.id) }
             }
             // "Gesucht" isn't part of a backup and stays, except on
-            // records the backup keeps out of the shelves ("Nicht im Regal").
+            // records the backup keeps out of the shelves ("Ohne Regalplatz").
             let cleared = try context.fetch(FetchDescriptor<MissingCopyMark>()).filter { excluded.contains($0.copyID) }
             for row in cleared { context.delete(row) }
-            if !cleared.isEmpty { AppLog.info("Sicherung", "Suchliste: \(cleared.count) Platte(n) entfernt – laut Sicherung „Nicht im Regal“") }
+            if !cleared.isEmpty { AppLog.info("Sicherung", "Suchliste: \(cleared.count) Platte(n) entfernt – laut Sicherung „Ohne Regalplatz“") }
         }
     }
 }

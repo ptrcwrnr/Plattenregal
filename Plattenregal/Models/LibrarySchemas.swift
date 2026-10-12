@@ -154,7 +154,7 @@ enum LibrarySchemaV2: VersionedSchema {
             positionInShelf = position; condition = "Nicht bewertet"; notes = ""
             favorite = false; dateAdded = .now
         }
-        var location: String { guard let shelf else { return "Noch keinem Fach zugeordnet" }; return "\(shelf.title) · Position \(positionInShelf)" }
+        var location: String { guard let shelf else { return "Noch nicht einsortiert" }; return "\(shelf.title) · Position \(positionInShelf)" }
     }
 
     @Model final class Shelf {
@@ -368,7 +368,7 @@ enum LibrarySchemaV6: VersionedSchema {
             positionInShelf = position; condition = "Nicht bewertet"; notes = ""
             dateAdded = .now
         }
-        var location: String { guard let shelf else { return "Noch keinem Fach zugeordnet" }; return "\(shelf.title) · Position \(positionInShelf)" }
+        var location: String { guard let shelf else { return "Noch nicht einsortiert" }; return "\(shelf.title) · Position \(positionInShelf)" }
     }
 
     @Model final class Shelf {
@@ -1144,7 +1144,7 @@ enum LibrarySchemaV14: VersionedSchema {
 // V15 is complete in itself and keeps only what the app uses. Dropped:
 // the copy's Discogs rating, notes and sync date; the wantlist entry's rating
 // and sync date; the folder's and account's folder-sync dates; the snapshot's
-// unique-release count; the creation dates of "Nicht im Regal" and
+// unique-release count; the creation dates of "Ohne Regalplatz" and
 // "Gesucht"; and `ReleaseMarketValue`, which was never filled.
 enum LibrarySchemaV15: VersionedSchema {
     static let versionIdentifier = Schema.Version(15, 0, 0)
@@ -1301,7 +1301,7 @@ enum LibrarySchemaV15: VersionedSchema {
         var averagePerItem: Decimal? { collectionItemCount > 0 ? medianValue / Decimal(collectionItemCount) : nil }
     }
 
-    /// "Nicht im Regal": kept out of the shelf allocation.
+    /// "Ohne Regalplatz": kept out of the shelf allocation.
     @Model final class OptimizationExclusion {
         @Attribute(.unique) var copyID: UUID
         init(copyID: UUID) { self.copyID = copyID }
