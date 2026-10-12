@@ -1314,7 +1314,24 @@ enum LibrarySchemaV15: VersionedSchema {
     }
 }
 
-// The current schema is V15 (see `LibraryStorage`).
+// V16 adds a local-only "Verkauf" mark for records meant to be sold some
+// day. Stored separately like "Vermisst", so every model of V15 is carried
+// over unchanged.
+enum LibrarySchemaV16: VersionedSchema {
+    static let versionIdentifier = Schema.Version(16, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        LibrarySchemaV15.models + [SaleCopyMark.self]
+    }
+
+    /// "Verkauf": to be sold some day; stays where it stands until then.
+    @Model final class SaleCopyMark {
+        @Attribute(.unique) var copyID: UUID
+        init(copyID: UUID) { self.copyID = copyID }
+    }
+}
+
+// The current schema is V16 (see `LibraryStorage`); its models are those of
+// V15 plus `SaleCopyMark`.
 typealias Release = LibrarySchemaV15.Release
 typealias RecordCopy = LibrarySchemaV15.RecordCopy
 typealias Shelf = LibrarySchemaV15.Shelf
@@ -1325,10 +1342,11 @@ typealias DiscogsAccount = LibrarySchemaV15.DiscogsAccount
 typealias CollectionValueSnapshot = LibrarySchemaV15.CollectionValueSnapshot
 typealias OptimizationExclusion = LibrarySchemaV15.OptimizationExclusion
 typealias MissingCopyMark = LibrarySchemaV15.MissingCopyMark
+typealias SaleCopyMark = LibrarySchemaV16.SaleCopyMark
 
 enum LibraryMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [LibrarySchemaV1.self, LibrarySchemaV2.self, LibrarySchemaV3.self, LibrarySchemaV4.self, LibrarySchemaV5.self, LibrarySchemaV6.self, LibrarySchemaV7.self, LibrarySchemaV8.self, LibrarySchemaV9.self, LibrarySchemaV10.self, LibrarySchemaV11.self, LibrarySchemaV12.self, LibrarySchemaV13.self, LibrarySchemaV14.self, LibrarySchemaV15.self]
+        [LibrarySchemaV1.self, LibrarySchemaV2.self, LibrarySchemaV3.self, LibrarySchemaV4.self, LibrarySchemaV5.self, LibrarySchemaV6.self, LibrarySchemaV7.self, LibrarySchemaV8.self, LibrarySchemaV9.self, LibrarySchemaV10.self, LibrarySchemaV11.self, LibrarySchemaV12.self, LibrarySchemaV13.self, LibrarySchemaV14.self, LibrarySchemaV15.self, LibrarySchemaV16.self]
     }
     static var stages: [MigrationStage] {
         [.lightweight(fromVersion: LibrarySchemaV1.self, toVersion: LibrarySchemaV2.self),
@@ -1346,7 +1364,8 @@ enum LibraryMigrationPlan: SchemaMigrationPlan {
          .lightweight(fromVersion: LibrarySchemaV11.self, toVersion: LibrarySchemaV12.self),
          .lightweight(fromVersion: LibrarySchemaV12.self, toVersion: LibrarySchemaV13.self),
          .lightweight(fromVersion: LibrarySchemaV13.self, toVersion: LibrarySchemaV14.self),
-         .lightweight(fromVersion: LibrarySchemaV14.self, toVersion: LibrarySchemaV15.self)]
+         .lightweight(fromVersion: LibrarySchemaV14.self, toVersion: LibrarySchemaV15.self),
+         .lightweight(fromVersion: LibrarySchemaV15.self, toVersion: LibrarySchemaV16.self)]
     }
 
     // The Discogs IDs become required. Records without them (added by hand in

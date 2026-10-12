@@ -39,8 +39,15 @@ struct MissingBadge: View {
     var body: some View { StatusTag(text: String(localized: "Vermisst"), color: AppStyle.errorColor) }
 }
 
-/// The records marked "Vermisst" that the app lists (settings tab
-/// "Vermisst", the count in "Platte hinzufügen").
+/// Small tag on a record on the "Verkauf" list (compartment grid and table).
+struct SaleBadge: View {
+    var body: some View {
+        StatusTag(text: String(localized: "Verkauf"), color: AppStyle.accent)
+            .help("Zum Verkauf vorgemerkt – die Liste steht in den Einstellungen unter „Listen“")
+    }
+}
+
+/// The records marked "Vermisst" that the app lists (settings tab "Listen")
 enum MissingCopies {
     /// Those still standing in a shelf in use (shelf order), then those
     /// waiting to be sorted in (by artist).

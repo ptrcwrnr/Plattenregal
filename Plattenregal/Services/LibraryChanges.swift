@@ -59,6 +59,7 @@ import SwiftData
     private(set) var cabinets: [Cabinet] = []
     private(set) var exclusions: [OptimizationExclusion] = []
     private(set) var missingMarks: [MissingCopyMark] = []
+    private(set) var saleMarks: [SaleCopyMark] = []
     private(set) var accounts: [DiscogsAccount] = []
     @ObservationIgnored private let context: ModelContext
     @ObservationIgnored private var observer: (any NSObjectProtocol)?
@@ -165,6 +166,7 @@ import SwiftData
         update(\.cabinets, FetchDescriptor<Cabinet>(sortBy: [SortDescriptor(\.sortOrder)]))
         update(\.exclusions, FetchDescriptor<OptimizationExclusion>())
         update(\.missingMarks, FetchDescriptor<MissingCopyMark>())
+        update(\.saleMarks, FetchDescriptor<SaleCopyMark>())
         update(\.accounts, FetchDescriptor<DiscogsAccount>())
     }
 }

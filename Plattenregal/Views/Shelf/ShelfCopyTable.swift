@@ -19,8 +19,10 @@ nonisolated struct ShelfCopyItem: Identifiable {
     let genre: String
     let sold: Bool
     let missing: Bool
+    /// On the "Verkauf" list.
+    let forSale: Bool
 
-    init(_ copy: RecordCopy, release: ShelfCopyReleaseFields, owner: String?, missing: Bool) {
+    init(_ copy: RecordCopy, release: ShelfCopyReleaseFields, owner: String?, missing: Bool, forSale: Bool) {
         self.copy = copy
         id = copy.id
         position = copy.positionInShelf
@@ -31,14 +33,15 @@ nonisolated struct ShelfCopyItem: Identifiable {
         genre = release.genre
         sold = copy.leftCurrentCollection(owner: owner)
         self.missing = missing
+        self.forSale = forSale
     }
 
     /// SwiftData may publish the two sides of a relationship at different
     /// times after a move. The copy's current shelf is the final authority.
-    @MainActor static func snapshot(for shelf: Shelf, owner: String?, missing: Set<UUID>) -> [ShelfCopyItem] {
+    @MainActor static func snapshot(for shelf: Shelf, owner: String?, missing: Set<UUID>, forSale: Set<UUID>) -> [ShelfCopyItem] {
         let copies = shelf.copies.filter { !$0.isDeleted && $0.shelf?.id == shelf.id }
         return PositionService.inShelfOrder(copies).map {
-            ShelfCopyItem($0, release: .of($0), owner: owner, missing: missing.contains($0.id))
+            ShelfCopyItem($0, release: .of($0), owner: owner, missing: missing.contains($0.id), forSale: forSale.contains($0.id))
         }
     }
 }
@@ -107,6 +110,8 @@ struct ShelfContentsView: View {
     let setMissing: (RecordCopy, Bool) -> Void
     @AppStorage("shelfContentsLayout") private var layout = OverviewLayout.grid
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
+    /// Records on the "Verkauf" list (settings tab "Listen").
+    private var forSale: Set<UUID> { Set(LibraryRecords.of(context).saleMarks.map(\.copyID)) }
 
     /// Always in physical order. Sorting the table never changes the grid.
     @State private var items: [ShelfCopyItem] = []
@@ -139,6 +144,7 @@ struct ShelfContentsView: View {
 
     private var signature: Int {
         var hasher = Hasher()
+        let forSale = forSale
         hasher.combine(shelf.id)
         hasher.combine(LibraryChanges.shared.libraryVersion)
         hasher.combine(owner)
@@ -147,6 +153,7 @@ struct ShelfContentsView: View {
             hasher.combine(copy.positionInShelf)
             hasher.combine(copy.discogsActive)
             hasher.combine(missing.contains(copy.id))
+            hasher.combine(forSale.contains(copy.id))
         }
         return hasher.finalize()
     }
@@ -214,7 +221,7 @@ struct ShelfContentsView: View {
         }
         guard changedShelf || loadedSignature != signature || reloadPending else { return }
         reloadPending = false
-        let next = ShelfCopyItem.snapshot(for: shelf, owner: owner, missing: missing)
+        let next = ShelfCopyItem.snapshot(for: shelf, owner: owner, missing: missing, forSale: forSale)
         let newlyFocused = focusCopy.map { focus in !items.contains { $0.id == focus.id } } ?? false
         // Only a real compartment change fades the new contents in (grid and
         // table, as the table did before). Metadata updates and clicks never
@@ -278,6 +285,11 @@ struct ShelfContentsView: View {
             } else {
                 Button("Als vermisst markieren") { menuFor = nil; setMissing(copy, true) }
             }
+        }
+        Button(forSale.contains(copy.id) ? "Nicht mehr verkaufen" : "Zum Verkauf vormerken") {
+            menuFor = nil
+            do { try PositionService(context: context).setForSale([copy], !forSale.contains(copy.id)) }
+            catch { self.error = error.reportedMessage() }
         }
         Button {
             menuFor = nil
@@ -471,6 +483,7 @@ struct ShelfContentsView: View {
             RecordCaption(release: item.copy.release, emphasized: selected)
             VStack(alignment: .leading, spacing: 3) {
                 if item.missing { MissingBadge() }
+                if item.forSale { SaleBadge() }
                 if item.sold {
                     Text("Nicht in der Collection")
                         .font(.caption2.weight(.medium)).foregroundStyle(AppStyle.warningColor)
@@ -507,6 +520,7 @@ struct ShelfContentsView: View {
                         MissingBadge()
                             .help("Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht")
                     }
+                    if item.forSale { SaleBadge() }
                     if item.sold {
                         StatusTag(text: String(localized: "Nicht in der Collection"), color: AppStyle.warningColor)
                             .help("Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen")

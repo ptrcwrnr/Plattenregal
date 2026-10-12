@@ -334,7 +334,7 @@ extension AllTests {
                 container.mainContext.insert(LibrarySchemaV2.DiscogsFolder(owner: "fixture", id: 1, name: "Folder", count: 1))
                 try container.mainContext.save(); return c.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let context = container.mainContext
             let c = try #require(context.fetch(FetchDescriptor<RecordCopy>()).first)
@@ -364,7 +364,7 @@ extension AllTests {
                 try container.mainContext.save()
                 return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
             let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
             let context = container.mainContext
@@ -395,7 +395,7 @@ extension AllTests {
                 return (reserved.id, normal.id)
             }
 
-            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
             let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
             try LibraryStorage.prepareShelves(in: container.mainContext)
@@ -408,7 +408,7 @@ extension AllTests {
             #expect(!normal.isReserved)
             #expect(shelves.count == ShelfGeometry.count)
         }
-        /// The step every store made before the schema cleanup: V13 → V15
+        /// The step every store made before the schema cleanup (V13 → V15), on to the current V16:
         /// drops the copy's own data, Discogs rating and notes and the unused
         /// market values, but keeps places, locks, marks, snapshots and accounts.
         @Test func v13StoreKeepsPlacesAndMarksWhileDroppingUnusedData() throws {
@@ -451,7 +451,7 @@ extension AllTests {
                 try context.save()
                 return (placed.id, missing.id, excluded.id)
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
             let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
                                                configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let context = container.mainContext
@@ -472,6 +472,10 @@ extension AllTests {
             // The migrated store works as usual.
             try PositionService(context: context).setMissing([placed], true)
             #expect(try context.fetchCount(FetchDescriptor<MissingCopyMark>()) == 2)
+            // The "Verkauf" list of V16 starts empty and takes marks.
+            #expect(try context.fetchCount(FetchDescriptor<SaleCopyMark>()) == 0)
+            try PositionService(context: context).setForSale([placed], true)
+            #expect(try context.fetch(FetchDescriptor<SaleCopyMark>()).map(\.copyID) == [placedID])
         }
     }
 }

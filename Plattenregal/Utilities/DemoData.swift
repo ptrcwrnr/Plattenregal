@@ -165,6 +165,8 @@ enum DemoData {
         }
         // One record in the living room wasn't found while sorting.
         if placed.count > 2 { context.insert(MissingCopyMark(copyID: placed[2].copy.id)) }
+        // Two are meant to be sold some day.
+        for item in placed.dropFirst(5).prefix(2) { context.insert(SaleCopyMark(copyID: item.copy.id)) }
 
         for (index, want) in wants.enumerated() {
             let release = Release(discogsID: 5_000 + index, artist: want.artist, title: want.title)

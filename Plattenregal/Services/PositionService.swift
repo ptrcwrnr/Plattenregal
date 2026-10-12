@@ -167,6 +167,41 @@ struct PositionService {
         for row in cleared { context.delete(row) }
         return !cleared.isEmpty
     }
+    /// Puts copies on the "Verkauf" list (to be sold some day) or takes them
+    /// off it. Only a note: shelf and position stay untouched, and it isn't
+    /// part of a backup. Stored as `SaleCopyMark` rows.
+    func setForSale(_ copies: [RecordCopy], _ forSale: Bool) throws {
+        try save(layoutChanged: false) { try markForSale(Set(copies.map(\.id)), forSale) }
+        AppLog.info("Regal", "\(forSale ? "Zum Verkauf vorgemerkt" : "Nicht mehr zum Verkauf"): \(copies.map(Self.name).joined(separator: ", "))")
+    }
+    private func markForSale(_ ids: Set<UUID>, _ forSale: Bool) throws {
+        let existing = try context.fetch(FetchDescriptor<SaleCopyMark>())
+        if forSale {
+            for id in ids.subtracting(existing.map(\.copyID)) { context.insert(SaleCopyMark(copyID: id)) }
+        } else {
+            for row in existing where ids.contains(row.copyID) { context.delete(row) }
+        }
+    }
+    /// "Alle verkauft": the whole "Verkauf" list at once. The records leave
+    /// their shelves and are kept out of them ("Nicht im Regal"), so they
+    /// aren't offered for sorting in while they are still in the Discogs
+    /// collection; the list is emptied. One transaction.
+    func sellAllForSale() throws {
+        var sold: [RecordCopy] = []
+        try save {
+            let marks = try context.fetch(FetchDescriptor<SaleCopyMark>())
+            let ids = Set(marks.map(\.copyID))
+            sold = try context.fetch(FetchDescriptor<RecordCopy>()).filter { ids.contains($0.id) }
+            let sources = Dictionary(sold.compactMap { c in c.shelf.map { ($0.id, $0) } }, uniquingKeysWith: { a, _ in a }).values
+            for copy in sold { copy.shelf = nil; copy.positionInShelf = 0 }
+            for shelf in sources { renumber(ordered(shelf).filter { !ids.contains($0.id) }) }
+            try markExcluded(Set(sold.map(\.id)), true)
+            try markMissing(ids, false)
+            // Marks of records a sync removed meanwhile go as well.
+            for row in marks { context.delete(row) }
+        }
+        AppLog.info("Regal", "Verkauf abgeschlossen, aus dem Regal genommen und „Nicht im Regal“: \(sold.map(Self.name).joined(separator: ", "))")
+    }
     func delete(_ copy: RecordCopy) throws {
         let description = "\(Self.name(copy)) aus \(copy.shelf.map(Self.name) ?? "ohne Fach")"
         try save {
@@ -176,6 +211,7 @@ struct PositionService {
             copy.shelf = nil; copy.release = nil; context.delete(copy)
             try markExcluded([copy.id], false)
             try markMissing([copy.id], false)
+            try markForSale([copy.id], false)
             renumber(remaining)
             if isLast, let release {
                 let wants = try context.fetch(FetchDescriptor<WantlistEntry>())

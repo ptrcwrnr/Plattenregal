@@ -121,12 +121,172 @@
         }
       }
     },
+    "%@ · Sie bleiben im Regal, bis du alle verkauft hast." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · They stay on the shelf until you have sold them all."
+          }
+        }
+      }
+    },
+    "%@ – %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@: %3$@"
+          }
+        }
+      }
+    },
     ", %lld Exemplare" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ", %lld copies"
+          }
+        }
+      }
+    },
+    "Alle %lld Platten auf der Verkaufsliste sind verkauft?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All %lld records on the sale list are sold?"
+          }
+        }
+      }
+    },
+    "Alle verkauft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All sold"
+          }
+        }
+      }
+    },
+    "Alle verkauft …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All sold …"
+          }
+        }
+      }
+    },
+    "Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All remaining records without a compartment are marked as missing. Mark them as found in Settings under “Lists”."
+          }
+        }
+      }
+    },
+    "Die Platte auf der Verkaufsliste ist verkauft?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record on the sale list is sold?"
+          }
+        }
+      }
+    },
+    "Für Platten, die du irgendwann verkaufen willst." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For records you want to sell some day."
+          }
+        }
+      }
+    },
+    "Keine Platte ist zum Verkauf vorgemerkt. Vormerken per Rechtsklick auf eine Platte: „Zum Verkauf vormerken“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No record is marked for sale. Right-click a record to mark it: “Mark for sale”."
+          }
+        }
+      }
+    },
+    "Listen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lists"
+          }
+        }
+      }
+    },
+    "Nicht mehr verkaufen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No longer for sale"
+          }
+        }
+      }
+    },
+    "Sie werden aus ihren Fächern genommen und auf „Nicht im Regal“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They are taken out of their compartments and set to “Not on shelf”, the remaining records move up, and the list is emptied. They only leave the collection once you remove them on Discogs and sync."
+          }
+        }
+      }
+    },
+    "Verkauf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For sale"
+          }
+        }
+      }
+    },
+    "Von der Verkaufsliste nehmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take off the sale list"
+          }
+        }
+      }
+    },
+    "Zum Verkauf vorgemerkt – die Liste steht in den Einstellungen unter „Listen“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marked for sale – the list is in Settings under “Lists”"
+          }
+        }
+      }
+    },
+    "Zum Verkauf vormerken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark for sale"
           }
         }
       }
@@ -242,16 +402,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mark %@ – %@ as missing"
-          }
-        }
-      }
-    },
-    "%@ – %@ gefunden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ – %2$@ found"
           }
         }
       }
@@ -1625,16 +1775,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All tracks in one column"
-          }
-        }
-      }
-    },
-    "Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ markierst du sie als gefunden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All remaining records without a compartment are marked as missing. Mark them as found in Settings under “Missing”."
           }
         }
       }
@@ -5141,6 +5281,7 @@
         }
       }
     },
+    "Im Regal zeigen" : {},
     "Immer dunkel, unabhängig von macOS." : {
       "localizations" : {
         "en" : {
@@ -5821,6 +5962,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete"
+          }
+        }
+      }
+    },
+    "Markierung aufheben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove the mark"
           }
         }
       }
@@ -9082,16 +9233,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Found Again"
-          }
-        }
-      }
-    },
-    "Markierung aufheben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove the mark"
           }
         }
       }

@@ -332,7 +332,7 @@ extension AllTests {
                 context.insert(LibrarySchemaV10.RecordCopy(release: manual, shelf: shelf, position: 2))
                 try context.save(); return copy.id
             }
-            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
             let migrated = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
                                               configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
             let context = ModelContext(migrated)

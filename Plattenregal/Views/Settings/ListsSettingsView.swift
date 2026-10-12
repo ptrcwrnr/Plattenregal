@@ -1,12 +1,15 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Vermisst
+// MARK: - Listen
 
-/// The records marked "Vermisst" on the shelf page, and the way back:
-/// found, a record without a shelf is offered in "Einsortieren" and
-/// "Platte hinzufügen" again; one standing in a shelf simply loses its mark.
-struct MissingSettingsView: View {
+/// The app's two lists of marked records.
+/// - "Vermisst": marked on the shelf page, and the way back – found, a
+///   record without a shelf is offered in "Einsortieren" and "Platte
+///   hinzufügen" again; one standing in a shelf simply loses its mark.
+/// - "Verkauf": records to be sold some day. They stay where they stand
+///   until "Alle verkauft" takes the whole list out of the shelves.
+struct ListsSettingsView: View {
     @Environment(\.modelContext) private var context
     /// Shared with the pages, fetched only when they change (see `LibraryRecords`).
     private var records: LibraryRecords { .of(context) }
@@ -16,6 +19,15 @@ struct MissingSettingsView: View {
     @State private var labelsCache = ShelfLabelsCache()
     @State private var changes = LibraryChanges.shared
     @State private var error: String?
+    @State private var saleError: String?
+    @State private var confirmSold = false
+
+    /// On the "Verkauf" list, by artist.
+    private var forSale: [RecordCopy] {
+        let ids = Set(records.saleMarks.map(\.copyID))
+        guard !ids.isEmpty else { return [] }
+        return ShelfAssignmentPresentation.sortedByArtist(records.copies.filter { ids.contains($0.id) })
+    }
 
     /// As on the shelf page: in shelf order, then those without a shelf by artist.
     private var copies: [RecordCopy] {
@@ -38,6 +50,7 @@ struct MissingSettingsView: View {
 
     var body: some View {
         let copies = copies
+        let forSale = forSale
         SettingsPage {
             SettingsCard(title: String(localized: "Vermisst"),
                          subtitle: String(localized: "Für Platten, die beim Einsortieren gerade nicht zu finden sind.")) {
@@ -57,7 +70,8 @@ struct MissingSettingsView: View {
                 } else {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(copies) { copy in
-                            MissingSettingsRow(copy: copy, location: location(copy)) { release([copy]) }
+                            ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Gefunden"),
+                                            actionHelp: copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Markierung aufheben")) { release([copy]) }
                             if copy.id != copies.last?.id { Divider() }
                         }
                     }
@@ -72,8 +86,38 @@ struct MissingSettingsView: View {
             }
             // Off: the marks are kept, but nothing on the shelf page shows them.
             .opacity(missingEnabled ? 1 : 0.5)
+
+            SettingsCard(title: String(localized: "Verkauf"),
+                         subtitle: forSale.isEmpty ? String(localized: "Für Platten, die du irgendwann verkaufen willst.")
+                         : String(localized: "\(AppStyle.records(forSale.count)) · Sie bleiben im Regal, bis du alle verkauft hast.")) {
+                if forSale.isEmpty {
+                    SettingsNote(String(localized: "Keine Platte ist zum Verkauf vorgemerkt. Vormerken per Rechtsklick auf eine Platte: „Zum Verkauf vormerken“."))
+                } else {
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        ForEach(forSale) { copy in
+                            ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Entfernen"),
+                                            actionHelp: String(localized: "Von der Verkaufsliste nehmen")) { keep(copy) }
+                            if copy.id != forSale.last?.id { Divider() }
+                        }
+                    }
+                    HStack {
+                        Spacer(minLength: 0)
+                        SecondaryButton(title: String(localized: "Alle verkauft …")) { confirmSold = true }
+                    }
+                }
+                if let saleError { AppBanner(message: saleError, kind: .error).transition(AppStyle.funnelTransition()) }
+            }
+        }
+        .confirmationDialog(forSale.count == 1 ? "Die Platte auf der Verkaufsliste ist verkauft?" : "Alle \(forSale.count) Platten auf der Verkaufsliste sind verkauft?",
+                            isPresented: $confirmSold) {
+            Button("Alle verkauft") { sellAll() }
+            Button("Abbrechen", role: .cancel) {}
+        } message: {
+            Text("Sie werden aus ihren Fächern genommen und auf „Nicht im Regal“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst.")
         }
         .animation(AppStyle.standardAnimation, value: copies.map(\.id))
+        .animation(AppStyle.standardAnimation, value: forSale.map(\.id))
+        .animation(AppStyle.standardAnimation, value: saleError)
         .animation(AppStyle.standardAnimation, value: error)
         .animation(AppStyle.standardAnimation, value: missingEnabled)
         .onChange(of: missingEnabled) { _, on in
@@ -95,14 +139,28 @@ struct MissingSettingsView: View {
         do { try PositionService(context: context).setMissing(present, false); error = nil }
         catch { self.error = error.reportedMessage() }
     }
+
+    /// Off the "Verkauf" list after all.
+    private func keep(_ copy: RecordCopy) {
+        guard !copy.isDeleted, copy.modelContext != nil else { return }
+        do { try PositionService(context: context).setForSale([copy], false); saleError = nil }
+        catch { saleError = error.reportedMessage() }
+    }
+
+    private func sellAll() {
+        do { try PositionService(context: context).sellAllForSale(); saleError = nil }
+        catch { saleError = error.reportedMessage() }
+    }
 }
 
-/// Cover, artist and title as in "Platte hinzufügen", where the record
-/// stands (if it has a shelf), and "Gefunden" as on the shelf page.
-private struct MissingSettingsRow: View {
+/// A row of either list: cover, artist and title, where the record stands
+/// (if it has a shelf), and the list's action ("Gefunden", "Entfernen").
+private struct ListSettingsRow: View {
     let copy: RecordCopy
     let location: String
-    let release: () -> Void
+    let actionTitle: String
+    let actionHelp: String
+    let action: () -> Void
 
     var body: some View {
         let artist = copy.release?.displayArtist ?? "—"
@@ -118,9 +176,9 @@ private struct MissingSettingsRow: View {
             Spacer(minLength: AppStyle.itemSpacing)
             Text(location).font(.caption).monospacedDigit().foregroundStyle(.secondary)
                 .lineLimit(1)
-            SecondaryButton(title: String(localized: "Gefunden"), action: release)
-                .help(copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Markierung aufheben"))
-                .accessibilityLabel("\(artist) – \(title) gefunden")
+            SecondaryButton(title: actionTitle, action: action)
+                .help(actionHelp)
+                .accessibilityLabel("\(artist) – \(title): \(actionTitle)")
         }
         .frame(height: AssignmentRowMetrics.height)
     }

@@ -339,7 +339,7 @@ struct KallaxView: View {
             ShelfAssignmentView(session: session, owner: owner, rangeLabel: session.shelf.flatMap { rangeLabels[$0.id] }, labels: rangeLabels,
                                 missingIDs: missingIDs,
                                 missingEnabled: missingEnabled,
-                                openMissing: { settingsTab = .missing })
+                                openMissing: { settingsTab = .lists })
         }
         .appPanel(item: $sortCheck) { request in
             ShelfSortCheckView(shelf: request.shelf, rangeLabel: rangeLabels[request.shelf.id], close: { sortCheck = nil })

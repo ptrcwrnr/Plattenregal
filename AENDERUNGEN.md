@@ -1,3 +1,12 @@
+# Reiter „Listen“ und Verkaufsliste, Schema V16 · 12.10.2026
+
+- **Einstellungen: „Vermisst“ heißt jetzt „Listen“** (`ListsSettingsView`) und hat eine zweite Liste **„Verkauf“** für Platten, die irgendwann verkauft werden sollen.
+- **Vormerken** per Rechtsklick: „Zum Verkauf vormerken“ / „Nicht mehr verkaufen“ im Fachinhalt (Raster und Liste) und in der Collection. Im Fach tragen vorgemerkte Platten das Etikett „Verkauf“. Fach und Position bleiben unverändert.
+- **„Alle verkauft …“** (mit Rückfrage) schließt die ganze Liste in einer Transaktion ab: Platten aus den Fächern, „Nicht im Regal“ gesetzt, übrige rücken auf, „Vermisst“ aufgehoben, Liste geleert (`PositionService.sellAllForSale`). Einzeln geht nur „Entfernen“ von der Liste.
+- **Schema V16** (leichte Migration von V15): neue Tabelle `SaleCopyMark`, alle übrigen Modelle unverändert aus V15. **Eine einmal mit diesem Stand geöffnete Datenbank lässt sich mit älteren Versionen (bis 1.0.7) nicht mehr öffnen.** Die Liste ist nicht Teil der Sicherung; „Alles zurücksetzen“ leert sie, „Standorte zurücksetzen“ lässt sie stehen.
+- Demo: zwei Platten sind zum Verkauf vorgemerkt.
+- Tests: `saleMarkKeepsPlaceUntilAllAreSold` neu; der Migrationstest läuft jetzt V13 → V16 und prüft die leere Verkaufsliste. 206 Tests grün. Fensterfoto des Reiters „Listen“ in der Demo (Modern hell). **Nicht angeklickt:** die Rechtsklick-Einträge, „Entfernen“, „Alle verkauft …“ und das Etikett im Fach; die echte Datenbank wurde nicht migriert, nur der Test-Store.
+
 # Einstellungen → Vermisst: „Gefunden“ statt „Freigeben“ · 12.10.2026
 
 - Der Knopf je Platte heißt wie auf der Regalseite „Gefunden“, der für die ganze Liste „Alle gefunden“; Hinweistexte entsprechend. Bei Platten ohne Fach steht kein „Ohne Fach“ mehr, der Standort erscheint nur bei einsortierten Platten.

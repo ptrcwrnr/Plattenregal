@@ -38,14 +38,14 @@ private struct SettingsOpener: ViewModifier {
 /// Settings in the same card language as the app's pages: rounded titles,
 /// quiet card surfaces and the shared button vocabulary.
 struct AppSettingsView: View {
-    enum Tab: String, CaseIterable { case general = "Allgemein", appearance = "Darstellung", shelf = "Regal", missing = "Vermisst", discogs = "Discogs"
+    enum Tab: String, CaseIterable { case general = "Allgemein", appearance = "Darstellung", shelf = "Regal", lists = "Listen", discogs = "Discogs"
         case export = "Export", backup = "Sicherung", data = "Daten", shortcuts = "Tastenkürzel"
         var title: String {
             switch self {
             case .general: String(localized: "Allgemein")
             case .appearance: String(localized: "Darstellung")
             case .shelf: String(localized: "Regal")
-            case .missing: String(localized: "Vermisst")
+            case .lists: String(localized: "Listen")
             case .discogs: String(localized: "Discogs")
             case .export: String(localized: "Export")
             case .backup: String(localized: "Sicherung")
@@ -74,7 +74,7 @@ struct AppSettingsView: View {
             case .general: GeneralSettingsView()
             case .appearance: AppearanceSettingsView()
             case .shelf: ShelfSettingsView()
-            case .missing: MissingSettingsView()
+            case .lists: ListsSettingsView()
             case .discogs: DiscogsSettingsView()
             case .export: ExportSettingsView()
             case .backup: BackupSettingsView()

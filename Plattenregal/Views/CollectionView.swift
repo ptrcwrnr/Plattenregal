@@ -535,6 +535,14 @@ struct CollectionView: View {
         }
         refreshButton(for: [copy])
         exclusionButton(for: [copy])
+        saleButton(for: copy)
+    }
+    /// Puts the copy on the "Verkauf" list (settings tab "Listen") or takes it off.
+    @ViewBuilder private func saleButton(for copy: RecordCopy) -> some View {
+        let forSale = records.saleMarks.contains { $0.copyID == copy.id }
+        Button(forSale ? "Nicht mehr verkaufen" : "Zum Verkauf vormerken") {
+            perform { try PositionService(context: context).setForSale([copy], !forSale) }
+        }
     }
     /// Reloads the Discogs data of the given records (only those from Discogs).
     @ViewBuilder private func refreshButton(for selected: [RecordCopy]) -> some View {

@@ -257,6 +257,33 @@ extension AllTests {
             try service.setMissing([b], false)
             #expect(try context.fetch(FetchDescriptor<MissingCopyMark>()).isEmpty)
         }
+        @Test func saleMarkKeepsPlaceUntilAllAreSold() throws {
+            let (container, shelves, service) = try fixture(); let context = container.mainContext
+            let sale = { Set(try context.fetch(FetchDescriptor<SaleCopyMark>()).map(\.copyID)) }
+            let a = try add(service, shelves[0], "A")
+            let b = try add(service, shelves[0], "B")
+            let c = try add(service, shelves[0], "C")
+            let d = try add(service, shelves[1], "D")
+
+            // Marking twice is one mark; the record stays where it stands.
+            try service.setForSale([a, c, d], true)
+            try service.setForSale([c], true)
+            #expect(try sale() == [a.id, c.id, d.id])
+            #expect(c.shelf?.id == shelves[0].id && c.positionInShelf == 3)
+            try service.setForSale([d], false)
+            #expect(try sale() == [a.id, c.id])
+            #expect(d.shelf?.id == shelves[1].id)
+
+            // "Alle verkauft": out of the shelves, kept out, list emptied; the rest moves up.
+            try service.setMissing([a], true)
+            try service.sellAllForSale()
+            #expect(try sale().isEmpty)
+            #expect(a.shelf == nil && c.shelf == nil)
+            #expect(b.shelf?.id == shelves[0].id && b.positionInShelf == 1)
+            #expect(d.shelf?.id == shelves[1].id && d.positionInShelf == 1)
+            #expect(Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID)) == [a.id, c.id])
+            #expect(try context.fetch(FetchDescriptor<MissingCopyMark>()).isEmpty)
+        }
         @Test func missingMarkFollowsShelfActions() throws {
             let (container, shelves, service) = try fixture(); let context = container.mainContext
             let marks = { Set(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID)) }
@@ -477,7 +504,7 @@ extension AllTests {
             try service.setMissing([second], true)
             let missing = Set(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID))
 
-            let items = ShelfCopyItem.snapshot(for: shelves[0], owner: "me", missing: missing)
+            let items = ShelfCopyItem.snapshot(for: shelves[0], owner: "me", missing: missing, forSale: [])
             try #require(items.count == 4)
             #expect(items.map(\.id) == [first.id, second.id, unknown.id, withoutRelease.id])
             #expect(items.map(\.position) == [1, 2, 3, 4])
@@ -491,15 +518,15 @@ extension AllTests {
             #expect(items[3].year == 0 && items[3].genre.isEmpty)
 
             // Without a synced account, active copies from any owner count as current.
-            let withoutAccount = ShelfCopyItem.snapshot(for: shelves[0], owner: nil, missing: missing)
+            let withoutAccount = ShelfCopyItem.snapshot(for: shelves[0], owner: nil, missing: missing, forSale: [])
             #expect(withoutAccount.map(\.sold) == [false, false, true, false])
 
             try service.move(second, to: shelves[1], position: 1)
-            let source = ShelfCopyItem.snapshot(for: shelves[0], owner: "me", missing: missing)
+            let source = ShelfCopyItem.snapshot(for: shelves[0], owner: "me", missing: missing, forSale: [])
             #expect(source.map(\.id) == [first.id, unknown.id, withoutRelease.id])
             #expect(source.map(\.position) == [1, 2, 3])
             #expect(source.allSatisfy { !$0.missing })
-            let destination = ShelfCopyItem.snapshot(for: shelves[1], owner: "me", missing: missing)
+            let destination = ShelfCopyItem.snapshot(for: shelves[1], owner: "me", missing: missing, forSale: [])
             #expect(destination.map(\.id) == [second.id])
             #expect(destination.map(\.position) == [1])
             #expect(destination.first?.missing == true && destination.first?.sold == true)
@@ -518,7 +545,7 @@ extension AllTests {
                                                     shelf: shelves[0], position: 4)
             try service.save { withoutRelease.release = nil }
 
-            let items = ShelfCopyItem.snapshot(for: shelves[0], owner: nil, missing: [])
+            let items = ShelfCopyItem.snapshot(for: shelves[0], owner: nil, missing: [], forSale: [])
             #expect(items.map(\.label) == ["Zeta, Acme", "Alpha, Kontor Records (Germany)", "", ""])
             #expect(zetaRelease.label == "Zeta (2), Acme (4)")
             let sorted = items.sorted(using: [KeyPathComparator(\ShelfCopyItem.label), KeyPathComparator(\ShelfCopyItem.position)])
@@ -714,7 +741,7 @@ extension AllTests {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: directory) }
-            let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
             let config = ModelConfiguration(schema: schema, url: directory.appendingPathComponent("Test.store"), cloudKitDatabase: .none)
             let id: UUID = try autoreleasepool {
                 let first = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
@@ -865,7 +892,7 @@ extension AllTests.LibraryTests {
         let loose = try service.insert(release: Release(artist: "Beck", title: "Odelay"), shelf: nil)
         LibraryChanges.shared.libraryDidChange()
         #expect(AlphabeticalPlacement.spots(for: loose, in: shelves).map(\.position) == [2])
-        #expect(ShelfCopyItem.snapshot(for: shelves[8], owner: nil, missing: []).map(\.artist) == ["Abba", "Can"])
+        #expect(ShelfCopyItem.snapshot(for: shelves[8], owner: nil, missing: [], forSale: []).map(\.artist) == ["Abba", "Can"])
 
         // The sync renames "Can" to "Aaron": the loose record now comes after
         // the whole shelf, at the boundary to the next one.
@@ -874,7 +901,7 @@ extension AllTests.LibraryTests {
         LibraryChanges.shared.syncDidCommit()
         #expect(AlphabeticalPlacement.spots(for: loose, in: shelves).map(\.position) == [3, 1])
         #expect(AlphabeticalPlacement.fittingShelves(for: [loose], in: shelves)[loose.id]?.map(\.id) == [shelves[8].id, shelves[1].id])
-        #expect(ShelfCopyItem.snapshot(for: shelves[8], owner: nil, missing: []).map(\.artist) == ["Abba", "Aaron"])
+        #expect(ShelfCopyItem.snapshot(for: shelves[8], owner: nil, missing: [], forSale: []).map(\.artist) == ["Abba", "Aaron"])
     }
     @Test func rackPlacementNeedsAnOccupiedShelf() throws {
         let (container, shelves, _) = try fixture(); let context = container.mainContext

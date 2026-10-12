@@ -179,7 +179,7 @@ struct ShelfAssignmentView: View {
     var missingIDs: Set<UUID> = []
     /// Off in the settings: no pause buttons, marked records are listed like the rest.
     var missingEnabled = true
-    /// Opens the settings on "Vermisst".
+    /// Opens the settings on "Listen".
     var openMissing: () -> Void = {}
     @Environment(\.modelContext) private var context
 
@@ -220,7 +220,7 @@ struct ShelfAssignmentView: View {
                 if session.loaded && items.isEmpty {
                     if pausedCount > 0 {
                         AppEmptyState(String(localized: "Nur noch vermisste Platten"), systemImage: "checkmark.circle",
-                                      description: Text("Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ markierst du sie als gefunden."),
+                                      description: Text("Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Listen“ markierst du sie als gefunden."),
                                       actionTitle: String(localized: "Vermisste Platten …"), action: openMissing)
                     } else {
                         AppEmptyState(String(localized: "Alles einsortiert"), systemImage: "checkmark.circle",
