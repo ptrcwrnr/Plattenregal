@@ -63,7 +63,6 @@ struct CollectionView: View {
     /// The popover closes on the mouse-down of a click outside it; if that
     /// click lands on the same cover, it should stay closed, not reopen.
     @State private var quickLookDismissed: (id: UUID, at: Date)?
-    @State private var refresh = MetadataRefreshService()
     @Environment(\.openURL) private var openURL
     @State private var error: String?
     /// Saving a shelf change and reloading from Discogs fail differently.
@@ -536,7 +535,6 @@ struct CollectionView: View {
         if let url = copy.release?.sourceURL {
             Button("Auf Discogs öffnen") { openURL(url) }
         }
-        refreshButton(for: [copy])
         exclusionButton(for: [copy])
         if missingEnabled { missingButton(for: copy) }
         if saleEnabled { saleButton(for: copy) }
@@ -553,21 +551,6 @@ struct CollectionView: View {
         let forSale = records.saleMarks.contains { $0.copyID == copy.id }
         Button(forSale ? "Nicht mehr verkaufen" : "Zum Verkauf vormerken") {
             perform { try PositionService(context: context).setForSale([copy], !forSale) }
-        }
-    }
-    /// Reloads the Discogs data of the given records (only those from Discogs).
-    @ViewBuilder private func refreshButton(for selected: [RecordCopy]) -> some View {
-        let releases = Array(Set(selected.compactMap(\.release).map(\.id)))
-            .compactMap { id in selected.first { $0.release?.id == id }?.release }
-        // Not in the demo: Discogs is off there.
-        if !releases.isEmpty && !DemoMode.isActive {
-            Button("Discogs-Daten aktualisieren") {
-                Task {
-                    await refresh.reload(releases, context: context)
-                    if let message = refresh.error { errorTitle = String(localized: "Discogs-Daten nicht aktualisiert"); error = message }
-                }
-            }
-            .disabled(refresh.busy || sync.busy)
         }
     }
     private func perform(_ action: () throws -> Void) {

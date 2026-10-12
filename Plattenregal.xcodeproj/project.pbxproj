@@ -63,7 +63,6 @@
 		D1E2F3A4B5C6D7E8F9A0B1C3 /* Plattenregal/Utilities/AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F0A1B3 /* Plattenregal/Utilities/AppLog.swift */; };
 		D5265016C5C82E398723387A /* Plattenregal/Storage/LibraryStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E0A325E4743667E85D4E6F /* Plattenregal/Storage/LibraryStorage.swift */; };
 		DD5C24E09EAA225E8520EE95 /* Plattenregal/Services/LibraryChanges.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C776C8DD5C24E09EAA225E /* Plattenregal/Services/LibraryChanges.swift */; };
-		E16E285D7D6769C8F7876183 /* Plattenregal/Discogs/MetadataRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F260D98E16E285D7D6769C8 /* Plattenregal/Discogs/MetadataRefreshService.swift */; };
 		E27805207D78C25CB646D32A /* Plattenregal/Views/CollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57AF03A5D9192B3C48928D65 /* Plattenregal/Views/CollectionView.swift */; };
 		E5C8158CEAB662BBFEDFAA81 /* Plattenregal/Statistics/ValueHistoryDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A9148B25822F85973E51EC /* Plattenregal/Statistics/ValueHistoryDashboard.swift */; };
 		E5F126D88366A97EB5EF1500 /* Plattenregal/Statistics/StatisticsCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 995EBA21E5F126D88366A97E /* Plattenregal/Statistics/StatisticsCards.swift */; };
@@ -91,7 +90,6 @@
 		02521F7BA74415A05D4AF390 /* Plattenregal/Utilities/AppAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/AppAppearance.swift; sourceTree = "<group>"; };
 		040C897EB13218C8C4FD54C9 /* Plattenregal/Views/Shelf/ShelfFurniture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfFurniture.swift; sourceTree = "<group>"; };
 		08009FA0AFF7F813C2F08162 /* Plattenregal/Discogs/DiscogsSettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Discogs/DiscogsSettingsModel.swift; sourceTree = "<group>"; };
-		0F260D98E16E285D7D6769C8 /* Plattenregal/Discogs/MetadataRefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Discogs/MetadataRefreshService.swift; sourceTree = "<group>"; };
 		0F9889DD38A7150B13EDC565 /* Plattenregal/Discogs/DiscogsAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Discogs/DiscogsAPIClient.swift; sourceTree = "<group>"; };
 		10A2226F4A4C2839EAA0BE1C /* Plattenregal/Discogs/DiscogsSyncDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Discogs/DiscogsSyncDTO.swift; sourceTree = "<group>"; };
 		18A9148B25822F85973E51EC /* Plattenregal/Statistics/ValueHistoryDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/ValueHistoryDashboard.swift; sourceTree = "<group>"; };
@@ -288,7 +286,6 @@
 				B8BBCFAB16F7E9BB4DD4445C /* Plattenregal/Services/ResetService.swift */,
 				F5C0F32914BC632A098D7F5E /* Plattenregal/Services/ScheduledExportService.swift */,
 				81DBC184AF98C763E6527CB8 /* Plattenregal/Services/CabinetService.swift */,
-				0F260D98E16E285D7D6769C8 /* Plattenregal/Discogs/MetadataRefreshService.swift */,
 				8C46AB085BA397DACC8BC6DD /* Plattenregal/Statistics/StatisticsCharts.swift */,
 				995EBA21E5F126D88366A97E /* Plattenregal/Statistics/StatisticsCards.swift */,
 				94F390B180DD5B51F9AAEBA3 /* Plattenregal/Views/Shelf/ShelfAssignment.swift */,
@@ -447,7 +444,6 @@
 				C4E0C6B4DBFD485AC3BC9028 /* Plattenregal/Utilities/FolderAccess.swift in Sources */,
 				8BF218778FB6E9D23BA4B988 /* Plattenregal/Utilities/AppPreferences.swift in Sources */,
 				AF98C763E6527CB8CC2F0512 /* Plattenregal/Services/CabinetService.swift in Sources */,
-				E16E285D7D6769C8F7876183 /* Plattenregal/Discogs/MetadataRefreshService.swift in Sources */,
 				5BA397DACC8BC6DDF20ABFCB /* Plattenregal/Statistics/StatisticsCharts.swift in Sources */,
 				E5F126D88366A97EB5EF1500 /* Plattenregal/Statistics/StatisticsCards.swift in Sources */,
 				80DD5B51F9AAEBA31BAF0DD6 /* Plattenregal/Views/Shelf/ShelfAssignment.swift in Sources */,

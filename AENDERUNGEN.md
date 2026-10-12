@@ -1,3 +1,8 @@
+# „Discogs-Daten aktualisieren“ entfernt · 12.10.2026
+
+- Der Eintrag ist aus dem Rechtsklick-Menü der Collection entfallen. Er war die einzige Stelle, die einzelne Releases sofort neu lud; `MetadataRefreshService` und seine Texte sind deshalb mit entfernt. Release-Daten kommen weiter mit der normalen Synchronisierung.
+- Einstellungen → Listen: Die Listen blenden beim Schalten animiert ein und aus.
+
 # „Vermisst“ heißt jetzt Suchliste / „Gesucht“ · 12.10.2026
 
 - Überall in der App umbenannt: Etikett „Gesucht“, Menüeintrag „Auf die Suchliste setzen“ (statt „Als vermisst markieren“), Liste „Suchliste“ in den Einstellungen, Hinweise auf der Einsortier-Karte, in „Einsortieren“, beim Zurücksetzen und im Protokoll. „Wieder gefunden“ / „Gefunden“ bleiben. Intern heißen Modell und Schlüssel weiter `MissingCopyMark` / `missingListEnabled` – keine Migration, bestehende Markierungen bleiben. Ältere Abschnitte dieser Datei und von VALIDIERUNG.md nennen noch „Vermisst“.

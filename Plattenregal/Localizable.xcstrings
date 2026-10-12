@@ -774,22 +774,6 @@
         }
       }
     },
-    "%@ von %@ Platten konnten nicht aktualisiert werden, die übrigen schon. " : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ von %2$@ Platten konnten nicht aktualisiert werden, die übrigen schon. "
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ of %@ records could not be updated, the rest were. "
-          }
-        }
-      }
-    },
     "%@ von %lld" : {
       "comment" : "Fortschritt beim Laden der Tracklisten",
       "localizations" : {
@@ -3952,32 +3936,12 @@
         }
       }
     },
-    "Discogs-Daten aktualisieren" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Discogs Data"
-          }
-        }
-      }
-    },
     "Discogs-Daten haben sich geändert – neuer Versuch" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discogs data changed – trying again"
-          }
-        }
-      }
-    },
-    "Discogs-Daten nicht aktualisiert" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Discogs data not updated"
           }
         }
       }
@@ -5615,16 +5579,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No information available"
-          }
-        }
-      }
-    },
-    "Keine der %@ Platten konnte aktualisiert werden. " : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "None of the %@ records could be updated. "
           }
         }
       }
