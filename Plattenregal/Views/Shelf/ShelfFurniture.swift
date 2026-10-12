@@ -39,107 +39,23 @@ struct MissingBadge: View {
     var body: some View { StatusTag(text: String(localized: "Vermisst"), color: AppStyle.errorColor) }
 }
 
-/// The "Vermisst" column beside "Platte hinzufügen", built like the column
-/// on the left: title, card, and the records (in shelf order) with their
-/// covers to look for at the shelf. A row shows the record in its shelf (or
-/// finds it a place), the check mark – shown on hover – marks it found again.
-struct MissingCopiesColumn: View {
-    let copies: [RecordCopy]
-    let show: (RecordCopy) -> Void
-    let found: (RecordCopy) -> Void
-    /// Folds the column away (see `ShelfAssignmentView`).
-    var collapse: (() -> Void)?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                // The button lies over the row, so this title sits exactly
-                // like "Platte hinzufügen".
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Vermisst").font(AppStyle.dialogTitle)
-                    Spacer()
-                }
-                .overlay(alignment: .trailing) {
-                    if let collapse {
-                        IconButton(systemImage: "chevron.right", help: String(localized: "Vermisst einklappen"), action: collapse)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                AssignmentCard(title: String(localized: "Beim Einsortieren nicht gefunden"),
-                               detail: String(localized: "Vermutlich noch in einem anderen Fach")) { EmptyView() }
+/// The records marked "Vermisst" that the app lists (settings tab
+/// "Vermisst", the count in "Platte hinzufügen").
+enum MissingCopies {
+    /// Those still standing in a shelf in use (shelf order), then those
+    /// waiting to be sorted in (by artist).
+    static func listed(_ ids: Set<UUID>, in copies: [RecordCopy], owner: String?, excluding excluded: Set<UUID>) -> [RecordCopy] {
+        guard !ids.isEmpty else { return [] }
+        let marked = copies.filter { ids.contains($0.id) }
+        let placed = marked
+            .filter { $0.shelf?.isInUse ?? false }
+            .sorted { a, b in
+                guard let sa = a.shelf, let sb = b.shelf else { return false }
+                if sa.id != sb.id { return Shelf.physicalOrder(sa, sb) }
+                return a.positionInShelf < b.positionInShelf
             }
-            .padding(.horizontal, AppStyle.pagePadding)
-            .padding(.top, AppStyle.pagePadding)
-            ScrollView { list }
-                .scrollIndicators(.automatic)
-                .frame(maxHeight: .infinity)
-        }
-    }
-
-    private var list: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(copies) { copy in
-                MissingCopyRow(copy: copy, show: { show(copy) }, found: {
-                    withAnimation(AppStyle.standardAnimation) { found(copy) }
-                })
-                // Comes in from the list on the left, goes back there.
-                .transition(.opacity.combined(with: .move(edge: .leading)))
-            }
-        }
-        // Marks set in the list on the left arrive through the store, outside
-        // any `withAnimation`: animate every change of the list here.
-        .animation(AppStyle.standardAnimation, value: copies.map(\.id))
-        .padding(.horizontal, AppStyle.pagePadding - 8)
-        // The same inset as the table on the left (`contentInsets`).
-        .padding(.vertical, AppStyle.tightSpacing)
-    }
-}
-
-private struct MissingCopyRow: View {
-    let copy: RecordCopy
-    let show: () -> Void
-    let found: () -> Void
-    @State private var hovering = false
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Button(action: show) {
-                // Spacing as on the left, so the texts line up with the card's.
-                HStack(spacing: AppStyle.rowSpacing) {
-                    CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
-                    // Type as in the rows on the left.
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(copy.release?.displayTitle ?? "—").fontWeight(.medium)
-                        Text(copy.release?.displayArtist ?? "—").font(.caption).foregroundStyle(.secondary)
-                    }
-                    .lineLimit(1)
-                    Spacer(minLength: 4)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help(copy.shelf == nil ? "Platz im Regal finden" : "Im Fach zeigen")
-            Button(action: found) {
-                Image(systemName: "checkmark.circle")
-                    .font(.system(size: 15))
-                    .foregroundStyle(AppStyle.successColor)
-                    .frame(width: 24, height: 24)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            // Only on hover: the row itself stays the quiet way to the shelf.
-            .opacity(hovering ? 1 : 0)
-            .animation(AppStyle.fadeAnimation, value: hovering)
-            .help("Wieder gefunden")
-            .accessibilityLabel("Wieder gefunden")
-        }
-        .font(.callout)
-        .padding(.horizontal, 8)
-        // As high as the rows on the left, so both lists run level.
-        .frame(height: AssignmentRowMetrics.height)
-        // Like the rows of the search and "Sortierung prüfen".
-        .appHoverable(hovering, cornerRadius: 8)
-        .onHover { hovering = $0 }
+        let waiting = marked.filter { ShelfAssignmentPresentation.isCandidate($0, owner: owner, excluding: excluded) }
+        return placed + ShelfAssignmentPresentation.sortedByArtist(waiting)
     }
 }
 

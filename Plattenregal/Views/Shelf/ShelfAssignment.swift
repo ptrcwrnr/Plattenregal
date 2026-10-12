@@ -26,7 +26,8 @@ final class ShelfAssignmentSession: Identifiable {
     private(set) var loaded = false
     private(set) var addedCount = 0
     private(set) var lastAdded: RecordCopy?
-    /// Candidates marked "Vermisst": the view lists them in their own column.
+    /// Candidates marked "Vermisst": left out of the list until they are
+    /// released in the settings.
     private(set) var missing: Set<UUID> = []
     /// For candidates that belong in another shelf alphabetically: its name,
     /// shown in their row ("gehört in „K – Ma“"). Rack-wide: every
@@ -75,6 +76,14 @@ final class ShelfAssignmentSession: Identifiable {
     func placed(_ copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
         guard shelf == nil else { return spot(for: copy) }
         return AlphabeticalPlacement.current(for: copy, in: shelves)
+    }
+
+    /// Every place `copy` would stand, for the "i" in its row: in this shelf
+    /// when it fits here, else in the rack (two at a shelf boundary).
+    func places(for copy: RecordCopy) -> [AlphabeticalPlacement.Spot] {
+        guard !isGone(copy) else { return [] }
+        if shelf != nil, belongsElsewhere[copy.id] == nil { return spot(for: copy).map { [$0] } ?? [] }
+        return AlphabeticalPlacement.spots(for: copy, in: shelves)
     }
 
     var visible: [RecordCopy] { candidates }
@@ -141,8 +150,7 @@ final class ShelfAssignmentSession: Identifiable {
         } catch { self.error = error.reportedMessage() }
     }
 
-    /// Marks changed elsewhere (e.g. "Wieder gefunden" in the "Vermisst"
-    /// column): the paused rows follow.
+    /// Marks changed elsewhere (released in the settings): the rows follow.
     func syncMissing(_ ids: Set<UUID>) {
         if ids != missing { missing = ids }
     }
@@ -159,8 +167,8 @@ final class ShelfAssignmentSession: Identifiable {
     }
 }
 
-/// "+" in the compartment header: pick records that don't have a shelf yet;
-/// beside them, while any are marked, the "Vermisst" list.
+/// "+" in the compartment header: pick records that don't have a shelf yet.
+/// Records marked "Vermisst" aren't offered; the settings list them.
 /// Built like the record detail card: a glass panel over the page, closed by a click beside it or Esc,
 /// the target compartment on a tinted glass card, the shared search bar and
 /// compact rows with glass buttons. All state is in the session.
@@ -172,67 +180,48 @@ struct ShelfAssignmentView: View {
     let labels: ShelfLabels
     /// A record that belongs in another shelf: close and show its place there.
     let findPlace: (RecordCopy) -> Void
-    /// Records marked "Vermisst" in the whole rack (see `KallaxView.missingCopies`).
-    var missingCopies: [RecordCopy] = []
-    /// Off in the settings: no pause buttons and no "Vermisst" column.
+    /// Every mark in the rack; a record released in the settings returns to the list.
+    var missingIDs: Set<UUID> = []
+    /// Records the settings list under "Vermisst".
+    var missingCount = 0
+    /// Off in the settings: no pause buttons, marked records are listed like the rest.
     var missingEnabled = true
-    /// From the "Vermisst" column: close and show the record in its shelf.
-    var showMissing: (RecordCopy) -> Void = { _ in }
-    var found: (RecordCopy) -> Void = { _ in }
+    /// Opens the settings on "Vermisst".
+    var openMissing: () -> Void = {}
     @Environment(\.modelContext) private var context
-    /// The "Vermisst" column folded away; remembered for the next opening.
-    @AppStorage(DisplaySettings.missingColumnCollapsedKey) private var missingCollapsed = false
 
     static let listWidth: CGFloat = 460
-    static let missingWidth: CGFloat = 380
-    /// The column only while something is marked: without, the panel stays narrow.
-    private var hasMissing: Bool { missingEnabled && !missingCopies.isEmpty }
-    private var showsMissing: Bool { hasMissing && !missingCollapsed }
 
     var body: some View {
-        HStack(spacing: 0) {
-            addColumn
-                .frame(width: Self.listWidth)
-            if showsMissing {
-                Divider().padding(.vertical, AppStyle.pagePadding)
-                MissingCopiesColumn(copies: missingCopies, show: showMissing, found: found,
-                                    collapse: { missingCollapsed = true })
-                    .frame(width: Self.missingWidth)
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
-            }
-        }
-        .frame(height: 640)
-        .animation(AppStyle.standardAnimation, value: showsMissing)
-        .onChange(of: Set(missingCopies.map(\.id))) { _, ids in session.syncMissing(ids) }
+        addColumn
+            .frame(width: Self.listWidth, height: 640)
+            .onChange(of: missingIDs) { _, ids in session.syncMissing(ids) }
     }
 
     private var addColumn: some View {
-        // Records marked "Vermisst" are listed in their own column, not here.
+        // Records marked "Vermisst" wait in the settings, not here.
         let items = missingEnabled ? session.visible.filter { !session.missing.contains($0.id) } : session.visible
         return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(session.isRackWide ? "Einsortieren" : "Platte hinzufügen").font(AppStyle.dialogTitle)
                     Spacer()
-                    // Folded away: the count, and the way to unfold it again.
-                    if hasMissing && missingCollapsed {
-                        Button { missingCollapsed = false } label: {
-                            HStack(spacing: 4) {
-                                Text("\(missingCopies.count) vermisst").monospacedDigit()
-                                Image(systemName: "chevron.left").font(.caption.weight(.semibold))
-                            }
-                            .font(.callout)
-                            .foregroundStyle(AppStyle.errorColor)
-                            .lineLimit(1)
-                            .fixedSize()
+                    // Where the paused records went, and the way to them.
+                    if missingEnabled && missingCount > 0 {
+                        Button(action: openMissing) {
+                            Text("\(missingCount) vermisst").monospacedDigit()
+                                .font(.callout)
+                                .foregroundStyle(AppStyle.errorColor)
+                                .lineLimit(1)
+                                .fixedSize()
                         }
                         .appGlassButton()
-                        .help("Vermisst-Liste aufklappen")
+                        .help("Vermisste Platten in den Einstellungen ansehen und freigeben")
                         .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + 5 }
                         .transition(.opacity)
                     }
                 }
-                .animation(AppStyle.standardAnimation, value: showsMissing)
+                .animation(AppStyle.standardAnimation, value: missingCount)
                 targetCard
                 if let error = session.error {
                     AppBanner(message: error, kind: .error)
@@ -250,13 +239,15 @@ struct ShelfAssignmentView: View {
                                      belongsElsewhere: session.belongsElsewhere,
                                      toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
                                      hover: { [session] copy, hovering in session.hover(copy, hovering) },
+                                     places: places,
                                      findPlace: findPlace) { [session, context] copy in
                     session.add(copy, in: context)
                 }
                 if session.loaded && items.isEmpty {
                     if pausedCount > 0 {
                         AppEmptyState(String(localized: "Nur noch vermisste Platten"), systemImage: "checkmark.circle",
-                                      description: Text("Alle übrigen Platten ohne Fach stehen unter „Vermisst“."))
+                                      description: Text("Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ gibst du sie wieder frei."),
+                                      actionTitle: String(localized: "Vermisste Platten …"), action: openMissing)
                     } else {
                         AppEmptyState(String(localized: "Alles einsortiert"), systemImage: "checkmark.circle",
                                       description: Text("Jede Platte der Sammlung liegt bereits in einem Fach."))
@@ -293,10 +284,10 @@ struct ShelfAssignmentView: View {
         if let copy = session.hovered {
             let artist = String(localized: "„\(copy.release?.displayArtist ?? "—")“")
             if session.isRackWide {
-                guard let spot = session.spot(for: copy) else { return String(localized: "\(artist) – Pfeil zeigt einen Platz im Regal") }
+                guard let spot = session.spot(for: copy) else { return String(localized: "\(artist) – noch steht keine Platte im Regal") }
                 return String(localized: "\(artist) in „\(name(spot.shelf))“ \(place(spot))")
             }
-            if let other = session.belongsElsewhere[copy.id] { return String(localized: "\(artist) gehört in „\(other)“ – Pfeil führt dorthin") }
+            if let other = session.belongsElsewhere[copy.id] { return String(localized: "\(artist) gehört in „\(other)“ – „i“ zeigt den Platz") }
             if let spot = session.spot(for: copy) { return String(localized: "\(artist) \(place(spot))") }
         }
         if let copy = session.lastAddedHere, let spot = session.placed(copy) {
@@ -315,6 +306,15 @@ struct ShelfAssignmentView: View {
         case let (nil, after?): return String(localized: "ganz vorn, vor \(name(after))")
         case let (before?, nil): return String(localized: "ans Ende, nach \(name(before))")
         case (nil, nil): return String(localized: "als erste Platte")
+        }
+    }
+
+    /// For the "i" of a row: each fitting shelf with position and neighbours.
+    private func places(for copy: RecordCopy) -> [AssignmentPlace] {
+        session.places(for: copy).map { spot in
+            let between = place(spot)
+            return AssignmentPlace(id: spot.shelf.id, shelf: labels.prefix(for: spot.shelf) + name(spot.shelf), position: spot.position,
+                                   neighbours: between.prefix(1).uppercased() + between.dropFirst())
         }
     }
 
@@ -341,6 +341,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
     let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
     let hover: (RecordCopy, Bool) -> Void
+    let places: (RecordCopy) -> [AssignmentPlace]
     let findPlace: (RecordCopy) -> Void
     let add: (RecordCopy) -> Void
 
@@ -364,6 +365,7 @@ private struct ShelfAssignmentTable: NSViewRepresentable {
         controller.add = add
         controller.toggleMissing = toggleMissing
         controller.hover = hover
+        controller.places = places
         controller.findPlace = findPlace
         controller.belongsElsewhere = belongsElsewhere
         controller.rackWide = rackWide
@@ -392,6 +394,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     fileprivate var add: (RecordCopy) -> Void = { _ in }
     fileprivate var toggleMissing: (RecordCopy) -> Void = { _ in }
     fileprivate var hover: (RecordCopy, Bool) -> Void = { _, _ in }
+    fileprivate var places: (RecordCopy) -> [AssignmentPlace] = { _ in [] }
     fileprivate var findPlace: (RecordCopy) -> Void = { _ in }
 
     override init() {
@@ -487,6 +490,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
                                          rackWide: rackWide,
                                          toggleMissing: { [weak self] in self?.toggleMissing(copy) },
                                          hover: { [weak self] in self?.hover(copy, $0) },
+                                         places: { [weak self] in self?.places(copy) ?? [] },
                                          findPlace: { [weak self] in self?.findPlace(copy) }) { [weak self] in self?.add(copy) }
         let id = NSUserInterfaceItemIdentifier("ShelfAssignmentRow")
         if let host = tableView.makeView(withIdentifier: id, owner: nil) as? NSHostingView<ShelfAssignmentRow> {
@@ -508,9 +512,7 @@ final class ShelfAssignmentTableController: NSObject, NSTableViewDataSource, NST
     }
 }
 
-/// The card over each column of "Platte hinzufügen" (the shelf on the left,
-/// "Vermisst" on the right). Built the same on both sides, so the lists
-/// below start at the same height.
+/// The card over the list of "Platte hinzufügen": the shelf the records go to.
 struct AssignmentCard<Trailing: View>: View {
     /// Covers in the lists below; the symbol is centered above them.
     static var coverSize: CGFloat { 38 }
@@ -546,7 +548,7 @@ struct AssignmentCard<Trailing: View>: View {
     }
 }
 
-/// Rows of both lists in "Platte hinzufügen": the same height and cover.
+/// Rows of "Platte hinzufügen" and the shelf search: the same height and cover.
 enum AssignmentRowMetrics {
     static let height: CGFloat = 52
 }
@@ -566,9 +568,13 @@ private struct ShelfAssignmentRow: View {
     let rackWide: Bool
     let toggleMissing: () -> Void
     let hover: (Bool) -> Void
+    /// Where it would stand, read when the "i" is clicked.
+    let places: () -> [AssignmentPlace]
     let findPlace: () -> Void
     let add: () -> Void
     @State private var hovering = false
+    /// The popover of the "i": where the record would stand.
+    @State private var showsPlace = false
 
     var body: some View {
         let artist = copy.release?.displayArtist ?? "—"
@@ -607,22 +613,23 @@ private struct ShelfAssignmentRow: View {
                     .help(missing ? "Wieder gefunden" : "Vermisst – vorerst zurückstellen")
                     .accessibilityLabel(missing ? String(localized: "\(artist) – \(title) wieder gefunden") : String(localized: "\(artist) – \(title) als vermisst markieren"))
             }
+            // Where it would stand once sorted in; stays while its popover is open.
+            RowSymbolButton(systemImage: "info.circle", color: .secondary, visible: hovering || showsPlace) { showsPlace = true }
+                .help("Zeigt, wo sie einsortiert stehen würde")
+                .accessibilityLabel("\(artist) – \(title): Platz im Regal")
+                .popover(isPresented: $showsPlace, arrowEdge: .bottom) {
+                    AssignmentPlacePopover(artist: artist, title: title, places: places()) {
+                        showsPlace = false
+                        findPlace()
+                    }
+                }
             if rackWide {
-                // Its place in the rack, with the shelf before it when it falls between two.
-                RowSymbolButton(systemImage: "arrow.right.circle", color: .secondary, visible: hovering, action: findPlace)
-                    .help("Im Regal zeigen, wohin sie gehört")
-                    .accessibilityLabel("\(artist) – \(title) im Regal zeigen")
                 if let belongsIn {
                     RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
                         .help("An ihrer alphabetischen Stelle in „\(belongsIn)“ einsortieren")
                         .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
                 }
             } else {
-                if let belongsIn {
-                    RowSymbolButton(systemImage: "arrow.right.circle", color: .secondary, visible: hovering, action: findPlace)
-                        .help("Zu „\(belongsIn)“ wechseln und dort einsortieren")
-                        .accessibilityLabel("\(artist) – \(title) in „\(belongsIn)“ einsortieren")
-                }
                 // The main action: accent in the glyph, like chosen options elsewhere.
                 RowSymbolButton(systemImage: "plus.circle", color: AppStyle.accent, visible: hovering, action: add)
                     .help(belongsIn == nil ? String(localized: "An ihrer alphabetischen Stelle ins Fach hinzufügen") : String(localized: "Trotzdem in dieses Fach hinzufügen"))
@@ -647,8 +654,7 @@ private struct ShelfAssignmentRow: View {
     }
 }
 
-/// A row action as a bare symbol, like the check mark in the "Vermisst"
-/// column: only shown while the pointer is over the row.
+/// A row action as a bare symbol: only shown while the pointer is over the row.
 private struct RowSymbolButton: View {
     let systemImage: String
     let color: Color
@@ -665,6 +671,55 @@ private struct RowSymbolButton: View {
         }
         .buttonStyle(.plain)
         .opacity(visible ? 1 : 0)
+    }
+}
+
+/// A place a record without a shelf would stand, as the "i" of its row tells it.
+struct AssignmentPlace: Identifiable {
+    /// The shelf's ID: one entry per fitting shelf.
+    let id: UUID
+    let shelf: String
+    let position: Int
+    /// "Zwischen „Air“ und „Björk“".
+    let neighbours: String
+}
+
+/// The popover of a row's "i": the shelf and position the record would get
+/// (both, when it falls between two shelves) and the way to see it in the rack.
+private struct AssignmentPlacePopover: View {
+    let artist: String
+    let title: String
+    let places: [AssignmentPlace]
+    let show: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Hier würde sie stehen").font(.callout.weight(.medium))
+                Text("\(artist) – \(title)").font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.middle)
+            }
+            if places.isEmpty {
+                Text("Es steht noch keine Platte im Regal, an der sie sich ausrichten könnte.")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                ForEach(Array(places.enumerated()), id: \.element.id) { index, place in
+                    if index > 0 { Text("oder genauso gut").font(.caption).foregroundStyle(.tertiary) }
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Fach „\(place.shelf)“ · Position \(place.position)").font(.callout).monospacedDigit()
+                        Text(place.neighbours).font(.caption).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Button("Im Regal zeigen", action: show)
+                    .appLinkButton()
+                    .font(.callout)
+            }
+        }
+        .padding(AppStyle.cardPadding)
+        .frame(width: 300, alignment: .leading)
+        .appPopoverSurface()
     }
 }
 

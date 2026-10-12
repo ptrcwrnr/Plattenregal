@@ -151,24 +151,9 @@ struct KallaxView: View {
     /// on this page (they are kept, and return when it is switched on again).
     private var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
 
-    /// Records marked "Vermisst": those still standing in a shelf in
-    /// use (shelf order) and those waiting to be sorted in (by artist) – the
-    /// list to work through while sorting the rest.
-    private var missingCopies: [RecordCopy] {
-        let ids = missingIDs
-        guard !ids.isEmpty else { return [] }
-        let owner = owner
-        let excluded = Set(exclusions.map(\.copyID))
-        let marked = allCopies.filter { ids.contains($0.id) }
-        let placed = marked
-            .filter { $0.shelf?.isInUse ?? false }
-            .sorted { a, b in
-                guard let sa = a.shelf, let sb = b.shelf else { return false }
-                if sa.id != sb.id { return Shelf.physicalOrder(sa, sb) }
-                return a.positionInShelf < b.positionInShelf
-            }
-        let waiting = marked.filter { ShelfAssignmentPresentation.isCandidate($0, owner: owner, excluding: excluded) }
-        return placed + ShelfAssignmentPresentation.sortedByArtist(waiting)
+    /// How many records the settings list under "Vermisst".
+    private var missingCount: Int {
+        MissingCopies.listed(missingIDs, in: allCopies, owner: owner, excluding: Set(exclusions.map(\.copyID))).count
     }
 
     private func forgetCopies() {
@@ -180,15 +165,6 @@ struct KallaxView: View {
     private func setMissing(_ copy: RecordCopy, _ missing: Bool) {
         do { try PositionService(context: context).setMissing([copy], missing) }
         catch { self.error = error.reportedMessage() }
-    }
-
-    /// Jumps to a record from the "Vermisst" list: its shelf with the
-    /// record picked, or – without a shelf – where it belongs alphabetically.
-    private func showMissing(_ copy: RecordCopy) {
-        guard let shelf = copy.shelf else { startPlacement(copy); return }
-        selectShelf(shelf)
-        focusCopy = copy
-        focusRevision += 1
     }
 
     private func removeSoldFromShelves() {
@@ -372,14 +348,10 @@ struct KallaxView: View {
                                     assignment = nil
                                     startPlacement(copy)
                                 },
-                                missingCopies: missingCopies,
+                                missingIDs: missingIDs,
+                                missingCount: missingCount,
                                 missingEnabled: missingEnabled,
-                                showMissing: { copy in
-                                    closingAssignment = nil
-                                    assignment = nil
-                                    showMissing(copy)
-                                },
-                                found: { setMissing($0, false) })
+                                openMissing: { settingsTab = .missing })
         }
         .appPanel(item: $sortCheck) { request in
             ShelfSortCheckView(shelf: request.shelf, rangeLabel: rangeLabels[request.shelf.id], close: { sortCheck = nil })

@@ -9,7 +9,6 @@ struct ShelfSettingsView: View {
     @Query(sort: \Shelf.number) private var shelves: [Shelf]
     @Query(sort: \Cabinet.sortOrder) private var cabinets: [Cabinet]
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
-    @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     @AppStorage(ShelfSecondaryOrder.key) private var secondaryOrder = ShelfSecondaryOrder.title
     @State private var cabinetID: UUID?
     /// The compartment whose menu is open (a click on its tile).
@@ -118,18 +117,10 @@ struct ShelfSettingsView: View {
             }
 
             SettingsCard(title: String(localized: "Einsortieren"),
-                         subtitle: String(localized: "Wie die Platten im Fach stehen und was beim Hinzufügen hilft.")) {
+                         subtitle: String(localized: "Wie die Platten im Fach stehen.")) {
                 SettingsRow(title: String(localized: "Bei gleichem Interpreten nach"), hint: String(localized: "Immer zuerst nach Interpret. \(secondaryOrder.hint) Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection.")) {
                     GlassSegmentedPicker(selection: $secondaryOrder, options: ShelfSecondaryOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Bei gleichem Interpreten nach")
-                }
-                Divider()
-                SettingsRow(title: String(localized: "Vermisst-Liste"),
-                            hint: missingEnabled
-                            ? String(localized: "Platten, die du beim Einsortieren nicht findest, lassen sich zurückstellen. Sie stehen neben „Platte hinzufügen“, bis sie wieder auftauchen.")
-                            : String(localized: "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest.")) {
-                    Toggle("Vermisst-Liste", isOn: $missingEnabled)
-                        .labelsHidden().toggleStyle(.switch)
                 }
             }
 
@@ -144,12 +135,9 @@ struct ShelfSettingsView: View {
             }
         }
         .onChange(of: cabinetID) { menuID = nil; namingID = nil; error = nil; shelfError = nil }
-        // Both change what the shelf page shows and where records go: worth a line in the protocol.
+        // Changes where records go: worth a line in the protocol.
         .onChange(of: secondaryOrder) { old, new in
             AppLog.info("Einstellungen", "Bei gleichem Interpreten jetzt nach \(new.title) statt \(old.title)")
-        }
-        .onChange(of: missingEnabled) { _, on in
-            AppLog.info("Einstellungen", "Vermisst-Liste \(on ? "eingeschaltet" : "ausgeschaltet – Markierungen bleiben gespeichert")")
         }
         .animation(AppStyle.standardAnimation, value: shelfError)
         .task(id: labelSignature) { labels = labelsCache.labels(for: shelves, style: labelStyle) }

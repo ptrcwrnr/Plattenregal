@@ -106,11 +106,8 @@ enum DisplaySettings {
     static let coverSizeKey = "coverSize"
     static let statisticsOrderKey = "statisticsSectionOrder"
     /// "Vermisst" on the shelf page: marking records not found while sorting
-    /// in, and the list of them beside "Platte hinzufügen". Off hides it all;
-    /// the marks themselves are kept.
+    /// in; the settings list them. Off hides the marks; they are kept.
     static let missingListKey = "missingListEnabled"
-    /// The "Vermisst" column beside "Platte hinzufügen" folded away.
-    static let missingColumnCollapsedKey = "missingColumnCollapsed"
 
     /// Klein, Mittel, Groß: the minimum cover width in the grid. The
     /// columns always fill the width, so a size only shows once the column

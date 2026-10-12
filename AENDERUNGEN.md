@@ -1,3 +1,11 @@
+# Vermisst in den Einstellungen, „i“ beim Einsortieren · 12.10.2026
+
+- **Neuer Reiter „Vermisst“ in den Einstellungen** (`MissingSettingsView`): Schalter „Vermisst-Liste“ (bisher unter „Regal“) und die Liste aller vermissten Platten mit Cover, Standort und „Freigeben“, dazu „Alle freigeben“. Freigegebene Platten ohne Fach stehen sofort wieder unter „Einsortieren“ und „Platte hinzufügen“, auch im offenen Fenster.
+- **„Platte hinzufügen“ / „Einsortieren“** zeigt nur noch verfügbare Platten. Die Vermisst-Spalte rechts samt Einklappen ist weg (`MissingCopiesColumn`, `missingColumnCollapsed`); oben rechts steht „x vermisst“ und öffnet den neuen Reiter. Der Pause-Knopf bleibt: Er stellt eine Platte zurück, sie verlässt die Liste.
+- **„i“ statt Pfeil** in jeder Zeile: ein Popover „Hier würde sie stehen“ mit Fach, Position und Nachbarn (bei zwei passenden Fächern beide) und „Im Regal zeigen“ für die Einsortier-Karte. Das „i“ gibt es jetzt auch für Platten, die ins offene Fach passen.
+- Welche vermissten Platten gelistet werden, steht an einer Stelle (`MissingCopies.listed`). Texte deutsch/englisch ergänzt, verwaiste entfernt.
+- Geprüft: Build ohne Warnungen, 205 Tests grün, Fensterfotos der Demo von „Einsortieren“ und dem Reiter „Vermisst“ (Modern hell). **Nicht angeklickt:** das „i“-Popover, „Freigeben“ und der Pause-Knopf in der laufenden App; Klassisch nicht fotografiert.
+
 # Abschlussprüfung 1.0.7 · 10.10.2026
 
 - README: Der Abgleich schreibt nur Geändertes; Tests brauchen rund 25 Sekunden und was sie abdecken; Prüfdatum. STATISTIK.md: Prüfdatum, Testzahl (31, der Test mit 2.000 Exemplaren entfiel). VALIDIERUNG.md: Befunde zu Tests, Doku, Absturzberichten, Protokoll, Fehlermeldungen und Lokalisierung – kein Fehler im Code, keine neuen Texte.
