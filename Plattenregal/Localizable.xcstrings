@@ -121,16 +121,6 @@
         }
       }
     },
-    "%@ · Sie bleiben im Regal, bis du alle verkauft hast." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · They stay on the shelf until you have sold them all."
-          }
-        }
-      }
-    },
     "%@ – %@: %@" : {
       "localizations" : {
         "en" : {
@@ -191,6 +181,16 @@
         }
       }
     },
+    "Aus: kein Vormerken und keine Liste. Bereits vorgemerkte Platten bleiben gemerkt, falls du es wieder einschaltest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off: no marking and no list. Records already marked are remembered in case you switch it back on."
+          }
+        }
+      }
+    },
     "Die Platte auf der Verkaufsliste ist verkauft?" : {
       "localizations" : {
         "en" : {
@@ -211,12 +211,12 @@
         }
       }
     },
-    "Keine Platte ist zum Verkauf vorgemerkt. Vormerken per Rechtsklick auf eine Platte: „Zum Verkauf vormerken“." : {
+    "Keine Platte ist zum Verkauf vorgemerkt." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No record is marked for sale. Right-click a record to mark it: “Mark for sale”."
+            "value" : "No record is marked for sale."
           }
         }
       }
@@ -241,6 +241,26 @@
         }
       }
     },
+    "Platten lassen sich per Rechtsklick zum Verkauf vormerken. Sie bleiben im Regal, bis du alle verkauft hast." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right-click a record to mark it for sale. Marked records stay on the shelf until you have sold them all."
+          }
+        }
+      }
+    },
+    "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf eine Platte. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records can be set aside: with the pause button in “Add Record” or by right-clicking a record. Until you mark them as found here, they are no longer offered for placing."
+          }
+        }
+      }
+    },
     "Sie werden aus ihren Fächern genommen und auf „Nicht im Regal“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst." : {
       "localizations" : {
         "en" : {
@@ -257,6 +277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "For sale"
+          }
+        }
+      }
+    },
+    "Verkaufsliste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sale list"
           }
         }
       }
@@ -7000,16 +7030,6 @@
         }
       }
     },
-    "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Records can be set aside: with the pause button in “Add Record” or by right-clicking in the compartment. Until you mark them as found here, they are no longer offered for placing."
-          }
-        }
-      }
-    },
     "Platten ohne Fach" : {
       "localizations" : {
         "en" : {
@@ -8836,16 +8856,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Missing list"
-          }
-        }
-      }
-    },
-    "Vermisste Platten" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Missing records"
           }
         }
       }

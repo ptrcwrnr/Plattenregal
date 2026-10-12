@@ -110,8 +110,10 @@ struct ShelfContentsView: View {
     let setMissing: (RecordCopy, Bool) -> Void
     @AppStorage("shelfContentsLayout") private var layout = OverviewLayout.grid
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
-    /// Records on the "Verkauf" list (settings tab "Listen").
-    private var forSale: Set<UUID> { Set(LibraryRecords.of(context).saleMarks.map(\.copyID)) }
+    @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
+    /// Records on the "Verkauf" list (settings tab "Listen"); none while the
+    /// list is switched off there.
+    private var forSale: Set<UUID> { saleEnabled ? Set(LibraryRecords.of(context).saleMarks.map(\.copyID)) : [] }
 
     /// Always in physical order. Sorting the table never changes the grid.
     @State private var items: [ShelfCopyItem] = []
@@ -286,10 +288,12 @@ struct ShelfContentsView: View {
                 Button("Als vermisst markieren") { menuFor = nil; setMissing(copy, true) }
             }
         }
-        Button(forSale.contains(copy.id) ? "Nicht mehr verkaufen" : "Zum Verkauf vormerken") {
-            menuFor = nil
-            do { try PositionService(context: context).setForSale([copy], !forSale.contains(copy.id)) }
-            catch { self.error = error.reportedMessage() }
+        if saleEnabled {
+            Button(forSale.contains(copy.id) ? "Nicht mehr verkaufen" : "Zum Verkauf vormerken") {
+                menuFor = nil
+                do { try PositionService(context: context).setForSale([copy], !forSale.contains(copy.id)) }
+                catch { self.error = error.reportedMessage() }
+            }
         }
         Button {
             menuFor = nil

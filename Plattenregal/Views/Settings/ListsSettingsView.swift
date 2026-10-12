@@ -14,6 +14,7 @@ struct ListsSettingsView: View {
     /// Shared with the pages, fetched only when they change (see `LibraryRecords`).
     private var records: LibraryRecords { .of(context) }
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
+    @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @State private var labels = ShelfLabels()
     @State private var labelsCache = ShelfLabelsCache()
@@ -56,53 +57,62 @@ struct ListsSettingsView: View {
                          subtitle: String(localized: "Für Platten, die beim Einsortieren gerade nicht zu finden sind.")) {
                 SettingsRow(title: String(localized: "Vermisst-Liste"),
                             hint: missingEnabled
-                            ? String(localized: "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten.")
+                            ? String(localized: "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf eine Platte. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten.")
                             : String(localized: "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest.")) {
                     Toggle("Vermisst-Liste", isOn: $missingEnabled)
                         .labelsHidden().toggleStyle(.switch)
                 }
-            }
-
-            SettingsCard(title: String(localized: "Vermisste Platten"),
-                         subtitle: copies.isEmpty ? nil : String(localized: "\(AppStyle.records(copies.count)) · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“.")) {
-                if copies.isEmpty {
-                    SettingsNote(String(localized: "Keine Platte ist als vermisst markiert."))
-                } else {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(copies) { copy in
-                            ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Gefunden"),
-                                            actionHelp: copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Markierung aufheben")) { release([copy]) }
-                            if copy.id != copies.last?.id { Divider() }
+                // Off: the marks are kept, but nothing shows them.
+                if missingEnabled {
+                    Divider()
+                    if copies.isEmpty {
+                        SettingsNote(String(localized: "Keine Platte ist als vermisst markiert."))
+                    } else {
+                        SettingsNote(String(localized: "\(AppStyle.records(copies.count)) · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“."))
+                        LazyVStack(alignment: .leading, spacing: 0) {
+                            ForEach(copies) { copy in
+                                ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Gefunden"),
+                                                actionHelp: copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Markierung aufheben")) { release([copy]) }
+                                if copy.id != copies.last?.id { Divider() }
+                            }
                         }
-                    }
-                    if copies.count > 1 {
-                        HStack {
-                            Spacer(minLength: 0)
-                            SecondaryButton(title: String(localized: "Alle gefunden")) { release(copies) }
+                        if copies.count > 1 {
+                            HStack {
+                                Spacer(minLength: 0)
+                                SecondaryButton(title: String(localized: "Alle gefunden")) { release(copies) }
+                            }
                         }
                     }
                 }
                 if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
             }
-            // Off: the marks are kept, but nothing on the shelf page shows them.
-            .opacity(missingEnabled ? 1 : 0.5)
 
             SettingsCard(title: String(localized: "Verkauf"),
-                         subtitle: forSale.isEmpty ? String(localized: "Für Platten, die du irgendwann verkaufen willst.")
-                         : String(localized: "\(AppStyle.records(forSale.count)) · Sie bleiben im Regal, bis du alle verkauft hast.")) {
-                if forSale.isEmpty {
-                    SettingsNote(String(localized: "Keine Platte ist zum Verkauf vorgemerkt. Vormerken per Rechtsklick auf eine Platte: „Zum Verkauf vormerken“."))
-                } else {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(forSale) { copy in
-                            ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Entfernen"),
-                                            actionHelp: String(localized: "Von der Verkaufsliste nehmen")) { keep(copy) }
-                            if copy.id != forSale.last?.id { Divider() }
+                         subtitle: String(localized: "Für Platten, die du irgendwann verkaufen willst.")) {
+                SettingsRow(title: String(localized: "Verkaufsliste"),
+                            hint: saleEnabled
+                            ? String(localized: "Platten lassen sich per Rechtsklick zum Verkauf vormerken. Sie bleiben im Regal, bis du alle verkauft hast.")
+                            : String(localized: "Aus: kein Vormerken und keine Liste. Bereits vorgemerkte Platten bleiben gemerkt, falls du es wieder einschaltest.")) {
+                    Toggle("Verkaufsliste", isOn: $saleEnabled)
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                if saleEnabled {
+                    Divider()
+                    if forSale.isEmpty {
+                        SettingsNote(String(localized: "Keine Platte ist zum Verkauf vorgemerkt."))
+                    } else {
+                        SettingsNote(AppStyle.records(forSale.count))
+                        LazyVStack(alignment: .leading, spacing: 0) {
+                            ForEach(forSale) { copy in
+                                ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Entfernen"),
+                                                actionHelp: String(localized: "Von der Verkaufsliste nehmen")) { keep(copy) }
+                                if copy.id != forSale.last?.id { Divider() }
+                            }
                         }
-                    }
-                    HStack {
-                        Spacer(minLength: 0)
-                        SecondaryButton(title: String(localized: "Alle verkauft …")) { confirmSold = true }
+                        HStack {
+                            Spacer(minLength: 0)
+                            SecondaryButton(title: String(localized: "Alle verkauft …")) { confirmSold = true }
+                        }
                     }
                 }
                 if let saleError { AppBanner(message: saleError, kind: .error).transition(AppStyle.funnelTransition()) }
@@ -120,6 +130,10 @@ struct ListsSettingsView: View {
         .animation(AppStyle.standardAnimation, value: saleError)
         .animation(AppStyle.standardAnimation, value: error)
         .animation(AppStyle.standardAnimation, value: missingEnabled)
+        .animation(AppStyle.standardAnimation, value: saleEnabled)
+        .onChange(of: saleEnabled) { _, on in
+            AppLog.info("Einstellungen", "Verkaufsliste \(on ? "eingeschaltet" : "ausgeschaltet – Vormerkungen bleiben gespeichert")")
+        }
         .onChange(of: missingEnabled) { _, on in
             AppLog.info("Einstellungen", "Vermisst-Liste \(on ? "eingeschaltet" : "ausgeschaltet – Markierungen bleiben gespeichert")")
         }

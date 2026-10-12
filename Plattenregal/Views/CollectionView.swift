@@ -34,6 +34,9 @@ struct CollectionView: View {
     /// switch or another page doesn't lose the place.
     @State private var scroll = ScrollAnchor<UUID>()
     @AppStorage(DisplaySettings.collectionLayoutKey) private var layout = OverviewLayout.grid
+    /// The two lists of the settings tab "Listen"; off, their menu entries are gone.
+    @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
+    @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
     /// Width left for the cover columns, derived from the grid's *current*
@@ -535,7 +538,15 @@ struct CollectionView: View {
         }
         refreshButton(for: [copy])
         exclusionButton(for: [copy])
-        saleButton(for: copy)
+        if missingEnabled { missingButton(for: copy) }
+        if saleEnabled { saleButton(for: copy) }
+    }
+    /// Marks the copy "Vermisst" (settings tab "Listen") or found again.
+    @ViewBuilder private func missingButton(for copy: RecordCopy) -> some View {
+        let missing = records.missingMarks.contains { $0.copyID == copy.id }
+        Button(missing ? "Wieder gefunden" : "Als vermisst markieren") {
+            perform { try PositionService(context: context).setMissing([copy], !missing) }
+        }
     }
     /// Puts the copy on the "Verkauf" list (settings tab "Listen") or takes it off.
     @ViewBuilder private func saleButton(for copy: RecordCopy) -> some View {

@@ -1,3 +1,9 @@
+# Vermisst und Verkauf einzeln abschaltbar · 12.10.2026
+
+- **Einstellungen → Listen:** je eine Karte „Vermisst“ und „Verkauf“ mit eigenem Schalter, darunter die Liste (nur wenn eingeschaltet). Neu ist der Schalter „Verkaufsliste“ (`saleListEnabled`, Vorgabe an).
+- **Rechtsklick in der Collection** hat jetzt auch „Als vermisst markieren“ / „Wieder gefunden“, neben „Zum Verkauf vormerken“ / „Nicht mehr verkaufen“. Beide Einträge erscheinen nur, wenn die jeweilige Liste eingeschaltet ist – ebenso im Fachinhalt, wo ohne Verkaufsliste auch das Etikett „Verkauf“ entfällt. Abschalten löscht keine Markierung.
+- Geprüft: Build, 206 Tests, Fensterfoto des Reiters (Demo, Modern hell). **Nicht angeklickt:** die Schalter und die Rechtsklick-Menüs.
+
 # Reiter „Listen“ und Verkaufsliste, Schema V16 · 12.10.2026
 
 - **Einstellungen: „Vermisst“ heißt jetzt „Listen“** (`ListsSettingsView`) und hat eine zweite Liste **„Verkauf“** für Platten, die irgendwann verkauft werden sollen.
