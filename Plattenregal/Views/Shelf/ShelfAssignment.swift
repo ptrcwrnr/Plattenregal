@@ -175,8 +175,6 @@ struct ShelfAssignmentView: View {
     let rangeLabel: String?
     /// All shelf names, for the rows that belong elsewhere.
     let labels: ShelfLabels
-    /// A record that belongs in another shelf: close and show its place there.
-    let findPlace: (RecordCopy) -> Void
     /// Every mark in the rack; a record released in the settings returns to the list.
     var missingIDs: Set<UUID> = []
     /// Off in the settings: no pause buttons, marked records are listed like the rest.
@@ -216,8 +214,7 @@ struct ShelfAssignmentView: View {
                                     belongsElsewhere: session.belongsElsewhere,
                                     toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
                                     hover: { [session] copy, hovering in session.hover(copy, hovering) },
-                                    places: places,
-                                    findPlace: findPlace) { [session, context] copy in
+                                    places: places) { [session, context] copy in
                     session.add(copy, in: context)
                 }
                 if session.loaded && items.isEmpty {
@@ -317,7 +314,6 @@ private struct ShelfAssignmentGrid: View {
     let toggleMissing: (RecordCopy) -> Void
     let hover: (RecordCopy, Bool) -> Void
     let places: (RecordCopy) -> [AssignmentPlace]
-    let findPlace: (RecordCopy) -> Void
     let add: (RecordCopy) -> Void
 
     var body: some View {
@@ -330,8 +326,7 @@ private struct ShelfAssignmentGrid: View {
                                         rackWide: rackWide,
                                         toggleMissing: { toggleMissing(copy) },
                                         hover: { hover(copy, $0) },
-                                        places: { places(copy) },
-                                        findPlace: { findPlace(copy) }) { add(copy) }
+                                        places: { places(copy) }) { add(copy) }
                         .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
             }
@@ -398,7 +393,6 @@ private struct ShelfAssignmentTile: View {
     let hover: (Bool) -> Void
     /// Where it would stand, read when the "i" is clicked.
     let places: () -> [AssignmentPlace]
-    let findPlace: () -> Void
     let add: () -> Void
     @State private var hovering = false
     /// The popover of the "i": where the record would stand.
@@ -461,10 +455,7 @@ private struct ShelfAssignmentTile: View {
                 .help("Zeigt, wo sie einsortiert stehen würde")
                 .accessibilityLabel("\(artist) – \(title): Platz im Regal")
                 .popover(isPresented: $showsPlace, arrowEdge: .bottom) {
-                    AssignmentPlacePopover(artist: artist, title: title, places: places()) {
-                        showsPlace = false
-                        findPlace()
-                    }
+                    AssignmentPlacePopover(artist: artist, title: title, places: places())
                 }
             if rackWide {
                 if let belongsIn {
@@ -513,12 +504,11 @@ struct AssignmentPlace: Identifiable {
 }
 
 /// The popover of a row's "i": the shelf and position the record would get
-/// (both, when it falls between two shelves) and the way to see it in the rack.
+/// (both, when it falls between two shelves).
 private struct AssignmentPlacePopover: View {
     let artist: String
     let title: String
     let places: [AssignmentPlace]
-    let show: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
@@ -540,9 +530,6 @@ private struct AssignmentPlacePopover: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                Button("Im Regal zeigen", action: show)
-                    .appLinkButton()
-                    .font(.callout)
             }
         }
         .padding(AppStyle.cardPadding)

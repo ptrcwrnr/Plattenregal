@@ -337,12 +337,6 @@ struct KallaxView: View {
             closingAssignment = nil
         }) { session in
             ShelfAssignmentView(session: session, owner: owner, rangeLabel: session.shelf.flatMap { rangeLabels[$0.id] }, labels: rangeLabels,
-                                findPlace: { copy in
-                                    // Its own shelf instead: no record to pick up here afterwards.
-                                    closingAssignment = nil
-                                    assignment = nil
-                                    startPlacement(copy)
-                                },
                                 missingIDs: missingIDs,
                                 missingEnabled: missingEnabled,
                                 openMissing: { settingsTab = .missing })

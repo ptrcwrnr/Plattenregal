@@ -5151,16 +5151,6 @@
         }
       }
     },
-    "Im Regal zeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show on Shelf"
-          }
-        }
-      }
-    },
     "Immer dunkel, unabhängig von macOS." : {
       "localizations" : {
         "en" : {

@@ -1,3 +1,7 @@
+# „i“-Popover ohne „Im Regal zeigen“ · 12.10.2026
+
+- Das Popover „Hier würde sie stehen“ zeigt nur noch Fach, Position und Nachbarn; der Link „Im Regal zeigen“ ist entfallen. Aus dem Fenster heraus gibt es damit keinen Sprung zur Einsortier-Karte mehr (die bleibt über Suche, Collection und Rechtsklick erreichbar). Karte oben im Fenster bündig mit den äußeren Covern.
+
 # „Einsortieren“ als Cover-Raster · 12.10.2026
 
 - **„Platte hinzufügen“ / „Einsortieren“** zeigt die Platten jetzt als Cover-Raster wie der Fachinhalt darunter: vier Cover nebeneinander (Fenster 660 statt 460 pt breit), darunter dieselbe Beschriftung wie im Fach (Interpret, Titel, Jahr · Label) und „gehört in …“. Pause, „i“ und „+“ liegen beim Überfahren in einer Glaskapsel unten auf dem Cover, „Als Nächstes“ als Etikett oben links; ein Doppelklick fügt weiterhin hinzu. Eine hinzugefügte Platte blendet aus, die übrigen rücken nach.
