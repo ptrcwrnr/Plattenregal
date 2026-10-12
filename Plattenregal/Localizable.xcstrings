@@ -121,302 +121,12 @@
         }
       }
     },
-    "%@ gehört in „%@“ – „i“ zeigt den Platz" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ belongs in “%2$@” – “i” shows the place"
-          }
-        }
-      }
-    },
-    "%@ in „%@“ %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ in “%2$@” %3$@"
-          }
-        }
-      }
-    },
-    "%@ · Freigegebene Platten ohne Fach stehen wieder unter „Einsortieren“." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · Released records without a compartment are listed under “Placing” again."
-          }
-        }
-      }
-    },
-    "%@ – %@ freigeben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Release %1$@ – %2$@"
-          }
-        }
-      }
-    },
-    "%@ – %@: Platz im Regal" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ – %2$@: place on the shelf"
-          }
-        }
-      }
-    },
-    "%@ – noch steht keine Platte im Regal" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ – no record stands on the shelf yet"
-          }
-        }
-      }
-    },
-    "%lld einsortiert" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld sorted in"
-          }
-        }
-      }
-    },
     ", %lld Exemplare" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ", %lld copies"
-          }
-        }
-      }
-    },
-    "Alle freigeben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Release all"
-          }
-        }
-      }
-    },
-    "Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ gibst du sie wieder frei." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All remaining records without a compartment are marked as missing. Release them in Settings under “Missing”."
-          }
-        }
-      }
-    },
-    "An ihrer alphabetischen Stelle in „%@“ einsortieren" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort into “%@” at its alphabetical place"
-          }
-        }
-      }
-    },
-    "Einsortieren – Platten ohne Fach und wohin sie gehören" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sort In – records without a compartment and where they belong"
-          }
-        }
-      }
-    },
-    "Es steht noch keine Platte im Regal, an der sie sich ausrichten könnte." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No record stands on the shelf yet that it could line up with."
-          }
-        }
-      }
-    },
-    "Fach „%@“ · Position %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compartment “%1$@” · position %2$lld"
-          }
-        }
-      }
-    },
-    "Freigeben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Release"
-          }
-        }
-      }
-    },
-    "Für Platten, die beim Einsortieren gerade nicht zu finden sind." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For records you can't find right now while placing."
-          }
-        }
-      }
-    },
-    "Hier würde sie stehen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This is where it would stand"
-          }
-        }
-      }
-    },
-    "Keine Platte ist als vermisst markiert." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No record is marked as missing."
-          }
-        }
-      }
-    },
-    "Nach Interpret die nächste Platte" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next record by artist"
-          }
-        }
-      }
-    },
-    "oder genauso gut" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "or just as well"
-          }
-        }
-      }
-    },
-    "Passt alphabetisch in „%@“" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fits alphabetically in “%@”"
-          }
-        }
-      }
-    },
-    "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier freigibst, werden sie nicht mehr zum Einsortieren angeboten." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Records can be set aside: with the pause button in “Add Record” or by right-clicking in the compartment. Until you release them here, they are no longer offered for placing."
-          }
-        }
-      }
-    },
-    "Platten ohne Fach" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Records without a compartment"
-          }
-        }
-      }
-    },
-    "Vermisste Platten" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Missing records"
-          }
-        }
-      }
-    },
-    "Vermisste Platten …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Missing records …"
-          }
-        }
-      }
-    },
-    "Wie die Platten im Fach stehen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How records stand in the compartment."
-          }
-        }
-      }
-    },
-    "Wieder gefunden – Markierung aufheben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Found again – remove the mark"
-          }
-        }
-      }
-    },
-    "Wieder zum Einsortieren anbieten" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Offer for placing again"
-          }
-        }
-      }
-    },
-    "Zeigt, wo sie einsortiert stehen würde" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shows where it would stand once placed"
-          }
-        }
-      }
-    },
-    "Zuletzt „%@“ in „%@“ %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last added: “%1$@” in “%2$@” %3$@"
           }
         }
       }
@@ -536,6 +246,16 @@
         }
       }
     },
+    "%@ – %@ freigeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release %1$@ – %2$@"
+          }
+        }
+      }
+    },
     "%@ – %@ in „%@“ einsortieren" : {
       "localizations" : {
         "de" : {
@@ -569,6 +289,7 @@
       }
     },
     "%@ – %@ wieder gefunden" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -580,6 +301,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ – %@ found again"
+          }
+        }
+      }
+    },
+    "%@ – %@: Platz im Regal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@: place on the shelf"
+          }
+        }
+      }
+    },
+    "%@ – noch steht keine Platte im Regal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ – no record stands on the shelf yet"
           }
         }
       }
@@ -638,6 +379,16 @@
       },
       "shouldTranslate" : false
     },
+    "%@ · Freigegebene Platten ohne Fach stehen wieder unter „Einsortieren“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Released records without a compartment are listed under “Placing” again."
+          }
+        }
+      }
+    },
     "%@ (inaktiv) · " : {
       "localizations" : {
         "en" : {
@@ -675,12 +426,32 @@
         }
       }
     },
+    "%@ gehört in „%@“ – „i“ zeigt den Platz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ belongs in “%2$@” – “i” shows the place"
+          }
+        }
+      }
+    },
     "%@ hinzugefügt" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ added"
+          }
+        }
+      }
+    },
+    "%@ in „%@“ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ in “%2$@” %3$@"
           }
         }
       }
@@ -972,6 +743,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld requests"
+          }
+        }
+      }
+    },
+    "%lld einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sorted in"
           }
         }
       }
@@ -1778,6 +1559,16 @@
         }
       }
     },
+    "Alle freigeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release all"
+          }
+        }
+      }
+    },
     "Alle Platten aus den Fächern nehmen, Sperren aufheben." : {
       "localizations" : {
         "en" : {
@@ -1834,6 +1625,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All tracks in one column"
+          }
+        }
+      }
+    },
+    "Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ gibst du sie wieder frei." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All remaining records without a compartment are marked as missing. Release them in Settings under “Missing”."
           }
         }
       }
@@ -2116,6 +1917,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "at the beginning"
+          }
+        }
+      }
+    },
+    "An ihrer alphabetischen Stelle in „%@“ einsortieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort into “%@” at its alphabetical place"
           }
         }
       }
@@ -4239,6 +4050,16 @@
         }
       }
     },
+    "Einsortieren – Platten ohne Fach und wohin sie gehören" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort In – records without a compartment and where they belong"
+          }
+        }
+      }
+    },
     "Einstellungen" : {
       "localizations" : {
         "en" : {
@@ -4445,6 +4266,16 @@
         }
       }
     },
+    "Es steht noch keine Platte im Regal, an der sie sich ausrichten könnte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No record stands on the shelf yet that it could line up with."
+          }
+        }
+      }
+    },
     "Excel mit deutschen Einstellungen erwartet Semikolons." : {
       "localizations" : {
         "en" : {
@@ -4585,6 +4416,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compartment “%@” · %@ · %@ in the compartment"
+          }
+        }
+      }
+    },
+    "Fach „%@“ · Position %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartment “%1$@” · position %2$lld"
           }
         }
       }
@@ -4739,6 +4580,16 @@
         }
       }
     },
+    "Freigeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release"
+          }
+        }
+      }
+    },
     "Für den Sammlungswert fehlt der Discogs-Token. Trage ihn in den Einstellungen ein." : {
       "localizations" : {
         "en" : {
@@ -4765,6 +4616,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "For Numbers, Excel or Google Sheets – with the columns chosen below."
+          }
+        }
+      }
+    },
+    "Für Platten, die beim Einsortieren gerade nicht zu finden sind." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For records you can't find right now while placing."
           }
         }
       }
@@ -5126,6 +4987,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Located here"
+          }
+        }
+      }
+    },
+    "Hier würde sie stehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is where it would stand"
           }
         }
       }
@@ -5675,6 +5546,16 @@
         }
       }
     },
+    "Keine Platte ist als vermisst markiert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No record is marked as missing."
+          }
+        }
+      }
+    },
     "Keine Schallplatten" : {
       "localizations" : {
         "en" : {
@@ -6182,6 +6063,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Move back"
+          }
+        }
+      }
+    },
+    "Nach Interpret die nächste Platte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next record by artist"
           }
         }
       }
@@ -6740,6 +6631,16 @@
         }
       }
     },
+    "oder genauso gut" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "or just as well"
+          }
+        }
+      }
+    },
     "Ohne Fach" : {
       "localizations" : {
         "en" : {
@@ -6851,6 +6752,16 @@
         }
       }
     },
+    "Passt alphabetisch in „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fits alphabetically in “%@”"
+          }
+        }
+      }
+    },
     "Passt alphabetisch in „%@“, nicht in dieses Fach" : {
       "localizations" : {
         "en" : {
@@ -6954,6 +6865,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "records"
+          }
+        }
+      }
+    },
+    "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier freigibst, werden sie nicht mehr zum Einsortieren angeboten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records can be set aside: with the pause button in “Add Record” or by right-clicking in the compartment. Until you release them here, they are no longer offered for placing."
+          }
+        }
+      }
+    },
+    "Platten ohne Fach" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records without a compartment"
           }
         }
       }
@@ -8778,6 +8709,26 @@
         }
       }
     },
+    "Vermisste Platten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missing records"
+          }
+        }
+      }
+    },
+    "Vermisste Platten …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missing records …"
+          }
+        }
+      }
+    },
     "Version %@ (%@)" : {
       "localizations" : {
         "de" : {
@@ -9105,6 +9056,16 @@
         }
       }
     },
+    "Wie die Platten im Fach stehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How records stand in the compartment."
+          }
+        }
+      }
+    },
     "Wie eine neue Installation. Sicherungen der Belegung bleiben erhalten." : {
       "localizations" : {
         "en" : {
@@ -9141,6 +9102,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Found Again"
+          }
+        }
+      }
+    },
+    "Wieder gefunden – Markierung aufheben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found again – remove the mark"
+          }
+        }
+      }
+    },
+    "Wieder zum Einsortieren anbieten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offer for placing again"
           }
         }
       }
@@ -9327,6 +9308,16 @@
         }
       }
     },
+    "Zeigt, wo sie einsortiert stehen würde" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows where it would stand once placed"
+          }
+        }
+      }
+    },
     "Zeigt, zwischen welchen Platten sie steht" : {
       "localizations" : {
         "en" : {
@@ -9451,6 +9442,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last added: “%@” %@"
+          }
+        }
+      }
+    },
+    "Zuletzt „%@“ in „%@“ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last added: “%1$@” in “%2$@” %3$@"
           }
         }
       }

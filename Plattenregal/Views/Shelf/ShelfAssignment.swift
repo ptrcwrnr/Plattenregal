@@ -354,8 +354,6 @@ struct AssignmentCard<Trailing: View>: View {
 
     var body: some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            // Centered in a column as wide as a cover: sits right above the
-            // covers below, and the texts line up with theirs.
             Image(systemName: "square.grid.3x3.fill")
                 .resizable()
                 .frame(width: 24, height: 24)
@@ -373,10 +371,8 @@ struct AssignmentCard<Trailing: View>: View {
         }
         .padding(.horizontal, AppStyle.rowSpacing)
         .padding(.vertical, AppStyle.rowSpacing)
+        // Flush with the outer covers of the grid below.
         .appCardSurface(cornerRadius: 16)
-        // The surface reaches out past the column, so the symbol and texts
-        // line up with the title above and the rows below.
-        .padding(.horizontal, -AppStyle.rowSpacing)
     }
 }
 
