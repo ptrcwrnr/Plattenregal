@@ -1,3 +1,7 @@
+# Version 1.1.0 · 12.10.2026
+
+- Version 1.1.0, Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.1.0.dmg`), mit der einheitlichen Abstandsskala. README, STATISTIK.md und VALIDIERUNG.md: Version.
+
 # Einheitliche Abstandsskala · 12.10.2026
 
 - **Eine Skala für alle Abstände** (`AppStyle`, `Utilities/AppAppearance.swift`): 2 · 4 · 8 · 12 · 16 · 20 · 24 · 28. Neu sind `hairSpacing` (2, Zeilen einer Beschriftung), `pageMargin` (28, Seitenrand; bisher überall `pagePadding + 4`) und `blockSpacing` (28, zwischen den großen Blöcken einer Seite). Rund 180 freie Zahlen in 19 Dateien nehmen jetzt eine Stufe daraus; Werte wie 3, 5, 7, 9, 11, 13 und 14 gibt es bei Abständen nicht mehr. `CoverGrid` und `StatisticsLayout` leiten sich aus der Skala ab.
