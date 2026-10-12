@@ -241,6 +241,16 @@
         }
       }
     },
+    "Gehört in „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belongs in “%@”"
+          }
+        }
+      }
+    },
     "Keine Platte ist zum Verkauf vorgemerkt." : {
       "localizations" : {
         "en" : {
@@ -261,12 +271,22 @@
         }
       }
     },
-    "Klick: in „%@“ an Position %lld einsortieren. Rechtsklick: weitere Aktionen." : {
+    "Klick: hier einsortieren. Rechtsklick: weitere Aktionen." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Click: place in “%1$@” at position %2$lld. Right-click: more actions."
+            "value" : "Click: place here. Right-click: more actions."
+          }
+        }
+      }
+    },
+    "Klick: trotzdem in dieses Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click: add to this compartment anyway. Right-click: more actions."
           }
         }
       }
@@ -301,12 +321,12 @@
         }
       }
     },
-    "Passt alphabetisch in „%@“. Klick: trotzdem in dieses Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
+    "Position %lld · %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fits alphabetically in “%@”. Click: add to this compartment anyway. Right-click: more actions."
+            "value" : "Position %1$lld · %2$@"
           }
         }
       }
@@ -4768,16 +4788,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Found via the track “%@”"
-          }
-        }
-      }
-    },
-    "gehört in „%@“" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "belongs in “%@”"
           }
         }
       }

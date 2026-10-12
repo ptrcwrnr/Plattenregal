@@ -1,3 +1,8 @@
+# Einsortieren-Fenster: eine Zeile je Platte, Standort groß · 12.10.2026
+
+- Statt vier Kacheln nebeneinander steht jede Platte in einer Zeile über die Fensterbreite: Cover (132 pt, wie im Fachinhalt), daneben Beschriftung und darunter groß der Standort – Regal · Fach in der Akzentfarbe, dann „Position n · zwischen … und …“. In „Platte hinzufügen“ heißt es bei Platten für ein anderes Fach „Gehört in „…““ in Grau. „Als Nächstes“ steht als Etikett unter der Beschriftung, das Positions-Etikett auf dem Cover entfällt. Klick und Rechtsklick-Menü wie zuvor.
+- Geprüft: Build, Tests, Fensterfotos beider Fenster (Demo, Modern hell). Nicht angeklickt.
+
 # Einsortieren-Fenster: Kacheln wie im Fach, Klick statt Symbole · 12.10.2026
 
 - Die Symbole beim Überfahren (Pause, „i“, „+“) samt „i“-Popover sind entfallen. Jede Kachel ist aufgebaut wie im Fachinhalt: Cover mit Positions-Etikett (die Position, die die Platte bekäme), Beschriftung, darunter das Fach, in das sie gehört („Einsortieren“) bzw. „gehört in …“ („Platte hinzufügen“, dort ohne Position, weil der Klick ins offene Fach geht).
