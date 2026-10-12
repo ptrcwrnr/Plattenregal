@@ -1,3 +1,12 @@
+# Automatischer Export: eigene Auswahl der Listen · 12.10.2026
+
+- Bisher schrieb der automatische Export, was unter „Daten“ gewählt war. Wer dort für eine einzelne Datei auf „Verkaufsliste“ oder „Wantlist“ stellte, beendete damit unbemerkt den automatischen Export der Collection.
+- Jetzt hat „Automatischer Export“ eigene Schalter: **Collection, Wantlist, Verkaufsliste** – auch mehrere zugleich, jede Liste in ihrer eigenen Datei (der Name steht unter dem Schalter). „Daten“ oben gilt nur noch für „Als … exportieren“. Format, Spalten und Reihenfolge kommen weiter von oben.
+- Übernahme: Beim ersten Start wird einmal gespeichert, was der automatische Export bisher schrieb (die unter „Daten“ gewählte Liste) – es ändert sich also nichts von selbst. Nach „Einstellungen zurücksetzen“ ebenso.
+- Eine leere Liste wird wie bisher nicht geschrieben und ersetzt keine Datei; die übrigen gewählten Listen werden trotzdem geschrieben. Ist keine Liste gewählt, sagt die Zeile das, und es wird nichts exportiert. Eine unter „Listen“ abgeschaltete Verkaufsliste fehlt bei den Schaltern und wird nicht geschrieben; ihre Wahl bleibt gemerkt.
+- Technik: `ScheduledExport.sourcesKey`, `sources`, `adoptSources()`, `nonEmpty(_:in:)`; `run` liefert die geschriebenen Dateinamen. Test `ExportTests.scheduledExportWritesItsOwnChoiceOfLists`.
+- Geprüft: Build ohne Warnungen, 208 Tests. **Nicht angesehen:** die neuen Schalter in der laufenden App (in der Demo ist der automatische Export gesperrt) und kein echter Lauf in einen Ordner.
+
 # Export durchgesehen: „Ohne Regalplatz“ mit eigener Überschrift · 12.10.2026
 
 - **Reihenfolge „Wie im Regal“:** Platten ohne Fach standen alle unter „Noch nicht einsortiert“ – auch die bewusst herausgenommenen („Ohne Regalplatz“). Seit der Umbenennung sind das zwei verschiedene Dinge. Jetzt folgen nach den Fächern erst die noch nicht einsortierten, dann die ohne Regalplatz, jede Gruppe alphabetisch und in der PDF mit eigener Überschrift (CSV: dieselbe Reihenfolge; die Spalte „Fach“ nannte den Unterschied schon). Gilt für Collection und Verkaufsliste. Erklärung der Reihenfolge im Export-Reiter angepasst.

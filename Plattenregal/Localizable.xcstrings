@@ -7706,12 +7706,32 @@
         }
       }
     },
-    "Schreibt den Export mit den Einstellungen oben regelmäßig in einen Ordner – z. B. in iCloud Drive. Die Datei „%@“ wird dabei jedes Mal ersetzt." : {
+    "Schreibt die unten gewählten Listen regelmäßig in einen Ordner – z. B. in iCloud Drive –, mit Format, Spalten und Reihenfolge von oben. Jede Liste hat ihre eigene Datei, die dabei jedes Mal ersetzt wird." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Regularly writes the export with the settings above to a folder – e.g. in iCloud Drive. The file “%@” is replaced each time."
+            "value" : "Regularly writes the lists chosen below to a folder – e.g. in iCloud Drive – with the format, columns and order from above. Each list has its own file, which is replaced each time."
+          }
+        }
+      }
+    },
+    "Datei „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File “%@”"
+          }
+        }
+      }
+    },
+    "Keine Liste gewählt – ohne Auswahl wird nichts exportiert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No list chosen – nothing is exported without a selection."
           }
         }
       }

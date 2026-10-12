@@ -219,6 +219,23 @@ extension AllTests {
             #expect(full.rows.first?.values[try #require(full.column(ExportColumn.masterID))] == "")
         }
 
+        @Test func scheduledExportWritesItsOwnChoiceOfLists() throws {
+            // Stored in a fixed order, whatever order they were switched on in; unknown names are dropped.
+            #expect(ScheduledExport.joined([.wantlist, .collection]) == "collection,wantlist")
+            #expect(ScheduledExport.parseSources("wantlist,unbekannt,collection") == [.collection, .wantlist])
+            #expect(ScheduledExport.parseSources("").isEmpty)
+
+            // Only lists that hold records are written: an empty one keeps its last file.
+            let (container, shelves, service) = try fixture()
+            let context = container.mainContext
+            #expect(ScheduledExport.nonEmpty([.collection, .wantlist, .sale], in: context).isEmpty)
+            let copy = try service.insert(release: Release(artist: "A", title: "1"), shelf: shelves[0], owner: "me")
+            #expect(ScheduledExport.nonEmpty([.collection, .wantlist, .sale], in: context) == [.collection])
+            try service.setForSale([copy], true)
+            #expect(ScheduledExport.nonEmpty([.collection, .wantlist, .sale], in: context) == [.collection, .sale])
+            #expect(ScheduledExport.nonEmpty([.wantlist], in: context).isEmpty)
+        }
+
         @Test func scheduledExportIsDueAfterAClockSetBack() {
             let now = Date(timeIntervalSince1970: 1_790_000_000)
             #expect(ScheduledExport.nextRun(after: nil, interval: .weekly, now: now) == now)

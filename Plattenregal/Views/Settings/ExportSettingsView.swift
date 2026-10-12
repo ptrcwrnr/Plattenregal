@@ -18,6 +18,8 @@ struct ExportSettingsView: View {
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @AppStorage(ScheduledExport.enabledKey) private var autoEnabled = false
     @AppStorage(ScheduledExport.intervalKey) private var autoInterval = ExportInterval.weekly
+    /// The lists the automatic export writes – its own choice, not "Daten" above.
+    @AppStorage(ScheduledExport.sourcesKey) private var storedAutoSources = ExportSettings.stored.source.rawValue
     @State private var scheduled = ScheduledExport.shared
     /// The export folder, resolved when the page appears or the export ran –
     /// not on every redraw (a bookmark can stall on a disconnected drive).
@@ -157,7 +159,7 @@ struct ExportSettingsView: View {
         SettingsCard(title: String(localized: "Automatischer Export"),
                             subtitle: DemoMode.showsBanner
                                 ? String(localized: "In der Demo wird nicht automatisch exportiert. Über „Als … exportieren“ oben lässt sich die Beispielsammlung trotzdem als Datei sichern.")
-                                : String(localized: "Schreibt den Export mit den Einstellungen oben regelmäßig in einen Ordner – z. B. in iCloud Drive. Die Datei „\(ScheduledExport.fileName(for: settings))“ wird dabei jedes Mal ersetzt.")) {
+                                : String(localized: "Schreibt die unten gewählten Listen regelmäßig in einen Ordner – z. B. in iCloud Drive –, mit Format, Spalten und Reihenfolge von oben. Jede Liste hat ihre eigene Datei, die dabei jedes Mal ersetzt wird.")) {
             SettingsRow(title: String(localized: "Automatisch exportieren")) {
                 Toggle("Automatisch exportieren", isOn: $autoEnabled).labelsHidden().toggleStyle(.switch)
                     .disabled(DemoMode.showsBanner)
@@ -168,6 +170,13 @@ struct ExportSettingsView: View {
                     segmented($autoInterval, ExportInterval.allCases) { $0.title }
                 }
                 Divider()
+                // Independent of "Daten" above, and more than one at a time.
+                ForEach(sources) { source in
+                    SettingsRow(title: source.title, hint: String(localized: "Datei „\(autoFileName(source))“")) {
+                        Toggle(source.title, isOn: autoBinding(for: source)).labelsHidden().toggleStyle(.switch)
+                    }
+                    Divider()
+                }
                 SettingsRow(title: String(localized: "Ordner"), hint: folder.map(FolderAccess.displayName) ?? (ScheduledExport.folder.isSet
                                 ? String(localized: "Der gewählte Ordner ist nicht mehr erreichbar (verschoben, gelöscht oder Laufwerk getrennt). Bitte neu wählen.")
                                 : String(localized: "Noch kein Ordner gewählt – ohne Ordner wird nichts exportiert."))) {
@@ -184,16 +193,21 @@ struct ExportSettingsView: View {
                 Divider()
                 SettingsRow(title: scheduled.lastRun.map { String(localized: "Zuletzt \($0.formatted(.relative(presentation: .named)))") } ?? String(localized: "Noch nicht exportiert"),
                             hint: sync.busy ? String(localized: "Nach der laufenden Synchronisierung.")
-                                : count == 0 ? String(localized: "Ohne Platten wird nichts exportiert, damit keine leere Liste die letzte Datei ersetzt.")
+                                : autoSources.isEmpty ? String(localized: "Keine Liste gewählt – ohne Auswahl wird nichts exportiert.")
+                                : !autoHasRecords ? String(localized: "Ohne Platten wird nichts exportiert, damit keine leere Liste die letzte Datei ersetzt.")
                                 : scheduled.nextRun.map { $0 <= .now ? String(localized: "Der nächste Export folgt in Kürze.") : String(localized: "Nächster Export \($0.formatted(date: .abbreviated, time: .shortened)).") }) {
                     SecondaryButton(title: String(localized: "Jetzt exportieren")) {
                         Task {
-                            do { autoStatus = (String(localized: "Gespeichert als „\(try await scheduled.run(container: context.container))“."), false) }
+                            do {
+                                let names = try await scheduled.run(container: context.container)
+                                guard !names.isEmpty else { return }
+                                autoStatus = (String(localized: "Gespeichert als „\(names.joined(separator: "“, „"))“."), false)
+                            }
                             catch { autoStatus = (scheduled.lastError ?? error.reportedMessage(), true) }
                         }
                     }
                     // Mid-sync the list is half updated, and it replaces the file.
-                    .disabled(folder == nil || count == 0 || sync.busy || scheduled.isRunning)
+                    .disabled(folder == nil || !autoHasRecords || sync.busy || scheduled.isRunning)
                 }
                 if let autoStatus {
                     AppBanner(message: autoStatus.message, kind: autoStatus.failed ? .error : .success)
@@ -211,8 +225,38 @@ struct ExportSettingsView: View {
             autoStatus = nil; scheduled.settingsChanged()
         }
         .onChange(of: autoInterval) { scheduled.settingsChanged() }
-        .onAppear { folder = ScheduledExport.folder.url }
+        .onChange(of: storedAutoSources) { _, sources in
+            AppLog.info("Export", "Automatischer Export schreibt: \(ScheduledExport.parseSources(sources).map(\.title).joined(separator: ", "))")
+            autoStatus = nil; scheduled.settingsChanged()
+        }
+        .onAppear { ScheduledExport.adoptSources(); folder = ScheduledExport.folder.url }
         .onChange(of: scheduled.version) { folder = ScheduledExport.folder.url }
+    }
+
+    /// What the automatic export writes; a list switched off under "Listen" isn't among them.
+    private var autoSources: [ExportSource] {
+        ScheduledExport.parseSources(storedAutoSources).filter(sources.contains)
+    }
+    /// Whether any of them holds records – an empty list is never written.
+    private var autoHasRecords: Bool {
+        _ = changes.libraryVersion
+        if autoSources.contains(.sale) { _ = LibraryRecords.of(context).saleMarks.count }
+        return !ScheduledExport.nonEmpty(autoSources, in: context).isEmpty
+    }
+    private func autoFileName(_ source: ExportSource) -> String {
+        var settings = settings
+        settings.source = source
+        return ScheduledExport.fileName(for: settings)
+    }
+    private func autoBinding(for source: ExportSource) -> Binding<Bool> {
+        Binding {
+            autoSources.contains(source)
+        } set: { on in
+            // From what is stored, so a list switched off under "Listen" keeps its choice.
+            var chosen = Set(storedAutoSources.split(separator: ",").compactMap { ExportSource(rawValue: String($0)) })
+            if on { chosen.insert(source) } else { chosen.remove(source) }
+            storedAutoSources = ScheduledExport.joined(chosen)
+        }
     }
 
     private func chooseExportFolder() {

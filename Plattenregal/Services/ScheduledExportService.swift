@@ -89,9 +89,10 @@ enum ExportInterval: String, CaseIterable, Identifiable {
     }
 }
 
-/// Writes the export on its own at a fixed interval into a chosen folder,
-/// always into the same file ("Plattenregal Collection.csv"), which is
-/// replaced each time. Checked at launch and every half hour while the app
+/// Writes the export on its own at a fixed interval into a chosen folder:
+/// one file per chosen list ("Plattenregal Collection.csv"), always the
+/// same, replaced each time. Which lists is its own choice – format, columns
+/// and order are those of the export tab. Checked at launch and every half hour while the app
 /// runs; a missed date is caught up on the next check.
 @Observable final class ScheduledExport {
     static let shared = ScheduledExport()
@@ -99,6 +100,30 @@ enum ExportInterval: String, CaseIterable, Identifiable {
     static let enabledKey = "autoExportEnabled"
     static let intervalKey = "autoExportInterval"
     static let lastRunKey = "autoExportLastRun"
+    /// The lists written, comma-separated. Its own setting: "Daten" above
+    /// only says what "Als … exportieren" saves – choosing the "Verkauf" list
+    /// there for one file must not end the automatic export of the collection.
+    static let sourcesKey = "autoExportSources"
+
+    static func parseSources(_ raw: String) -> [ExportSource] {
+        let chosen = Set(raw.split(separator: ",").compactMap { ExportSource(rawValue: String($0)) })
+        return ExportSource.offered.filter(chosen.contains)
+    }
+    static func joined(_ sources: some Sequence<ExportSource>) -> String {
+        let chosen = Set(sources)
+        return ExportSource.allCases.filter(chosen.contains).map(\.rawValue).joined(separator: ",")
+    }
+    /// Never chosen (before this setting existed, or after a settings reset):
+    /// what the automatic export wrote until then – the list set under "Daten".
+    static var sources: [ExportSource] {
+        guard let raw = AppDefaults.store.string(forKey: sourcesKey) else { return [ExportSettings.stored.source] }
+        return parseSources(raw)
+    }
+    /// Stores that choice, so it no longer follows "Daten".
+    static func adoptSources() {
+        guard AppDefaults.store.string(forKey: sourcesKey) == nil else { return }
+        AppDefaults.store.set(ExportSettings.stored.source.rawValue, forKey: sourcesKey)
+    }
     static let folder = FolderAccess(key: "autoExportFolder")
 
     /// Bumped after every run, so the settings refresh.
@@ -116,7 +141,7 @@ enum ExportInterval: String, CaseIterable, Identifiable {
     }
     var lastRun: Date? { AppDefaults.store.object(forKey: Self.lastRunKey) as? Date }
     var nextRun: Date? {
-        guard isEnabled, Self.folder.isSet else { return nil }
+        guard isEnabled, Self.folder.isSet, !Self.sources.isEmpty else { return nil }
         return Self.nextRun(after: lastRun, interval: interval)
     }
     /// Never run: now. A last run in the future (the Mac's clock was wrong at
@@ -140,6 +165,7 @@ enum ExportInterval: String, CaseIterable, Identifiable {
     /// Once per launch, for the app's real store only.
     func start(container: ModelContainer) {
         guard loop == nil, ShelfAutoBackup.isAppStore(container) else { return }
+        Self.adoptSources()
         self.container = container
         loop = Task { [weak self] in
             try? await Task.sleep(for: .seconds(20))
@@ -158,40 +184,56 @@ enum ExportInterval: String, CaseIterable, Identifiable {
         // An empty list (before the first sync, after "Alles zurücksetzen" or
         // a lost database) must never replace the last good file. Tried again
         // on the next check.
-        let source = ExportSettings.stored.source
-        guard CollectionExportService(context: container.mainContext).count(source) > 0 else {
+        let sources = Self.sources
+        guard !Self.nonEmpty(sources, in: container.mainContext).isEmpty else {
             // An empty "Verkauf" list is nothing unusual (all sold): no
             // warning on every check until a record is marked again.
-            if source != .sale { AppLog.warning("Export", "Automatischer Export übersprungen: keine Platten in der \(source.title)") }
+            if sources != [.sale] {
+                AppLog.warning("Export", "Automatischer Export übersprungen: keine Platten in \(sources.map(\.title).joined(separator: ", "))")
+            }
             return
         }
         _ = try? await run(container: container)
     }
 
-    /// Writes the file now. Returns its name. The records are read here;
-    /// drawing the file and writing it (maybe to a slow network or iCloud
-    /// folder) happen off the main actor.
-    @discardableResult func run(container: ModelContainer) async throws -> String {
+    /// The lists that hold records: an empty one is never written (see `runIfDue`).
+    static func nonEmpty(_ sources: [ExportSource], in context: ModelContext) -> [ExportSource] {
+        let exporter = CollectionExportService(context: context)
+        return sources.filter { exporter.count($0) > 0 }
+    }
+
+    /// Writes the files now – one per chosen list that holds records; an
+    /// empty list keeps its last file. Returns their names. The records are
+    /// read here; drawing the files and writing them (maybe to a slow network
+    /// or iCloud folder) happen off the main actor.
+    @discardableResult func run(container: ModelContainer) async throws -> [String] {
         guard !isRunning else { throw CancellationError() }
         isRunning = true
         defer { isRunning = false }
-        let settings = ExportSettings.stored
-        let name = Self.fileName(for: settings)
+        var names: [String] = []
         do {
-            let job: ExportJob
-            do { job = try settings.prepare(context: container.mainContext, labelStyle: ShelfRangeLabels.currentStyle) }
-            catch { throw FileTransferError.exportFailed(error) }
-            let folder = Self.folder
-            try await Task.detached(priority: .utility) {
-                let data: Data
-                do { data = try job.render() } catch { throw FileTransferError.exportFailed(error) }
-                try folder.withAccess { folder in
-                    try data.write(to: folder.appendingPathComponent(name), options: .atomic)
-                }
-            }.value
+            for source in Self.nonEmpty(Self.sources, in: container.mainContext) {
+                var settings = ExportSettings.stored
+                settings.source = source
+                let name = Self.fileName(for: settings)
+                let job: ExportJob
+                do { job = try settings.prepare(context: container.mainContext, labelStyle: ShelfRangeLabels.currentStyle) }
+                catch { throw FileTransferError.exportFailed(error) }
+                let folder = Self.folder
+                try await Task.detached(priority: .utility) {
+                    let data: Data
+                    do { data = try job.render() } catch { throw FileTransferError.exportFailed(error) }
+                    try folder.withAccess { folder in
+                        try data.write(to: folder.appendingPathComponent(name), options: .atomic)
+                    }
+                }.value
+                names.append(name)
+                AppLog.info("Export", "Automatischer Export geschrieben: \(name), \(AppStyle.records(job.rows))")
+            }
+            // Nothing to write (every list empty meanwhile): not a run.
+            guard !names.isEmpty else { version += 1; return [] }
             AppDefaults.store.set(Date.now, forKey: Self.lastRunKey)
             lastError = nil
-            AppLog.info("Export", "Automatischer Export geschrieben: \(name), \(AppStyle.records(job.rows))")
         } catch {
             // `reportedMessage` also writes the technical detail to the log –
             // once: a folder that stays unreachable fails every half hour.
@@ -201,12 +243,14 @@ enum ExportInterval: String, CaseIterable, Identifiable {
             throw error
         }
         version += 1
-        return name
+        return names
     }
 
     /// Switched on, folder chosen or interval changed: a now due export is
     /// written within seconds instead of at the next half-hourly check.
     func settingsChanged() {
+        // After "Einstellungen zurücksetzen" the choice is gone again.
+        Self.adoptSources()
         version += 1
         guard let container else { return }
         soon?.cancel()
