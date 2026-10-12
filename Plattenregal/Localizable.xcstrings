@@ -231,12 +231,12 @@
         }
       }
     },
-    "Für Platten, die gerade nicht zu finden sind: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten." : {
+    "Für Platten, die gerade nicht zu finden sind: per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "For records you can't find right now: add them to the search list with the pause button in “Add Record” or by right-clicking. Until you mark them as found here, they are not offered for placing."
+            "value" : "For records you can’t find right now: right-click to add them to the search list. Until you mark them as found here, they are not offered for placing."
           }
         }
       }
@@ -307,16 +307,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No longer for sale"
-          }
-        }
-      }
-    },
-    "Noch steht keine Platte im Regal, an der sie sich ausrichten könnte." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No record stands on the shelf yet that it could line up with."
           }
         }
       }
@@ -5233,7 +5223,16 @@
         }
       }
     },
-    "Im Regal zeigen" : {},
+    "Im Regal zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show on Shelf"
+          }
+        }
+      }
+    },
     "Immer dunkel, unabhängig von macOS." : {
       "localizations" : {
         "en" : {

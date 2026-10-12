@@ -1,3 +1,12 @@
+# Durchsicht der Änderungen vom 12.10.: vier Korrekturen · 12.10.2026
+
+- **„Im Regal zeigen“ wieder englisch.** Beim Entfernen aus dem „i“-Popover ging die Übersetzung im Katalog verloren; der Knopf der Zufallsplatte in der Statistik benutzt den Text aber weiter und stand in der englischen Oberfläche auf Deutsch.
+- **Kein Pause-Knopf mehr in den Texten.** Die Erklärung der Suchliste (Einstellungen → Listen) und das README nannten noch den Pause-Knopf in „Platte hinzufügen“; den gibt es seit dem Umbau nicht mehr, nur den Rechtsklick. Dazu überholte Code-Kommentare (Pause, Pfeil) im Einsortieren-Fenster.
+- **„Einsortieren“ bei leerem Regal:** Solange in keinem Fach eine Platte steht, tut ein Klick auf eine Zeile nichts (es gibt keine alphabetische Stelle), und der Pfeil, der früher weiterhalf, ist weg. Die Zeile sagt jetzt, wie es weitergeht: Fach wählen und dort über „+“ hinzufügen (derselbe Text wie in der Platzsuche).
+- **Collection, Rechtsklick:** „Auf die Suchliste setzen“ wird für Platten „Ohne Regalplatz“ nicht mehr angeboten. Die Markierung wäre unsichtbar geblieben – die Liste in den Einstellungen zeigt solche Platten nicht, und „Ohne Regalplatz“ hebt „Gesucht“ ohnehin auf. „Wieder gefunden“ bleibt für bereits markierte.
+- Aufgeräumt: `errorTitle` in `CollectionView` war seit dem Wegfall von „Discogs-Daten aktualisieren“ immer derselbe Text.
+- Geprüft: Build ohne Warnungen, 206 Tests. Nicht angeklickt.
+
 # Sync-Kapsel: weniger Arbeit auf dem Hauptthread · 12.10.2026
 
 Die Kapsel selbst war in Ordnung; geruckelt hat, was im selben Moment auf dem Hauptthread lief.

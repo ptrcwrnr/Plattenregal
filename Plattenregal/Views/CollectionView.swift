@@ -65,8 +65,6 @@ struct CollectionView: View {
     @State private var quickLookDismissed: (id: UUID, at: Date)?
     @Environment(\.openURL) private var openURL
     @State private var error: String?
-    /// Saving a shelf change and reloading from Discogs fail differently.
-    @State private var errorTitle = String(localized: "Änderung nicht gespeichert")
 
     init(
         pages: PageSelection<Destination>? = nil,
@@ -388,7 +386,7 @@ struct CollectionView: View {
         .background { if analyticsFilter == nil { AmbientBackdrop(covers: ambientCovers) } }
         .settingsOpener($settingsTab)
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
-        .alert(errorTitle, isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+        .alert("Änderung nicht gespeichert", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
         .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
@@ -540,10 +538,15 @@ struct CollectionView: View {
         if saleEnabled { saleButton(for: copy) }
     }
     /// Marks the copy "Gesucht" (settings tab "Listen") or found again.
+    /// Not offered for one kept out of the shelves ("Ohne Regalplatz"): there
+    /// is nothing to look for, `setExcluded` lifts the mark for the same
+    /// reason, and the settings wouldn't list it.
     @ViewBuilder private func missingButton(for copy: RecordCopy) -> some View {
         let missing = records.missingMarks.contains { $0.copyID == copy.id }
-        Button(missing ? "Wieder gefunden" : "Auf die Suchliste setzen") {
-            perform { try PositionService(context: context).setMissing([copy], !missing) }
+        if missing || !excludedIDs.contains(copy.id) {
+            Button(missing ? "Wieder gefunden" : "Auf die Suchliste setzen") {
+                perform { try PositionService(context: context).setMissing([copy], !missing) }
+            }
         }
     }
     /// Puts the copy on the "Verkauf" list (settings tab "Listen") or takes it off.
@@ -554,7 +557,7 @@ struct CollectionView: View {
         }
     }
     private func perform(_ action: () throws -> Void) {
-        do { try action() } catch { errorTitle = String(localized: "Änderung nicht gespeichert"); self.error = error.reportedMessage() }
+        do { try action() } catch { self.error = error.reportedMessage() }
     }
 }
 /// A grid tile represents one release, even when the collection contains

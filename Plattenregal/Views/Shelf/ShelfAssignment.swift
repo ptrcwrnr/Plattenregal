@@ -57,8 +57,8 @@ final class ShelfAssignmentSession: Identifiable {
 
     /// Where `copy` goes: its alphabetical place among the records of this
     /// shelf, and the two it would stand between. Rack-wide its place in the
-    /// whole rack – between two shelves the end of the first; the arrow
-    /// offers both. `nil` while no shelf holds records yet.
+    /// whole rack – between two shelves the end of the first. `nil` while no
+    /// shelf holds records yet.
     func spot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
         guard let shelf else { return AlphabeticalPlacement.spots(for: copy, in: shelves).first }
         let items = PositionService.inShelfOrder(shelf.copies, excluding: copy.id)
@@ -91,9 +91,10 @@ final class ShelfAssignmentSession: Identifiable {
     var visible: [RecordCopy] { candidates }
 
     /// Taken once: the list is a snapshot and must not reorder while records
-    /// are added or paused. Records that fit this shelf alphabetically come
-    /// first, then the rest – each by artist (rack-wide simply by artist). Paused ones keep their place,
-    /// so one found again returns right where it belongs.
+    /// are added or put on the "Gesucht" list. Records that fit this shelf
+    /// alphabetically come first, then the rest – each by artist (rack-wide
+    /// simply by artist). Marked ones keep their place, so one found again
+    /// returns right where it belongs.
     func load(_ context: ModelContext, owner: String?, labels: ShelfLabels) {
         guard !loaded else { return }
         loaded = true
@@ -138,7 +139,8 @@ final class ShelfAssignmentSession: Identifiable {
             error = String(localized: "„\(copy.release?.displayArtist ?? "—") – \(copy.release?.displayTitle ?? "—")“ ist nicht mehr in der Collection.")
             return
         }
-        // Rack-wide while no shelf holds records: only the arrow helps.
+        // Rack-wide while no shelf holds records: its row says to start with
+        // "+" at a compartment.
         guard let spot = spot(for: copy), !spot.shelf.isDeleted, spot.shelf.modelContext != nil else { return }
         do {
             // Its alphabetical place; standing in a shelf now, it turned up after all.
@@ -159,7 +161,7 @@ final class ShelfAssignmentSession: Identifiable {
         if ids != missing { missing = ids }
     }
 
-    /// Pause button: not found while sorting in, or found again.
+    /// Right-click menu: not found while sorting in ("Gesucht"), or found again.
     func toggleMissing(_ copy: RecordCopy, in context: ModelContext) {
         guard !isGone(copy) else { candidates.removeAll { $0.id == copy.id }; return }
         let marked = !missing.contains(copy.id)
@@ -186,7 +188,7 @@ struct ShelfAssignmentView: View {
     let labels: ShelfLabels
     /// Every mark in the rack; a record released in the settings returns to the list.
     var missingIDs: Set<UUID> = []
-    /// Off in the settings: no pause buttons, marked records are listed like the rest.
+    /// Off in the settings: no "Auf die Suchliste setzen", marked records are listed like the rest.
     var missingEnabled = true
     /// Opens the settings on "Listen".
     var openMissing: () -> Void = {}
@@ -317,7 +319,7 @@ struct AssignmentLocation {
     let neighbours: String
 }
 
-/// The candidates, one row each. An added (or paused) record fades out and
+/// The candidates, one row each. An added (or marked) record fades out and
 /// the rest move up, so the next one lands under the pointer.
 private struct ShelfAssignmentGrid: View {
     let items: [RecordCopy]
@@ -465,7 +467,7 @@ private struct ShelfAssignmentRow: View {
             .lineLimit(2)
             .fixedSize(horizontal: false, vertical: true)
         } else {
-            Text("Noch steht keine Platte im Regal, an der sie sich ausrichten könnte.")
+            Text("Es steht noch keine Platte im Regal, an der sich die Platte ausrichten könnte. Wähle ein Fach und füge sie dort über „+“ hinzu.")
                 .font(.callout).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }

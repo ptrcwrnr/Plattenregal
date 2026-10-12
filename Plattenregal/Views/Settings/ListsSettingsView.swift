@@ -56,7 +56,7 @@ struct ListsSettingsView: View {
             ListCard {
                 SettingsRow(title: String(localized: "Suchliste"),
                             hint: missingEnabled
-                            ? String(localized: "Für Platten, die gerade nicht zu finden sind: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten.")
+                            ? String(localized: "Für Platten, die gerade nicht zu finden sind: per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten.")
                             : String(localized: "Aus: keine Suchliste. Bereits gesuchte Platten bleiben gemerkt, falls du sie wieder einschaltest.")) {
                     Toggle("Suchliste", isOn: $missingEnabled.animation(AppStyle.standardAnimation))
                         .labelsHidden().toggleStyle(.switch)
