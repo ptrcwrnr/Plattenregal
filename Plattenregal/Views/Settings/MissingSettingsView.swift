@@ -4,7 +4,7 @@ import SwiftData
 // MARK: - Vermisst
 
 /// The records marked "Vermisst" on the shelf page, and the way back:
-/// released, a record without a shelf is offered in "Einsortieren" and
+/// found, a record without a shelf is offered in "Einsortieren" and
 /// "Platte hinzufügen" again; one standing in a shelf simply loses its mark.
 struct MissingSettingsView: View {
     @Environment(\.modelContext) private var context
@@ -43,7 +43,7 @@ struct MissingSettingsView: View {
                          subtitle: String(localized: "Für Platten, die beim Einsortieren gerade nicht zu finden sind.")) {
                 SettingsRow(title: String(localized: "Vermisst-Liste"),
                             hint: missingEnabled
-                            ? String(localized: "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier freigibst, werden sie nicht mehr zum Einsortieren angeboten.")
+                            ? String(localized: "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten.")
                             : String(localized: "Aus: kein Zurückstellen und keine Liste. Bereits vermisste Platten bleiben gemerkt, falls du es wieder einschaltest.")) {
                     Toggle("Vermisst-Liste", isOn: $missingEnabled)
                         .labelsHidden().toggleStyle(.switch)
@@ -51,7 +51,7 @@ struct MissingSettingsView: View {
             }
 
             SettingsCard(title: String(localized: "Vermisste Platten"),
-                         subtitle: copies.isEmpty ? nil : String(localized: "\(AppStyle.records(copies.count)) · Freigegebene Platten ohne Fach stehen wieder unter „Einsortieren“.")) {
+                         subtitle: copies.isEmpty ? nil : String(localized: "\(AppStyle.records(copies.count)) · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“.")) {
                 if copies.isEmpty {
                     SettingsNote(String(localized: "Keine Platte ist als vermisst markiert."))
                 } else {
@@ -64,7 +64,7 @@ struct MissingSettingsView: View {
                     if copies.count > 1 {
                         HStack {
                             Spacer(minLength: 0)
-                            SecondaryButton(title: String(localized: "Alle freigeben")) { release(copies) }
+                            SecondaryButton(title: String(localized: "Alle gefunden")) { release(copies) }
                         }
                     }
                 }
@@ -82,9 +82,9 @@ struct MissingSettingsView: View {
         .task(id: labelSignature) { labels = labelsCache.labels(for: records.shelves, style: labelStyle) }
     }
 
-    /// "Wohnzimmer · A – Be · Position 12", or that it waits for a shelf.
+    /// "Wohnzimmer · A – Be · Position 12"; nothing for a record without a shelf.
     private func location(_ copy: RecordCopy) -> String {
-        guard let shelf = copy.shelf else { return String(localized: "Ohne Fach") }
+        guard let shelf = copy.shelf else { return "" }
         return labels.prefix(for: shelf) + (labels[shelf.id] ?? shelf.numberText) + " · " + String(localized: "Position \(copy.positionInShelf)")
     }
 
@@ -98,7 +98,7 @@ struct MissingSettingsView: View {
 }
 
 /// Cover, artist and title as in "Platte hinzufügen", where the record
-/// stands (or that it has no shelf), and "Freigeben".
+/// stands (if it has a shelf), and "Gefunden" as on the shelf page.
 private struct MissingSettingsRow: View {
     let copy: RecordCopy
     let location: String
@@ -118,9 +118,9 @@ private struct MissingSettingsRow: View {
             Spacer(minLength: AppStyle.itemSpacing)
             Text(location).font(.caption).monospacedDigit().foregroundStyle(.secondary)
                 .lineLimit(1)
-            SecondaryButton(title: String(localized: "Freigeben"), action: release)
-                .help(copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Wieder gefunden – Markierung aufheben"))
-                .accessibilityLabel("\(artist) – \(title) freigeben")
+            SecondaryButton(title: String(localized: "Gefunden"), action: release)
+                .help(copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Markierung aufheben"))
+                .accessibilityLabel("\(artist) – \(title) gefunden")
         }
         .frame(height: AssignmentRowMetrics.height)
     }

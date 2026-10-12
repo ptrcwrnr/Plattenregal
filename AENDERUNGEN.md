@@ -1,3 +1,7 @@
+# Einstellungen → Vermisst: „Gefunden“ statt „Freigeben“ · 12.10.2026
+
+- Der Knopf je Platte heißt wie auf der Regalseite „Gefunden“, der für die ganze Liste „Alle gefunden“; Hinweistexte entsprechend. Bei Platten ohne Fach steht kein „Ohne Fach“ mehr, der Standort erscheint nur bei einsortierten Platten.
+
 # „i“-Popover ohne „Im Regal zeigen“ · 12.10.2026
 
 - Das Popover „Hier würde sie stehen“ zeigt nur noch Fach, Position und Nachbarn; der Link „Im Regal zeigen“ ist entfallen. Aus dem Fenster heraus gibt es damit keinen Sprung zur Einsortier-Karte mehr (die bleibt über Suche, Collection und Rechtsklick erreichbar). Karte oben im Fenster bündig mit den äußeren Covern.

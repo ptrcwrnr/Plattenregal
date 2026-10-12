@@ -246,12 +246,12 @@
         }
       }
     },
-    "%@ – %@ freigeben" : {
+    "%@ – %@ gefunden" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Release %1$@ – %2$@"
+            "value" : "%1$@ – %2$@ found"
           }
         }
       }
@@ -379,12 +379,12 @@
       },
       "shouldTranslate" : false
     },
-    "%@ · Freigegebene Platten ohne Fach stehen wieder unter „Einsortieren“." : {
+    "%@ · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ · Released records without a compartment are listed under “Placing” again."
+            "value" : "%@ · Found records without a compartment are listed under “Placing” again."
           }
         }
       }
@@ -1559,12 +1559,12 @@
         }
       }
     },
-    "Alle freigeben" : {
+    "Alle gefunden" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Release all"
+            "value" : "All found"
           }
         }
       }
@@ -1629,12 +1629,12 @@
         }
       }
     },
-    "Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ gibst du sie wieder frei." : {
+    "Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ markierst du sie als gefunden." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All remaining records without a compartment are marked as missing. Release them in Settings under “Missing”."
+            "value" : "All remaining records without a compartment are marked as missing. Mark them as found in Settings under “Missing”."
           }
         }
       }
@@ -4580,16 +4580,6 @@
         }
       }
     },
-    "Freigeben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Release"
-          }
-        }
-      }
-    },
     "Für den Sammlungswert fehlt der Discogs-Token. Trage ihn in den Einstellungen ein." : {
       "localizations" : {
         "en" : {
@@ -6859,12 +6849,12 @@
         }
       }
     },
-    "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier freigibst, werden sie nicht mehr zum Einsortieren angeboten." : {
+    "Platten lassen sich zurückstellen: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick im Fach. Bis du sie hier als gefunden markierst, werden sie nicht mehr zum Einsortieren angeboten." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Records can be set aside: with the pause button in “Add Record” or by right-clicking in the compartment. Until you release them here, they are no longer offered for placing."
+            "value" : "Records can be set aside: with the pause button in “Add Record” or by right-clicking in the compartment. Until you mark them as found here, they are no longer offered for placing."
           }
         }
       }
@@ -9096,12 +9086,12 @@
         }
       }
     },
-    "Wieder gefunden – Markierung aufheben" : {
+    "Markierung aufheben" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Found again – remove the mark"
+            "value" : "Remove the mark"
           }
         }
       }

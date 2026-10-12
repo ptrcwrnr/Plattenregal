@@ -220,7 +220,7 @@ struct ShelfAssignmentView: View {
                 if session.loaded && items.isEmpty {
                     if pausedCount > 0 {
                         AppEmptyState(String(localized: "Nur noch vermisste Platten"), systemImage: "checkmark.circle",
-                                      description: Text("Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ gibst du sie wieder frei."),
+                                      description: Text("Alle übrigen Platten ohne Fach sind als vermisst markiert. In den Einstellungen unter „Vermisst“ markierst du sie als gefunden."),
                                       actionTitle: String(localized: "Vermisste Platten …"), action: openMissing)
                     } else {
                         AppEmptyState(String(localized: "Alles einsortiert"), systemImage: "checkmark.circle",
