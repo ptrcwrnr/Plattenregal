@@ -58,30 +58,34 @@ struct ListsSettingsView: View {
                             hint: missingEnabled
                             ? String(localized: "Für Platten, die gerade nicht zu finden sind: mit dem Pause-Knopf in „Platte hinzufügen“ oder per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten.")
                             : String(localized: "Aus: keine Suchliste. Bereits gesuchte Platten bleiben gemerkt, falls du sie wieder einschaltest.")) {
-                    Toggle("Suchliste", isOn: $missingEnabled)
+                    Toggle("Suchliste", isOn: $missingEnabled.animation(AppStyle.standardAnimation))
                         .labelsHidden().toggleStyle(.switch)
                 }
                 // Off: the marks are kept, but nothing shows them.
                 if missingEnabled {
-                    Divider()
-                    if copies.isEmpty {
-                        SettingsNote(String(localized: "Keine Platte steht auf der Suchliste."))
-                    } else {
-                        SettingsNote(String(localized: "\(AppStyle.records(copies.count)) · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“."))
-                        LazyVStack(alignment: .leading, spacing: 0) {
-                            ForEach(copies) { copy in
-                                ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Gefunden"),
-                                                actionHelp: copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Markierung aufheben")) { release([copy]) }
-                                if copy.id != copies.last?.id { Divider() }
+                    // The list pours out below its switch and back in.
+                    VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                        Divider()
+                        if copies.isEmpty {
+                            SettingsNote(String(localized: "Keine Platte steht auf der Suchliste."))
+                        } else {
+                            SettingsNote(String(localized: "\(AppStyle.records(copies.count)) · Gefundene Platten ohne Fach stehen wieder unter „Einsortieren“."))
+                            LazyVStack(alignment: .leading, spacing: 0) {
+                                ForEach(copies) { copy in
+                                    ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Gefunden"),
+                                                    actionHelp: copy.shelf == nil ? String(localized: "Wieder zum Einsortieren anbieten") : String(localized: "Markierung aufheben")) { release([copy]) }
+                                    if copy.id != copies.last?.id { Divider() }
+                                }
                             }
-                        }
-                        if copies.count > 1 {
-                            HStack {
-                                Spacer(minLength: 0)
-                                SecondaryButton(title: String(localized: "Alle gefunden")) { release(copies) }
+                            if copies.count > 1 {
+                                HStack {
+                                    Spacer(minLength: 0)
+                                    SecondaryButton(title: String(localized: "Alle gefunden")) { release(copies) }
+                                }
                             }
                         }
                     }
+                    .transition(AppStyle.funnelTransition())
                 }
                 if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
             }
@@ -91,27 +95,31 @@ struct ListsSettingsView: View {
                             hint: saleEnabled
                             ? String(localized: "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast.")
                             : String(localized: "Aus: keine Verkaufsliste. Bereits vorgemerkte Platten bleiben gemerkt, falls du sie wieder einschaltest.")) {
-                    Toggle("Verkaufsliste", isOn: $saleEnabled)
+                    Toggle("Verkaufsliste", isOn: $saleEnabled.animation(AppStyle.standardAnimation))
                         .labelsHidden().toggleStyle(.switch)
                 }
                 if saleEnabled {
-                    Divider()
-                    if forSale.isEmpty {
-                        SettingsNote(String(localized: "Keine Platte ist zum Verkauf vorgemerkt."))
-                    } else {
-                        SettingsNote(AppStyle.records(forSale.count))
-                        LazyVStack(alignment: .leading, spacing: 0) {
-                            ForEach(forSale) { copy in
-                                ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Entfernen"),
-                                                actionHelp: String(localized: "Von der Verkaufsliste nehmen")) { keep(copy) }
-                                if copy.id != forSale.last?.id { Divider() }
+                    // The list pours out below its switch and back in.
+                    VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                        Divider()
+                        if forSale.isEmpty {
+                            SettingsNote(String(localized: "Keine Platte ist zum Verkauf vorgemerkt."))
+                        } else {
+                            SettingsNote(AppStyle.records(forSale.count))
+                            LazyVStack(alignment: .leading, spacing: 0) {
+                                ForEach(forSale) { copy in
+                                    ListSettingsRow(copy: copy, location: location(copy), actionTitle: String(localized: "Entfernen"),
+                                                    actionHelp: String(localized: "Von der Verkaufsliste nehmen")) { keep(copy) }
+                                    if copy.id != forSale.last?.id { Divider() }
+                                }
+                            }
+                            HStack {
+                                Spacer(minLength: 0)
+                                SecondaryButton(title: String(localized: "Alle verkauft …")) { confirmSold = true }
                             }
                         }
-                        HStack {
-                            Spacer(minLength: 0)
-                            SecondaryButton(title: String(localized: "Alle verkauft …")) { confirmSold = true }
-                        }
                     }
+                    .transition(AppStyle.funnelTransition())
                 }
                 if let saleError { AppBanner(message: saleError, kind: .error).transition(AppStyle.funnelTransition()) }
             }
