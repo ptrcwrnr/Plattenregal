@@ -8,7 +8,7 @@ import SwiftData
 ///   record without a shelf is offered in "Einsortieren" and "Platte
 ///   hinzufügen" again; one standing in a shelf simply loses its mark.
 /// - "Verkauf": records to be sold some day. They stay where they stand
-///   until "Alle verkauft" takes the whole list out of the shelves.
+///   until "Verkauft" takes the whole list out of the shelves.
 struct ListsSettingsView: View {
     @Environment(\.modelContext) private var context
     /// Shared with the pages, fetched only when they change (see `LibraryRecords`).
@@ -115,7 +115,7 @@ struct ListsSettingsView: View {
                             }
                             HStack {
                                 Spacer(minLength: 0)
-                                SecondaryButton(title: String(localized: "Alle verkauft …")) { confirmSold = true }
+                                SecondaryButton(title: String(localized: "Verkauft")) { confirmSold = true }
                             }
                         }
                     }
@@ -126,7 +126,7 @@ struct ListsSettingsView: View {
         }
         .confirmationDialog(forSale.count == 1 ? "Die Platte auf der Verkaufsliste ist verkauft?" : "Alle \(forSale.count) Platten auf der Verkaufsliste sind verkauft?",
                             isPresented: $confirmSold) {
-            Button("Alle verkauft") { sellAll() }
+            Button("Verkauft") { sellAll() }
             Button("Abbrechen", role: .cancel) {}
         } message: {
             Text("Sie werden aus ihren Fächern genommen und auf „Ohne Regalplatz“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst.")

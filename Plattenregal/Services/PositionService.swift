@@ -182,7 +182,7 @@ struct PositionService {
             for row in existing where ids.contains(row.copyID) { context.delete(row) }
         }
     }
-    /// "Alle verkauft": the whole "Verkauf" list at once. The records leave
+    /// "Verkauft": the whole "Verkauf" list at once. The records leave
     /// their shelves and are kept out of them ("Ohne Regalplatz"), so they
     /// aren't offered for sorting in while they are still in the Discogs
     /// collection; the list is emptied. One transaction.

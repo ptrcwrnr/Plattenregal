@@ -161,26 +161,6 @@
         }
       }
     },
-    "Alle verkauft" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All sold"
-          }
-        }
-      }
-    },
-    "Alle verkauft …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All sold …"
-          }
-        }
-      }
-    },
     "Alle übrigen noch nicht einsortierten Platten stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
       "localizations" : {
         "en" : {
@@ -347,6 +327,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sale list"
+          }
+        }
+      }
+    },
+    "Verkauft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold"
           }
         }
       }

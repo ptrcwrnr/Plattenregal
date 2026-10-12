@@ -274,7 +274,7 @@ extension AllTests {
             #expect(try sale() == [a.id, c.id])
             #expect(d.shelf?.id == shelves[1].id)
 
-            // "Alle verkauft": out of the shelves, kept out, list emptied; the rest moves up.
+            // "Verkauft": out of the shelves, kept out, list emptied; the rest moves up.
             try service.setMissing([a], true)
             try service.sellAllForSale()
             #expect(try sale().isEmpty)

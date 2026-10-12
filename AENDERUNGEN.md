@@ -1,3 +1,7 @@
+# Verkaufsliste: Knopf heißt „Verkauft“ · 12.10.2026
+
+- Der Knopf unter der Verkaufsliste (Einstellungen → Listen) heißt jetzt **„Verkauft“** statt „Alle verkauft …“, ohne die drei Punkte; ebenso der Knopf in der Rückfrage. Die Rückfrage selbst bleibt. Texte de/en, README.
+
 # Version 1.0.8 · 12.10.2026
 
 - Version 1.0.8, Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.0.8.dmg`), mit der Verkaufsliste (Schema V16), dem Export mit eigener Listenauswahl und den Korrekturen aus der Durchsicht vom 12.10. README, STATISTIK.md und VALIDIERUNG.md: Version.
