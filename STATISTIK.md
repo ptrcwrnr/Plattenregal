@@ -1,6 +1,6 @@
 # Statistik
 
-Dokumentation geprüft am **12.10.2026**, Projektversion **1.1.0 (102026)**.
+Dokumentation geprüft am **12.10.2026**, Projektversion **1.1.2 (102026)**.
 
 Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf ihres Discogs-Sammlungswerts. Alles außer dem Sammlungswert wird lokal berechnet, ohne Anfrage an Discogs.
 

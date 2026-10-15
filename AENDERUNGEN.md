@@ -1,3 +1,8 @@
+# Version 1.1.2 · 15.10.2026
+
+- Version 1.1.2 (1.1.1 übersprungen), Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.1.2.dmg`), mit dem schnellen „Neue Platte ziehen“ im Zufallsfund. README, STATISTIK.md und VALIDIERUNG.md: Version.
+- Geprüft: Release-Build erfolgreich; DMG per `hdiutil verify` in Ordnung; enthält App und Programme-Verknüpfung, App meldet 1.1.2 (102026), nur arm64, Signatur gültig.
+
 # Zufallsfund: „Neue Platte ziehen“ ohne Denkpause · 15.10.2026
 
 - **Ursache der Denksekunde:** Beim Ziehen wurde die bisherige Platte aus der Sammlung herausgefiltert – und für jede Platte dabei die gerade gezeigte erneut durch die ganze Liste gesucht. Bei 2.000 Platten gemessen (Debug-Build): **2,66 s** pro Klick. Jetzt wird einfach neu gewürfelt, bis es eine andere Platte ist (im Mittel ein Wurf): 0,005 ms.
