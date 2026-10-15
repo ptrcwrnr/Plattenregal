@@ -520,6 +520,9 @@ struct ArtistPodium: View {
 /// on the first grid columns, details on the rest, the cover blurred behind.
 struct RandomRecordCard: View {
     let copies: [RecordCopy]
+    /// The same records by ID (`StatisticsViewModel.copiesByID`), so finding
+    /// the pick doesn't walk the whole collection on every render.
+    let copiesByID: [UUID: RecordCopy]
     /// `StatisticsViewModel.version`: the shelf labels are recomputed on it,
     /// not on every render.
     let version: Int
@@ -527,6 +530,10 @@ struct RandomRecordCard: View {
     let showShelf: (RecordCopy) -> Void
     @Environment(\.statisticsColumns) private var columns
     @State private var labelsCache = ShelfLabelsCache()
+    /// The labels of every compartment, worked out once per state of the
+    /// shelves (see the `task` below), not for every pick: a new pick only
+    /// needs its own compartment's. `nil` = to be worked out again.
+    @State private var labels: ShelfLabels?
     /// Where the pick stands, read from the app's own records: the page's
     /// copies come from a reload, and sorting in doesn't reload the page.
     @State private var placement: (location: String, inShelf: Bool)?
@@ -540,11 +547,13 @@ struct RandomRecordCard: View {
     private var shelves: [Shelf] { LibraryRecords.of(context).shelves }
     private var exclusions: [OptimizationExclusion] { LibraryRecords.of(context).exclusions }
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    /// Decides a compartment's first and last record, so its label too.
+    @AppStorage(ShelfSecondaryOrder.key) private var secondaryOrder = ShelfSecondaryOrder.title
     /// Records sorted in on the shelf page change the labels; while the
     /// statistics aren't shown, the place is worked out once they are.
     @State private var activity = PageActivity()
     @State private var placementPending = false
-    private var pick: RecordCopy? { pickID.flatMap { id in copies.first { $0.id == id } } }
+    private var pick: RecordCopy? { pickID.flatMap { copiesByID[$0] } }
 
     private var coverSpan: Int { columns >= 5 ? 2 : 1 }
 
@@ -576,7 +585,8 @@ struct RandomRecordCard: View {
         // Whenever the pick is gone (first load, or a sync removed it) and
         // there is something to pick — not only when the count changes.
         // Places change without a reload of the page (see `StatisticsView.affectsStatistics`).
-        .task(id: [version, labelStyle.hashValue, LibraryChanges.shared.placementsVersion, LibraryChanges.shared.shelvesVersion]) {
+        .task(id: [version, labelStyle.hashValue, secondaryOrder.hashValue, LibraryChanges.shared.placementsVersion, LibraryChanges.shared.shelvesVersion]) {
+            labels = nil
             if pick == nil { pickID = copies.randomElement()?.id }
             guard activity.isActive else { placementPending = true; return }
             updatePlacement()
@@ -637,15 +647,20 @@ struct RandomRecordCard: View {
         guard let id = pickID,
               let copy = try? context.fetch(FetchDescriptor<RecordCopy>(predicate: #Predicate { $0.id == id })).first
         else { placement = nil; return }
-        let labels = labelsCache.labels(for: shelves, style: labelStyle)
-        placement = (ShelfRangeLabels.location(of: copy, labels: labels, excluded: exclusions.contains { $0.copyID == id }),
+        let current = labels ?? labelsCache.labels(for: shelves, style: labelStyle)
+        labels = current
+        placement = (ShelfRangeLabels.location(of: copy, labels: current, excluded: exclusions.contains { $0.copyID == id }),
                      copy.shelf != nil)
     }
 
     private func reroll() {
         rolls += 1
-        let candidates = copies.count > 1 ? copies.filter { $0.id != pick?.id } : copies
-        withAnimation(AppStyle.layoutAnimation ?? AppStyle.fadeAnimation) { pickID = candidates.randomElement()?.id }
+        // Drawn again until it's another record – about one draw, where
+        // filtering out the current one read every record's ID (and `pick`,
+        // read for each, walked the list once more: seconds for 2 000).
+        var next = copies.randomElement()?.id
+        while copies.count > 1, next == pickID { next = copies.randomElement()?.id }
+        withAnimation(AppStyle.layoutAnimation ?? AppStyle.fadeAnimation) { pickID = next }
     }
 }
 

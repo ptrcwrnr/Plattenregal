@@ -1,3 +1,9 @@
+# Zufallsfund: „Neue Platte ziehen“ ohne Denkpause · 15.10.2026
+
+- **Ursache der Denksekunde:** Beim Ziehen wurde die bisherige Platte aus der Sammlung herausgefiltert – und für jede Platte dabei die gerade gezeigte erneut durch die ganze Liste gesucht. Bei 2.000 Platten gemessen (Debug-Build): **2,66 s** pro Klick. Jetzt wird einfach neu gewürfelt, bis es eine andere Platte ist (im Mittel ein Wurf): 0,005 ms.
+- **Unnötige Mehrarbeit entfernt:** Die Beschriftungen aller Fächer wurden bei jedem Ziehen neu zusammengesetzt (~7 ms), obwohl sich dabei nichts an ihnen ändert. Sie entstehen jetzt nur, wenn sich Fächer, Plätze, Beschriftungsart oder die Sortierung bei gleichem Interpreten ändern (letztere war bisher kein Auslöser). Die gezeigte Platte wird über ihre ID nachgeschlagen statt bei jedem Neuzeichnen die Liste zu durchsuchen (~1,3 ms).
+- Geprüft: Messung mit einem vorübergehenden Test (2.000 Platten in 12 Fächern, danach wieder entfernt); Debug-Build und 210 Tests erfolgreich. In der laufenden App nicht angeklickt.
+
 # Version 1.1.0 · 12.10.2026
 
 - Version 1.1.0, Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.1.0.dmg`), mit der einheitlichen Abstandsskala. README, STATISTIK.md und VALIDIERUNG.md: Version.

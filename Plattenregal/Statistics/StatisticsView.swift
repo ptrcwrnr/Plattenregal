@@ -297,7 +297,7 @@ struct StatisticsView: View {
         case .sound: SoundDonut(statistics: model.statistics, dimension: soundDimension, select: select)
         case .artists: ArtistPodium(groups: model.statistics.artists, total: model.statistics.totalItems, copies: model.copiesByID, select: select)
         case .labels: LabelBoard(groups: model.statistics.labels, total: model.statistics.totalItems, select: select)
-        case .discover: RandomRecordCard(copies: model.copies, version: model.version, open: open, showShelf: showShelf)
+        case .discover: RandomRecordCard(copies: model.copies, copiesByID: model.copiesByID, version: model.version, open: open, showShelf: showShelf)
         case .years: TimeTravel(statistics: model.statistics, byDecade: yearsByDecade, select: select)
         case .acquisitions: AcquisitionChart(statistics: model.statistics, byYear: additionsByYear)
         case .recent: recentSection
