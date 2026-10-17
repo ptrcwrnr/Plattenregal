@@ -231,6 +231,16 @@
         }
       }
     },
+    "Handbuch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User Guide"
+          }
+        }
+      }
+    },
     "Keine Platte ist zum Verkauf vorgemerkt." : {
       "localizations" : {
         "en" : {
@@ -4348,12 +4358,12 @@
         }
       }
     },
-    "Erste Schritte …" : {
+    "Erste Schritte" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Getting Started…"
+            "value" : "Getting Started"
           }
         }
       }

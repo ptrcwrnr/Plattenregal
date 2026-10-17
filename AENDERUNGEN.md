@@ -1,3 +1,12 @@
+# Handbuch im Hilfe-Menü, Discogs-Links in Klassisch petrol · 17.10.2026
+
+- **Hilfe → Handbuch** (englisch „User Guide“) öffnet das Handbuch, das jetzt in der App liegt (`Plattenregal/Handbuch.pdf`, Ressource im Projekt), in Vorschau bzw. dem PDF-Programm des Systems (`Handbook.open()` in `Views/WelcomeView.swift`). So ist es auch noch da, wenn die DMG gelöscht ist. Kein Tastenkürzel: ⌘? belegt macOS für die Suche im Hilfe-Menü, SwiftUI zeigt es deshalb gar nicht erst an.
+- **„Erste Schritte“** im Hilfe-Menü ohne „…“ (englisch „Getting Started“).
+- **Discogs-Links in Klassisch:** „Token erstellen ↗“ und „Discogs API-Nutzungsbedingungen ↗“ (Einstellungen → Discogs) nutzen jetzt den vorhandenen Baustein `appLinkButton()`: petrol in Klassisch statt Systemblau, in Modern weiter der Link-Stil des Systems.
+- **Handbuch:** Seite 3 nennt Hilfe → Handbuch und dass der Programme-Ordner in der DMG „Applications“ heißt; Bild der Discogs-Einstellungen mit dem petrolfarbenen Link neu aufgenommen; „Erste Schritte“ ohne Punkte.
+- **Erzeugung:** `make-guide.swift` kennt `--if-changed` (neu erzeugt nur, wenn Quelle, Bilder, Skript oder Version neuer sind; die Version steht im PDF-Feld „Betreff“). `make-dmg.sh` erneuert damit vor dem Release-Build `Plattenregal/Handbuch.pdf` und legt der DMG das PDF aus der gebauten App bei.
+- Geprüft: Debug-Build und 210 Tests erfolgreich. In der Demo: Hilfe-Menü zeigt „Handbuch, Erste Schritte“ (englisch „User Guide, Getting Started“); „Handbuch“ öffnet `Handbuch.pdf` in Vorschau, Protokoll „Handbuch geöffnet“; Discogs-Einstellungen in Klassisch (Link petrol) und Modern (Link blau) angesehen. `--if-changed` mit gleicher und neuer Version ausprobiert. DMG neu gebaut, `hdiutil verify` in Ordnung, PDF in DMG und App byte-gleich mit `Plattenregal/Handbuch.pdf`, Signatur gültig.
+
 # „Anleitung“ heißt jetzt „Handbuch“ · 17.10.2026
 
 - Die Broschüre in der DMG heißt **Handbuch** statt Anleitung, weil sie über die Installation hinaus alles zum Nachschlagen enthält. „Erste Schritte“ wurde nicht gewählt, so heißt schon die Willkommensseite im Hilfe-Menü. Geändert: Dateiname in der DMG (`Handbuch.pdf`, im Finder „Handbuch“), Quelle `Handbuch/Handbuch.html` mit `Handbuch/Bilder/`, Titelseite, Fußzeilen, Fließtext („Dieses Handbuch …“), PDF-Titel, `make-guide.swift`, `make-dmg.sh`, `dmg-background.swift`, README.

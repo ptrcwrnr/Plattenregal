@@ -40,6 +40,7 @@
 		A1C0DE0000000000000000B1 /* Plattenregal/Views/PageStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0000000000000000F1 /* Plattenregal/Views/PageStack.swift */; };
 		A1C0DE0000000000000000B2 /* Plattenregal/Views/AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0000000000000000F2 /* Plattenregal/Views/AboutView.swift */; };
 		A1C0DE00000000000000C0B1 /* Plattenregal/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */; };
+		A1C0DE00000000000000C0B2 /* Plattenregal/Handbuch.pdf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE00000000000000C0F2 /* Plattenregal/Handbuch.pdf */; };
 		A2EB97D6247703AE58EB8E07 /* PlattenregalTests/CabinetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533299BAA2EB97D6247703AE /* PlattenregalTests/CabinetTests.swift */; };
 		ABCDD0000000000000000002 /* PlattenregalTests/StatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDD0000000000000000001 /* PlattenregalTests/StatisticsTests.swift */; };
 		ABCDE0000000000000000002 /* PlattenregalTests/DiscogsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDE0000000000000000001 /* PlattenregalTests/DiscogsSyncTests.swift */; };
@@ -131,6 +132,7 @@
 		A1C0DE0000000000000000F1 /* Plattenregal/Views/PageStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/PageStack.swift; sourceTree = "<group>"; };
 		A1C0DE0000000000000000F2 /* Plattenregal/Views/AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/AboutView.swift; sourceTree = "<group>"; };
 		A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Plattenregal/Localizable.xcstrings; sourceTree = "<group>"; };
+		A1C0DE00000000000000C0F2 /* Plattenregal/Handbuch.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Plattenregal/Handbuch.pdf; sourceTree = "<group>"; };
 		AA82A45918513E1AA45D57A2 /* Plattenregal/Statistics/CollectionAnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/CollectionAnalyticsService.swift; sourceTree = "<group>"; };
 		ABCDD0000000000000000001 /* PlattenregalTests/StatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/StatisticsTests.swift; sourceTree = "<group>"; };
 		ABCDE0000000000000000001 /* PlattenregalTests/DiscogsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/DiscogsSyncTests.swift; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 				F60635B88B91F3EEFB155C2C /* Plattenregal/PlattenregalApp.swift */,
 				843EBC136D87F7E70013A055 /* Plattenregal/Assets.xcassets */,
 				A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */,
+				A1C0DE00000000000000C0F2 /* Plattenregal/Handbuch.pdf */,
 				03FE26E9D2B275B11B82B9A2 /* Models */,
 				E30B4F4A69D252D1867EE142 /* Views */,
 				E8764D70B53FA9D06CBC14A9 /* Services */,
@@ -407,6 +410,7 @@
 			files = (
 				0B0065E8BEB7875F78F47B57 /* Plattenregal/Assets.xcassets in Resources */,
 				A1C0DE00000000000000C0B1 /* Plattenregal/Localizable.xcstrings in Resources */,
+				A1C0DE00000000000000C0B2 /* Plattenregal/Handbuch.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

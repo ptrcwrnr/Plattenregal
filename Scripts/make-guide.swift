@@ -1,22 +1,47 @@
 // Renders the brochure Handbuch/Handbuch.html into a PDF, one A4 page per
 // <section class="page"> (595 × 842 pt). WebKit draws it, so the text stays
 // text. Elements with data-version get the given version. make-dmg.sh calls
-// this and puts the PDF next to the app.
+// this for Plattenregal/Handbuch.pdf, which the app carries (Hilfe ›
+// Handbuch) and the DMG shows next to it.
 //
-//   swift Scripts/make-guide.swift <out.pdf> [version]
+//   swift Scripts/make-guide.swift <out.pdf> [version] [--if-changed]
+//
+// With --if-changed an existing PDF of the same version that is newer than
+// the brochure, its pictures and this script is kept: a new PDF differs in
+// dates and ID even with the same content, and would show up in git each time.
 import AppKit
 import PDFKit
 import WebKit
 
-let args = CommandLine.arguments
-guard args.count >= 2 else {
-    FileHandle.standardError.write("swift make-guide.swift <out.pdf> [version]\n".data(using: .utf8)!)
+var args = Array(CommandLine.arguments.dropFirst())
+let ifChanged = args.contains("--if-changed")
+args.removeAll { $0 == "--if-changed" }
+guard !args.isEmpty else {
+    FileHandle.standardError.write("swift make-guide.swift <out.pdf> [version] [--if-changed]\n".data(using: .utf8)!)
     exit(1)
 }
-let output = URL(fileURLWithPath: args[1])
-let appVersion = args.count >= 3 ? args[2] : nil
-let html = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+let output = URL(fileURLWithPath: args[0])
+let appVersion = args.count >= 2 ? args[1] : nil
+let script = URL(fileURLWithPath: #filePath)
+let html = script.deletingLastPathComponent()
     .appendingPathComponent("../Handbuch/Handbuch.html").standardizedFileURL
+/// Stored in the PDF, so --if-changed can tell the version apart.
+let versionSubject = "Version \(appVersion ?? "-")"
+
+func modified(_ url: URL) -> Date {
+    (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantFuture
+}
+if ifChanged, FileManager.default.fileExists(atPath: output.path),
+   PDFDocument(url: output)?.documentAttributes?[PDFDocumentAttribute.subjectAttribute] as? String == versionSubject {
+    let folder = html.deletingLastPathComponent()
+    let sources = [script] + (FileManager.default.enumerator(at: folder, includingPropertiesForKeys: [.contentModificationDateKey])?
+        .compactMap { $0 as? URL } ?? [])
+    let built = modified(output)
+    if sources.allSatisfy({ modified($0) <= built }) {
+        print("\(output.path) (unverändert)")
+        exit(0)
+    }
+}
 let pageSize = CGSize(width: 595, height: 842)
 
 func fail(_ message: String) -> Never {
@@ -68,6 +93,7 @@ func fail(_ message: String) -> Never {
             document.documentAttributes = [
                 PDFDocumentAttribute.titleAttribute: "Plattenregal – Handbuch",
                 PDFDocumentAttribute.authorAttribute: "Patrice Werner",
+                PDFDocumentAttribute.subjectAttribute: versionSubject,
             ]
             guard document.write(to: output) else { fail("konnte \(output.path) nicht schreiben") }
             print(output.path)

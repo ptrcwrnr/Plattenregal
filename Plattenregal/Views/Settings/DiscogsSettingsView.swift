@@ -66,6 +66,7 @@ struct DiscogsSettingsView: View {
                     Spacer()
                     Link("Token erstellen ↗", destination: URL(string: "https://www.discogs.com/settings/developers")!)
                         .font(.callout)
+                        .appLinkButton()
                 }
                 if !model.status.isEmpty {
                     AppBanner(message: model.status, kind: model.failed ? .error : .success)
@@ -135,6 +136,7 @@ struct DiscogsSettingsView: View {
                 SettingsNote("This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. ‘Discogs’ is a trademark of Zink Media, LLC.")
                 Link("Discogs API-Nutzungsbedingungen ↗", destination: URL(string: "https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use")!)
                     .font(.callout)
+                    .appLinkButton()
             }
         }
         // Not on every activation: after a declined keychain prompt the window

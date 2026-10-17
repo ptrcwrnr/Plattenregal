@@ -1,8 +1,10 @@
 #!/bin/zsh
 # Packs Plattenregal into a DMG whose window shows the app, an arrow, the
-# Applications folder and the guide (Handbuch.pdf, from make-guide.swift) on
-# a background in the classic design (dmg-background.swift). Writes
-# dist/Plattenregal-<version>.dmg.
+# Applications folder and the guide (Handbuch.pdf) on a background in the
+# classic design (dmg-background.swift). Writes dist/Plattenregal-<version>.dmg.
+# The guide is the one inside the app (Hilfe › Handbuch); before the Release
+# build make-guide.swift renews Plattenregal/Handbuch.pdf if the brochure or
+# the version changed.
 #
 #   Scripts/make-dmg.sh                       (builds Release first)
 #   Scripts/make-dmg.sh <Plattenregal.app>    (e.g. exported from an archive)
@@ -13,29 +15,32 @@ set -euo pipefail
 cd "${0:A:h}/.."
 
 NAME=Plattenregal
+GUIDE=Handbuch.pdf
 if [[ -n ${1:-} ]]; then
   APP=${1:A}
 else
+  SETTINGS=$(xcodebuild -scheme $NAME -configuration Release -showBuildSettings 2>/dev/null)
+  swift Scripts/make-guide.swift "$NAME/$GUIDE" "$(awk '/ MARKETING_VERSION /{print $3; exit}' <<< $SETTINGS)" --if-changed
   xcodebuild -scheme $NAME -configuration Release build | grep -E "error:|BUILD" || true
-  APP="$(xcodebuild -scheme $NAME -configuration Release -showBuildSettings 2>/dev/null | awk '/ BUILT_PRODUCTS_DIR /{print $3}')/$NAME.app"
+  APP="$(awk '/ BUILT_PRODUCTS_DIR /{print $3; exit}' <<< $SETTINGS)/$NAME.app"
 fi
 [[ -d $APP ]] || { echo "App nicht gefunden: $APP" >&2; exit 1; }
 VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Contents/Info.plist")
 OUT=dist/$NAME-$VERSION.dmg
-GUIDE=Handbuch.pdf
+[[ -f $APP/Contents/Resources/$GUIDE ]] || { echo "Kein $GUIDE in der App: $APP" >&2; exit 1; }
 MOUNT=/Volumes/$NAME
 [[ -e $MOUNT ]] && { echo "$MOUNT ist schon eingehängt – bitte zuerst auswerfen." >&2; exit 1; }
 
 WORK=$(mktemp -d)
 trap 'hdiutil detach "$MOUNT" -quiet 2>/dev/null || true; rm -rf "$WORK"' EXIT
 
-# Contents: the app, a link to /Applications, the guide with this version,
-# the hidden background (1x and 2x in one TIFF, so the Finder picks the sharp
+# Contents: the app, a link to /Applications, the guide from the app, the
+# hidden background (1x and 2x in one TIFF, so the Finder picks the sharp
 # one on Retina).
 mkdir -p "$WORK/src/.background"
 ditto "$APP" "$WORK/src/$NAME.app"
 ln -s /Applications "$WORK/src/Applications"
-swift Scripts/make-guide.swift "$WORK/src/$GUIDE" "$VERSION" >/dev/null
+cp "$APP/Contents/Resources/$GUIDE" "$WORK/src/$GUIDE"
 swift Scripts/dmg-background.swift "$WORK/bg.png" 1
 swift Scripts/dmg-background.swift "$WORK/bg@2x.png" 2
 tiffutil -cathidpicheck "$WORK/bg.png" "$WORK/bg@2x.png" -out "$WORK/src/.background/background.tiff" 2>/dev/null

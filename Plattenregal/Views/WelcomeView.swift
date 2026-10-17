@@ -4,7 +4,7 @@ import SwiftUI
 /// to the own shelf, with the Discogs token as the way in and the demo for a
 /// look around first. Replaces the tour of six pages with screenshots – an
 /// empty app had nothing to show of it yet, and every change to the pages
-/// meant taking 24 pictures again. Also from Hilfe › „Erste Schritte …“.
+/// meant taking 24 pictures again. Also from Hilfe › „Erste Schritte“.
 @MainActor @Observable
 final class AppWelcome {
     static let shared = AppWelcome()
@@ -34,11 +34,28 @@ final class AppWelcome {
 
 struct WelcomeRequest: Identifiable { let id = UUID() }
 
+/// The brochure that also lies in the DMG (Plattenregal/Handbuch.pdf, made
+/// from Handbuch/Handbuch.html by Scripts/make-guide.swift), opened in the
+/// reader macOS uses for PDFs. Only in German for now.
+enum Handbook {
+    @MainActor static func open() {
+        guard let url = Bundle.main.url(forResource: "Handbuch", withExtension: "pdf") else {
+            AppLog.warning("Hilfe", "Handbuch.pdf fehlt in der App")
+            NSSound.beep()
+            return
+        }
+        NSWorkspace.shared.open(url)
+        AppLog.info("Hilfe", "Handbuch geöffnet")
+    }
+}
+
 /// The Help menu, in place of the help book the app doesn't have.
 struct HelpCommands: View {
     @Environment(\.openWindow) private var openWindow
     var body: some View {
-        Button("Erste Schritte …") {
+        // No ⌘?: macOS keeps it for the search field of the Help menu.
+        Button("Handbuch") { Handbook.open() }
+        Button("Erste Schritte") {
             // The main window may be closed (the app keeps running without it).
             openWindow(id: "main")
             AppWelcome.shared.show()
