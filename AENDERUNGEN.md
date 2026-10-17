@@ -1,3 +1,8 @@
+# „Anleitung“ heißt jetzt „Handbuch“ · 17.10.2026
+
+- Die Broschüre in der DMG heißt **Handbuch** statt Anleitung, weil sie über die Installation hinaus alles zum Nachschlagen enthält. „Erste Schritte“ wurde nicht gewählt, so heißt schon die Willkommensseite im Hilfe-Menü. Geändert: Dateiname in der DMG (`Handbuch.pdf`, im Finder „Handbuch“), Quelle `Handbuch/Handbuch.html` mit `Handbuch/Bilder/`, Titelseite, Fußzeilen, Fließtext („Dieses Handbuch …“), PDF-Titel, `make-guide.swift`, `make-dmg.sh`, `dmg-background.swift`, README.
+- Geprüft: PDF neu erzeugt (10 Seiten, Seite 2 angesehen), DMG neu gebaut, `hdiutil verify` in Ordnung, eingehängt: Finder zeigt App, Pfeil, Programme und „Handbuch“.
+
 # Anleitung als Broschüre in der DMG · 17.10.2026
 
 - **Neue Broschüre** `Anleitung.pdf` (10 A4-Seiten, Design Klassisch: Petrol, Creme, Gold, Schallplatte und Equalizer wie im DMG-Hintergrund) für Freunde, die die App bekommen: Voraussetzungen (Apple-Chip, macOS 27, Discogs-Konto), Installieren und der einmalige Weg über **Systemeinstellungen → Datenschutz & Sicherheit → „Dennoch öffnen“** (Beschriftung aus den deutschen Systemtexten von macOS geprüft), Discogs-Token, Rundgang, Regal einrichten, Einsortieren, Suchliste und Verkauf, Statistik, Sicherung, Export, Einstellungen, Tastenkürzel (aus `AppShortcuts`), kleine Hilfen, Discogs-Hinweis. Sieben Bildschirmfotos aus der Demo.

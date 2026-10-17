@@ -1,7 +1,7 @@
 // Draws the background of the DMG window (see make-dmg.sh) in the colors of
 // the classic design: paper, petrol and the label gold. The app icon sits at
 // (140, 190), the Applications folder at (470, 190) and the guide
-// (Anleitung.pdf) at (640, 190) – centers in points, matching the icon
+// (Handbuch.pdf) at (640, 190) – centers in points, matching the icon
 // positions make-dmg.sh sets in the Finder.
 //
 //   swift Scripts/dmg-background.swift <out.png> <scale>

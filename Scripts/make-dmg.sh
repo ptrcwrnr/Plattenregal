@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Packs Plattenregal into a DMG whose window shows the app, an arrow, the
-# Applications folder and the guide (Anleitung.pdf, from make-guide.swift) on
+# Applications folder and the guide (Handbuch.pdf, from make-guide.swift) on
 # a background in the classic design (dmg-background.swift). Writes
 # dist/Plattenregal-<version>.dmg.
 #
@@ -22,7 +22,7 @@ fi
 [[ -d $APP ]] || { echo "App nicht gefunden: $APP" >&2; exit 1; }
 VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Contents/Info.plist")
 OUT=dist/$NAME-$VERSION.dmg
-GUIDE=Anleitung.pdf
+GUIDE=Handbuch.pdf
 MOUNT=/Volumes/$NAME
 [[ -e $MOUNT ]] && { echo "$MOUNT ist schon eingehängt – bitte zuerst auswerfen." >&2; exit 1; }
 
@@ -45,7 +45,7 @@ ICNS="$APP/Contents/Resources/AppIcon.icns"
 hdiutil create -quiet -srcfolder "$WORK/src" -volname $NAME -fs HFS+ -format UDRW -ov "$WORK/rw.dmg"
 hdiutil attach -quiet -readwrite -noverify -noautoopen "$WORK/rw.dmg"
 [[ -f $MOUNT/.VolumeIcon.icns ]] && xcrun SetFile -a C "$MOUNT"
-# The Finder labels the guide „Anleitung“, without „.pdf“.
+# The Finder labels the guide „Handbuch“, without „.pdf“.
 xcrun SetFile -a E "$MOUNT/$GUIDE"
 
 # Window 740 × 400 like the background (bounds include the 32 pt title bar);

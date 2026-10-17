@@ -1,4 +1,4 @@
-// Renders the brochure Anleitung/Anleitung.html into a PDF, one A4 page per
+// Renders the brochure Handbuch/Handbuch.html into a PDF, one A4 page per
 // <section class="page"> (595 × 842 pt). WebKit draws it, so the text stays
 // text. Elements with data-version get the given version. make-dmg.sh calls
 // this and puts the PDF next to the app.
@@ -16,11 +16,11 @@ guard args.count >= 2 else {
 let output = URL(fileURLWithPath: args[1])
 let appVersion = args.count >= 3 ? args[2] : nil
 let html = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-    .appendingPathComponent("../Anleitung/Anleitung.html").standardizedFileURL
+    .appendingPathComponent("../Handbuch/Handbuch.html").standardizedFileURL
 let pageSize = CGSize(width: 595, height: 842)
 
 func fail(_ message: String) -> Never {
-    FileHandle.standardError.write("Anleitung: \(message)\n".data(using: .utf8)!)
+    FileHandle.standardError.write("Handbuch: \(message)\n".data(using: .utf8)!)
     exit(1)
 }
 
@@ -66,7 +66,7 @@ func fail(_ message: String) -> Never {
                 document.insert(page, at: document.pageCount)
             }
             document.documentAttributes = [
-                PDFDocumentAttribute.titleAttribute: "Plattenregal – Anleitung",
+                PDFDocumentAttribute.titleAttribute: "Plattenregal – Handbuch",
                 PDFDocumentAttribute.authorAttribute: "Patrice Werner",
             ]
             guard document.write(to: output) else { fail("konnte \(output.path) nicht schreiben") }
