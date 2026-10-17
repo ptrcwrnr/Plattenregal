@@ -34,18 +34,20 @@ final class AppWelcome {
 
 struct WelcomeRequest: Identifiable { let id = UUID() }
 
-/// The brochure that also lies in the DMG (Plattenregal/Handbuch.pdf, made
-/// from Handbuch/Handbuch.html by Scripts/make-guide.swift), opened in the
-/// reader macOS uses for PDFs. Only in German for now.
+/// The brochure that also lies in the DMG (Plattenregal/Handbuch.pdf and the
+/// English Handbook.pdf, made from Handbuch/Handbuch.html and Handbook.html by
+/// Scripts/make-guide.swift), in the app's language, opened in the reader
+/// macOS uses for PDFs.
 enum Handbook {
     @MainActor static func open() {
-        guard let url = Bundle.main.url(forResource: "Handbuch", withExtension: "pdf") else {
-            AppLog.warning("Hilfe", "Handbuch.pdf fehlt in der App")
+        let name = Bundle.main.preferredLocalizations.first == "en" ? "Handbook" : "Handbuch"
+        guard let url = Bundle.main.url(forResource: name, withExtension: "pdf") else {
+            AppLog.warning("Hilfe", "\(name).pdf fehlt in der App")
             NSSound.beep()
             return
         }
         NSWorkspace.shared.open(url)
-        AppLog.info("Hilfe", "Handbuch geöffnet")
+        AppLog.info("Hilfe", "Handbuch geöffnet (\(name).pdf)")
     }
 }
 

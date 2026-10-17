@@ -283,23 +283,23 @@ private struct FloatingControls: View {
         case .layout:
             let layout = layoutBinding(for: page)
             let next: OverviewLayout = layout?.wrappedValue == .grid ? .list : .grid
-            item(next.systemImage, next == .list ? String(localized: "Als Liste anzeigen") : String(localized: "Als Raster anzeigen")) {
+            item(next.systemImage, next == .list ? String(localized: "Als Liste anzeigen") : String(localized: "Als Raster anzeigen"),
+                 keys: next == .list ? "⌥⌘2" : "⌥⌘1") {
                 layout?.wrappedValue = next
             }
         case .sync:
-            let title = String(localized: "Synchronisieren")
-            item("arrow.clockwise", title, help: title + " (⌘R)") {
+            item("arrow.clockwise", String(localized: "Synchronisieren"), keys: "⌘R") {
                 sync.start(page == .wantlist ? .wantlist : .collection, container: context.container)
             }
             // Discogs is off in the demo.
             .disabled(sync.busy || DemoMode.isActive)
         case .settings:
-            item("gearshape", String(localized: "Einstellungen"), help: String(localized: "Einstellungen (⌘,)")) { openSettings() }
+            item("gearshape", String(localized: "Einstellungen"), keys: "⌘,") { openSettings() }
         }
     }
 
     /// One of the fanned-out actions; choosing it closes the fan.
-    private func item(_ systemImage: String, _ title: String, help: String? = nil, perform: @escaping () -> Void) -> some View {
+    private func item(_ systemImage: String, _ title: String, keys: String, perform: @escaping () -> Void) -> some View {
         Button {
             collapse()
             perform()
@@ -312,7 +312,7 @@ private struct FloatingControls: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .help(help ?? title)
+        .help(AppShortcuts.help(title, keys: keys))
         .accessibilityLabel(title)
     }
 

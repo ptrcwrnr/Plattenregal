@@ -1,10 +1,11 @@
-// Renders the brochure Handbuch/Handbuch.html into a PDF, one A4 page per
+// Renders the brochure Handbuch/Handbuch.html (with --en its English
+// version Handbuch/Handbook.html) into a PDF, one A4 page per
 // <section class="page"> (595 × 842 pt). WebKit draws it, so the text stays
 // text. Elements with data-version get the given version. make-dmg.sh calls
-// this for Plattenregal/Handbuch.pdf, which the app carries (Hilfe ›
-// Handbuch) and the DMG shows next to it.
+// this for Plattenregal/Handbuch.pdf and Plattenregal/Handbook.pdf, which the
+// app carries (Hilfe › Handbuch) and the DMG shows next to it.
 //
-//   swift Scripts/make-guide.swift <out.pdf> [version] [--if-changed]
+//   swift Scripts/make-guide.swift <out.pdf> [version] [--en] [--if-changed]
 //
 // With --if-changed an existing PDF of the same version that is newer than
 // the brochure, its pictures and this script is kept: a new PDF differs in
@@ -15,16 +16,17 @@ import WebKit
 
 var args = Array(CommandLine.arguments.dropFirst())
 let ifChanged = args.contains("--if-changed")
-args.removeAll { $0 == "--if-changed" }
+let english = args.contains("--en")
+args.removeAll { $0 == "--if-changed" || $0 == "--en" }
 guard !args.isEmpty else {
-    FileHandle.standardError.write("swift make-guide.swift <out.pdf> [version] [--if-changed]\n".data(using: .utf8)!)
+    FileHandle.standardError.write("swift make-guide.swift <out.pdf> [version] [--en] [--if-changed]\n".data(using: .utf8)!)
     exit(1)
 }
 let output = URL(fileURLWithPath: args[0])
 let appVersion = args.count >= 2 ? args[1] : nil
 let script = URL(fileURLWithPath: #filePath)
 let html = script.deletingLastPathComponent()
-    .appendingPathComponent("../Handbuch/Handbuch.html").standardizedFileURL
+    .appendingPathComponent(english ? "../Handbuch/Handbook.html" : "../Handbuch/Handbuch.html").standardizedFileURL
 /// Stored in the PDF, so --if-changed can tell the version apart.
 let versionSubject = "Version \(appVersion ?? "-")"
 
@@ -91,7 +93,7 @@ func fail(_ message: String) -> Never {
                 document.insert(page, at: document.pageCount)
             }
             document.documentAttributes = [
-                PDFDocumentAttribute.titleAttribute: "Plattenregal – Handbuch",
+                PDFDocumentAttribute.titleAttribute: english ? "Plattenregal – User Guide" : "Plattenregal – Handbuch",
                 PDFDocumentAttribute.authorAttribute: "Patrice Werner",
                 PDFDocumentAttribute.subjectAttribute: versionSubject,
             ]

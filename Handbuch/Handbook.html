@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plattenregal – User Guide</title>
+<!--
+  The English version of Handbuch.html (same styles; keep both in step).
+  Die Broschüre, die der DMG beiliegt. Scripts/make-guide.swift rendert jede
+  .page (595 × 842 pt, A4) als eigene PDF-Seite; data-version wird dabei mit
+  der Version der App gefüllt. Farben aus dem Design Klassisch (wie
+  AtelierPalette und dmg-background.swift), Abstände nur aus der Skala unten.
+-->
+<style>
+  :root {
+    /* Farben des Designs Klassisch */
+    --paper: #F4EFE5;
+    --surface: #FBF8F2;
+    --soft: #EAE3D6;
+    --border: #DDD4C4;
+    --petrol: #1D4C5B;
+    --petrol-deep: #123C4B;
+    --ink: #233A3E;
+    --muted: #63716E;
+    --gold: #E2B660;
+    --gold-deep: #C99A45;
+    --gold-ink: #293C39;
+    --cream: #F4EFE5;
+
+    /* Abstandsskala (pt) */
+    --s-hair: 2px;
+    --s-xs: 4px;
+    --s-s: 8px;
+    --s-m: 12px;
+    --s-l: 16px;
+    --s-xl: 20px;
+    --s-2xl: 24px;
+    --s-3xl: 32px;
+    --s-4xl: 48px;
+
+    /* Schriftstufen: Titel, Kapitel, Überschrift, Fließtext, Nebentext, Etikett */
+    --t-display: 54px;
+    --t-title: 28px;
+    --t-head: 13.5px;
+    --t-body: 10.5px;
+    --t-small: 8.5px;
+    --t-label: 7.5px;
+
+    --serif: "New York", ui-serif, Georgia, serif;
+    --sans: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+
+    --radius-s: 4px;
+    --radius-m: 8px;
+    --radius-l: 12px;
+    --line: 0.75px;
+    --shadow: 0 6px 18px rgba(35, 58, 62, 0.16), 0 1px 3px rgba(35, 58, 62, 0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body {
+    width: 595px;
+    font-family: var(--sans);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    font-kerning: normal;
+    hyphens: manual;
+    -webkit-hyphens: manual;
+  }
+
+  /* ---------- Seite ---------- */
+  .page {
+    position: relative;
+    width: 595px;
+    height: 842px;
+    overflow: hidden;
+    background: var(--paper);
+    padding: var(--s-4xl) var(--s-4xl) 0;
+  }
+  .folio {
+    position: absolute;
+    left: var(--s-4xl);
+    right: var(--s-4xl);
+    bottom: var(--s-2xl);
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--t-small);
+    color: var(--muted);
+    letter-spacing: 0.2px;
+  }
+  .folio b { color: var(--petrol); font-weight: 600; }
+
+  /* ---------- Typografie ---------- */
+  .kicker {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-s);
+    font-size: var(--t-label);
+    font-weight: 600;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .kicker .num {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    letter-spacing: 0;
+    color: var(--gold-deep);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: var(--t-title);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-top: var(--s-xs);
+    letter-spacing: -0.2px;
+  }
+  .rule {
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 1px;
+    margin: var(--s-m) 0 var(--s-l);
+  }
+  h2 {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--petrol);
+    margin: var(--s-xl) 0 var(--s-xs);
+  }
+  h2:first-child { margin-top: 0; }
+  p + p { margin-top: var(--s-s); }
+  .lead {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .muted { color: var(--muted); }
+  .small { font-size: var(--t-small); line-height: 1.45; }
+  strong { font-weight: 600; }
+  .ui { font-weight: 600; color: var(--petrol); white-space: nowrap; }
+  .nowrap { white-space: nowrap; }
+
+  kbd {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: var(--t-small);
+    line-height: 1;
+    padding: var(--s-hair) var(--s-xs);
+    border: var(--line) solid var(--border);
+    border-bottom-width: 1.5px;
+    border-radius: var(--radius-s);
+    background: var(--surface);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---------- Bausteine ---------- */
+  .steps { list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: var(--s-3xl);
+    min-height: 20px;
+  }
+  .steps li + li { margin-top: var(--s-m); }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--petrol);
+    color: var(--cream);
+    font-family: var(--serif);
+    font-size: var(--t-body);
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
+  }
+  .steps.gold li::before { background: var(--gold); color: var(--gold-ink); }
+
+  .bullets { list-style: none; }
+  .bullets li { position: relative; padding-left: var(--s-l); }
+  .bullets li + li { margin-top: var(--s-xs); }
+  .bullets li::before {
+    content: "";
+    position: absolute;
+    left: var(--s-hair);
+    top: 6px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .card {
+    background: var(--surface);
+    border: var(--line) solid var(--border);
+    border-radius: var(--radius-l);
+    padding: var(--s-l) var(--s-xl);
+  }
+  .card.accent { border-left: 3px solid var(--gold); }
+  .card .title {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: var(--s-xs);
+  }
+  .card.petrol {
+    background: var(--petrol);
+    border-color: var(--petrol);
+    color: var(--cream);
+  }
+  .card.petrol .title { color: var(--gold); }
+
+  .tag {
+    display: inline-block;
+    font-size: var(--t-label);
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    margin-bottom: var(--s-xs);
+  }
+
+  figure img {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow);
+    outline: var(--line) solid rgba(35, 58, 62, 0.10);
+  }
+  figcaption {
+    margin-top: var(--s-s);
+    font-size: var(--t-small);
+    color: var(--muted);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-xl); }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-m); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2xl); align-items: start; }
+  .split-wide { display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--s-2xl); align-items: start; }
+  .split-text { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--s-2xl); align-items: start; }
+
+  .rubric .name {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    font-weight: 600;
+    color: var(--petrol);
+  }
+  .rubric .keys { margin: var(--s-hair) 0 var(--s-xs); }
+
+  table.list { width: 100%; border-collapse: collapse; }
+  table.list th {
+    text-align: left;
+    font-size: var(--t-label);
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: var(--petrol);
+    padding: var(--s-xs) var(--s-s);
+  }
+  table.list th:first-child { border-top-left-radius: var(--radius-s); }
+  table.list th:last-child { border-top-right-radius: var(--radius-s); }
+  table.list td {
+    padding: var(--s-xs) var(--s-s);
+    border-bottom: var(--line) solid var(--border);
+    vertical-align: top;
+  }
+  table.list td:first-child { white-space: nowrap; font-weight: 600; color: var(--petrol); width: 1%; padding-right: var(--s-l); }
+
+  .toc { list-style: none; }
+  .toc li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-s);
+    padding: var(--s-xs) 0;
+    border-bottom: var(--line) solid var(--border);
+  }
+  .toc .n { font-family: var(--serif); color: var(--gold-deep); font-weight: 600; width: 20px; }
+  .toc .t { flex: 1; font-family: var(--serif); font-size: var(--t-head); }
+  .toc .p { color: var(--muted); font-size: var(--t-small); }
+
+  /* ---------- Titelseite ---------- */
+  .cover {
+    background: radial-gradient(120% 70% at 50% 18%, #2A6273 0%, var(--petrol) 45%, var(--petrol-deep) 100%);
+    color: var(--cream);
+    text-align: center;
+    padding-top: var(--s-4xl);
+  }
+  .cover .kicker { justify-content: center; color: var(--gold); letter-spacing: 3px; }
+  .cover .icon {
+    width: 168px;
+    height: 168px;
+    margin: var(--s-3xl) auto 0;
+    display: block;
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35));
+  }
+  .cover .name {
+    font-family: var(--serif);
+    font-size: var(--t-display);
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+    margin-top: var(--s-2xl);
+  }
+  .cover .rule { margin: var(--s-l) auto; }
+  .cover .claim {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.45;
+    color: rgba(244, 239, 229, 0.82);
+  }
+  .cover .meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 262px;
+    font-size: var(--t-small);
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: rgba(244, 239, 229, 0.62);
+  }
+  .record {
+    position: absolute;
+    left: 50%;
+    bottom: -250px;
+    width: 480px;
+    height: 480px;
+    margin-left: -240px;
+    z-index: 1;
+    filter: drop-shadow(0 -8px 24px rgba(0, 0, 0, 0.35));
+  }
+  .bars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 70px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 0 var(--s-xs);
+  }
+  .bars i {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    opacity: 0.45;
+  }
+
+  /* ---------- Rückseite ---------- */
+  .back-band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 250px;
+    background: var(--petrol);
+    color: var(--cream);
+    padding: var(--s-3xl) 136px var(--s-3xl) var(--s-4xl);
+  }
+  .back-band .farewell {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .back-band .small { color: rgba(244, 239, 229, 0.72); }
+  .back-band .rule { margin: var(--s-m) 0; }
+  .back-band img { position: absolute; right: var(--s-4xl); top: var(--s-3xl); width: 72px; height: 72px; }
+</style>
+</head>
+<body>
+
+<!-- ============ 1 · Cover ============ -->
+<section class="page cover">
+  <div class="kicker">User Guide</div>
+  <img class="icon" src="Bilder/icon.png" alt="">
+  <div class="name">Plattenregal</div>
+  <div class="rule"></div>
+  <div class="claim">Your Discogs collection –<br>and where every record sits on the shelf.</div>
+  <div class="meta">Version <span data-version>1.1.2</span> · macOS 27 · Apple Silicon</div>
+  <div class="bars" id="bars"></div>
+  <svg class="record" id="record" viewBox="0 0 480 480"></svg>
+</section>
+
+<!-- ============ 2 · Welcome ============ -->
+<section class="page">
+  <div class="kicker">Welcome</div>
+  <h1>Good to have you here.</h1>
+  <div class="rule"></div>
+  <p class="lead">Plattenregal brings in your collection and your wantlist from Discogs – and remembers on which shelf, in which compartment and at which spot every record sits.</p>
+  <p style="margin-top: var(--s-m)">On top of that there are statistics with the value of your collection, a search list for records you can’t find right now, a sale list, backups of your shelf layout and exports as CSV or PDF. This guide takes you from installing to your first filled shelf in a few minutes.</p>
+
+  <div class="card accent" style="margin-top: var(--s-2xl)">
+    <div class="title">What you need</div>
+    <ul class="bullets">
+      <li>A Mac with Apple silicon (M1 or later). Plattenregal doesn’t run on Intel Macs, as macOS 27 is only available for Macs with Apple silicon.</li>
+      <li><strong>macOS 27</strong> or later.</li>
+      <li>A Discogs account with your collection. The account is free. You can also try Plattenregal with the built-in demo first.</li>
+    </ul>
+  </div>
+
+  <h2 style="margin-top: var(--s-3xl)">Contents</h2>
+  <ol class="toc">
+    <li><span class="n">01</span><span class="t">Installing</span><span class="p">Page 3</span></li>
+    <li><span class="n">02</span><span class="t">Connecting Discogs</span><span class="p">Page 4</span></li>
+    <li><span class="n">03</span><span class="t">A quick tour</span><span class="p">Page 5</span></li>
+    <li><span class="n">04</span><span class="t">Setting up your shelves</span><span class="p">Page 6</span></li>
+    <li><span class="n">05</span><span class="t">Placing records and keeping order</span><span class="p">Page 7</span></li>
+    <li><span class="n">06</span><span class="t">Statistics, backup and export</span><span class="p">Page 8</span></li>
+    <li><span class="n">07</span><span class="t">Settings and keyboard shortcuts</span><span class="p">Page 9</span></li>
+    <li><span class="n">08</span><span class="t">When something’s off</span><span class="p">Page 10</span></li>
+  </ol>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>2</span></div>
+</section>
+
+<!-- ============ 3 · Installing ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">01</span>Installing</div>
+  <h1>On your Mac in three moves</h1>
+  <div class="rule"></div>
+  <ol class="steps">
+    <li><strong>Open the disk image.</strong> Double-clicking <span class="ui">Plattenregal-<span data-version>1.1.2</span>.dmg</span> opens a window with the app icon, an arrow, the Applications folder and this guide, in German (“Handbuch”) and English (“User Guide”).</li>
+    <li><strong>Drag Plattenregal to Applications.</strong> Simply drag the icon onto the folder next to it. You’ll find this guide in Plattenregal at any time under <span class="ui">Help → User Guide</span>.</li>
+    <li><strong>Eject the disk image.</strong> Click the eject button next to “Plattenregal” in the Finder sidebar. You can delete the DMG file afterwards.</li>
+  </ol>
+
+  <div class="card accent" style="margin-top: var(--s-2xl)">
+    <span class="tag">Only the first time</span>
+    <div class="title">macOS asks once</div>
+    <p>Plattenregal is a private app and not notarized by Apple. That’s why macOS stops the first launch when the app came from the internet, via AirDrop or by mail. You only need to do this once:</p>
+    <ol class="steps gold" style="margin-top: var(--s-m)">
+      <li>Open Plattenregal in Applications. macOS says the app was not opened. Click <span class="ui">Done</span>.</li>
+      <li>Open <span class="ui">System Settings → Privacy &amp; Security</span> and scroll down to “Security”. There it says: “Plattenregal” was blocked to protect your Mac.</li>
+      <li>Click <span class="ui">Open Anyway</span> next to it, confirm with your password or Touch ID and in the next window once more with <span class="ui">Open Anyway</span>.</li>
+    </ol>
+    <p style="margin-top: var(--s-m)" class="muted">After that, Plattenregal starts like any other app.</p>
+  </div>
+
+  <h2 style="margin-top: var(--s-2xl)">Installing a new version</h2>
+  <p>Drag the new version to Applications the same way and let it replace the old one. Your collection, your shelves and your token stay, as they aren’t stored inside the app. If macOS asks whether Plattenregal may use your keychain, choose <span class="ui">Always Allow</span>: that’s where your Discogs token is kept. The “Open Anyway” step may be needed once more.</p>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>3</span></div>
+</section>
+
+<!-- ============ 4 · Discogs ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">02</span>Connecting Discogs</div>
+  <h1>Your collection comes from Discogs</h1>
+  <div class="rule"></div>
+  <p>Plattenregal doesn’t create records itself. Everything you see comes from your Discogs account. To get to it, you need a <strong>personal token</strong>, a kind of key for the Discogs API. Plattenregal only reads with it and never changes anything on Discogs.</p>
+
+  <ol class="steps" style="margin-top: var(--s-xl)">
+    <li><strong>Create a token.</strong> Sign in on discogs.com and open <span class="ui">Settings → Developers</span>. The quickest way is <span class="ui">Create Token ↗</span> in Plattenregal.</li>
+    <li>Click <span class="ui">Generate new token</span> there and copy the long string.</li>
+    <li><strong>Enter the token.</strong> In Plattenregal, press <kbd>⌘,</kbd>, choose the <span class="ui">Discogs</span> tab, paste the token and click <span class="ui">Save &amp; Test</span>.</li>
+    <li><strong>Sync.</strong> <span class="ui">Sync Everything</span> loads your collection and wantlist, the tracklists follow in the background. Discogs allows 60 requests a minute, so with a large collection the first time takes a while. Plattenregal only saves once everything has loaded completely.</li>
+  </ol>
+  <figure style="margin-top: var(--s-xl)">
+    <img src="Bilder/en/settings-discogs.jpg" alt="">
+    <figcaption>Settings → Discogs: the token field, “Save &amp; Test” and the link to Discogs.</figcaption>
+  </figure>
+
+  <div class="grid-2" style="margin-top: var(--s-xl)">
+    <div class="card">
+      <div class="title">Your token stays with you</div>
+      <p class="small">It’s kept only in the macOS keychain, on this Mac alone. It never ends up in files, settings or the log. Plattenregal only talks to Discogs, always encrypted.</p>
+    </div>
+    <div class="card petrol">
+      <div class="title">Want to try it first?</div>
+      <p class="small">The welcome on first launch takes you straight to the field with <strong>Enter Token …</strong> Instead, <strong>Start Demo…</strong> opens a sample collection of about 50 albums. Change whatever you like there, nothing is saved. Later: <strong>Help → Getting Started</strong></p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>4</span></div>
+</section>
+
+<!-- ============ 5 · Tour ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">03</span>A quick tour</div>
+  <h1>Four sections, one window</h1>
+  <div class="rule"></div>
+  <figure>
+    <img src="Bilder/en/collection.jpg" alt="">
+    <figcaption>The collection in the Classic design. At the top the sections and the search field, at the bottom right the round button.</figcaption>
+  </figure>
+
+  <div class="grid-4" style="margin-top: var(--s-xl)">
+    <div class="rubric"><div class="name">Collection</div><div class="keys"><kbd>⌘1</kbd></div><p class="small muted">All your records as a cover grid or a list. Clicking a cover shows details and the tracklist.</p></div>
+    <div class="rubric"><div class="name">Wantlist</div><div class="keys"><kbd>⌘2</kbd></div><p class="small muted">What you’re still looking for, straight from your Discogs wantlist.</p></div>
+    <div class="rubric"><div class="name">Shelf</div><div class="keys"><kbd>⌘3</kbd></div><p class="small muted">Your shelves with their compartments and which record sits where.</p></div>
+    <div class="rubric"><div class="name">Statistics</div><div class="keys"><kbd>⌘4</kbd></div><p class="small muted">Collection value, its history and breakdowns by artist, style and year.</p></div>
+  </div>
+
+  <div class="split-text" style="margin-top: var(--s-xl)">
+    <div>
+      <h2>Searching</h2>
+      <p>The search field at the top right (<kbd>⌘F</kbd>) finds records by artist, title, label, catalog number, genre, style and more. <kbd>esc</kbd> clears the search. On the shelf page the search shows right away which compartment a record is in.</p>
+      <h2>More with a right-click</h2>
+      <p>Right-clicking a cover offers to show the record on the shelf, to find a spot for it or to open it on Discogs.</p>
+    </div>
+    <div>
+      <figure>
+        <img src="Bilder/en/fan.jpg" alt="">
+        <figcaption>The round button fans out: grid or list, sync, settings.</figcaption>
+      </figure>
+      <p class="small" style="margin-top: var(--s-m)">You can also refresh with <kbd>⌘R</kbd> or by pulling down with two fingers on the trackpad.</p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>5</span></div>
+</section>
+
+<!-- ============ 6 · Shelves ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">04</span>Setting up your shelves</div>
+  <h1>First the shelf, then the records</h1>
+  <div class="rule"></div>
+  <div class="split">
+    <div>
+      <p>Plattenregal doesn’t know your real shelf on its own. You set it up once, in IKEA KALLAX sizes or entirely your own with 1 to 6 columns and rows. Several shelves, say in the living room and the hallway, are no problem.</p>
+      <ol class="steps" style="margin-top: var(--s-l)">
+        <li>Press <kbd>⌘,</kbd> and open the <span class="ui">Shelf</span> tab.</li>
+        <li>Click <span class="ui">Add Shelf</span>, give it a name and choose its <strong>size</strong>.</li>
+        <li>Compartments that shouldn’t hold records, for decor for example, can be <strong>locked</strong> and named.</li>
+      </ol>
+    </div>
+    <figure>
+      <img src="Bilder/en/settings-shelf.jpg" alt="">
+      <figcaption>Settings → Shelf: add shelves, name them, choose their size.</figcaption>
+    </figure>
+  </div>
+
+  <figure style="margin-top: var(--s-2xl)">
+    <img src="Bilder/en/shelf.jpg" alt="">
+    <figcaption>The shelf page: the shelves as tabs at the top, below them the compartments with their letter range and number of records, at the bottom the contents of the selected compartment (gold border).</figcaption>
+  </figure>
+
+  <p style="margin-top: var(--s-l)">Plattenregal names the compartments itself after the letter range they hold, for example <span class="nowrap">“A – Be”</span>. A click selects a compartment. Below it, its records appear in their order, as covers or as a list. Clicking a cover opens “Edit Copy”, where a slider moves the record to another position.</p>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>6</span></div>
+</section>
+
+<!-- ============ 7 · Placing ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">05</span>Placing records and keeping order</div>
+  <h1>Every record in its place</h1>
+  <div class="rule"></div>
+  <div class="split">
+    <figure>
+      <img src="Bilder/en/sortin.jpg" alt="">
+      <figcaption>“Not placed yet” shows shelf, compartment, position and the neighbours on either side for every record.</figcaption>
+    </figure>
+    <div>
+      <h2>Placing</h2>
+      <p>The round <span class="ui">+</span> button at the bottom right of the shelf page lists every record without a spot yet, alphabetically by artist. Each one shows where it belongs. Put the record on your real shelf and click its row, and Plattenregal remembers the spot.</p>
+      <h2>Add Record</h2>
+      <p>To fill one compartment on purpose, move the pointer over it and click the small <span class="ui">+</span> at its top right.</p>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: var(--s-2xl)">
+    <div class="card">
+      <div class="title">Check Order</div>
+      <p class="small">Right-click a compartment → <strong>Check Order</strong>. Plattenregal shows the fewest moves that put the compartment back in order, step by step to tick off. Always by artist, and for the same artist by title, year or label as you choose.</p>
+    </div>
+    <div class="card">
+      <div class="title">Kept off shelf</div>
+      <p class="small">Records that never go on the shelf, singles in a box for example, can be marked <strong>Kept off shelf</strong> with a right-click. Plattenregal then no longer offers them for placing.</p>
+    </div>
+    <div class="card">
+      <div class="title">Search list “Looking for”</div>
+      <p class="small">Can’t find a record right now? Right-click → <strong>Add to Search List</strong>. In its compartment it then carries the tag “Looking for”. Under Settings → Lists you tick it off as found.</p>
+    </div>
+    <div class="card">
+      <div class="title">Sale list</div>
+      <p class="small">With <strong>Mark for sale</strong> you collect records that may go. They stay where they are. <strong>Sold</strong> under Settings → Lists takes them all out of their compartments at once.</p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>7</span></div>
+</section>
+
+<!-- ============ 8 · Statistics, backup, export ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">06</span>Statistics, backup and export</div>
+  <h1>What your collection is worth</h1>
+  <div class="rule"></div>
+  <figure>
+    <img src="Bilder/en/statistics.jpg" alt="">
+    <figcaption>The statistics: collection value according to the Discogs marketplace, its history and breakdowns of your collection.</figcaption>
+  </figure>
+  <p style="margin-top: var(--s-l)">The statistics show what your collection is worth at Discogs marketplace prices and how that develops. On top come figures on artists, styles, labels and decades, and a <strong>Random pick</strong> that suggests a record from your collection with <kbd>⇧⌘R</kbd>. Refresh with <kbd>⌘R</kbd>.</p>
+
+  <div class="grid-2" style="margin-top: var(--s-2xl)">
+    <div class="card accent">
+      <div class="title">Backup</div>
+      <p class="small">The records themselves can always come back from Discogs. <strong>Where they sit on the shelf exists only on your Mac.</strong> That’s why Plattenregal backs up the layout automatically after every change. Under Settings → Backup you can choose a folder of your own, in iCloud Drive for example. There you can also bring back an earlier state and see beforehand what will change.</p>
+    </div>
+    <div class="card accent">
+      <div class="title">Export</div>
+      <p class="small">Under Settings → Export you turn your collection, wantlist or sale list into a <strong>CSV file</strong> for Excel and Numbers or a <strong>print-ready PDF list</strong>, in shelf or alphabetical order. If you like, Plattenregal writes them to a folder daily, weekly or monthly.</p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>8</span></div>
+</section>
+
+<!-- ============ 9 · Settings and shortcuts ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">07</span>Settings and keyboard shortcuts</div>
+  <h1>Everything at a glance</h1>
+  <div class="rule"></div>
+  <p>Open the settings with <kbd>⌘,</kbd> or the round button. Under <span class="ui">Appearance</span> you choose between the two designs: <strong>Modern</strong> with Liquid Glass and <strong>Classic</strong> in petrol, cream and gold, as in this guide.</p>
+
+  <table class="list" style="margin-top: var(--s-l)">
+    <tr><th>Tab</th><th>What you’ll find there</th></tr>
+    <tr><td>General</td><td>Language (German or English), start page, start and end the demo</td></tr>
+    <tr><td>Appearance</td><td>Design, light or dark, colors, grid or list, order and cover size</td></tr>
+    <tr><td>Shelf</td><td>Add and change shelves, lock compartments, order for the same artist</td></tr>
+    <tr><td>Lists</td><td>Turn the search list and the sale list on or off and work through them</td></tr>
+    <tr><td>Discogs</td><td>Token, connection test, sync</td></tr>
+    <tr><td>Export</td><td>CSV or PDF, automatic export to a folder</td></tr>
+    <tr><td>Backup</td><td>Back up and restore the layout, automatic backup, location</td></tr>
+    <tr><td>Data</td><td>Storage, cover cache, log, reset</td></tr>
+    <tr><td>Keyboard Shortcuts</td><td>All shortcuts to look up</td></tr>
+  </table>
+
+  <h2 style="margin-top: var(--s-2xl)">The most important shortcuts</h2>
+  <div class="grid-2" style="margin-top: var(--s-s)">
+    <table class="list">
+      <tr><th>Everywhere</th><th></th></tr>
+      <tr><td><kbd>⌘1</kbd> – <kbd>⌘4</kbd></td><td>Collection, Wantlist, Shelf, Statistics</td></tr>
+      <tr><td><kbd>⌘F</kbd></td><td>Search</td></tr>
+      <tr><td><kbd>⌘R</kbd></td><td>Refresh Page</td></tr>
+      <tr><td><kbd>⌥⌘R</kbd></td><td>Sync Everything with Discogs</td></tr>
+      <tr><td><kbd>⌘.</kbd></td><td>Cancel Sync</td></tr>
+      <tr><td><kbd>⌘,</kbd></td><td>Settings</td></tr>
+    </table>
+    <table class="list">
+      <tr><th>Pages</th><th></th></tr>
+      <tr><td><kbd>⌥⌘1</kbd> / <kbd>⌥⌘2</kbd></td><td>Grid / List</td></tr>
+      <tr><td><kbd>⌘+</kbd> / <kbd>⌘−</kbd></td><td>Larger / Smaller Covers</td></tr>
+      <tr><td><kbd>esc</kbd></td><td>Clear Search, Then Close It</td></tr>
+      <tr><td><kbd>⌘←</kbd> / <kbd>⌘→</kbd></td><td>Previous / Next Shelf</td></tr>
+      <tr><td><kbd>⌘Z</kbd></td><td>Undo Removal</td></tr>
+      <tr><td><kbd>⇧⌘R</kbd></td><td>Random Pick: Draw Another Record</td></tr>
+    </table>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · User Guide</span><span>9</span></div>
+</section>
+
+<!-- ============ 10 · Help and back ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">08</span>When something’s off</div>
+  <h1>Little helpers</h1>
+  <div class="rule"></div>
+  <table class="list">
+    <tr><th>You see</th><th>What helps</th></tr>
+    <tr><td>“Plattenregal” not opened</td><td>Allow it once under Privacy &amp; Security, see page 3.</td></tr>
+    <tr><td>Token not accepted</td><td>Check the token on Discogs or create a new one, and enter it again under Settings → Discogs.</td></tr>
+    <tr><td>Keychain prompt</td><td>Happens after an update. Choose <span class="ui">Always Allow</span>.</td></tr>
+    <tr><td>“Plattenregal is already open”</td><td>The app is running a second time. Quit the other one, your data isn’t affected.</td></tr>
+    <tr><td>Record missing from the collection</td><td>What you newly add on Discogs shows up after the next sync: <kbd>⌘R</kbd>.</td></tr>
+    <tr><td>Shelf emptied by mistake</td><td>Restore an earlier state of the layout under Settings → Backup.</td></tr>
+    <tr><td>Starting over</td><td>Settings → Data → Reset. Plattenregal backs up the layout first, backups are kept.</td></tr>
+  </table>
+  <p style="margin-top: var(--s-l)"><strong>Reporting a problem:</strong> Under Settings → Data → Diagnostics, save the log to a file with <span class="ui">Save As…</span> Add the version from <span class="ui">Plattenregal → About Plattenregal</span>. The log never contains your Discogs token.</p>
+
+  <div class="back-band">
+    <img src="Bilder/icon.png" alt="">
+    <div class="farewell">Enjoy digging and listening.</div>
+    <div class="rule"></div>
+    <p class="small">Plattenregal <span data-version>1.1.2</span> · by Patrice Werner · for macOS 27 on Macs with Apple silicon.<br>Your data stays on your Mac. Plattenregal only talks to Discogs and sends nothing to third parties.</p>
+    <p class="small" style="margin-top: var(--s-l)">This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. ‘Discogs’ is a trademark of Zink Media, LLC.</p>
+  </div>
+</section>
+
+<script>
+  // Equalizer am Fuß der Titelseite, in den Diagrammfarben der App – wie im DMG-Hintergrund.
+  const palette = [[0x2F,0x6F,0x80],[0xD9,0xA4,0x41],[0x7F,0xA3,0x8A],[0xC2,0x71,0x4F],[0x5B,0x7D,0xA6],[0x8C,0x5A,0x7A],[0xA8,0xA0,0x60]];
+  const bars = document.getElementById("bars");
+  const count = 58;
+  for (let i = 0; i < count; i++) {
+    const level = Math.abs(Math.sin(i * 0.55) * Math.cos(i * 0.21)) * 0.8 + Math.abs(Math.sin(i * 1.7)) * 0.2;
+    const pos = i / (count - 1) * (palette.length - 1);
+    const a = palette[Math.floor(pos)], b = palette[Math.min(Math.floor(pos) + 1, palette.length - 1)], f = pos - Math.floor(pos);
+    const c = a.map((v, k) => Math.round(v + (b[k] - v) * f));
+    const bar = document.createElement("i");
+    bar.style.height = (10 + 56 * level) + "px";
+    bar.style.background = `rgb(${c.join(",")})`;
+    bars.appendChild(bar);
+  }
+
+  // Die Schallplatte wie im App-Symbol und im DMG-Hintergrund: Rillen, ein Glanz, das goldene Etikett.
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.getElementById("record");
+  const add = (name, attrs) => { const e = document.createElementNS(ns, name); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  const defs = add("defs", {});
+  const sheen = document.createElementNS(ns, "linearGradient");
+  for (const [k, v] of Object.entries({ id: "sheen", x1: "0", y1: "0", x2: "1", y2: "1" })) sheen.setAttribute(k, v);
+  for (const [o, a] of [[0.25, 0], [0.5, 0.16], [0.75, 0]]) {
+    const stop = document.createElementNS(ns, "stop");
+    stop.setAttribute("offset", o); stop.setAttribute("stop-color", "#fff"); stop.setAttribute("stop-opacity", a);
+    sheen.appendChild(stop);
+  }
+  defs.appendChild(sheen);
+  add("circle", { cx: 240, cy: 240, r: 240, fill: "#16191A" });
+  for (let r = 236; r > 92; r -= 3) {
+    add("circle", { cx: 240, cy: 240, r, fill: "none", stroke: "#fff", "stroke-width": 0.6, "stroke-opacity": r % 27 < 3 ? 0.11 : 0.045 });
+  }
+  add("circle", { cx: 240, cy: 240, r: 240, fill: "url(#sheen)" });
+  add("circle", { cx: 240, cy: 240, r: 84, fill: "#E2B660" });
+  add("circle", { cx: 240, cy: 240, r: 64, fill: "none", stroke: "#C99A45", "stroke-width": 1 });
+</script>
+</body>
+</html>

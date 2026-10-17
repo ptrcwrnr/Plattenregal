@@ -201,6 +201,16 @@
         }
       }
     },
+    "Erhöhen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Increase"
+          }
+        }
+      }
+    },
     "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast. Als CSV oder PDF gibt es die Liste unter „Export“." : {
       "localizations" : {
         "en" : {
@@ -347,6 +357,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sold"
+          }
+        }
+      }
+    },
+    "Verringern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decrease"
           }
         }
       }
@@ -4202,16 +4222,6 @@
         }
       }
     },
-    "Einstellungen (⌘,)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings (⌘,)"
-          }
-        }
-      }
-    },
     "Einstellungen → Regal" : {
       "localizations" : {
         "en" : {
@@ -6275,16 +6285,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Draw Another Record"
-          }
-        }
-      }
-    },
-    "Neue Platte ziehen (⇧⌘R)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Draw another record (⇧⌘R)"
           }
         }
       }

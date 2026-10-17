@@ -1,3 +1,26 @@
+# Aktueller Stand · 18.10.2026 (Handbuch, Tooltips, Demo-Cover, Startargumente)
+
+Projektversion **1.1.2 (102026)**, Schema **V16**. Prüfung nach den Änderungen vom 17. und 18.10. (Handbuch in App und DMG, Hilfe-Menü, Discogs-Links in Klassisch, Tooltips, Demo-Cover, Aufnahme-Skript). Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** Hilfe-Menü und `Handbook` (`Views/WelcomeView.swift`), Discogs-Einstellungen, Tooltips in `RootView`, `DiscogsSyncView`, `StatisticsCards` und den Bausteinen in `AppAppearance` (Banner, Suchfeld, Stepper), `AppShortcuts.help`, Demo-Cover (`DemoData.swift`), Debug-Fenstergröße bei `--settings-tab` (`PlattenregalApp.swift`), Skripte für Handbuch, Bilder und DMG.
+- **Befund (geklärt):** „Schnappschuss … nach 30 s kein Fenster“ (offen seit 09.10.) kam von der Reihenfolge der Startargumente: Ein Paar nach einem Schalter (`--demo -signatureDesign atelier`) lässt macOS `atelier` als zu öffnende Datei lesen, und die App zeigt dann kein Startfenster. Gegenprobe: dieselben Argumente mit Paaren zuerst – jedes Mal ein Fenster nach 4 s; `--demo` allein ebenfalls. Kein Fehler der App; README und Aufnahme-Skript ordnen die Argumente jetzt richtig.
+- **Nebenwirkung (behoben):** Ein Schnappschuss mit `--settings-tab` stellte die gespeicherte Fenstergröße der echten App (`NSWindow Frame main`) auf 1050 × 772; wiederhergestellt auf 1223 × 793. Das Aufnahme-Skript sichert und stellt den Wert jetzt selbst zurück.
+- **Bekannt, nicht geändert:** `--snapshot` zeichnet Schalter immer grau (auch mit App im Vordergrund ausprobiert); die Bilder meiden deshalb Schalter. Englische Menütexte setzen „…“ uneinheitlich („Enter Token …“ mit, „Start Demo…“ ohne Leerzeichen).
+- **Nicht geprüft:** die neuen Tooltips in der laufenden App (der Bildschirm war gesperrt, nur im Code und per Build); das DMG-Fenster im Finder (Inhalt, Positionen und Signatur geprüft, Aufbau nachgebaut); ein echter Abgleich mit Discogs.
+- **macOS-Absturzberichte:** keine neuen.
+- **App-Protokoll** 17.–18.10.: kein Absturzblock. 14 `ERROR`, alle „Schnappschuss … nach 30 s kein Fenster“ aus den Versuchen zur Startargument-Reihenfolge; Warnungen „vorige Sitzung nicht normal beendet“ nach beendeten Demo-Läufen. „Handbuch geöffnet (Handbook.pdf)“ und „(Handbuch.pdf)“ aus der Prüfung des Hilfe-Menüs.
+- **Fehlermeldungen:** Neu nur Protokollzeilen („Handbuch.pdf fehlt in der App“ als Warnung mit Signalton – kommt bei korrektem Build nicht vor). Die Skripte melden auf Deutsch (Plattenregal läuft noch, kein Schnappschuss, kein Handbuch in der App).
+- **Lokalisierung:** per Skript – 909 Einträge, 59 veraltet, jeder aktive Eintrag mit englischer Übersetzung. Neu: „Handbuch“ (User Guide), „Erste Schritte“ (Getting Started, statt „Erste Schritte …“), „Verringern“/„Erhöhen“; entfernt: „Einstellungen (⌘,)“, „Neue Platte ziehen (⇧⌘R)“.
+
+## Verifikation
+
+- `xcodebuild -scheme Plattenregal test` (Xcodes DerivedData): **210 Tests in 13 Suites bestanden**, 25 s.
+- Demo: Hilfe-Menü „Handbuch, Erste Schritte“ bzw. „User Guide, Getting Started“; Handbuch öffnet in der Sprache der App. Discogs-Links in Klassisch petrol, in Modern blau (Bildschirmfotos).
+- `swift Scripts/guide-screenshots.swift`: 14 Bilder, alle angesehen; danach `NSWindow Frame main` wieder 1223 × 793.
+- `Scripts/make-dmg.sh`: DMG mit App, Programme, „Handbuch“ und „User Guide“; `hdiutil verify` in Ordnung, PDFs byte-gleich, Signatur gültig.
+
 # Aktueller Stand · 12.10.2026 (Durchsicht der ganzen App, Dokumentation, Fehlermeldungen, Fehlerprotokoll, Lokalisierung)
 
 Projektversion **1.1.2 (102026)**, Schema **V16**. Alle Quelltexte der App gelesen. Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.

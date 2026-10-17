@@ -14,7 +14,7 @@ struct DiscogsSyncStatusView: View {
                 if sync.isRunning {
                     ActivityRing(size: 13)
                     Text("Synchronisierung läuft")
-                    CancelIconButton(help: String(localized: "Synchronisierung abbrechen")) { sync.cancel() }
+                    CancelIconButton(help: String(localized: "Synchronisierung abbrechen"), keys: "⌘.") { sync.cancel() }
                 } else {
                     Text(sync.status)
                         .transition(.opacity)
@@ -210,7 +210,7 @@ struct DiscogsSyncPill: View {
                 }
             }
             if content.isRunning {
-                CancelIconButton(help: String(localized: "Synchronisierung abbrechen")) { sync.cancel() }
+                CancelIconButton(help: String(localized: "Synchronisierung abbrechen"), keys: "⌘.") { sync.cancel() }
                     .transition(.opacity)
             } else if let error = content.error {
                 ErrorInfoButton(title: content.title, message: error) { sync.dismissStatus() }
@@ -248,6 +248,7 @@ struct DiscogsSyncPill: View {
 /// The small "x" used to cancel a running sync.
 private struct CancelIconButton: View {
     let help: String
+    var keys: String?
     let action: () -> Void
     var body: some View {
         Button(action: action) {
@@ -256,7 +257,7 @@ private struct CancelIconButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help(help)
+        .help(keys.map { AppShortcuts.help(help, keys: $0) } ?? help)
         .accessibilityLabel(help)
     }
 }

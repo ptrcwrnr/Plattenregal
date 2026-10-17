@@ -350,6 +350,10 @@ enum AppShortcuts {
     static let smallerCovers = KeyboardShortcut("-", modifiers: .command)
     static let defaultCovers = KeyboardShortcut("0", modifiers: .command)
 
+    /// A tooltip that names its shortcut, the same way everywhere:
+    /// „Synchronisieren (⌘R)“.
+    static func help(_ title: String, keys: String) -> String { "\(title) (\(keys))" }
+
     struct Entry: Identifiable {
         let keys: String
         let title: String

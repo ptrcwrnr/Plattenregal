@@ -626,7 +626,7 @@ struct RandomRecordCard: View {
                 }
                 .appGlassButton()
                 .keyboardShortcut("r", modifiers: [.command, .shift])
-                .help("Neue Platte ziehen (⇧⌘R)")
+                .help(AppShortcuts.help(String(localized: "Neue Platte ziehen"), keys: "⇧⌘R"))
                 SecondaryButton(title: placement?.inShelf != true ? String(localized: "Platz im Regal finden") : String(localized: "Im Regal zeigen")) { showShelf(pick) }
                 SecondaryButton(title: String(localized: "Details")) { open(pick) }
             }

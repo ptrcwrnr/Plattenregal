@@ -607,6 +607,7 @@ struct AppSearchField: View {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
+                .help(String(localized: "Suche löschen"))
                 .accessibilityLabel(String(localized: "Suche löschen"))
             }
         }
@@ -843,7 +844,7 @@ struct AppBanner: View {
                 GhostButton(title: actionTitle, action: action)
             }
             if let onDismiss {
-                IconButton(systemImage: "xmark", action: onDismiss)
+                IconButton(systemImage: "xmark", help: String(localized: "Ausblenden"), action: onDismiss)
             }
         }
         .font(.callout)
@@ -1211,12 +1212,12 @@ struct GlassStepper: View {
 
     var body: some View {
         HStack(spacing: AppStyle.hairSpacing) {
-            step("minus", by: -1).disabled(value <= range.lowerBound)
+            step("minus", String(localized: "Verringern"), by: -1).disabled(value <= range.lowerBound)
             Text(label(value))
                 .monospacedDigit()
                 .contentTransition(.numericText(value: Double(value)))
                 .padding(.horizontal, AppStyle.tightSpacing)
-            step("plus", by: 1).disabled(value >= range.upperBound)
+            step("plus", String(localized: "Erhöhen"), by: 1).disabled(value >= range.upperBound)
         }
         .animation(AppStyle.quickAnimation, value: value)
         .padding(.horizontal, AppStyle.itemSpacing)
@@ -1234,8 +1235,8 @@ struct GlassStepper: View {
         }
     }
 
-    private func step(_ systemImage: String, by offset: Int) -> some View {
-        GlassStepButton(systemImage: systemImage) {
+    private func step(_ systemImage: String, _ help: String, by offset: Int) -> some View {
+        GlassStepButton(systemImage: systemImage, help: help) {
             value = min(max(value + offset, range.lowerBound), range.upperBound)
         }
     }
@@ -1244,6 +1245,7 @@ struct GlassStepper: View {
 /// A small round icon button inside a glass capsule (stepper).
 private struct GlassStepButton: View {
     let systemImage: String
+    let help: String
     let action: () -> Void
     @Environment(\.isEnabled) private var isEnabled
     @State private var hovering = false
@@ -1258,6 +1260,7 @@ private struct GlassStepButton: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .help(help)
         .opacity(isEnabled ? 1 : 0.35)
         .onHover { hovering = $0 }
     }

@@ -121,6 +121,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         .defaultSize(width: 1300, height: 850)
+        // With --settings-tab the window takes the settings' own size, so
+        // screenshots look like the settings window.
+        .windowResizability(Self.previewsSettings ? .contentSize : .automatic)
         // No right-click menu on the toolbar ("Symbol und Text" …): its
         // layout is fixed.
         .windowToolbarLabelStyle(fixed: .iconOnly)

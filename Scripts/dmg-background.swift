@@ -1,8 +1,8 @@
 // Draws the background of the DMG window (see make-dmg.sh) in the colors of
 // the classic design: paper, petrol and the label gold. The app icon sits at
-// (140, 190), the Applications folder at (470, 190) and the guide
-// (Handbuch.pdf) at (640, 190) – centers in points, matching the icon
-// positions make-dmg.sh sets in the Finder.
+// (130, 190), the Applications folder at (430, 190) and the guides
+// (Handbuch.pdf, User Guide.pdf) at (620, 190) and (770, 190) – centers in
+// points, matching the icon positions make-dmg.sh sets in the Finder.
 //
 //   swift Scripts/dmg-background.swift <out.png> <scale>
 import AppKit
@@ -12,8 +12,8 @@ guard args.count == 3, let scale = Double(args[2]) else {
     FileHandle.standardError.write("swift dmg-background.swift <out.png> <scale>\n".data(using: .utf8)!)
     exit(1)
 }
-let width = 740.0, height = 400.0
-let appX = 140.0, applicationsX = 470.0, guideX = 640.0
+let width = 880.0, height = 400.0
+let appX = 130.0, applicationsX = 430.0
 
 func rgb(_ hex: UInt32, _ alpha: Double = 1) -> NSColor {
     NSColor(srgbRed: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255,
@@ -59,7 +59,7 @@ while barX < width {
 // Notes drifting in the upper corners, clear of the title and the icons.
 let notes: [(String, Double, Double, Double, Int)] = [
     ("♪", 40, 52, -10, 0), ("♫", 92, 98, 8, 3), ("♩", 30, 150, -6, 5),
-    ("♫", 594, 58, 6, 1), ("♬", 676, 44, 10, 4), ("♪", 712, 100, -8, 2),
+    ("♫", 690, 54, 6, 1), ("♬", 790, 44, 10, 4), ("♪", 852, 104, -8, 2),
 ]
 for (glyph, x, y, angle, colorIndex) in notes {
     NSGraphicsContext.saveGraphicsState()
