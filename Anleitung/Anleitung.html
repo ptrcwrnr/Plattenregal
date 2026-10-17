@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Plattenregal – Anleitung</title>
+<!--
+  Die Broschüre, die der DMG beiliegt. Scripts/make-guide.swift rendert jede
+  .page (595 × 842 pt, A4) als eigene PDF-Seite; data-version wird dabei mit
+  der Version der App gefüllt. Farben aus dem Design Klassisch (wie
+  AtelierPalette und dmg-background.swift), Abstände nur aus der Skala unten.
+-->
+<style>
+  :root {
+    /* Farben des Designs Klassisch */
+    --paper: #F4EFE5;
+    --surface: #FBF8F2;
+    --soft: #EAE3D6;
+    --border: #DDD4C4;
+    --petrol: #1D4C5B;
+    --petrol-deep: #123C4B;
+    --ink: #233A3E;
+    --muted: #63716E;
+    --gold: #E2B660;
+    --gold-deep: #C99A45;
+    --gold-ink: #293C39;
+    --cream: #F4EFE5;
+
+    /* Abstandsskala (pt) */
+    --s-hair: 2px;
+    --s-xs: 4px;
+    --s-s: 8px;
+    --s-m: 12px;
+    --s-l: 16px;
+    --s-xl: 20px;
+    --s-2xl: 24px;
+    --s-3xl: 32px;
+    --s-4xl: 48px;
+
+    /* Schriftstufen: Titel, Kapitel, Überschrift, Fließtext, Nebentext, Etikett */
+    --t-display: 54px;
+    --t-title: 28px;
+    --t-head: 13.5px;
+    --t-body: 10.5px;
+    --t-small: 8.5px;
+    --t-label: 7.5px;
+
+    --serif: "New York", ui-serif, Georgia, serif;
+    --sans: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+
+    --radius-s: 4px;
+    --radius-m: 8px;
+    --radius-l: 12px;
+    --line: 0.75px;
+    --shadow: 0 6px 18px rgba(35, 58, 62, 0.16), 0 1px 3px rgba(35, 58, 62, 0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body {
+    width: 595px;
+    font-family: var(--sans);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    font-kerning: normal;
+    hyphens: manual;
+    -webkit-hyphens: manual;
+  }
+
+  /* ---------- Seite ---------- */
+  .page {
+    position: relative;
+    width: 595px;
+    height: 842px;
+    overflow: hidden;
+    background: var(--paper);
+    padding: var(--s-4xl) var(--s-4xl) 0;
+  }
+  .folio {
+    position: absolute;
+    left: var(--s-4xl);
+    right: var(--s-4xl);
+    bottom: var(--s-2xl);
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--t-small);
+    color: var(--muted);
+    letter-spacing: 0.2px;
+  }
+  .folio b { color: var(--petrol); font-weight: 600; }
+
+  /* ---------- Typografie ---------- */
+  .kicker {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-s);
+    font-size: var(--t-label);
+    font-weight: 600;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .kicker .num {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    letter-spacing: 0;
+    color: var(--gold-deep);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: var(--t-title);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-top: var(--s-xs);
+    letter-spacing: -0.2px;
+  }
+  .rule {
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 1px;
+    margin: var(--s-m) 0 var(--s-l);
+  }
+  h2 {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--petrol);
+    margin: var(--s-xl) 0 var(--s-xs);
+  }
+  h2:first-child { margin-top: 0; }
+  p + p { margin-top: var(--s-s); }
+  .lead {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .muted { color: var(--muted); }
+  .small { font-size: var(--t-small); line-height: 1.45; }
+  strong { font-weight: 600; }
+  .ui { font-weight: 600; color: var(--petrol); white-space: nowrap; }
+  .nowrap { white-space: nowrap; }
+
+  kbd {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: var(--t-small);
+    line-height: 1;
+    padding: var(--s-hair) var(--s-xs);
+    border: var(--line) solid var(--border);
+    border-bottom-width: 1.5px;
+    border-radius: var(--radius-s);
+    background: var(--surface);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---------- Bausteine ---------- */
+  .steps { list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: var(--s-3xl);
+    min-height: 20px;
+  }
+  .steps li + li { margin-top: var(--s-m); }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--petrol);
+    color: var(--cream);
+    font-family: var(--serif);
+    font-size: var(--t-body);
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
+  }
+  .steps.gold li::before { background: var(--gold); color: var(--gold-ink); }
+
+  .bullets { list-style: none; }
+  .bullets li { position: relative; padding-left: var(--s-l); }
+  .bullets li + li { margin-top: var(--s-xs); }
+  .bullets li::before {
+    content: "";
+    position: absolute;
+    left: var(--s-hair);
+    top: 6px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .card {
+    background: var(--surface);
+    border: var(--line) solid var(--border);
+    border-radius: var(--radius-l);
+    padding: var(--s-l) var(--s-xl);
+  }
+  .card.accent { border-left: 3px solid var(--gold); }
+  .card .title {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: var(--s-xs);
+  }
+  .card.petrol {
+    background: var(--petrol);
+    border-color: var(--petrol);
+    color: var(--cream);
+  }
+  .card.petrol .title { color: var(--gold); }
+
+  .tag {
+    display: inline-block;
+    font-size: var(--t-label);
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    margin-bottom: var(--s-xs);
+  }
+
+  figure img {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow);
+    outline: var(--line) solid rgba(35, 58, 62, 0.10);
+  }
+  figcaption {
+    margin-top: var(--s-s);
+    font-size: var(--t-small);
+    color: var(--muted);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-xl); }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-m); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2xl); align-items: start; }
+  .split-wide { display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--s-2xl); align-items: start; }
+  .split-text { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--s-2xl); align-items: start; }
+
+  .rubric .name {
+    font-family: var(--serif);
+    font-size: var(--t-head);
+    font-weight: 600;
+    color: var(--petrol);
+  }
+  .rubric .keys { margin: var(--s-hair) 0 var(--s-xs); }
+
+  table.list { width: 100%; border-collapse: collapse; }
+  table.list th {
+    text-align: left;
+    font-size: var(--t-label);
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: var(--petrol);
+    padding: var(--s-xs) var(--s-s);
+  }
+  table.list th:first-child { border-top-left-radius: var(--radius-s); }
+  table.list th:last-child { border-top-right-radius: var(--radius-s); }
+  table.list td {
+    padding: var(--s-xs) var(--s-s);
+    border-bottom: var(--line) solid var(--border);
+    vertical-align: top;
+  }
+  table.list td:first-child { white-space: nowrap; font-weight: 600; color: var(--petrol); width: 1%; padding-right: var(--s-l); }
+
+  .toc { list-style: none; }
+  .toc li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-s);
+    padding: var(--s-xs) 0;
+    border-bottom: var(--line) solid var(--border);
+  }
+  .toc .n { font-family: var(--serif); color: var(--gold-deep); font-weight: 600; width: 20px; }
+  .toc .t { flex: 1; font-family: var(--serif); font-size: var(--t-head); }
+  .toc .p { color: var(--muted); font-size: var(--t-small); }
+
+  /* ---------- Titelseite ---------- */
+  .cover {
+    background: radial-gradient(120% 70% at 50% 18%, #2A6273 0%, var(--petrol) 45%, var(--petrol-deep) 100%);
+    color: var(--cream);
+    text-align: center;
+    padding-top: var(--s-4xl);
+  }
+  .cover .kicker { justify-content: center; color: var(--gold); letter-spacing: 3px; }
+  .cover .icon {
+    width: 168px;
+    height: 168px;
+    margin: var(--s-3xl) auto 0;
+    display: block;
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35));
+  }
+  .cover .name {
+    font-family: var(--serif);
+    font-size: var(--t-display);
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+    margin-top: var(--s-2xl);
+  }
+  .cover .rule { margin: var(--s-l) auto; }
+  .cover .claim {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.45;
+    color: rgba(244, 239, 229, 0.82);
+  }
+  .cover .meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 262px;
+    font-size: var(--t-small);
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: rgba(244, 239, 229, 0.62);
+  }
+  .record {
+    position: absolute;
+    left: 50%;
+    bottom: -250px;
+    width: 480px;
+    height: 480px;
+    margin-left: -240px;
+    z-index: 1;
+    filter: drop-shadow(0 -8px 24px rgba(0, 0, 0, 0.35));
+  }
+  .bars {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 70px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 0 var(--s-xs);
+  }
+  .bars i {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    opacity: 0.45;
+  }
+
+  /* ---------- Rückseite ---------- */
+  .back-band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 250px;
+    background: var(--petrol);
+    color: var(--cream);
+    padding: var(--s-3xl) 136px var(--s-3xl) var(--s-4xl);
+  }
+  .back-band .farewell {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .back-band .small { color: rgba(244, 239, 229, 0.72); }
+  .back-band .rule { margin: var(--s-m) 0; }
+  .back-band img { position: absolute; right: var(--s-4xl); top: var(--s-3xl); width: 72px; height: 72px; }
+</style>
+</head>
+<body>
+
+<!-- ============ 1 · Titel ============ -->
+<section class="page cover">
+  <div class="kicker">Anleitung</div>
+  <img class="icon" src="Bilder/icon.png" alt="">
+  <div class="name">Plattenregal</div>
+  <div class="rule"></div>
+  <div class="claim">Deine Discogs-Sammlung –<br>und wo jede Platte im Regal steht.</div>
+  <div class="meta">Version <span data-version>1.1.2</span> · macOS 27 · Apple Silicon</div>
+  <div class="bars" id="bars"></div>
+  <svg class="record" id="record" viewBox="0 0 480 480"></svg>
+</section>
+
+<!-- ============ 2 · Willkommen ============ -->
+<section class="page">
+  <div class="kicker">Willkommen</div>
+  <h1>Schön, dass du da bist.</h1>
+  <div class="rule"></div>
+  <p class="lead">Plattenregal holt deine Collection und deine Wantlist aus Discogs – und merkt sich, in welchem Regal, in welchem Fach und an welcher Stelle jede Platte steht.</p>
+  <p style="margin-top: var(--s-m)">Dazu gibt es eine Statistik mit dem Wert deiner Sammlung, eine Suchliste für Platten, die gerade nicht aufzufinden sind, eine Verkaufsliste, Sicherungen deiner Regalbelegung und Exporte als CSV oder PDF. Diese Anleitung führt dich in ein paar Minuten vom Installieren bis zum ersten eingeräumten Regal.</p>
+
+  <div class="card accent" style="margin-top: var(--s-2xl)">
+    <div class="title">Was du brauchst</div>
+    <ul class="bullets">
+      <li>Einen Mac mit Apple-Chip (M1 oder neuer). Intel-Macs werden nicht unterstützt.</li>
+      <li><strong>macOS 27</strong> oder neuer.</li>
+      <li>Ein Discogs-Konto mit deiner Sammlung. Das Konto ist kostenlos. Du kannst Plattenregal aber auch erst mit der eingebauten Demo ausprobieren.</li>
+    </ul>
+  </div>
+
+  <h2 style="margin-top: var(--s-3xl)">Inhalt</h2>
+  <ol class="toc">
+    <li><span class="n">01</span><span class="t">Installieren</span><span class="p">Seite 3</span></li>
+    <li><span class="n">02</span><span class="t">Mit Discogs verbinden</span><span class="p">Seite 4</span></li>
+    <li><span class="n">03</span><span class="t">Ein Rundgang</span><span class="p">Seite 5</span></li>
+    <li><span class="n">04</span><span class="t">Das Regal einrichten</span><span class="p">Seite 6</span></li>
+    <li><span class="n">05</span><span class="t">Einsortieren und Ordnung halten</span><span class="p">Seite 7</span></li>
+    <li><span class="n">06</span><span class="t">Statistik, Sicherung und Export</span><span class="p">Seite 8</span></li>
+    <li><span class="n">07</span><span class="t">Einstellungen und Tastenkürzel</span><span class="p">Seite 9</span></li>
+    <li><span class="n">08</span><span class="t">Wenn etwas hakt</span><span class="p">Seite 10</span></li>
+  </ol>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>2</span></div>
+</section>
+
+<!-- ============ 3 · Installieren ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">01</span>Installieren</div>
+  <h1>In drei Zügen auf deinem Mac</h1>
+  <div class="rule"></div>
+  <ol class="steps">
+    <li><strong>Disk-Image öffnen.</strong> Ein Doppelklick auf <span class="ui">Plattenregal-<span data-version>1.1.2</span>.dmg</span> öffnet ein Fenster mit dem App-Symbol, einem Pfeil und dem Ordner „Programme“.</li>
+    <li><strong>Plattenregal in „Programme“ ziehen.</strong> Einfach das Symbol auf den Ordner rechts ziehen. Diese Anleitung kannst du gleich mitnehmen.</li>
+    <li><strong>Disk-Image auswerfen.</strong> Im Finder in der Seitenleiste auf das Auswerfen-Symbol neben „Plattenregal“ klicken. Die DMG-Datei selbst kannst du danach löschen.</li>
+  </ol>
+
+  <div class="card accent" style="margin-top: var(--s-2xl)">
+    <span class="tag">Nur beim ersten Öffnen</span>
+    <div class="title">macOS fragt einmal nach</div>
+    <p>Plattenregal ist eine private App und nicht bei Apple notarisiert. Deshalb hält macOS den ersten Start an, wenn du die App aus dem Internet, per AirDrop oder Mail bekommen hast. Das löst du einmalig so:</p>
+    <ol class="steps gold" style="margin-top: var(--s-m)">
+      <li>Plattenregal in „Programme“ öffnen. macOS meldet, dass die App nicht geöffnet wurde. Klicke auf <span class="ui">Fertig</span>.</li>
+      <li>Öffne <span class="ui">Systemeinstellungen → Datenschutz &amp; Sicherheit</span> und scrolle nach unten zu „Sicherheit“. Dort steht: „Plattenregal“ wurde blockiert, um deinen Mac zu schützen.</li>
+      <li>Klicke daneben auf <span class="ui">Dennoch öffnen</span>, bestätige mit deinem Passwort oder Touch ID und im nächsten Fenster noch einmal mit <span class="ui">Dennoch öffnen</span>.</li>
+    </ol>
+    <p style="margin-top: var(--s-m)" class="muted">Danach startet Plattenregal wie jede andere App.</p>
+  </div>
+
+  <h2 style="margin-top: var(--s-2xl)">Eine neue Version installieren</h2>
+  <p>Ziehe die neue Version genauso in „Programme“ und lass die alte ersetzen. Deine Sammlung, deine Regale und dein Token bleiben erhalten, denn sie liegen nicht in der App selbst. Fragt macOS danach, ob Plattenregal auf deinen Schlüsselbund zugreifen darf, wähle <span class="ui">Immer erlauben</span>: Dort liegt dein Discogs-Token. Unter Umständen ist auch der Schritt mit „Dennoch öffnen“ noch einmal nötig.</p>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>3</span></div>
+</section>
+
+<!-- ============ 4 · Discogs ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">02</span>Mit Discogs verbinden</div>
+  <h1>Deine Sammlung kommt aus Discogs</h1>
+  <div class="rule"></div>
+  <p>Plattenregal legt keine Platten selbst an. Alles, was du siehst, stammt aus deinem Discogs-Konto. Für den Zugriff brauchst du einen <strong>persönlichen Token</strong>, eine Art Schlüssel für die Discogs-Schnittstelle. Plattenregal liest damit nur und ändert bei Discogs nichts.</p>
+
+  <ol class="steps" style="margin-top: var(--s-xl)">
+    <li><strong>Token erzeugen.</strong> Melde dich auf discogs.com an und öffne <span class="ui">Settings → Developers</span>. Am schnellsten geht’s über <span class="ui">Token erstellen ↗</span> in Plattenregal.</li>
+    <li>Klicke dort auf <span class="ui">Generate new token</span> und kopiere die lange Zeichenfolge.</li>
+    <li><strong>Token eintragen.</strong> In Plattenregal <kbd>⌘,</kbd> drücken, den Reiter <span class="ui">Discogs</span> wählen, den Token einfügen und <span class="ui">Speichern &amp; testen</span> klicken.</li>
+    <li><strong>Synchronisieren.</strong> <span class="ui">Alles synchronisieren</span> lädt Collection und Wantlist, die Tracklisten folgen im Hintergrund. Discogs erlaubt 60 Anfragen pro Minute, bei großen Sammlungen dauert das erste Mal deshalb etwas. Plattenregal speichert erst, wenn alles vollständig geladen ist.</li>
+  </ol>
+  <figure style="margin-top: var(--s-xl)">
+    <img src="Bilder/settings-discogs.jpg" alt="">
+    <figcaption>Einstellungen → Discogs: Feld für den Token, „Speichern &amp; testen“ und der Link zu Discogs.</figcaption>
+  </figure>
+
+  <div class="grid-2" style="margin-top: var(--s-xl)">
+    <div class="card">
+      <div class="title">Dein Token bleibt bei dir</div>
+      <p class="small">Er liegt ausschließlich im Schlüsselbund von macOS, nur auf diesem Mac. Er steht nie in Dateien, Einstellungen oder im Protokoll. Plattenregal spricht nur mit Discogs, immer verschlüsselt.</p>
+    </div>
+    <div class="card petrol">
+      <div class="title">Erst einmal ausprobieren?</div>
+      <p class="small">Die Begrüßung beim ersten Start führt mit <strong>Token eintragen …</strong> direkt zum Feld. <strong>Demo starten …</strong> öffnet stattdessen eine Beispielsammlung mit rund 50 Alben. Dort darfst du alles verändern, nichts wird gespeichert. Später: <strong>Hilfe → Erste Schritte …</strong></p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>4</span></div>
+</section>
+
+<!-- ============ 5 · Rundgang ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">03</span>Ein Rundgang</div>
+  <h1>Vier Rubriken, ein Fenster</h1>
+  <div class="rule"></div>
+  <figure>
+    <img src="Bilder/collection.jpg" alt="">
+    <figcaption>Die Collection im Design Klassisch. Oben die Rubriken und das Suchfeld, unten rechts der runde Knopf.</figcaption>
+  </figure>
+
+  <div class="grid-4" style="margin-top: var(--s-xl)">
+    <div class="rubric"><div class="name">Collection</div><div class="keys"><kbd>⌘1</kbd></div><p class="small muted">Alle deine Platten als Cover-Raster oder Liste. Ein Klick aufs Cover zeigt Angaben und Tracklist.</p></div>
+    <div class="rubric"><div class="name">Wantlist</div><div class="keys"><kbd>⌘2</kbd></div><p class="small muted">Was du noch suchst, direkt aus deiner Discogs-Wantlist.</p></div>
+    <div class="rubric"><div class="name">Regal</div><div class="keys"><kbd>⌘3</kbd></div><p class="small muted">Deine Regale mit ihren Fächern und welche Platten wo stehen.</p></div>
+    <div class="rubric"><div class="name">Statistik</div><div class="keys"><kbd>⌘4</kbd></div><p class="small muted">Sammlungswert, Verlauf und Verteilungen nach Künstlern, Styles, Jahren.</p></div>
+  </div>
+
+  <div class="split-text" style="margin-top: var(--s-xl)">
+    <div>
+      <h2>Suchen</h2>
+      <p>Das Suchfeld oben rechts (<kbd>⌘F</kbd>) findet Platten nach Interpret, Titel, Label, Katalognummer, Genre, Style und mehr. <kbd>esc</kbd> leert die Suche. Auf der Regalseite zeigt die Suche direkt, in welchem Fach eine Platte steht.</p>
+      <h2>Mehr per Rechtsklick</h2>
+      <p>Ein Rechtsklick auf ein Cover bietet an, die Platte im Regal zu zeigen, einen Platz für sie zu finden oder sie auf Discogs zu öffnen.</p>
+    </div>
+    <div>
+      <figure>
+        <img src="Bilder/fan.jpg" alt="">
+        <figcaption>Der runde Knopf fächert aus: Raster oder Liste, Synchronisieren, Einstellungen.</figcaption>
+      </figure>
+      <p class="small" style="margin-top: var(--s-m)">Aktualisieren geht auch mit <kbd>⌘R</kbd> oder indem du mit zwei Fingern auf dem Trackpad nach unten ziehst.</p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>5</span></div>
+</section>
+
+<!-- ============ 6 · Regal einrichten ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">04</span>Das Regal einrichten</div>
+  <h1>Erst das Regal, dann die Platten</h1>
+  <div class="rule"></div>
+  <div class="split">
+    <div>
+      <p>Plattenregal kennt dein echtes Regal nicht von selbst. Du legst es einmal an, in den Größen von IKEA KALLAX oder ganz eigen mit 1 bis 6 Spalten und Reihen. Mehrere Regale, etwa im Wohnzimmer und im Flur, sind kein Problem.</p>
+      <ol class="steps" style="margin-top: var(--s-l)">
+        <li><kbd>⌘,</kbd> drücken und den Reiter <span class="ui">Regal</span> öffnen.</li>
+        <li><span class="ui">Regal hinzufügen</span> klicken, einen Namen geben und die <strong>Größe</strong> wählen.</li>
+        <li>Fächer, in denen keine Platten stehen sollen, etwa für Deko, kannst du <strong>sperren</strong> und benennen.</li>
+      </ol>
+    </div>
+    <figure>
+      <img src="Bilder/settings-shelf.jpg" alt="">
+      <figcaption>Einstellungen → Regal: Regale anlegen, benennen, Größe wählen.</figcaption>
+    </figure>
+  </div>
+
+  <figure style="margin-top: var(--s-2xl)">
+    <img src="Bilder/shelf.jpg" alt="">
+    <figcaption>Die Regalseite: oben die Regale als Reiter, darunter die Fächer mit Buchstabenbereich und Plattenanzahl, unten der Inhalt des gewählten Fachs (Goldrand).</figcaption>
+  </figure>
+
+  <p style="margin-top: var(--s-l)">Die Fächer benennt Plattenregal selbst nach dem Buchstabenbereich, der darin steht, etwa <span class="nowrap">„A – Be“</span>. Ein Klick wählt ein Fach. Darunter stehen seine Platten in ihrer Reihenfolge, als Cover oder als Liste. Ein Klick auf ein Cover öffnet „Exemplar bearbeiten“, dort verschiebst du die Platte mit einem Regler an eine andere Position.</p>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>6</span></div>
+</section>
+
+<!-- ============ 7 · Einsortieren ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">05</span>Einsortieren und Ordnung halten</div>
+  <h1>Jede Platte an ihren Platz</h1>
+  <div class="rule"></div>
+  <div class="split">
+    <figure>
+      <img src="Bilder/sortin.jpg" alt="">
+      <figcaption>„Einsortieren“ zeigt für jede Platte Regal, Fach, Position und die Nachbarn links und rechts.</figcaption>
+    </figure>
+    <div>
+      <h2>Einsortieren</h2>
+      <p>Der runde <span class="ui">+</span>-Knopf unten rechts auf der Regalseite listet alle Platten, die noch keinen Platz haben, alphabetisch nach Interpret. Bei jeder steht, wo sie hingehört. Stell die Platte ins echte Regal und klick auf die Zeile, dann merkt sich Plattenregal den Platz.</p>
+      <h2>Platte hinzufügen</h2>
+      <p>Willst du gezielt ein Fach füllen, fahre mit dem Zeiger darüber und klicke auf das kleine <span class="ui">+</span> oben rechts im Fach.</p>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: var(--s-2xl)">
+    <div class="card">
+      <div class="title">Sortierung prüfen</div>
+      <p class="small">Rechtsklick auf ein Fach → <strong>Sortierung prüfen</strong>. Plattenregal zeigt die wenigsten Handgriffe, die das Fach wieder in Ordnung bringen, Schritt für Schritt zum Abhaken. Immer nach Interpret, bei gleichem Interpreten wahlweise nach Titel, Jahr oder Label.</p>
+    </div>
+    <div class="card">
+      <div class="title">Ohne Regalplatz</div>
+      <p class="small">Platten, die nie ins Regal sollen, etwa Singles in einer Kiste, markierst du per Rechtsklick als <strong>Ohne Regalplatz</strong>. Dann bietet Plattenregal sie nicht mehr zum Einsortieren an.</p>
+    </div>
+    <div class="card">
+      <div class="title">Suchliste „Gesucht“</div>
+      <p class="small">Eine Platte ist gerade nicht zu finden? Per Rechtsklick <strong>Auf die Suchliste setzen</strong>. Im Fach trägt sie dann das Etikett „Gesucht“. Unter Einstellungen → Listen hakst du sie als gefunden ab.</p>
+    </div>
+    <div class="card">
+      <div class="title">Verkaufsliste</div>
+      <p class="small">Mit <strong>Zum Verkauf vormerken</strong> sammelst du Platten, die gehen dürfen. Sie bleiben, wo sie stehen. <strong>Verkauft</strong> unter Einstellungen → Listen nimmt sie alle auf einmal aus den Fächern.</p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>7</span></div>
+</section>
+
+<!-- ============ 8 · Statistik, Sicherung, Export ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">06</span>Statistik, Sicherung und Export</div>
+  <h1>Was deine Sammlung wert ist</h1>
+  <div class="rule"></div>
+  <figure>
+    <img src="Bilder/statistics.jpg" alt="">
+    <figcaption>Die Statistik: Sammlungswert laut Discogs-Marktplatz, sein Verlauf und Verteilungen deiner Sammlung.</figcaption>
+  </figure>
+  <p style="margin-top: var(--s-l)">Die Statistik zeigt den Wert deiner Sammlung nach den Preisen auf dem Discogs-Marktplatz und wie er sich entwickelt. Dazu kommen Zahlen zu Künstlern, Styles, Labels und Jahrzehnten sowie ein <strong>Zufallsfund</strong>, der dir mit <kbd>⇧⌘R</kbd> eine Platte aus deiner Sammlung vorschlägt. Aktualisieren geht mit <kbd>⌘R</kbd>.</p>
+
+  <div class="grid-2" style="margin-top: var(--s-2xl)">
+    <div class="card accent">
+      <div class="title">Sicherung</div>
+      <p class="small">Die Platten selbst kommen jederzeit wieder aus Discogs. <strong>Wo sie im Regal stehen, gibt es nur auf deinem Mac.</strong> Darum sichert Plattenregal die Belegung automatisch nach jeder Änderung. Unter Einstellungen → Sicherung kannst du einen eigenen Ordner wählen, zum Beispiel in iCloud Drive. Dort holst du einen älteren Stand auch zurück und siehst vorher, was sich ändert.</p>
+    </div>
+    <div class="card accent">
+      <div class="title">Export</div>
+      <p class="small">Unter Einstellungen → Export machst du aus Collection, Wantlist oder Verkaufsliste eine <strong>CSV-Datei</strong> für Excel und Numbers oder eine <strong>druckfertige PDF-Liste</strong>, nach Regal oder alphabetisch geordnet. Auf Wunsch schreibt Plattenregal sie täglich, wöchentlich oder monatlich in einen Ordner.</p>
+    </div>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>8</span></div>
+</section>
+
+<!-- ============ 9 · Einstellungen und Kürzel ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">07</span>Einstellungen und Tastenkürzel</div>
+  <h1>Alles auf einen Blick</h1>
+  <div class="rule"></div>
+  <p>Die Einstellungen öffnest du mit <kbd>⌘,</kbd> oder über den runden Knopf. Unter <span class="ui">Darstellung</span> wählst du zwischen den beiden Designs: <strong>Modern</strong> mit Liquid Glass und <strong>Klassisch</strong> in Petrol, Creme und Gold, wie in dieser Anleitung.</p>
+
+  <table class="list" style="margin-top: var(--s-l)">
+    <tr><th>Reiter</th><th>Was du dort findest</th></tr>
+    <tr><td>Allgemein</td><td>Sprache (Deutsch oder Englisch), Startseite, Demo starten und beenden</td></tr>
+    <tr><td>Darstellung</td><td>Design, Hell oder Dunkel, Farben, Raster oder Liste, Reihenfolge und Covergröße</td></tr>
+    <tr><td>Regal</td><td>Regale anlegen und ändern, Fächer sperren, Reihenfolge bei gleichem Interpreten</td></tr>
+    <tr><td>Listen</td><td>Suchliste und Verkaufsliste ein- oder ausschalten und abarbeiten</td></tr>
+    <tr><td>Discogs</td><td>Token, Verbindungstest, Synchronisierung</td></tr>
+    <tr><td>Export</td><td>CSV oder PDF, automatischer Export in einen Ordner</td></tr>
+    <tr><td>Sicherung</td><td>Belegung sichern und wiederherstellen, automatische Sicherung, Speicherort</td></tr>
+    <tr><td>Daten</td><td>Speicherplatz, Cover-Cache, Protokoll, Zurücksetzen</td></tr>
+    <tr><td>Tastenkürzel</td><td>Alle Kürzel zum Nachschlagen</td></tr>
+  </table>
+
+  <h2 style="margin-top: var(--s-2xl)">Die wichtigsten Tastenkürzel</h2>
+  <div class="grid-2" style="margin-top: var(--s-s)">
+    <table class="list">
+      <tr><th>Überall</th><th></th></tr>
+      <tr><td><kbd>⌘1</kbd> – <kbd>⌘4</kbd></td><td>Collection, Wantlist, Regal, Statistik</td></tr>
+      <tr><td><kbd>⌘F</kbd></td><td>Suchen</td></tr>
+      <tr><td><kbd>⌘R</kbd></td><td>Seite aktualisieren</td></tr>
+      <tr><td><kbd>⌥⌘R</kbd></td><td>Alles mit Discogs synchronisieren</td></tr>
+      <tr><td><kbd>⌘.</kbd></td><td>Synchronisierung abbrechen</td></tr>
+      <tr><td><kbd>⌘,</kbd></td><td>Einstellungen</td></tr>
+    </table>
+    <table class="list">
+      <tr><th>Seiten</th><th></th></tr>
+      <tr><td><kbd>⌥⌘1</kbd> / <kbd>⌥⌘2</kbd></td><td>Raster / Liste</td></tr>
+      <tr><td><kbd>⌘+</kbd> / <kbd>⌘−</kbd></td><td>Cover größer / kleiner</td></tr>
+      <tr><td><kbd>esc</kbd></td><td>Suche leeren, dann schließen</td></tr>
+      <tr><td><kbd>⌘←</kbd> / <kbd>⌘→</kbd></td><td>Vorheriges / nächstes Regal</td></tr>
+      <tr><td><kbd>⌘Z</kbd></td><td>Herausnehmen rückgängig machen</td></tr>
+      <tr><td><kbd>⇧⌘R</kbd></td><td>Zufallsfund: neue Platte ziehen</td></tr>
+    </table>
+  </div>
+  <div class="folio"><span><b>Plattenregal</b> · Anleitung</span><span>9</span></div>
+</section>
+
+<!-- ============ 10 · Hilfe und Rückseite ============ -->
+<section class="page">
+  <div class="kicker"><span class="num">08</span>Wenn etwas hakt</div>
+  <h1>Kleine Hilfen</h1>
+  <div class="rule"></div>
+  <table class="list">
+    <tr><th>Du siehst</th><th>Das hilft</th></tr>
+    <tr><td>„Plattenregal“ nicht geöffnet</td><td>Einmal über Datenschutz &amp; Sicherheit erlauben, siehe Seite 3.</td></tr>
+    <tr><td>Token nicht angenommen</td><td>Den Token auf Discogs prüfen oder neu erzeugen und unter Einstellungen → Discogs neu eintragen.</td></tr>
+    <tr><td>Frage nach dem Schlüsselbund</td><td>Kommt nach einem Update vor. <span class="ui">Immer erlauben</span> wählen.</td></tr>
+    <tr><td>„Plattenregal ist bereits geöffnet“</td><td>Die App läuft schon ein zweites Mal. Die andere beenden, deine Daten sind davon nicht betroffen.</td></tr>
+    <tr><td>Platte fehlt in der Collection</td><td>Neu bei Discogs Hinzugefügtes erscheint nach dem nächsten Abgleich: <kbd>⌘R</kbd>.</td></tr>
+    <tr><td>Regal versehentlich geleert</td><td>Unter Einstellungen → Sicherung einen älteren Stand der Belegung wiederherstellen.</td></tr>
+    <tr><td>Ganz von vorn anfangen</td><td>Einstellungen → Daten → Zurücksetzen. Vorher sichert Plattenregal die Belegung, Sicherungen bleiben erhalten.</td></tr>
+  </table>
+  <p style="margin-top: var(--s-l)"><strong>Einen Fehler melden:</strong> Unter Einstellungen → Daten → Diagnose sicherst du das Protokoll mit <span class="ui">Sichern unter …</span> in eine Datei. Leg die Version aus <span class="ui">Plattenregal → Über Plattenregal</span> dazu. Das Protokoll enthält nie deinen Discogs-Token.</p>
+
+  <div class="back-band">
+    <img src="Bilder/icon.png" alt="">
+    <div class="farewell">Viel Spaß beim Stöbern und Hören.</div>
+    <div class="rule"></div>
+    <p class="small">Plattenregal <span data-version>1.1.2</span> · von Patrice Werner · für macOS 27 auf Macs mit Apple-Chip.<br>Deine Daten bleiben auf deinem Mac. Plattenregal spricht nur mit Discogs und sendet nichts an Dritte.</p>
+    <p class="small" style="margin-top: var(--s-l)">This application uses Discogs’ API but is not affiliated with, sponsored or endorsed by Discogs. ‘Discogs’ is a trademark of Zink Media, LLC.</p>
+  </div>
+</section>
+
+<script>
+  // Equalizer am Fuß der Titelseite, in den Diagrammfarben der App – wie im DMG-Hintergrund.
+  const palette = [[0x2F,0x6F,0x80],[0xD9,0xA4,0x41],[0x7F,0xA3,0x8A],[0xC2,0x71,0x4F],[0x5B,0x7D,0xA6],[0x8C,0x5A,0x7A],[0xA8,0xA0,0x60]];
+  const bars = document.getElementById("bars");
+  const count = 58;
+  for (let i = 0; i < count; i++) {
+    const level = Math.abs(Math.sin(i * 0.55) * Math.cos(i * 0.21)) * 0.8 + Math.abs(Math.sin(i * 1.7)) * 0.2;
+    const pos = i / (count - 1) * (palette.length - 1);
+    const a = palette[Math.floor(pos)], b = palette[Math.min(Math.floor(pos) + 1, palette.length - 1)], f = pos - Math.floor(pos);
+    const c = a.map((v, k) => Math.round(v + (b[k] - v) * f));
+    const bar = document.createElement("i");
+    bar.style.height = (10 + 56 * level) + "px";
+    bar.style.background = `rgb(${c.join(",")})`;
+    bars.appendChild(bar);
+  }
+
+  // Die Schallplatte wie im App-Symbol und im DMG-Hintergrund: Rillen, ein Glanz, das goldene Etikett.
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.getElementById("record");
+  const add = (name, attrs) => { const e = document.createElementNS(ns, name); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  const defs = add("defs", {});
+  const sheen = document.createElementNS(ns, "linearGradient");
+  for (const [k, v] of Object.entries({ id: "sheen", x1: "0", y1: "0", x2: "1", y2: "1" })) sheen.setAttribute(k, v);
+  for (const [o, a] of [[0.25, 0], [0.5, 0.16], [0.75, 0]]) {
+    const stop = document.createElementNS(ns, "stop");
+    stop.setAttribute("offset", o); stop.setAttribute("stop-color", "#fff"); stop.setAttribute("stop-opacity", a);
+    sheen.appendChild(stop);
+  }
+  defs.appendChild(sheen);
+  add("circle", { cx: 240, cy: 240, r: 240, fill: "#16191A" });
+  for (let r = 236; r > 92; r -= 3) {
+    add("circle", { cx: 240, cy: 240, r, fill: "none", stroke: "#fff", "stroke-width": 0.6, "stroke-opacity": r % 27 < 3 ? 0.11 : 0.045 });
+  }
+  add("circle", { cx: 240, cy: 240, r: 240, fill: "url(#sheen)" });
+  add("circle", { cx: 240, cy: 240, r: 84, fill: "#E2B660" });
+  add("circle", { cx: 240, cy: 240, r: 64, fill: "none", stroke: "#C99A45", "stroke-width": 1 });
+</script>
+</body>
+</html>

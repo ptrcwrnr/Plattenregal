@@ -1,3 +1,10 @@
+# Anleitung als Broschüre in der DMG · 17.10.2026
+
+- **Neue Broschüre** `Anleitung.pdf` (10 A4-Seiten, Design Klassisch: Petrol, Creme, Gold, Schallplatte und Equalizer wie im DMG-Hintergrund) für Freunde, die die App bekommen: Voraussetzungen (Apple-Chip, macOS 27, Discogs-Konto), Installieren und der einmalige Weg über **Systemeinstellungen → Datenschutz & Sicherheit → „Dennoch öffnen“** (Beschriftung aus den deutschen Systemtexten von macOS geprüft), Discogs-Token, Rundgang, Regal einrichten, Einsortieren, Suchliste und Verkauf, Statistik, Sicherung, Export, Einstellungen, Tastenkürzel (aus `AppShortcuts`), kleine Hilfen, Discogs-Hinweis. Sieben Bildschirmfotos aus der Demo.
+- **Quelle und Erzeugung:** `Anleitung/Anleitung.html` mit `Anleitung/Bilder/` (Farben, Schriftstufen und Abstände zentral in `:root`); `Scripts/make-guide.swift` rendert jede Seite mit WebKit als eigene PDF-Seite und setzt die Version ein.
+- **DMG:** `make-dmg.sh` legt die Anleitung bei (Endung ausgeblendet). Das Fenster ist jetzt 740 statt 660 pt breit: App bei 140, Programme bei 470, Anleitung bei 640; Pfeil und Schallplatte bleiben mittig zwischen App und Programme, die Noten rechts sind verschoben (`dmg-background.swift`). DMG `dist/Plattenregal-1.1.2.dmg` neu erstellt, Version unverändert.
+- Geprüft: Alle zehn Seiten als Bild angesehen (nichts läuft über den Fuß, keine fehlenden Bilder; das Skript bricht bei fehlenden Bildern ab). Release-Build und DMG erfolgreich, `hdiutil verify` in Ordnung; DMG eingehängt und das Finder-Fenster angesehen: App, Pfeil, Programme und „Anleitung“ mit der Titelseite als Vorschau. App-Code unverändert, Tests nicht erneut ausgeführt.
+
 # Version 1.1.2 · 15.10.2026
 
 - Version 1.1.2 (1.1.1 übersprungen), Build bleibt 102026. DMG neu erstellt (`dist/Plattenregal-1.1.2.dmg`), mit dem schnellen „Neue Platte ziehen“ im Zufallsfund. README, STATISTIK.md und VALIDIERUNG.md: Version.

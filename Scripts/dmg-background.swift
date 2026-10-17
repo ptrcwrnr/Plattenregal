@@ -1,7 +1,8 @@
 // Draws the background of the DMG window (see make-dmg.sh) in the colors of
 // the classic design: paper, petrol and the label gold. The app icon sits at
-// (165, 190), the Applications folder at (495, 190) – centers in points,
-// matching the icon positions make-dmg.sh sets in the Finder.
+// (140, 190), the Applications folder at (470, 190) and the guide
+// (Anleitung.pdf) at (640, 190) – centers in points, matching the icon
+// positions make-dmg.sh sets in the Finder.
 //
 //   swift Scripts/dmg-background.swift <out.png> <scale>
 import AppKit
@@ -11,7 +12,8 @@ guard args.count == 3, let scale = Double(args[2]) else {
     FileHandle.standardError.write("swift dmg-background.swift <out.png> <scale>\n".data(using: .utf8)!)
     exit(1)
 }
-let width = 660.0, height = 400.0
+let width = 740.0, height = 400.0
+let appX = 140.0, applicationsX = 470.0, guideX = 640.0
 
 func rgb(_ hex: UInt32, _ alpha: Double = 1) -> NSColor {
     NSColor(srgbRed: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255,
@@ -33,8 +35,8 @@ func top(_ y: Double) -> Double { height - y }
 paper.setFill()
 NSRect(x: 0, y: 0, width: width, height: height).fill()
 NSGradient(starting: NSColor.white.withAlphaComponent(0.55), ending: NSColor.white.withAlphaComponent(0))!
-    .draw(fromCenter: NSPoint(x: 165, y: top(190)), radius: 0,
-          toCenter: NSPoint(x: 165, y: top(190)), radius: 190, options: [])
+    .draw(fromCenter: NSPoint(x: appX, y: top(190)), radius: 0,
+          toCenter: NSPoint(x: appX, y: top(190)), radius: 190, options: [])
 
 // The chart colors of the app (petrol, gold, moss, rust, blue, plum, olive).
 let palette: [NSColor] = [0x2F6F80, 0xD9A441, 0x7FA38A, 0xC2714F, 0x5B7DA6, 0x8C5A7A, 0xA8A060].map { rgb($0) }
@@ -56,8 +58,8 @@ while barX < width {
 
 // Notes drifting in the upper corners, clear of the title and the icons.
 let notes: [(String, Double, Double, Double, Int)] = [
-    ("♪", 46, 52, -10, 0), ("♫", 104, 104, 8, 3), ("♩", 34, 150, -6, 5),
-    ("♬", 598, 50, 10, 4), ("♪", 556, 112, -8, 2), ("♫", 622, 150, 6, 1),
+    ("♪", 40, 52, -10, 0), ("♫", 92, 98, 8, 3), ("♩", 30, 150, -6, 5),
+    ("♫", 594, 58, 6, 1), ("♬", 676, 44, 10, 4), ("♪", 712, 100, -8, 2),
 ]
 for (glyph, x, y, angle, colorIndex) in notes {
     NSGraphicsContext.saveGraphicsState()
@@ -76,7 +78,7 @@ for (glyph, x, y, angle, colorIndex) in notes {
 // A black record rising from the bottom edge like the one in the app icon,
 // low enough that the Finder's black icon labels stay on the paper: grooves,
 // a sheen and the gold label peeking out.
-let record = NSPoint(x: width / 2, y: top(452))
+let record = NSPoint(x: (appX + applicationsX) / 2, y: top(452))
 func disc(_ radius: Double) -> NSBezierPath {
     NSBezierPath(ovalIn: NSRect(x: record.x - radius, y: record.y - radius, width: 2 * radius, height: 2 * radius))
 }
@@ -113,7 +115,7 @@ labelRing.stroke()
 // the icons' center line (190) it looked too high: the folder's body below its
 // tab and the envelope in the app icon carry the weight lower, so it sits on
 // the middle of the folder's body.
-let arrowY = top(197), arrowStart = 270.0, arrowEnd = 390.0
+let arrowY = top(197), arrowStart = (appX + applicationsX) / 2 - 60, arrowEnd = (appX + applicationsX) / 2 + 60
 let arrow = NSBezierPath()
 arrow.move(to: NSPoint(x: arrowStart, y: arrowY))
 arrow.line(to: NSPoint(x: arrowEnd - 4, y: arrowY))
