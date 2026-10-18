@@ -1,9 +1,10 @@
 // Draws the background of the DMG window (see make-dmg.sh) in the style of the
-// guide (Handbuch/Handbuch.html): a petrol band like its cover with the gold
-// kicker, the serif title and the gold rule, below it plain paper for the
-// icons, the hint in the guide's lead style and a folio at the foot. The app
-// icon sits at (130, 190), the Applications folder at (430, 190) and the
-// guides (Handbuch.pdf, User Guide.pdf) at (620, 190) and (770, 190) – centers
+// guide (Handbuch/Handbuch.html): a petrol band like its cover with the
+// serif title and the gold rule, below it plain paper for the
+// icons, a record rising from the middle of the bottom edge like the one in
+// the app icon, and a folio at the foot. No written hint: the arrow says it.
+// The app icon sits at (130, 190), the Applications folder at (430, 190) and
+// the guides (Handbuch.pdf, User Guide.pdf) at (620, 190) and (770, 190) – centers
 // in points, matching the icon positions make-dmg.sh sets in the Finder.
 //
 //   swift Scripts/dmg-background.swift <out.png> <scale> [<version>]
@@ -75,10 +76,10 @@ let band = NSRect(x: 0, y: top(bandHeight), width: width, height: bandHeight)
 NSGradient(colors: [petrolLight, petrol, petrolDeep], atLocations: [0, 0.45, 1], colorSpace: .sRGB)!
     .draw(in: NSBezierPath(rect: band), relativeCenterPosition: NSPoint(x: 0, y: 0.6))
 
-text("INSTALLIEREN  ·  INSTALL", font: sans(8.5, weight: .semibold), color: gold, y: Space.xl2, kern: 3)
-text("Plattenregal", font: serif(30, weight: .semibold), color: cream, y: Space.xl2 + Space.l, kern: -0.3)
+// Title and rule centered in the band.
+text("Plattenregal", font: serif(30, weight: .semibold), color: cream, y: Space.xl3, kern: -0.3)
 gold.setFill()
-NSBezierPath(roundedRect: NSRect(x: width / 2 - 20, y: top(Space.xl2 + Space.l + 44), width: 40, height: 2),
+NSBezierPath(roundedRect: NSRect(x: width / 2 - 20, y: top(Space.xl3 + 44), width: 40, height: 2),
              xRadius: 1, yRadius: 1).fill()
 
 // The arrow from the app to the folder, centered in the gap between them. At
@@ -103,10 +104,42 @@ tip.lineJoinStyle = .round
 gold.setStroke()
 tip.stroke()
 
-// The hint below the icon labels: German in the guide's lead, English beneath
-// it as secondary text.
-text("Zum Installieren Plattenregal auf den Programme-Ordner ziehen.", font: serif(14), color: ink, y: 296)
-text("Drag Plattenregal to the Applications folder to install.", font: sans(11), color: muted, y: 296 + Space.xl2)
+// A black record rising from the middle of the bottom edge, like the one in
+// the app icon: grooves, a sheen and the gold label peeking out. Its top
+// stays clear of the icon labels, the folio beside it on the paper.
+let record = NSPoint(x: width / 2, y: top(452))
+let recordRadius = 168.0, labelRadius = 62.0
+func disc(_ radius: Double) -> NSBezierPath {
+    NSBezierPath(ovalIn: NSRect(x: record.x - radius, y: record.y - radius, width: 2 * radius, height: 2 * radius))
+}
+NSGraphicsContext.saveGraphicsState()
+let shadow = NSShadow()
+shadow.shadowColor = ink.withAlphaComponent(0.25)
+shadow.shadowBlurRadius = 18
+shadow.shadowOffset = NSSize(width: 0, height: -2)
+shadow.set()
+rgb(0x16191A).setFill()
+disc(recordRadius).fill()
+NSGraphicsContext.restoreGraphicsState()
+var groove = recordRadius - 4
+while groove > labelRadius + 4 {
+    NSColor.white.withAlphaComponent(groove.truncatingRemainder(dividingBy: 18) < 2 ? 0.10 : 0.04).setStroke()
+    let ring = disc(groove)
+    ring.lineWidth = 0.5
+    ring.stroke()
+    groove -= 2
+}
+NSGraphicsContext.saveGraphicsState()
+disc(recordRadius).addClip()
+NSGradient(colors: [.white.withAlphaComponent(0), .white.withAlphaComponent(0.16), .white.withAlphaComponent(0)])!
+    .draw(in: NSRect(x: record.x - recordRadius, y: record.y - recordRadius, width: 2 * recordRadius, height: 2 * recordRadius), angle: 120)
+NSGraphicsContext.restoreGraphicsState()
+gold.setFill()
+disc(labelRadius).fill()
+rgb(0xC99A45).setStroke()
+let labelRing = disc(labelRadius - 14)
+labelRing.lineWidth = 0.8
+labelRing.stroke()
 
 // The folio, as at the foot of the guide's pages.
 let folioY = height - Space.xl2 - 12

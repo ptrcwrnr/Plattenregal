@@ -1,3 +1,12 @@
+# DMG: Schallplatte zurück, ohne Hinweistexte · 18.10.2026
+
+- **Schallplatte:** Beim Umbau auf den Handbuch-Stil heute Morgen war sie zusammen mit Noten und Equalizer entfallen. Jetzt steigt sie wieder mittig aus dem unteren Rand auf: schwarz mit Rillen, Glanz und Schatten, das goldene Etikett lugt hervor, wie früher und wie im App-Symbol. Noten, Equalizer und der helle Schein bleiben weg.
+- **Weniger Text:** Der Hinweis „Zum Installieren Plattenregal auf den Programme-Ordner ziehen.“ samt englischer Zeile ist entfernt, ebenso die Kennzeile „Installieren · Install“ im Band. Titel und Goldstrich stehen jetzt mittig im Band. Die Fußzeile mit Version und „macOS 27 · Apple Silicon“ bleibt unten. Kurz stand sie oben im Band, unten wirkt sie aber besser.
+- Geändert ist nur `Scripts/dmg-background.swift`; Fenster (880 × 400) und Symbolpositionen in `make-dmg.sh` bleiben gleich.
+- **DMG:** `dist/Plattenregal-1.1.2.dmg` neu ausgegeben, Version bleibt 1.1.2.
+- README: Beschreibung des DMG-Fensters angepasst.
+- Geprüft: Hintergrund in 2x gerendert und angesehen. Das Finder-Fenster der eingehängten DMG habe ich als Fensteraufnahme angesehen: Die Platte steht mittig unter den Symbolen, die Beschriftungen („Plattenregal“, „Applications“, „Handbuch“, „User Guide“) stehen frei auf dem Papier, die Fußzeile ist beidseits frei. `hdiutil verify` gültig, eingehängt Version 1.1.2, Signatur gültig, beide PDFs byte-gleich mit denen im Repository.
+
 # Symbolgrößen als zentrale Stufen · 18.10.2026
 
 - **Neu in `AppStyle`** (Abschnitt „Symbols“): Symbole neben Text nehmen weiter dessen Schrift. Allein stehende Symbole haben jetzt eine von vier Stufen statt eigener Zahlen: `buttonSymbol` (11 pt, semibold) für die Zeichen in kleinen runden Knöpfen, `statusSymbol` (22 pt) vor Statuszeilen und abgehakten Schritten, `cardSymbol` (30 pt) vor einer Karte mit Seitentitel und `emptyStateSymbol` (40 pt, light) für leere Seiten.
