@@ -342,22 +342,6 @@
     z-index: 1;
     filter: drop-shadow(0 -8px 24px rgba(0, 0, 0, 0.35));
   }
-  .bars {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 70px;
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
-    padding: 0 var(--s-xs);
-  }
-  .bars i {
-    flex: 1;
-    border-radius: 3px 3px 0 0;
-    opacity: 0.45;
-  }
 
   /* ---------- Rückseite ---------- */
   .back-band {
@@ -390,7 +374,6 @@
   <div class="rule"></div>
   <div class="claim">Deine Discogs-Sammlung –<br>und wo jede Platte im Regal steht.</div>
   <div class="meta">Version <span data-version>1.1.2</span> · macOS 27 · Apple Silicon</div>
-  <div class="bars" id="bars"></div>
   <svg class="record" id="record" viewBox="0 0 480 480"></svg>
 </section>
 
@@ -682,21 +665,6 @@
 </section>
 
 <script>
-  // Equalizer am Fuß der Titelseite, in den Diagrammfarben der App.
-  const palette = [[0x2F,0x6F,0x80],[0xD9,0xA4,0x41],[0x7F,0xA3,0x8A],[0xC2,0x71,0x4F],[0x5B,0x7D,0xA6],[0x8C,0x5A,0x7A],[0xA8,0xA0,0x60]];
-  const bars = document.getElementById("bars");
-  const count = 58;
-  for (let i = 0; i < count; i++) {
-    const level = Math.abs(Math.sin(i * 0.55) * Math.cos(i * 0.21)) * 0.8 + Math.abs(Math.sin(i * 1.7)) * 0.2;
-    const pos = i / (count - 1) * (palette.length - 1);
-    const a = palette[Math.floor(pos)], b = palette[Math.min(Math.floor(pos) + 1, palette.length - 1)], f = pos - Math.floor(pos);
-    const c = a.map((v, k) => Math.round(v + (b[k] - v) * f));
-    const bar = document.createElement("i");
-    bar.style.height = (10 + 56 * level) + "px";
-    bar.style.background = `rgb(${c.join(",")})`;
-    bars.appendChild(bar);
-  }
-
   // Die Schallplatte wie im App-Symbol: Rillen, ein Glanz, das goldene Etikett.
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.getElementById("record");

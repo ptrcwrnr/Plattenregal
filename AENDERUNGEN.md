@@ -1,3 +1,8 @@
+# Handbuch-Titelseite ohne Equalizer · 18.10.2026
+
+- Die Titelseite beider Handbücher (`Handbuch/Handbuch.html`, `Handbuch/Handbook.html`) zeigt unten nur noch die Schallplatte auf Petrol; die farbigen Equalizer-Balken links und rechts davon sind entfernt (Markup, CSS und Skript), wie zuvor schon im DMG-Hintergrund. `Plattenregal/Handbuch.pdf` und `Handbook.pdf` neu erzeugt.
+- Geprüft: beide PDFs mit `make-guide.swift` (Version 1.1.2) gerendert, je 10 Seiten, die Titelseite beider Fassungen als Bild angesehen. App-Code unverändert, keine Tests ausgeführt.
+
 # DMG-Hintergrund im Stil des Handbuchs · 18.10.2026
 
 - **Neuer Hintergrund** (`Scripts/dmg-background.swift`): oben ein petrolfarbenes Band mit dem radialen Licht der Handbuch-Titelseite, darin die goldene Kennzeile „Installieren · Install“, „Plattenregal“ in New York und der goldene Strich. Darunter schlichtes Papier wie auf den Handbuchseiten mit dem Pfeil (petrol, goldene Spitze), dem Hinweis unter den Symbolen (deutsch im Leitstil des Handbuchs, englisch als Nebentext) und einer Fußzeile „Plattenregal · Version …“ / „macOS 27 · Apple Silicon“. Musiknoten, Equalizer, Schallplatte und der helle Schein sind weg. Farben aus dem `:root` des Handbuchs, Abstände aus dessen Skala. Fenstergröße und Symbolpositionen unverändert.
