@@ -5,6 +5,8 @@
 - README: Absatz zur Suche angepasst.
 - Handbuch (DE/EN) und Webseite erwähnen die Plaketten nicht, und keines ihrer Bilder zeigt ein Suchergebnis. Sie bleiben daher unverändert.
 - Geprüft: Debug-Build und Tests erfolgreich. Demo mit Suche „a“ als Schnappschuss in Collection und Wantlist (Klassisch hell): keine Plaketten, Cover und Beschriftung wie bisher.
+- Gesamtprüfung vor der DMG: Schnappschüsse aller vier Seiten (Collection, Wantlist, Regal, Statistik) in Klassisch und Modern (hell), dazu die Suche „daft“ in Collection und Regal (Klassisch dunkel). Aufbau, Beschriftung, Regalfächer, Trefferliste und Statistik sind stimmig, es war nichts zu korrigieren. Die Plakette „Gesucht“ im Regal gehört zur App-eigenen Liste vermisster Platten und bleibt. In Modern zeichnet `--snapshot` das Glas flacher als auf dem Bildschirm; das Glas selbst habe ich nicht am Bildschirm angesehen.
+- **DMG:** `dist/Plattenregal-1.1.2.dmg` neu ausgegeben, Version bleibt 1.1.2. Handbuch-PDFs unverändert. Geprüft: Release-Build erfolgreich, `hdiutil verify` gültig. Eingehängt: Version 1.1.2, Signatur gültig, App aus dem Stand dieses Commits gebaut (`PlacementBadge` nicht mehr im Programm), beide PDFs byte-gleich mit denen im Repository. Das Finder-Fenster der DMG habe ich nicht geöffnet.
 
 # DMG 1.1.2 mit neuer Startauswahl, Regalbild erneuert · 18.10.2026
 
