@@ -5,6 +5,7 @@
 - **Debug:** `--preview-detail=Interpret` öffnet die Detailkarte dieser Platte von der Statistik aus, damit sie sich ohne Klick aufnehmen lässt.
 - README: Zeile „Oberfläche“ nennt die Symbolstufen, die Debug-Argumente nennen `--preview-detail`.
 - Geprüft: Debug-Build und alle 210 Tests erfolgreich. In der Demo (hell) in **Klassisch** per `--snapshot` angesehen: „+“ am gewählten Fach, „Sortierung prüfen“ mit „Alles umgestellt“ und abgehaktem Schritt, Detailkarte mit Standort-Symbol, Regal-Einstellungen. In **Modern** dasselbe: Regalseite und Einstellungen per `--snapshot`, „Sortierung prüfen“ und Detailkarte als echte Bildschirmaufnahme, weil `--snapshot` dort die Glas-Panels nicht mitzeichnet. Alles sitzt wie vorher. Nicht gesehen: den Discogs-Knopf (die Demo hat keine Discogs-Links) und die Stepper (sie erscheinen nur bei „Eigene Größe …“, das sich per Startargument nicht öffnen lässt).
+- **DMG:** `dist/Plattenregal-1.1.2.dmg` neu ausgegeben, Version bleibt 1.1.2 (102026). Damit enthält sie auch die Code-Durchsicht vom selben Tag (Tracklisten-Start, Radien). Handbuch-PDFs unverändert. Geprüft: Release-Build erfolgreich, `hdiutil verify` gültig. Eingehängt: Version 1.1.2, Signatur gültig, App-Binärdatei identisch mit dem frischen Release-Build dieses Stands, beide PDFs byte-gleich mit denen im Repository. Das Finder-Fenster der DMG habe ich nicht geöffnet.
 
 # Code-Durchsicht: Tracklisten-Start abgesichert, Radien und Kennzahl zentral · 18.10.2026
 
