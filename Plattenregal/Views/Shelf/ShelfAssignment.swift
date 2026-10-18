@@ -397,7 +397,7 @@ struct AssignmentCard<Trailing: View>: View {
         .padding(.horizontal, AppStyle.rowSpacing)
         .padding(.vertical, AppStyle.rowSpacing)
         // Flush with the outer covers of the grid below.
-        .appCardSurface(cornerRadius: 16)
+        .appCardSurface(cornerRadius: AppStyle.featureRadius)
     }
 }
 
@@ -444,7 +444,7 @@ private struct ShelfAssignmentRow: View {
             }
             .padding(AppStyle.itemSpacing)
             .contentShape(Rectangle())
-            .appHoverable(hovering, cornerRadius: AppStyle.cardRadius + 8)
+            .appHoverable(hovering, cornerRadius: AppStyle.cardRadius + AppStyle.itemSpacing)
         }
         .buttonStyle(.plain)
         // The hover surface reaches out, so covers stay flush with the card above.
@@ -734,11 +734,11 @@ private struct SortStepRow: View {
             .padding(.horizontal, AppStyle.itemSpacing).frame(minHeight: AssignmentRowMetrics.height)
             .opacity(done ? 0.45 : 1)
             .contentShape(Rectangle())
-            .appHoverable(hovering && !current, cornerRadius: 8)
+            .appHoverable(hovering && !current, cornerRadius: AppStyle.rowRadius)
             .background {
                 if current {
-                    RoundedRectangle(cornerRadius: 8).fill(AppStyle.selectedBackground)
-                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppStyle.selectedBorder, lineWidth: 1.5))
+                    RoundedRectangle(cornerRadius: AppStyle.rowRadius).fill(AppStyle.selectedBackground)
+                        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.selectedBorder, lineWidth: 1.5))
                 }
             }
         }

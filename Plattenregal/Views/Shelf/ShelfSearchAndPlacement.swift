@@ -128,7 +128,7 @@ private struct SearchResultRow: View {
         .padding(.horizontal, AppStyle.itemSpacing)
         .frame(height: AssignmentRowMetrics.height)
         .contentShape(Rectangle())
-        .appHoverable(hovering, cornerRadius: 8)
+        .appHoverable(hovering, cornerRadius: AppStyle.rowRadius)
         .onHover { hovering = $0 }
     }
 

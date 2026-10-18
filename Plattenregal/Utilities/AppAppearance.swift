@@ -174,6 +174,12 @@ enum AppStyle {
     static let cardRadius: CGFloat = 12
     /// Larger control surfaces: toolbars, control bars, prominent panels.
     static let controlRadius: CGFloat = 18
+    /// Rows and small tiles (lists, cabinet and compartment chips, legend
+    /// entries) and the hover or selection tint behind them.
+    static let rowRadius: CGFloat = 8
+    /// Cards that mark where something happens: the placement card, the
+    /// target shelf above "Platte hinzufügen" (see `accentGlassCard`).
+    static let featureRadius: CGFloat = 16
 
     // MARK: Typography
     static let pageTitle = Font.system(.title, design: .rounded, weight: .semibold)
@@ -182,6 +188,8 @@ enum AppStyle {
     /// Klassisch like the captions under its covers.
     static var figureDesign: Font.Design { isAtelier ? .default : .rounded }
     static let dialogTitle = Font.system(.title2, design: .rounded, weight: .semibold)
+    /// The one large figure at the top of the statistics (collection value or count).
+    static var heroFigure: Font { .system(size: 44, weight: .bold, design: figureDesign) }
 
     // MARK: Colors
     // All dynamic/system-based so Light and Dark mode stay correct automatically.
@@ -684,11 +692,11 @@ extension View {
     func accentGlassCard() -> some View {
         background {
             if AppStyle.isAtelier {
-                RoundedRectangle(cornerRadius: 16).fill(AtelierPalette.surface)
-                    .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(AtelierPalette.gold, lineWidth: 1))
+                RoundedRectangle(cornerRadius: AppStyle.featureRadius).fill(AtelierPalette.surface)
+                    .overlay(RoundedRectangle(cornerRadius: AppStyle.featureRadius).strokeBorder(AtelierPalette.gold, lineWidth: 1))
             }
         }
-        .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: 16))
+        .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: AppStyle.featureRadius))
     }
 
     /// The bar in the middle of a window's toolbar around the page switch:

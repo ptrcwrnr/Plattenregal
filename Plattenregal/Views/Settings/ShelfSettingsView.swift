@@ -159,9 +159,9 @@ struct ShelfSettingsView: View {
                         Label("Regal hinzufügen", systemImage: "plus")
                             .padding(.horizontal, AppStyle.rowSpacing)
                             .frame(minHeight: 52)
-                            .background(Color.primary.opacity(adding ? 0.08 : 0.03), in: RoundedRectangle(cornerRadius: 8))
-                            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppStyle.borderColor, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
-                            .contentShape(RoundedRectangle(cornerRadius: 8))
+                            .background(Color.primary.opacity(adding ? 0.08 : 0.03), in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+                            .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.borderColor, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                            .contentShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
                     }
                     .buttonStyle(.plain)
                 }
@@ -232,11 +232,11 @@ private struct CabinetChip: View {
             .padding(.horizontal, AppStyle.rowSpacing).padding(.vertical, AppStyle.itemSpacing)
             .frame(minWidth: 120, maxWidth: 240, minHeight: 52, alignment: .leading)
             .background(selected ? AppStyle.selectedBackground : (hovering ? AppStyle.hoverBackground : Color.primary.opacity(0.03)),
-                        in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8)
+                        in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+            .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius)
                 .strokeBorder(selected ? AppStyle.selectedBorder.opacity(focused ? 0.8 : 0.35) : AppStyle.borderColor,
                               lineWidth: selected && focused ? 1.5 : 1))
-            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .contentShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
@@ -487,10 +487,10 @@ private struct ShelfTile: View {
             .padding(.horizontal, AppStyle.rowSpacing).padding(.vertical, AppStyle.itemSpacing)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .topLeading)
             .background(selected ? AppStyle.selectedBackground : (hovering ? AppStyle.hoverBackground : Color.primary.opacity(0.03)),
-                        in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8)
+                        in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+            .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius)
                 .strokeBorder(selected ? AppStyle.selectedBorder.opacity(0.35) : AppStyle.borderColor))
-            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .contentShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }

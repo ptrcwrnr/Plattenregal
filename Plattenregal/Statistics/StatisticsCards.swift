@@ -40,7 +40,7 @@ struct StatisticsHero: View {
                 RollingNumber(value: NSDecimalNumber(decimal: latest.medianValue).doubleValue) {
                     DiscogsMoney.format(Decimal($0.rounded()), currency: latest.currency)
                 }
-                .font(.system(size: 44, weight: .bold, design: AppStyle.figureDesign))
+                .font(AppStyle.heroFigure)
                 // The digits' own side bearing, so the number starts at
                 // the edge of the words above and below it.
                 .padding(.leading, -3)
@@ -58,7 +58,7 @@ struct StatisticsHero: View {
             VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
                 Text("Schallplatten in der Sammlung").font(.callout).foregroundStyle(.secondary)
                 RollingNumber(value: Double(statistics.totalItems)) { Int($0.rounded()).formatted() }
-                    .font(.system(size: 44, weight: .bold, design: AppStyle.figureDesign))
+                    .font(AppStyle.heroFigure)
                 // The digits' own side bearing, so the number starts at
                 // the edge of the words above and below it.
                 .padding(.leading, -3)
@@ -195,7 +195,7 @@ struct StatisticsFacts: View {
                             .font(.callout.weight(.semibold))
                             .foregroundStyle(AppStyle.isAtelier ? AppStyle.accent : fact.color)
                             .frame(width: 28, height: 28)
-                            .background(AppStyle.isAtelier ? AtelierPalette.soft : fact.color.opacity(0.14), in: RoundedRectangle(cornerRadius: 8))
+                            .background(AppStyle.isAtelier ? AtelierPalette.soft : fact.color.opacity(0.14), in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
                         Text(fact.title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                         Spacer(minLength: 0)
                         if fact.group != nil {
@@ -418,7 +418,7 @@ struct SoundDonut: View {
                     }
                     .font(.callout)
                     .padding(.vertical, AppStyle.tightSpacing)
-                    .background(hovered == slice.id ? slice.color.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 8).inset(by: -8))
+                    .background(hovered == slice.id ? slice.color.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: AppStyle.rowRadius).inset(by: -AppStyle.itemSpacing))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

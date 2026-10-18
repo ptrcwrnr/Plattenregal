@@ -259,6 +259,10 @@ nonisolated struct DiscogsSyncSummary: Sendable {
     /// waiting for the next manual sync.
     func resumeTracklistsIfNeeded(container: ModelContainer) async {
         guard !busy, tracklistTask == nil, (try? await api.credentialFingerprint()) != nil,
+              // Asked again after the wait for the client: a sync started
+              // meanwhile must not get a download beside its merge – it
+              // starts its own afterwards.
+              !busy, tracklistTask == nil,
               let accounts = try? ModelContext(container).fetch(FetchDescriptor<DiscogsAccount>()),
               accounts.contains(where: { $0.lastCollectionSync != nil || $0.lastWantlistSync != nil })
         else { return }

@@ -296,7 +296,7 @@ struct GroupStatisticsList: View {
                 }
                 .padding(.vertical, AppStyle.tightSpacing)
                 // The hover tint bleeds outward so names stay flush with the card title.
-                .background(hovering ? AppStyle.hoverBackground : .clear, in: RoundedRectangle(cornerRadius: 8).inset(by: -6))
+                .background(hovering ? AppStyle.hoverBackground : .clear, in: RoundedRectangle(cornerRadius: AppStyle.rowRadius).inset(by: -6))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

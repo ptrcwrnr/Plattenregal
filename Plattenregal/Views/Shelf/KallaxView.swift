@@ -704,7 +704,7 @@ struct KallaxView: View {
     private func refreshPlacement() {
         guard let current = placement else { return }
         let copy = current.copy
-        guard copy.modelContext != nil, (copy.shelf != nil) == current.found else { placement = nil; return }
+        guard !copy.isDeleted, copy.modelContext != nil, (copy.shelf != nil) == current.found else { placement = nil; return }
         var updated = Placement(copy: copy, shelves: shelves)
         updated.excluded = current.excluded
         updated.missing = missingIDs.contains(copy.id)
