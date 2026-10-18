@@ -191,6 +191,21 @@ enum AppStyle {
     /// The one large figure at the top of the statistics (collection value or count).
     static var heroFigure: Font { .system(size: 44, weight: .bold, design: figureDesign) }
 
+    // MARK: Symbols
+    // Symbols beside text take that text's font. Only symbols standing on
+    // their own get a fixed size, and one of these four: the same role
+    // looks the same everywhere.
+    /// The glyph in the small round buttons ("Platte hinzufügen" on a
+    /// compartment, "Bei Discogs öffnen", the steppers).
+    static let buttonSymbol = Font.system(size: 11, weight: .semibold)
+    /// Leading a status line or a list step next to a headline ("Alles in
+    /// Ordnung", "Alles umgestellt", a ticked-off step).
+    static let statusSymbol = Font.system(size: 22)
+    /// Leading a card next to a page title (where a record stands).
+    static let cardSymbol = Font.system(size: 30)
+    /// The large symbol of an empty page.
+    static let emptyStateSymbol = Font.system(size: 40, weight: .light)
+
     // MARK: Colors
     // All dynamic/system-based so Light and Dark mode stay correct automatically.
     static var isAtelier: Bool { AppPreferences.shared.signatureDesign == .atelier }
@@ -887,7 +902,7 @@ struct AppEmptyState: View {
     var body: some View {
         VStack(spacing: AppStyle.rowSpacing) {
             Image(systemName: systemImage)
-                .font(.system(size: 40, weight: .light)).foregroundStyle(.tertiary)
+                .font(AppStyle.emptyStateSymbol).foregroundStyle(.tertiary)
                 .frame(width: 56, height: 56).accessibilityHidden(true)
             Text(title).font(AppStyle.sectionTitle)
             description.font(.body).foregroundStyle(.secondary)
@@ -1261,7 +1276,7 @@ private struct GlassStepButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 10, weight: .semibold))
+                .font(AppStyle.buttonSymbol)
                 .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary))
                 .frame(width: 20, height: 20)
                 .background(hovering && isEnabled ? AppStyle.hoverBackground : .clear, in: Circle())

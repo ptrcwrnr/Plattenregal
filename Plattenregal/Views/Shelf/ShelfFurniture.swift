@@ -209,7 +209,7 @@ private struct CompartmentAddButton: View {
             let visible = shown && !locked
             Button(action: action) {
                 Image(systemName: "plus")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(AppStyle.buttonSymbol)
                     .foregroundStyle(AppStyle.accent)
                     .frame(width: 24, height: 24)
                     .contentShape(Circle())

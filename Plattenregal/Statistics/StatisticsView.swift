@@ -164,6 +164,16 @@ struct StatisticsView: View {
                 .frame(maxWidth: 1100, maxHeight: 820)
         }
         .appPanel(item: $opened) { copy in RecordDetailView(copy: copy) { opened = nil; showShelf(copy) } }
+        #if DEBUG
+        // Screenshots without clicking: --preview-detail=Artist opens that
+        // artist's record as from the page.
+        .task {
+            guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-detail=") }) else { return }
+            let artist = String(raw.dropFirst("--preview-detail=".count))
+            try? await Task.sleep(for: .seconds(1))
+            opened = LibraryRecords.of(context).copies.first { $0.release?.artist == artist }
+        }
+        #endif
     }
 
     /// Behind the page: the covers of the latest additions.

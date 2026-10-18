@@ -38,7 +38,7 @@ struct RecordDetailView: View {
         return VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
           HStack(spacing: AppStyle.rowSpacing) {
             Image(systemName: "square.grid.3x3.fill")
-                .font(.system(size: 30))
+                .font(AppStyle.cardSymbol)
                 .foregroundStyle(copy.shelf == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text("Standort").font(.callout).foregroundStyle(.secondary)
@@ -173,7 +173,7 @@ struct RecordPopover: View {
                 if let discogsURL {
                     Button { openURL(discogsURL) } label: {
                         Image(systemName: "arrow.up.forward")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(AppStyle.buttonSymbol)
                             .frame(width: 26, height: 26)
                             .contentShape(Circle())
                             .background {

@@ -597,7 +597,7 @@ struct ShelfSortCheckView: View {
     private func inOrder(count: Int) -> some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             HStack(spacing: AppStyle.rowSpacing) {
-                Image(systemName: "checkmark.circle.fill").font(.system(size: 22)).foregroundStyle(AppStyle.successColor)
+                Image(systemName: "checkmark.circle.fill").font(AppStyle.statusSymbol).foregroundStyle(AppStyle.successColor)
                 VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text("Alles in Ordnung").font(.headline)
                     Text(count < 2 ? String(localized: "Zu wenige Platten, um etwas zu prüfen.") : String(localized: "Alle \(count) Platten stehen in der richtigen Reihenfolge."))
@@ -629,7 +629,7 @@ struct ShelfSortCheckView: View {
         return VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             HStack(spacing: AppStyle.rowSpacing) {
                 Image(systemName: complete ? "checkmark.circle.fill" : "arrow.left.arrow.right")
-                    .font(.system(size: 22))
+                    .font(AppStyle.statusSymbol)
                     .foregroundStyle(complete ? AppStyle.successColor : AppStyle.accent)
                     .contentTransition(.symbolEffect(.replace))
                     .frame(width: 26)
@@ -707,7 +707,7 @@ private struct SortStepRow: View {
                 ZStack {
                     Circle().strokeBorder(done ? Color.clear : Color.secondary.opacity(0.4), lineWidth: 1)
                     if done {
-                        Image(systemName: "checkmark.circle.fill").font(.system(size: 22)).foregroundStyle(AppStyle.successColor)
+                        Image(systemName: "checkmark.circle.fill").font(AppStyle.statusSymbol).foregroundStyle(AppStyle.successColor)
                     } else {
                         Text("\(number)").font(.caption.weight(.semibold)).monospacedDigit().foregroundStyle(.secondary)
                     }
