@@ -2,6 +2,7 @@
 
 - Die Titelseite beider Handbücher (`Handbuch/Handbuch.html`, `Handbuch/Handbook.html`) zeigt unten nur noch die Schallplatte auf Petrol; die farbigen Equalizer-Balken links und rechts davon sind entfernt (Markup, CSS und Skript), wie zuvor schon im DMG-Hintergrund. `Plattenregal/Handbuch.pdf` und `Handbook.pdf` neu erzeugt.
 - Geprüft: beide PDFs mit `make-guide.swift` (Version 1.1.2) gerendert, je 10 Seiten, die Titelseite beider Fassungen als Bild angesehen. App-Code unverändert, keine Tests ausgeführt.
+- **DMG neu ausgegeben:** `Scripts/make-dmg.sh` → `dist/Plattenregal-1.1.2.dmg` (Release-Build erfolgreich, PDFs unverändert übernommen). `hdiutil verify` in Ordnung, eingehängt: `Handbuch.pdf` und `User Guide.pdf` byte-gleich mit `Plattenregal/Handbuch.pdf` und `Handbook.pdf`, Signatur der App gültig. Das Finder-Fenster selbst nicht angesehen.
 
 # DMG-Hintergrund im Stil des Handbuchs · 18.10.2026
 
