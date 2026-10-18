@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Packs Plattenregal into a DMG whose window shows the app, an arrow, the
 # Applications folder and the guide in German and English (Handbuch.pdf,
-# User Guide.pdf) on a background in the classic design (dmg-background.swift).
+# User Guide.pdf) on a background in the style of the guide (dmg-background.swift).
 # Writes dist/Plattenregal-<version>.dmg. The guides are the ones inside the
 # app (Hilfe › Handbuch); before the Release build make-guide.swift renews
 # Plattenregal/Handbuch.pdf and Handbook.pdf if the brochure or the version
@@ -49,8 +49,8 @@ ditto "$APP" "$WORK/src/$NAME.app"
 ln -s /Applications "$WORK/src/Applications"
 cp "$APP/Contents/Resources/$GUIDE" "$WORK/src/$GUIDE"
 cp "$APP/Contents/Resources/$GUIDE_EN" "$WORK/src/$GUIDE_EN_NAME"
-swift Scripts/dmg-background.swift "$WORK/bg.png" 1
-swift Scripts/dmg-background.swift "$WORK/bg@2x.png" 2
+swift Scripts/dmg-background.swift "$WORK/bg.png" 1 "$VERSION"
+swift Scripts/dmg-background.swift "$WORK/bg@2x.png" 2 "$VERSION"
 tiffutil -cathidpicheck "$WORK/bg.png" "$WORK/bg@2x.png" -out "$WORK/src/.background/background.tiff" 2>/dev/null
 ICNS="$APP/Contents/Resources/AppIcon.icns"
 [[ -f $ICNS ]] && cp "$ICNS" "$WORK/src/.VolumeIcon.icns"

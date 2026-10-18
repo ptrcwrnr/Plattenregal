@@ -682,7 +682,7 @@
 </section>
 
 <script>
-  // Equalizer am Fuß der Titelseite, in den Diagrammfarben der App – wie im DMG-Hintergrund.
+  // Equalizer am Fuß der Titelseite, in den Diagrammfarben der App.
   const palette = [[0x2F,0x6F,0x80],[0xD9,0xA4,0x41],[0x7F,0xA3,0x8A],[0xC2,0x71,0x4F],[0x5B,0x7D,0xA6],[0x8C,0x5A,0x7A],[0xA8,0xA0,0x60]];
   const bars = document.getElementById("bars");
   const count = 58;
@@ -697,7 +697,7 @@
     bars.appendChild(bar);
   }
 
-  // Die Schallplatte wie im App-Symbol und im DMG-Hintergrund: Rillen, ein Glanz, das goldene Etikett.
+  // Die Schallplatte wie im App-Symbol: Rillen, ein Glanz, das goldene Etikett.
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.getElementById("record");
   const add = (name, attrs) => { const e = document.createElementNS(ns, name); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
