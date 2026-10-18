@@ -1,3 +1,10 @@
+# Webseite im Stil des Handbuchs · 18.10.2026
+
+- **Neu gestaltet:** Die Seite zur App (`Webseite/index.html`, jetzt im Repository; veröffentlicht unter derselben Artifact-Adresse wie bisher) hat das Design des Handbuchs statt Blau und Grotesk: petrolfarbene Titel-Bande mit Symbol, „Plattenregal“ in New York, Goldstrich, Claim und der Schallplatte vom Handbuch-Titel; darunter Papier mit Kapiteln aus Kennzeile, Titel und Goldstrich, Karten, nummerierte Schritte und Tabellen wie im Handbuch, am Ende die Bande der Rückseite. Dunkel mit den dunklen Klassisch-Farben der App.
+- **Inhalt auf dem Stand:** Rückenleiste, Spalte „Vermisst“, Pause-Knopf und die alte Zahl der Einstellungsreiter sind raus. Neu: runder Knopf, Einsortieren mit dem +-Knopf, Suchliste „Gesucht“, Verkaufsliste, zwei Designs, Kürzel wie im Handbuch, „Loslegen“ mit Installieren samt einmaligem „Dennoch öffnen“, Token, Synchronisieren, Regal anlegen sowie Voraussetzungen (Apple-Chip, macOS 27) und Demo.
+- **Bilder aus der Demo** statt aus der echten Sammlung (die 15 alten Bilder sind aus dem Artifact entfernt), je Sprache die des Handbuchs; der Umschalter DE/EN tauscht Text und Bilder.
+- Geprüft: Seite lokal mit WebKit gerendert und angesehen, Desktop (1280 pt, hell, Deutsch und Englisch) und Handy (400 pt, dunkel, Englisch): kein seitliches Scrollen, alle Bilder geladen. Dabei gefunden und behoben: Einblend-Animationen ließen Titel und Symbol unsichtbar, solange sie nicht liefen (entfernt), und zwei Absätze zerfielen in Zeilen (Raster-Stil am Absatz). Die veröffentlichte Seite selbst habe ich nicht angesehen, weil der Browser hier nicht bei claude.ai angemeldet ist.
+
 # Handbuch-Titelseite ohne Equalizer · 18.10.2026
 
 - Die Titelseite beider Handbücher (`Handbuch/Handbuch.html`, `Handbuch/Handbook.html`) zeigt unten nur noch die Schallplatte auf Petrol; die farbigen Equalizer-Balken links und rechts davon sind entfernt (Markup, CSS und Skript), wie zuvor schon im DMG-Hintergrund. `Plattenregal/Handbuch.pdf` und `Handbook.pdf` neu erzeugt.
