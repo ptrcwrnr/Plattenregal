@@ -191,12 +191,16 @@
   .lang button:hover { color: var(--cream); }
   .lang button[aria-pressed="true"] { background: var(--cream); color: var(--gold-ink); }
   .hero .kicker { color: var(--gold); letter-spacing: 3px; margin-top: var(--s-xl); }
+  /* icon.png trägt seinen Schatten selbst (Scripts/web-icon.swift): 512 px Symbol auf
+     704 × 768 px, 96 px Rand links, rechts und oben, 160 px unten. Die Ränder werden
+     hier herausgerechnet, damit das Symbol selbst --icon breit ist und wie bisher sitzt. */
   .hero .icon {
+    --icon: clamp(112px, 18vw, 156px);
     display: block;
-    width: clamp(112px, 18vw, 156px);
+    width: calc(var(--icon) * 704 / 512);
+    max-width: none;
     height: auto;
-    margin: var(--s-3xl) auto 0;
-    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35));
+    margin: calc(var(--s-3xl) - var(--icon) * 96 / 512) auto calc(var(--icon) * -160 / 512);
   }
   .hero h1 {
     font-family: var(--serif);
@@ -394,7 +398,7 @@
       </div>
     </div>
     <div class="kicker" data-t="kicker">Für den Mac · mit Discogs</div>
-    <img class="icon" src="Bilder/icon.png" width="512" height="512" alt="">
+    <img class="icon" src="icon.png" width="704" height="768" alt="">
     <h1>Plattenregal</h1>
     <div class="rule"></div>
     <p class="claim" data-t="claim">Deine Discogs-Sammlung –<br>und wo jede Platte im Regal steht.</p>

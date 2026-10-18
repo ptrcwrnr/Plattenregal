@@ -1,3 +1,9 @@
+# Webseite: Symbol ohne Rand · 18.10.2026
+
+- Um das App-Symbol oben auf der Webseite lag im Browser ein eckiger, dunkler Rand. Ursache: Der Browser schnitt den CSS-Schatten (`drop-shadow`) am Rahmen des Bildes ab. Im Bildschirmfoto bricht der Schatten etwa 17 px neben der Platte hart ab. WebKit, mit dem das Handbuch gerendert wird, tut das nicht, deshalb war das Handbuch nicht betroffen.
+- Jetzt trägt das Bild seinen Schatten selbst: `Scripts/web-icon.swift` zeichnet aus `Handbuch/Bilder/icon.png` das Symbol mit demselben Schatten (Versatz 14, Weichzeichnung 22, Schwarz 35 %) auf eine 704 × 768 px große Fläche und schreibt `Webseite/icon.png`. Die Seite rechnet die Ränder heraus, Größe und Lage des Symbols bleiben gleich. Kein CSS-Filter mehr am Symbol.
+- Geprüft: Seite mit WebKit gerendert, Symbol vergrößert angesehen und die Farben quer über die Kante gemessen: gleiche Lage wie vorher, Schatten läuft weich aus, ohne Stufe. Neu veröffentlicht. In deinem Browser selbst nicht angesehen, weil der Browser hier nicht bei claude.ai angemeldet ist.
+
 # Webseite im Stil des Handbuchs · 18.10.2026
 
 - **Neu gestaltet:** Die Seite zur App (`Webseite/index.html`, jetzt im Repository; veröffentlicht unter derselben Artifact-Adresse wie bisher) hat das Design des Handbuchs statt Blau und Grotesk: petrolfarbene Titel-Bande mit Symbol, „Plattenregal“ in New York, Goldstrich, Claim und der Schallplatte vom Handbuch-Titel; darunter Papier mit Kapiteln aus Kennzeile, Titel und Goldstrich, Karten, nummerierte Schritte und Tabellen wie im Handbuch, am Ende die Bande der Rückseite. Dunkel mit den dunklen Klassisch-Farben der App.
