@@ -1,3 +1,12 @@
+# DMG 1.1.2 mit neuer Startauswahl, Regalbild erneuert · 18.10.2026
+
+- **Handbuch und Webseite geprüft:** Die Texte bleiben, wie sie sind. Sie sprechen nur vom „gewählten Fach (Goldrand)“ und nennen „A – Be“ als Beispiel. Das Bild der Regalseite (`Handbuch/Bilder/de|en/shelf.jpg`, von der Webseite mitbenutzt) zeigte noch „Po – Ra“ unten links ausgewählt. Es ist neu aufgenommen und zeigt jetzt „A – Be“ oben links mit dem Inhalt A Tribe Called Quest bis Beastie Boys.
+- **Zuschnitt:** Im neuen Fach trägt Aphex Twin die Plakette „Gesucht“/„Looking for“, die der bisherige Zuschnitt (oberste 75 % des Fensters) halb abschnitt. `Scripts/guide-screenshots.swift` nimmt für dieses Bild jetzt 78 % (1600 × 809 statt 778 px), die Höhenangabe in `Webseite/index.html` ist angepasst. Die übrigen Bilder sind unverändert; das neu aufgenommene Statistikbild unterschied sich nur in der Uhrzeit von „Stand …“ und wurde verworfen.
+- **PDFs** `Plattenregal/Handbuch.pdf` und `Handbook.pdf` neu erzeugt (über `make-dmg.sh`), dazu die Kopien in `dist/`.
+- **Webseite** unter derselben Adresse neu veröffentlicht (Version 6) mit `index.html` und den beiden Regalbildern.
+- **DMG:** `dist/Plattenregal-1.1.2.dmg` neu ausgegeben, Version bleibt 1.1.2.
+- Geprüft: Beide Regalbilder angesehen, Plakette vollständig. Seite 6 beider PDFs als Bild angesehen: Bild und Text passen, weiterhin 10 Seiten. Release-Build erfolgreich, `hdiutil verify` gültig. Eingehängt: `Handbuch.pdf` und `User Guide.pdf` sowie das Handbuch in der App byte-gleich mit `Plattenregal/Handbuch.pdf` bzw. `Handbook.pdf`, Signatur gültig, App-Binärdatei frisch gebaut. Auf der Webseite haben die Regalbilder dieselbe Dateigröße wie die lokalen. Die Webseite habe ich nicht im Browser angesehen, das Finder-Fenster der DMG nicht geöffnet.
+
 # Regal: einheitliche Startauswahl ab oben links · 18.10.2026
 
 - Beim Öffnen der Regal-Seite war bisher das Fach **unten links** im ersten Regal aktiv, beim Wechsel zu einem anderen Regal dagegen das erste belegte Fach **oben links**. Begründet war unten links damit, dass dort das Alphabet beginne. Die App sortiert aber in Leserichtung ab Fach 1 oben links ein, dort steht also das A.

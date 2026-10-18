@@ -72,7 +72,7 @@ let shots: [Shot] = [
     Shot(name: "collection", arguments: ["--preview-page=Collection"], crop: .top(0.70), maxWidth: 1600),
     Shot(name: "fan", arguments: ["--preview-page=Collection", "--preview-actions"],
          crop: .bottomRight(width: 318, height: 182), maxWidth: 700),
-    Shot(name: "shelf", arguments: ["--preview-page=Regal"], crop: .top(0.75), maxWidth: 1600),
+    Shot(name: "shelf", arguments: ["--preview-page=Regal"], crop: .top(0.78), maxWidth: 1600),
     Shot(name: "sortin", arguments: ["--preview-page=Regal", "--preview-sortin"],
          crop: .centered(width: 660, y: 76, height: 639), maxWidth: 1100),
     Shot(name: "statistics", arguments: ["--preview-page=Statistik"], crop: .top(0.69), maxWidth: 1600),
