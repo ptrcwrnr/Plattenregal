@@ -152,7 +152,7 @@ struct RootView: View {
     @ViewBuilder private func pageContent(_ page: Destination) -> some View {
         switch page {
         case .collection: CollectionView(pages: destination, search: search, showShelf: showShelf)
-        case .wantlist: WantlistView(search: search, pages: destination)
+        case .wantlist: WantlistView(search: search)
         case .statistics: StatisticsView(model: statisticsModel, showShelf: showShelf)
         case .shelf: KallaxView(requests: shelfRequests, search: shelfSearch)
         }

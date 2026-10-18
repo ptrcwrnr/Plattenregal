@@ -277,20 +277,17 @@ struct WantlistView: View {
     /// handed in would keep the value it had then.
     let search: LibrarySearch
     private var query: String { search.query }
-    private var copies: [RecordCopy] { records.copies }
     private var accounts: [DiscogsAccount] { records.accounts }
     /// Shown or not, without re-rendering the list on every page switch.
     @State private var activity = PageActivity()
     // Same two stages as the collection: sort on data changes, cheap
     // filtering per (debounced) keystroke with the shared search texts.
     @State private var sortedEntries: [WantlistItem] = []
-    /// Discogs release IDs in the collection, for the search badge on the covers.
-    @State private var ownedReleaseIDs: Set<Int> = []
     @State private var queryPending = false
-    /// Entries, records, account or metadata changed; one rebuild for all (see CollectionView).
+    /// Entries, account or metadata changed; one rebuild for all (see CollectionView).
     @State private var dataRevision = 0
-    /// The query the visible entries were filtered with — badges and track
-    /// lines follow it, not the raw field, so they match what is shown.
+    /// The query the visible entries were filtered with — the track lines
+    /// follow it, not the raw field, so they match what is shown.
     @State private var appliedQuery = ""
     /// False until the first `rebuild`, so "Keine Treffer" doesn't flash.
     @State private var loaded = false
@@ -312,8 +309,6 @@ struct WantlistView: View {
     /// The entry whose popover (with the tracklist) is open; in the list
     /// also where it was double-clicked.
     @State private var quickLook: (id: Int, anchor: UnitPoint)?
-    /// The window's page switch, to jump to the collection's hits.
-    let pages: PageSelection<Destination>
 
     @AppStorage(DisplaySettings.wantlistOrderKey) private var order = OverviewOrder.alphabetical
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
@@ -378,9 +373,8 @@ struct WantlistView: View {
         .settingsOpener($settingsTab)
         .onChange(of: order) { _, _ in scroll.id = nil; rebuild() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
-        .task { rebuildCollection(); rebuild() }
+        .task { rebuild() }
         .onChange(of: entries) { _, _ in dataRevision += 1 }
-        .onChange(of: copies) { _, _ in dataRevision += 1 }
         .onChange(of: accounts) { _, _ in dataRevision += 1 }
         // See CollectionView: metadata and tracklist changes on the same objects.
         .onObservedChange(of: { changes.libraryVersion }) { _, _ in dataRevision += 1 }
@@ -389,7 +383,6 @@ struct WantlistView: View {
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
             LibrarySearchIndexes.shared.invalidate()
-            rebuildCollection()
             rebuild()
         }
         // New tracks are found by a running search (the index follows them).
@@ -430,12 +423,6 @@ struct WantlistView: View {
                                                             key: \.releaseID, added: { DiscogsDate.parse($0.dateAdded) }))
         loaded = true
         applyQuery()
-    }
-
-    private func rebuildCollection() {
-        let owner = owner
-        let active = copies.filter { $0.isInCurrentCollection(owner: owner) }
-        ownedReleaseIDs = Set(active.compactMap { $0.release?.discogsID })
     }
 
     /// `animated`: search results glide into place (grid only; a sync
@@ -486,17 +473,6 @@ struct WantlistView: View {
                         }
                         .buttonStyle(.plain)
                         .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – "))
-                        .overlay(alignment: .topLeading) {
-                            if !appliedQuery.isEmpty {
-                                PlacementBadge(
-                                    inCollection: ownedReleaseIDs.contains(item.id),
-                                    inWantlist: true,
-                                    current: .wantlist,
-                                    show: { pages.current = $0 }
-                                )
-                                .padding(AtelierCoverFrame.badgeInset)
-                            }
-                        }
                         .id(item.id)
                         .popover(isPresented: quickLookBinding(item.id), arrowEdge: .trailing) {
                             RecordPopover(release: entry.release, discogsURL: sourceURL(entry))

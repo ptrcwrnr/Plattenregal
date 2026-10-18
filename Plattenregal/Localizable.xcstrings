@@ -5305,6 +5305,7 @@
       }
     },
     "In der %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5315,6 +5316,7 @@
       }
     },
     "In der %@ anzeigen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

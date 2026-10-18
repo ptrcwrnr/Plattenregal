@@ -16,8 +16,7 @@ struct CollectionView: View {
     @State private var excludedIDs: Set<UUID> = []
     @State private var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
-    // The window's page switch, to jump to the wantlist's hits; nil in the
-    // statistics drill-down sheet.
+    // The window's page switch; nil in the statistics drill-down sheet.
     private let pages: PageSelection<Destination>?
     // The search shared with the wantlist (see `LibrarySearch`); nil in the
     // statistics panel, which has no search. Objects, read directly: this page is
@@ -27,7 +26,6 @@ struct CollectionView: View {
     /// The query typed into the search field in the toolbar (see `ToolbarSearchField`).
     private var query: String { search?.query ?? "" }
 
-    private var wantlistEntries: [WantlistEntry] { records.wants }
     let showShelf: (RecordCopy) -> Void
     var analyticsFilter: StatisticGroup? = nil
     /// Kept for as long as the page lives (see `PageStack`), so a section
@@ -91,8 +89,6 @@ struct CollectionView: View {
     // the search texts folded once (`LibrarySearchIndexes`) on each
     // (debounced) keystroke.
     @State private var base: [RecordCopy] = []
-    /// Discogs release IDs on the wantlist, for the search badge on the covers.
-    @State private var wantedReleaseIDs: Set<Int> = []
     /// The query changed while this section was hidden; apply it on return.
     @State private var queryPending = false
     /// Records, account, metadata or wantlist changed. A sync reports itself
@@ -104,8 +100,8 @@ struct CollectionView: View {
     @State private var labelsPending = false
     /// False until the first `rebuildBase`, so the empty state doesn't flash.
     @State private var loaded = false
-    /// Whether the visible items are a search result — the placement badges
-    /// follow this, not the raw field (whitespace, debounce).
+    /// Whether the visible items are a search result — follows the applied
+    /// query, not the raw field (whitespace, debounce).
     @State private var searching = false
     /// The query the visible items were filtered with, for the matched track
     /// under a cover – as in the wantlist.
@@ -175,16 +171,6 @@ struct CollectionView: View {
               let group = groups.first(where: { group in group.copies.contains { $0.id == id } })
         else { return }
         if id != group.primary.id { scroll.id = group.primary.id }
-    }
-
-    private func rebuildWantedReleaseIDs() {
-        guard pages != nil else { return }
-        wantedReleaseIDs = Set(currentWantlist.map(\.releaseID))
-    }
-
-    private var currentWantlist: [WantlistEntry] {
-        guard let owner = DiscogsAccount.current(in: accounts)?.username else { return wantlistEntries }
-        return wantlistEntries.filter { $0.owner == owner }
     }
 
     // Shelves are named as chosen in the settings, never by their internal number.
@@ -278,17 +264,6 @@ struct CollectionView: View {
                                             .buttonStyle(.plain)
                                             .help("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")) · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: " · \(group.copies.count) Exemplare") : "")")
                                             .accessibilityLabel("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: ", \(group.copies.count) Exemplare") : "")")
-                                            .overlay(alignment: .topLeading) {
-                                                if searching, let pages {
-                                                    PlacementBadge(
-                                                        inCollection: true,
-                                                        inWantlist: copy.release.map { wantedReleaseIDs.contains($0.discogsID) } ?? false,
-                                                        current: .collection,
-                                                        show: { pages.current = $0 }
-                                                    )
-                                                    .padding(AtelierCoverFrame.badgeInset)
-                                                }
-                                            }
                                             .id(copy.id)
                                             .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
                                                 RecordPopover(copy: group.primary)
@@ -392,14 +367,13 @@ struct CollectionView: View {
         .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
         .onChange(of: order) { _, _ in scroll.id = nil; rebuildBase(animated: true) }
         .onChange(of: secondaryOrder) { _, _ in rebuildBase(animated: true) }
-        .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildWantedReleaseIDs(); rebuildBase() }
+        .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildBase() }
         .onChange(of: copies) { _, _ in dataRevision += 1 }
         .onChange(of: labelStyle) { _, style in shelfLabels = labelsCache.labels(for: shelves, style: style) }
         .onObservedChange(of: { changes.shelvesVersion }) { _, _ in refreshLabels() }
         .onObservedChange(of: { changes.placementsVersion }) { _, _ in refreshLabels() }
         .onChange(of: exclusions) { _, exclusions in excludedIDs = Set(exclusions.map(\.copyID)) }
         .onChange(of: accounts) { _, _ in dataRevision += 1 }
-        .onChange(of: wantlistEntries) { _, _ in dataRevision += 1 }
         // Changed metadata on existing records and newly loaded tracklists
         // don't change the record lists; the sync service reports them.
         .onObservedChange(of: { changes.libraryVersion }) { _, _ in dataRevision += 1 }
@@ -408,7 +382,6 @@ struct CollectionView: View {
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
             LibrarySearchIndexes.shared.invalidate()
-            rebuildWantedReleaseIDs()
             rebuildBase()
         }
         // New tracks are found by a running search (the index follows them).
@@ -689,45 +662,5 @@ struct MatchedTrackLine: View {
         .foregroundStyle(.tint)
         .lineLimit(1)
         .help("Gefunden über den Track „\(track.title)“")
-    }
-}
-
-/// Membership tags in the top-left corner of a search-result cover. The cover retains its own
-/// click action; the tag of the other page is a button that switches to it, the
-/// current page's tag only says so (a button there would lead nowhere).
-struct PlacementBadge: View {
-    let inCollection: Bool
-    let inWantlist: Bool
-    let current: Destination
-    let show: (Destination) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-            if inCollection { tag(.collection) }
-            if inWantlist { tag(.wantlist) }
-        }
-    }
-
-    @ViewBuilder private func tag(_ destination: Destination) -> some View {
-        if destination == current {
-            label(destination, interactive: false)
-                .accessibilityLabel("In der \(destination.title)")
-        } else {
-            Button { show(destination) } label: { label(destination, interactive: true) }
-                .buttonStyle(.plain)
-                .help("In der \(destination.title) anzeigen")
-                .accessibilityLabel("In der \(destination.title) anzeigen")
-        }
-    }
-
-    private func label(_ destination: Destination, interactive: Bool) -> some View {
-        Text(destination.title)
-            .font(.caption2.weight(.medium))
-            // The link's color only where a click leads somewhere.
-            .foregroundStyle(interactive ? AnyShapeStyle(AppStyle.accent)
-                                         : AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
-            .padding(.horizontal, AppStyle.itemSpacing)
-            .padding(.vertical, AppStyle.tightSpacing)
-            .appChipSurface(in: Capsule(), interactive: interactive)
     }
 }

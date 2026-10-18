@@ -1,3 +1,11 @@
+# Suche: keine Collection-/Wantlist-Plaketten mehr auf den Covern · 18.10.2026
+
+- Seit die Suche nur noch die Rubrik durchsucht, in der man gerade ist, war die Plakette oben links auf den Treffer-Covern überflüssig. Sie zeigte immer die eigene Rubrik („Collection“ in der Collection, „Wantlist“ in der Wantlist) und nur selten die andere, nämlich wenn genau dieselbe Discogs-Release in beiden steht. Sie ist in beiden Rubriken entfernt, ebenso `PlacementBadge` und die nur dafür geführten Mengen der Release-IDs (`wantedReleaseIDs` in der Collection, `ownedReleaseIDs` in der Wantlist). Die Wantlist baut sich deshalb nicht mehr neu auf, wenn sich die Collection ändert. `WantlistView` braucht den Seitenumschalter nicht mehr.
+- Die Texte „In der %@“ und „In der %@ anzeigen“ sind im String-Katalog als veraltet markiert.
+- README: Absatz zur Suche angepasst.
+- Handbuch (DE/EN) und Webseite erwähnen die Plaketten nicht, und keines ihrer Bilder zeigt ein Suchergebnis. Sie bleiben daher unverändert.
+- Geprüft: Debug-Build und Tests erfolgreich. Demo mit Suche „a“ als Schnappschuss in Collection und Wantlist (Klassisch hell): keine Plaketten, Cover und Beschriftung wie bisher.
+
 # DMG 1.1.2 mit neuer Startauswahl, Regalbild erneuert · 18.10.2026
 
 - **Handbuch und Webseite geprüft:** Die Texte bleiben, wie sie sind. Sie sprechen nur vom „gewählten Fach (Goldrand)“ und nennen „A – Be“ als Beispiel. Das Bild der Regalseite (`Handbuch/Bilder/de|en/shelf.jpg`, von der Webseite mitbenutzt) zeigte noch „Po – Ra“ unten links ausgewählt. Es ist neu aufgenommen und zeigt jetzt „A – Be“ oben links mit dem Inhalt A Tribe Called Quest bis Beastie Boys.
