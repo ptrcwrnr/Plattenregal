@@ -434,11 +434,9 @@ struct KallaxView: View {
         show(activeCabinets[next])
     }
 
-    /// Selects the cabinet's first compartment with records (else its first one).
+    /// Selects the cabinet's starting compartment (see `startShelf(in:)`).
     private func show(_ cabinet: Cabinet) {
-        guard cabinet.id != shownCabinet?.id else { return }
-        let own = shelves.filter { $0.cabinet?.id == cabinet.id }
-        guard let shelf = own.first(where: { !$0.isReserved && !$0.copies.isEmpty }) ?? own.first else { return }
+        guard cabinet.id != shownCabinet?.id, let shelf = startShelf(in: cabinet) else { return }
         let from = activeCabinets.firstIndex { $0.id == shownCabinet?.id } ?? 0
         let to = activeCabinets.firstIndex { $0.id == cabinet.id } ?? 0
         cabinetEdge = to > from ? .trailing : .leading
@@ -646,18 +644,28 @@ struct KallaxView: View {
         focusCopy = nil
     }
 
-    /// There is always a selected shelf: the bottom-left compartment (where the
-    /// alphabet starts), or the first occupied one if that is empty/reserved.
+    /// There is always a selected shelf: the start of the first cabinet, or the
+    /// first occupied compartment of any other one if that cabinet is empty.
     /// An existing valid selection (e.g. "im Regal zeigen") is kept.
     private func ensureShelfSelected() {
         if let highlight, shelves.contains(where: { $0.id == highlight }) { return }
-        let cabinet = activeCabinets.first
-        let bottomLeft = ((cabinet?.rows ?? ShelfGeometry.rows) - 1) * (cabinet?.columns ?? ShelfGeometry.columns) + 1
-        let occupied = { (shelf: Shelf) in !shelf.isReserved && !shelf.copies.isEmpty }
-        highlight = shelves.first { $0.cabinet?.id == cabinet?.id && $0.sortOrder == bottomLeft && occupied($0) }?.id
-            ?? shelves.first(where: occupied)?.id
+        highlight = activeCabinets.first.flatMap { cabinet in
+            shelves.first { $0.cabinet?.id == cabinet.id && Self.holdsRecords($0) }
+        }?.id
+            ?? shelves.first(where: Self.holdsRecords)?.id
             ?? shelves.first?.id
     }
+
+    /// Where a cabinet is entered, the same for every way in (app start,
+    /// switching cabinets): its first compartment with records in reading
+    /// order – where the app starts the alphabet – else its first one. How the
+    /// real rack is filled doesn't matter here.
+    private func startShelf(in cabinet: Cabinet) -> Shelf? {
+        let own = shelves.filter { $0.cabinet?.id == cabinet.id }
+        return own.first(where: Self.holdsRecords) ?? own.first
+    }
+
+    private static func holdsRecords(_ shelf: Shelf) -> Bool { !shelf.isReserved && !shelf.copies.isEmpty }
 
     // MARK: Placement
 

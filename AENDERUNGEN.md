@@ -1,3 +1,9 @@
+# Regal: einheitliche Startauswahl ab oben links · 18.10.2026
+
+- Beim Öffnen der Regal-Seite war bisher das Fach **unten links** im ersten Regal aktiv, beim Wechsel zu einem anderen Regal dagegen das erste belegte Fach **oben links**. Begründet war unten links damit, dass dort das Alphabet beginne. Die App sortiert aber in Leserichtung ab Fach 1 oben links ein, dort steht also das A.
+- Jetzt gilt für beide Fälle eine Regel (`startShelf(in:)` in `KallaxView`): das erste belegte, nicht gesperrte Fach des Regals in Leserichtung, sonst sein erstes Fach. Ist das erste Regal leer, wird wie bisher das erste belegte Fach eines anderen Regals gewählt. Eine bestehende Auswahl (Klick, „Im Regal zeigen“, Einordnen) bleibt unverändert. Wie das echte Regal eingeräumt ist, spielt für die Auswahl keine Rolle; eine Einstellung zur Füllrichtung gibt es bewusst nicht.
+- Geprüft: Debug-Build und 210 Tests erfolgreich. In der Demo (Klassisch, hell) per `--snapshot` angesehen: beim Start ist „A – Be“ oben links mit Goldrand ausgewählt statt „Po – Ra“ unten links. Den Regalwechsel (Wohnzimmer → Flur) habe ich nicht in der laufenden App angeklickt; seine Regel ist inhaltlich dieselbe wie vorher, sie läuft jetzt nur über die gemeinsame Funktion.
+
 # Webseite: Symbol ohne Rand · 18.10.2026
 
 - Um das App-Symbol oben auf der Webseite lag im Browser ein eckiger, dunkler Rand. Ursache: Der Browser schnitt den CSS-Schatten (`drop-shadow`) am Rahmen des Bildes ab. Im Bildschirmfoto bricht der Schatten etwa 17 px neben der Platte hart ab. WebKit, mit dem das Handbuch gerendert wird, tut das nicht, deshalb war das Handbuch nicht betroffen.
