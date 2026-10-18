@@ -1,9 +1,9 @@
 #!/bin/zsh
-# Packs Plattenregal into a DMG whose window shows the app, an arrow, the
-# Applications folder and the guide in German and English (Handbuch.pdf,
-# User Guide.pdf) on a background in the style of the guide (dmg-background.swift).
-# Writes dist/Plattenregal-<version>.dmg. The guides are the ones inside the
-# app (Hilfe › Handbuch); before the Release build make-guide.swift renews
+# Packs Plattenregal into a DMG whose window shows the app, an arrow and the
+# Applications folder on a background in the colors of Klassisch with a
+# record at the foot (dmg-background.swift). Writes
+# dist/Plattenregal-<version>.dmg. The guides travel inside the app only
+# (Hilfe › Handbuch); before the Release build make-guide.swift renews
 # Plattenregal/Handbuch.pdf and Handbook.pdf if the brochure or the version
 # changed.
 #
@@ -18,7 +18,6 @@ cd "${0:A:h}/.."
 NAME=Plattenregal
 GUIDE=Handbuch.pdf
 GUIDE_EN=Handbook.pdf
-GUIDE_EN_NAME="User Guide.pdf"
 if [[ -n ${1:-} ]]; then
   APP=${1:A}
 else
@@ -41,16 +40,14 @@ MOUNT=/Volumes/$NAME
 WORK=$(mktemp -d)
 trap 'hdiutil detach "$MOUNT" -quiet 2>/dev/null || true; rm -rf "$WORK"' EXIT
 
-# Contents: the app, a link to /Applications, the guides from the app, the
+# Contents: the app, a link to /Applications, the
 # hidden background (1x and 2x in one TIFF, so the Finder picks the sharp
 # one on Retina).
 mkdir -p "$WORK/src/.background"
 ditto "$APP" "$WORK/src/$NAME.app"
 ln -s /Applications "$WORK/src/Applications"
-cp "$APP/Contents/Resources/$GUIDE" "$WORK/src/$GUIDE"
-cp "$APP/Contents/Resources/$GUIDE_EN" "$WORK/src/$GUIDE_EN_NAME"
-swift Scripts/dmg-background.swift "$WORK/bg.png" 1 "$VERSION"
-swift Scripts/dmg-background.swift "$WORK/bg@2x.png" 2 "$VERSION"
+swift Scripts/dmg-background.swift "$WORK/bg.png" 1
+swift Scripts/dmg-background.swift "$WORK/bg@2x.png" 2
 tiffutil -cathidpicheck "$WORK/bg.png" "$WORK/bg@2x.png" -out "$WORK/src/.background/background.tiff" 2>/dev/null
 ICNS="$APP/Contents/Resources/AppIcon.icns"
 [[ -f $ICNS ]] && cp "$ICNS" "$WORK/src/.VolumeIcon.icns"
@@ -58,11 +55,8 @@ ICNS="$APP/Contents/Resources/AppIcon.icns"
 hdiutil create -quiet -srcfolder "$WORK/src" -volname $NAME -fs HFS+ -format UDRW -ov "$WORK/rw.dmg"
 hdiutil attach -quiet -readwrite -noverify -noautoopen "$WORK/rw.dmg"
 [[ -f $MOUNT/.VolumeIcon.icns ]] && xcrun SetFile -a C "$MOUNT"
-# The Finder labels the guides „Handbuch“ and „User Guide“, without „.pdf“.
-xcrun SetFile -a E "$MOUNT/$GUIDE"
-xcrun SetFile -a E "$MOUNT/$GUIDE_EN_NAME"
 
-# Window 880 × 400 like the background (bounds include the 32 pt title bar);
+# Window 540 × 380 like the background (bounds include the 32 pt title bar);
 # icon centers as in dmg-background.swift.
 layout() {
   osascript <<EOF
@@ -72,16 +66,14 @@ tell application "Finder"
     set current view of container window to icon view
     set toolbar visible of container window to false
     set statusbar visible of container window to false
-    set bounds of container window to {200, 120, 1080, 552}
+    set bounds of container window to {200, 120, 740, 532}
     set options to the icon view options of container window
     set arrangement of options to not arranged
     set icon size of options to 112
     set text size of options to 13
     set background picture of options to file ".background:background.tiff"
-    set position of item "$NAME.app" of container window to {130, 190}
-    set position of item "Applications" of container window to {430, 190}
-    set position of item "$GUIDE" of container window to {620, 190}
-    set position of item "$GUIDE_EN_NAME" of container window to {770, 190}
+    set position of item "$NAME.app" of container window to {140, 178}
+    set position of item "Applications" of container window to {400, 178}
     close
     open
     update without registering applications
