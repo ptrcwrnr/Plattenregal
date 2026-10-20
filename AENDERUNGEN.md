@@ -1,3 +1,8 @@
+# DMG 1.1.2 mit unsichtbarem Tracklisten-Nachladen neu ausgegeben · 20.10.2026
+
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut, Version bleibt 1.1.2. Neu gegenüber der Ausgabe von 22:07: Tracklisten werden beim Start unsichtbar nachgeladen. Der erste Versuch brach ab, weil unter `/Volumes/Plattenregal` noch eine andere DMG eingehängt war (eine Kopie aus iCloud Drive). Sie ist ausgeworfen.
+- Geprüft: `hdiutil verify` gültig. Eingehängt: nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig. Die App-Binärdatei ist identisch mit dem Release-Build, der nach dem letzten Commit entstand, und enthält die neuen Teile (`tracklistsLoading`, `isWorking`). Beide PDFs sind byte-gleich mit denen im Repository.
+
 # Tracklisten beim Start unsichtbar nachladen · 20.10.2026
 
 - **Vorher:** Beim Start lud die App fällige Tracklisten nach (unterbrochene Läufe oder nach 180 Tagen aufzufrischende). Das sollte leise geschehen, zeigte aber trotzdem kurz „Tracklisten werden geladen“ (oft nur 1–6 Stück) und danach „Synchronisierung abgeschlossen“. `loadTracklists` setzte die Anzeige auch im leisen Lauf, und am Ende rief es `finish()` auf.
