@@ -1,3 +1,13 @@
+# Abschlussprüfung der Doku, Meldungen, Protokolle und Übersetzungen · 20.10.2026
+
+- **README:** Die Tabelle der Einstellungen nennt das Design jetzt in der neuen Reihenfolge („Klassisch oder Modern“). Die übrigen Stellen zu Umschaltern, Seiten, Regalen, Einstellungen und Startargumenten waren schon aktuell. Modern bleibt das Standarddesign. Handbuch und Webseite zeigen die Design-Auswahl nicht als Bild und nennen keine Reihenfolge, sie bleiben unverändert.
+- **STATISTIK.md:** Prüfdatum auf 20.10.2026. An Berechnung und Inhalt der Statistik hat sich nichts geändert, ihre Umschalter bewegen sich nur wie alle anderen.
+- **VALIDIERUNG.md:** neuer Abschnitt für den 20.10. mit den Befunden beim Ansehen, der geänderten Prüfmethode, Protokoll, Absturzberichten und Übersetzungen.
+- **Fehlermeldungen:** keine neuen.
+- **Absturzberichte und Protokoll:** keine `.ips`-Berichte, im App-Protokoll kein Fehler und kein Absturz. Die Warnungen „vorige Sitzung nicht normal beendet“ kommen von beendeten Demo-Läufen, auch die zwei in der echten App (gemeinsame Laufmarkierung).
+- **Übersetzungen:** 856 Einträge, 8 veraltet, alle aktiven mit Englisch. Nichts neu, nichts entfernt.
+- Geprüft: Doku gegen den Code gelesen, Protokoll und Textkatalog per Skript ausgewertet. Code unverändert.
+
 # DMG 1.1.2 mit ruhigerer Toolbar neu ausgegeben · 20.10.2026
 
 - `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2. Neu gegenüber der Ausgabe von 22:53: Die Toolbar wechselt im Takt der Seite (Suchfeld blendet aus statt zu springen, Platzhalter blendet über, Pill setzt sich um 2 pt ab, ihre Schrift bleibt stehen). In Einstellungen → Darstellung steht Klassisch oben. Die Handbuch-PDFs sind unverändert.

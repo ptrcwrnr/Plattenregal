@@ -1,3 +1,24 @@
+# Aktueller Stand · 20.10.2026 (Übergänge, Toolbar, Reihenfolge der Designs)
+
+Projektversion **1.1.2 (102026)**, Schema **V16**. Prüfung nach den Änderungen vom 20.10. (Auswahl in den Umschaltern, Seiten-, Tab- und Regalwechsel, Toolbar im Takt der Seite, Klassisch oben in Darstellung, zwei Debug-Startargumente). Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** `GlassSegmentedPicker` (`Design/AppPickers.swift`), Übergangswerte in `AppStyle`, `PageStack`, `ToolbarSearchField`, `AppSearchField` (eigener Platzhalter), Tab-Wechsel in `AppSettingsView`, Regalwechsel in `KallaxView`, Reihenfolge in `SignatureDesign`, Debug-Startargumente in `RootView` und `AppSettingsView`.
+- **Befunde beim Ansehen (behoben):** Die Seite kam zunächst von unten statt von oben (die Ebenen zählen nach unten). In den Einstellungen überschrieb eine äußere Animation die Zeiten des Übergangs, alter und neuer Tab lagen kurz übereinander. Im Umschalter verschwand die Beschriftung kurz ganz, später stand beim Abwählen kurz eine leere Pill. Das Suchfeld sprang zur Statistik ohne Ausblenden weg, weil macOS die Toolbar neu aufbaute. Alle Fälle sind behoben und in Bildfolgen nachgesehen.
+- **Prüfmethode geändert:** Simulierte Klicks und Tastendrücke landeten im jeweils vorderen Fenster, auch wenn der Nutzer gerade am Mac arbeitete. Ein verdecktes Fenster zeichnet macOS nicht weiter, was im Bild wie ein Hänger aussah (Prozess bei 0 % CPU, Hauptthread wartend). Wechsel werden jetzt über `--preview-switch` und `--preview-switch-tab` (nur Debug) ausgelöst. Das Fenster bleibt dabei im Hintergrund.
+- **Nicht geprüft:** Modern für Einstellungs-Tabs und Regalwechsel, Dunkel-Modus, „Bewegung reduzieren“ (nur im Code: dann nur Blenden), VoiceOver am Suchfeld in der Statistik (im Code verborgen), das DMG-Fenster im Finder.
+- **macOS-Absturzberichte:** keine Berichte `Plattenregal-*.ips` vorhanden.
+- **App-Protokoll** 20.10.: kein `ERROR`, kein Absturzblock. 14 Warnungen „vorige Sitzung nicht normal beendet“: 12 nach Demo-Läufen, die ich mit `pkill` beendet habe. 2 in der echten App (22:54 und 23:39), jeweils kurz nach dem DMG-Bau. Demo und echte App teilen die Laufmarkierung, deshalb meldet die echte App die beendete Demo als vorige Sitzung. Bekannt, nicht geändert.
+- **Fehlermeldungen:** keine neuen Meldungen oder Protokollzeilen.
+- **Lokalisierung:** per Skript – 856 Einträge, 8 veraltet, jeder aktive Eintrag mit englischer Übersetzung. Gegenüber dem Stand vor diesen Änderungen kein Eintrag neu, entfernt oder neu veraltet. Der selbst gezeichnete Platzhalter nutzt die vorhandenen übersetzten Texte.
+
+## Verifikation
+
+- `xcodebuild -scheme Plattenregal test` (Xcodes DerivedData): **206 Tests in 13 Suites bestanden**, 24 s, keine Compilerwarnung. Angepasst: `designsKeepTheirStoredValuesUnderTheNewNames` (Reihenfolge Klassisch, Modern).
+- Bildfolgen aus der Demo: Regal → Collection, Collection → Statistik (Klassisch), Regal → Statistik (Modern), Wohnzimmer → Flur, Allgemein → Darstellung. Darstellung zeigt Klassisch oben.
+- `Scripts/make-dmg.sh`: `hdiutil verify` in Ordnung, Signatur gültig, App-Binärdatei gleich dem Release-Build vom Stand `7184f77`, ohne Debug-Startargumente, PDFs byte-gleich.
+
 # Aktueller Stand · 18.10.2026 (Handbuch, Tooltips, Demo-Cover, Startargumente)
 
 Projektversion **1.1.2 (102026)**, Schema **V16**. Prüfung nach den Änderungen vom 17. und 18.10. (Handbuch in App und DMG, Hilfe-Menü, Discogs-Links in Klassisch, Tooltips, Demo-Cover, Aufnahme-Skript). Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.
