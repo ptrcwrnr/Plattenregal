@@ -62,7 +62,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
             }
         }
         .font(small ? .callout : .body)
-        .animation(.smooth(duration: 0.3), value: selection)
+        .animation(AppStyle.selectionAnimation, value: selection)
         .fixedSize()
         // A group: a label given to the picker (`.accessibilityLabel("Modus")`)
         // names the group instead of replacing every option's name.

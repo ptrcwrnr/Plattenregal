@@ -177,7 +177,7 @@ struct StatisticsView: View {
             }
             .geometryGroup()
             .activityPillChrome()
-            .animation(.smooth(duration: 0.45), value: model.busy)
+            .animation(AppStyle.statusAnimation, value: model.busy)
             .transition(.scale(scale: 0.6, anchor: .top).combined(with: .opacity))
             .allowsHitTesting(false)
         }

@@ -1,3 +1,11 @@
+# Durchsicht: gleiche Bausteine zusammengelegt, Animationen zentral · 20.10.2026
+
+- **Namens-Popover:** „Namen ändern …“ (gesperrtes Fach) und „Regal umbenennen …“ waren Zeile für Zeile gleich gebaut. Sie nutzen jetzt einen gemeinsamen Baustein `NamePopoverLayout` (in `ShelfOptionsPopover.swift`, `private`) mit denselben Modifiern in derselben Reihenfolge. Speichern, Fokus und Schließen bleiben bei den beiden Popovern.
+- **Rechtsklick-Erkennung:** Die Prüfung „Rechtsklick oder Klick mit Control“ stand in `SecondaryClicks.swift` zweimal wortgleich. Jetzt gibt es sie einmal als `isSecondaryClick` (`private`, dieselbe Datei).
+- **Animationen aus `AppStyle`:** Neue Stufen mit genau den bisherigen Werten. `statusAnimation` (0,45 s) für Statuszeilen und Statistik-Ladeanzeige, `progressAnimation` (0,35 s) für Fortschritt, `selectionAnimation` (0,3 s) für die Glaslinse der Auswahlfelder, `growAnimation` (0,7 s, 0,05 s verzögert) für wachsende Balken, `rollAnimation` (0,8 s) für rollende Zahlen. Ein `.smooth(duration:)` steht jetzt nur noch in `AppStyle`. Sichtbar ändert sich nichts.
+- **Bewusst nicht geändert:** Doppelt ist auch einiges in Collection und Wantlist (Neuladen, Suche verlassen, Raster-Breite). Zusammenlegen hieße, Teile von `body` in eine andere Datei zu legen, die der Release-Build einzeln übersetzt. Die beiden Statistik-Paare (Hover in Balken und Ring, Zeile und Kachel einer Gruppe) ähneln sich nur im Aufbau. Ein neuer `JSONDecoder` bzw. `JSONEncoder` pro Platte in Statistik und Abgleich kostet laut Messung (10 000 Durchläufe, `-O`) unter 2 % gegenüber einem wiederverwendeten und bleibt.
+- Geprüft: Debug-Build ohne Warnungen, alle 205 Tests erfolgreich. Die beiden Popover habe ich nicht geöffnet angesehen. Ihr Inhalt ist derselbe Code, nur an eine Stelle verschoben.
+
 # Test-Attrappen in eigenen Dateien · 20.10.2026
 
 - Die URL-Attrappen von `ScenarioTests` (`ScenarioProtocol`) und `StatisticsTests` (`StatisticsURLProtocol`, `StatisticsRequestLog`, `StatisticsHook`) liegen jetzt wie bei den Abgleich-Tests in eigenen Dateien (`ScenarioTestStubs.swift`, `StatisticsTestStubs.swift`). Nur verschoben, der Zeilenbestand ist gleich.

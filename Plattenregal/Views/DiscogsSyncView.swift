@@ -44,9 +44,9 @@ struct DiscogsSyncStatusView: View {
                 .transition(.opacity)
             }
         }
-        .animation(.smooth(duration: 0.45), value: sync.isRunning)
-        .animation(.smooth(duration: 0.45), value: detail?.text)
-        .animation(.smooth(duration: 0.35), value: detail?.progress)
+        .animation(AppStyle.statusAnimation, value: sync.isRunning)
+        .animation(AppStyle.statusAnimation, value: detail?.text)
+        .animation(AppStyle.progressAnimation, value: detail?.progress)
     }
 
     private var detail: (text: String, progress: String?, isError: Bool)? {
@@ -131,7 +131,6 @@ struct DiscogsSyncPill: View {
     /// How long a step stays before the next one replaces it.
     private static let minimumStep: Duration = .milliseconds(900)
     private static let entrance = Animation.spring(duration: 0.5, bounce: 0.2)
-    private static let motion = Animation.smooth(duration: 0.45)
 
     private var current: Content? {
         guard sync.hasStatus else { return nil }
@@ -175,7 +174,7 @@ struct DiscogsSyncPill: View {
     private func follow(_ new: Content?) {
         pendingStep?.cancel()
         if let old = shown, let new, old.isSameStep(as: new) {
-            withAnimation(Self.motion) { shown = new }
+            withAnimation(AppStyle.statusAnimation) { shown = new }
             return
         }
         let wait = shown == nil ? .zero : Self.minimumStep - (ContinuousClock.now - shownSince)
@@ -183,7 +182,7 @@ struct DiscogsSyncPill: View {
             if wait > .zero {
                 do { try await Task.sleep(for: wait) } catch { return }
             }
-            withAnimation(shown == nil || new == nil ? Self.entrance : Self.motion) { shown = new }
+            withAnimation(shown == nil || new == nil ? Self.entrance : AppStyle.statusAnimation) { shown = new }
             shownSince = .now
         }
     }

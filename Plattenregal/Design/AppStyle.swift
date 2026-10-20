@@ -128,6 +128,17 @@ enum AppStyle {
     /// position, columns reflowing, a search bar sliding in. `nil` (= instant)
     /// with reduce motion.
     static var layoutAnimation: Animation? { reduceMotion ? nil : .smooth(duration: 0.3) }
+    /// Status lines and pills changing their text or coming and going
+    /// (sync status, statistics busy).
+    static let statusAnimation = Animation.smooth(duration: 0.45)
+    /// Progress rings and bars following their value.
+    static let progressAnimation = Animation.smooth(duration: 0.35)
+    /// The glass lens of a segmented picker gliding to the chosen segment.
+    static let selectionAnimation = Animation.smooth(duration: 0.3)
+    /// Statistics bars growing in when first shown (after `reduceMotion` is checked).
+    static let growAnimation = Animation.smooth(duration: 0.7).delay(0.05)
+    /// Statistics figures rolling to a new value (after `reduceMotion` is checked).
+    static let rollAnimation = Animation.smooth(duration: 0.8)
     /// Insert/remove transition matching the above: slide + fade, or just fade.
     /// The app's one transition for anything that appears or disappears as a
     /// block (cards, banners, status lines, expanding lists, toasts): it pours

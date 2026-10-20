@@ -50,17 +50,10 @@ struct ShelfNamePopover: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-            Text("Name des gesperrten Fachs").font(.callout.weight(.medium))
-            GlassTextField(placeholder: String(localized: "z. B. Plattenspieler"), text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
-            Text(error ?? String(localized: "Erscheint im Regal unter dem Schloss und als Titel des Fachs."))
-                .font(.caption)
-                .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(AppStyle.cardPadding)
-        .frame(width: 280)
-        .appPopoverSurface()
+        NamePopoverLayout(title: "Name des gesperrten Fachs",
+                          placeholder: String(localized: "z. B. Plattenspieler"),
+                          hint: String(localized: "Erscheint im Regal unter dem Schloss und als Titel des Fachs."),
+                          name: $name, error: error, focus: $focused, submit: { if save() { dismiss() } })
         .onAppear { focused = true }
         // Closing by clicking elsewhere can't show a failure any more; it is
         // in the protocol, and the old name stays.
@@ -95,17 +88,10 @@ struct CabinetNamePopover: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-            Text("Name des Regals").font(.callout.weight(.medium))
-            GlassTextField(placeholder: String(localized: "z. B. Wohnzimmer"), text: $name, onSubmit: { if save() { dismiss() } }, focus: $focused)
-            Text(error ?? String(localized: "Erscheint auf der Regalseite und in den Einstellungen."))
-                .font(.caption)
-                .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(AppStyle.cardPadding)
-        .frame(width: 280)
-        .appPopoverSurface()
+        NamePopoverLayout(title: "Name des Regals",
+                          placeholder: String(localized: "z. B. Wohnzimmer"),
+                          hint: String(localized: "Erscheint auf der Regalseite und in den Einstellungen."),
+                          name: $name, error: error, focus: $focused, submit: { if save() { dismiss() } })
         .onAppear { focused = true }
         .onDisappear { _ = save() }
     }
@@ -117,5 +103,31 @@ struct CabinetNamePopover: View {
         guard !newName.isEmpty, newName != cabinet.name else { return true }
         do { try CabinetService(context: context).rename(cabinet, to: newName); error = nil; return true }
         catch { self.error = error.reportedMessage(); return false }
+    }
+}
+
+/// The one look of both name popovers: title, field, and below it the hint –
+/// or what went wrong while saving.
+private struct NamePopoverLayout: View {
+    let title: LocalizedStringKey
+    let placeholder: String
+    let hint: String
+    @Binding var name: String
+    let error: String?
+    let focus: FocusState<Bool>.Binding
+    let submit: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+            Text(title).font(.callout.weight(.medium))
+            GlassTextField(placeholder: placeholder, text: $name, onSubmit: submit, focus: focus)
+            Text(error ?? hint)
+                .font(.caption)
+                .foregroundStyle(error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.errorColor))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(AppStyle.cardPadding)
+        .frame(width: 280)
+        .appPopoverSurface()
     }
 }

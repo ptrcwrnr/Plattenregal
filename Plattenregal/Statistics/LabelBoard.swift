@@ -71,7 +71,7 @@ struct LabelBoard: View {
             .onHover { hovering = $0 }
             .animation(AppStyle.quickAnimation, value: hovering)
             .onAppear {
-                if AppStyle.reduceMotion { grown = true } else { withAnimation(.smooth(duration: 0.7).delay(0.05)) { grown = true } }
+                if AppStyle.reduceMotion { grown = true } else { withAnimation(AppStyle.growAnimation) { grown = true } }
             }
             .help("\(AppStyle.records(group.count)) von \(group.name) anzeigen")
         }

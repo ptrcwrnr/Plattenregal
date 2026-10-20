@@ -78,6 +78,6 @@ struct RollingNumber: View {
             .onChange(of: value) { _, _ in update() }
     }
     private func update() {
-        if AppStyle.reduceMotion || !(visibility?.isShown ?? true) { shown = value } else { withAnimation(.smooth(duration: 0.8)) { shown = value } }
+        if AppStyle.reduceMotion || !(visibility?.isShown ?? true) { shown = value } else { withAnimation(AppStyle.rollAnimation) { shown = value } }
     }
 }

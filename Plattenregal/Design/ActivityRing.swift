@@ -18,7 +18,7 @@ struct ActivityRing: View {
             Circle().stroke(Color.primary.opacity(0.1), lineWidth: 2.5)
             if let progress {
                 arc(to: max(0.02, min(1, progress)))
-                    .animation(.smooth(duration: 0.35), value: progress)
+                    .animation(AppStyle.progressAnimation, value: progress)
             } else if reduceMotion {
                 arc(to: 0.3)
             } else {

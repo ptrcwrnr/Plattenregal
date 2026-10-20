@@ -57,6 +57,13 @@ extension View {
     }
 }
 
+/// A right click, or a click with Control held – what macOS treats as one.
+private func isSecondaryClick(_ event: NSEvent?) -> Bool {
+    guard let event else { return false }
+    return event.type == .rightMouseDown
+        || (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
+}
+
 private struct SecondaryClickCatcher: NSViewRepresentable {
     /// The click's position in the view (from the top left) and the view's size.
     let action: (CGPoint, CGSize) -> Void
@@ -66,19 +73,14 @@ private struct SecondaryClickCatcher: NSViewRepresentable {
     final class CatcherView: NSView {
         var action: ((CGPoint, CGSize) -> Void)?
         override var isFlipped: Bool { true }
-        private static func isSecondary(_ event: NSEvent?) -> Bool {
-            guard let event else { return false }
-            return event.type == .rightMouseDown
-                || (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
-        }
         // Only claims the secondary click; everything else (clicks, hover,
         // drags, tooltips) goes to the SwiftUI view below.
         override func hitTest(_ point: NSPoint) -> NSView? {
-            Self.isSecondary(NSApp.currentEvent) ? super.hitTest(point) : nil
+            isSecondaryClick(NSApp.currentEvent) ? super.hitTest(point) : nil
         }
         override func rightMouseDown(with event: NSEvent) { fire(event) }
         override func mouseDown(with event: NSEvent) {
-            if Self.isSecondary(event) { fire(event) } else { super.mouseDown(with: event) }
+            if isSecondaryClick(event) { fire(event) } else { super.mouseDown(with: event) }
         }
         private func fire(_ event: NSEvent) {
             guard bounds.width > 0, bounds.height > 0 else { return }
@@ -129,17 +131,12 @@ struct TableRowClicks: NSViewRepresentable {
         private var monitor: Any?
         override var isFlipped: Bool { true }
 
-        private static func isSecondary(_ event: NSEvent?) -> Bool {
-            guard let event else { return false }
-            return event.type == .rightMouseDown
-                || (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
-        }
         override func hitTest(_ point: NSPoint) -> NSView? {
-            Self.isSecondary(NSApp.currentEvent) ? super.hitTest(point) : nil
+            isSecondaryClick(NSApp.currentEvent) ? super.hitTest(point) : nil
         }
         override func rightMouseDown(with event: NSEvent) { fire(event, secondary) }
         override func mouseDown(with event: NSEvent) {
-            if Self.isSecondary(event) { fire(event, secondary) } else { super.mouseDown(with: event) }
+            if isSecondaryClick(event) { fire(event, secondary) } else { super.mouseDown(with: event) }
         }
 
         // Double-clicks go to the table itself; they are only watched.
