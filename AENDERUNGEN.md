@@ -1,3 +1,10 @@
+# Durchsicht der Logik: Herausnehmen einmal, Absturzstellen geprüft · 20.10.2026
+
+- **`PositionService.takeOut`:** „Platten aus ihren Fächern nehmen und die Lücken schließen“ stand dreimal fast wortgleich in `PositionService`: beim Herausnehmen mehrerer Platten, bei „Ohne Regalplatz“ und bei „Alle verkauft“. Jetzt gibt es eine private Funktion dafür. Bei „Alle verkauft“ wurde gegen die IDs der Verkaufsmarken gefiltert statt gegen die der verkauften Platten. Das Ergebnis ist gleich, weil die verkauften Platten genau alle Platten mit diesen IDs sind.
+- **Durchgesehen ohne Änderungsbedarf:** Modelle, Speicher, Änderungsverfolgung (`LibraryChanges`, `LibraryRecords`), Suchindex, Fachbeschriftungen und ihre Zwischenspeicher, Positionsdienst, Discogs-Client. Die heißen Stellen sind dort schon gezielt auf Tempo gebaut (gemeinsamer Bestand statt einer Abfrage je Seite, zwischengespeicherte Sortierschlüssel und Fachgrenzen, Suchindex erst bei Bedarf).
+- **Mögliche Absturzstellen geprüft:** Jedes `!`, `try!`, `as!` und `fatalError` der App ist durchgesehen. Alle sind abgesichert. Der Discogs-Benutzername wird vor dem Einsetzen in die URL kodiert. `AppLog.directory!` läuft nur nach der Prüfung, dass der Ordner existiert. `labels[$0]!` folgt auf die Schleife, die jeden Eintrag setzt. `fatalError` steht nur in den Xcode-Vorschauen.
+- Geprüft: Debug-Build ohne Warnungen, alle 205 Tests erfolgreich, darunter 17, die Herausnehmen, „Ohne Regalplatz“ und „Alle verkauft“ abdecken.
+
 # Durchsicht: gleiche Bausteine zusammengelegt, Animationen zentral · 20.10.2026
 
 - **Namens-Popover:** „Namen ändern …“ (gesperrtes Fach) und „Regal umbenennen …“ waren Zeile für Zeile gleich gebaut. Sie nutzen jetzt einen gemeinsamen Baustein `NamePopoverLayout` (in `ShelfOptionsPopover.swift`, `private`) mit denselben Modifiern in derselben Reihenfolge. Speichern, Fokus und Schließen bleiben bei den beiden Popovern.

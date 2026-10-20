@@ -43,6 +43,14 @@ struct PositionService {
     private func renumber(_ copies: [RecordCopy]) {
         for (index, copy) in copies.enumerated() where copy.positionInShelf != index + 1 { copy.positionInShelf = index + 1 }
     }
+    /// Takes the copies out of their shelves and closes the gaps they leave
+    /// behind, each affected shelf once. Runs inside a `save`.
+    private func takeOut(_ copies: [RecordCopy]) {
+        let ids = Set(copies.map(\.id))
+        let sources = Dictionary(copies.compactMap { c in c.shelf.map { ($0.id, $0) } }, uniquingKeysWith: { a, _ in a }).values
+        for copy in copies { copy.shelf = nil; copy.positionInShelf = 0 }
+        for shelf in sources { renumber(ordered(shelf).filter { !ids.contains($0.id) }) }
+    }
     /// `layoutChanged: false` for writes that touch neither places nor
     /// anything a backup holds ("Gesucht" marks): no backup run, no new labels.
     func save(layoutChanged: Bool = true, _ action: () throws -> Void) throws {
@@ -110,12 +118,7 @@ struct PositionService {
     func unplace(_ copies: [RecordCopy]) throws {
         // The confirmation may come after the last one left by other means.
         guard !copies.isEmpty else { return }
-        try save {
-            let ids = Set(copies.map(\.id))
-            let sources = Dictionary(copies.compactMap { c in c.shelf.map { ($0.id, $0) } }, uniquingKeysWith: { a, _ in a }).values
-            for copy in copies { copy.shelf = nil; copy.positionInShelf = 0 }
-            for shelf in sources { renumber(ordered(shelf).filter { !ids.contains($0.id) }) }
-        }
+        try save { takeOut(copies) }
         AppLog.info("Regal", "\(copies.count) Platte(n) gesammelt aus dem Regal genommen: \(copies.map(Self.name).joined(separator: ", "))")
     }
     /// Takes copies out of the shelf allocation entirely ("Ohne Regalplatz") or
@@ -123,12 +126,7 @@ struct PositionService {
     /// as waiting to be sorted in. Stored as `OptimizationExclusion` rows.
     func setExcluded(_ copies: [RecordCopy], _ excluded: Bool) throws {
         try save {
-            if excluded {
-                let sources = Dictionary(copies.compactMap { c in c.shelf.map { ($0.id, $0) } }, uniquingKeysWith: { a, _ in a }).values
-                let ids = Set(copies.map(\.id))
-                for copy in copies { copy.shelf = nil; copy.positionInShelf = 0 }
-                for shelf in sources { renumber(ordered(shelf).filter { !ids.contains($0.id) }) }
-            }
+            if excluded { takeOut(copies) }
             try markExcluded(Set(copies.map(\.id)), excluded)
             // Deliberately kept out of the shelves: nothing left to look for.
             if excluded, try markMissing(Set(copies.map(\.id)), false) {
@@ -192,9 +190,7 @@ struct PositionService {
             let marks = try context.fetch(FetchDescriptor<SaleCopyMark>())
             let ids = Set(marks.map(\.copyID))
             sold = try context.fetch(FetchDescriptor<RecordCopy>()).filter { ids.contains($0.id) }
-            let sources = Dictionary(sold.compactMap { c in c.shelf.map { ($0.id, $0) } }, uniquingKeysWith: { a, _ in a }).values
-            for copy in sold { copy.shelf = nil; copy.positionInShelf = 0 }
-            for shelf in sources { renumber(ordered(shelf).filter { !ids.contains($0.id) }) }
+            takeOut(sold)
             try markExcluded(Set(sold.map(\.id)), true)
             try markMissing(ids, false)
             // Marks of records a sync removed meanwhile go as well.
