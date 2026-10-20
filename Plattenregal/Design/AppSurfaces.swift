@@ -92,8 +92,8 @@ extension View {
         if AppStyle.isAtelier {
             padding(.horizontal, 3)
                 .background {
-                    RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.16))
-                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
+                    RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(Color.black.opacity(0.16))
+                        .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
                 }
         } else {
             padding(.horizontal, 3).glassEffect(.regular, in: .capsule)
@@ -155,9 +155,9 @@ extension View {
             .frame(height: AppStyle.searchBarHeight)
             .background {
                 if AppStyle.isAtelier {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius)
                         .fill(onToolbar ? AtelierPalette.toolbarField : AtelierPalette.surface)
-                        .overlay(RoundedRectangle(cornerRadius: 10)
+                        .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius)
                             .strokeBorder(onToolbar ? AtelierPalette.toolbarFieldBorder : AtelierPalette.border, lineWidth: 1))
                 }
             }

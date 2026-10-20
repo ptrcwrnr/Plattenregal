@@ -9,8 +9,8 @@ struct AtelierButtonStyle: ButtonStyle {
             .foregroundStyle(primary ? AtelierPalette.goldForeground : AtelierPalette.ink)
             .padding(.horizontal, AppStyle.rowSpacing).padding(.vertical, 6)
             .background(primary ? AtelierPalette.gold : configuration.isPressed ? AtelierPalette.soft : AtelierPalette.surface,
-                        in: RoundedRectangle(cornerRadius: 9))
-            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(primary ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
+                        in: RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius))
+            .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(primary ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
             .opacity(isEnabled ? 1 : 0.45)
     }
 }

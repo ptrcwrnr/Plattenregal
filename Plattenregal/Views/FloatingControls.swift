@@ -49,7 +49,7 @@ struct FloatingControls: View {
                     .opacity(expanded ? 1 : 0)
                     .allowsHitTesting(expanded)
                     .accessibilityHidden(!expanded)
-                    .animation(AppStyle.reduceMotion ? .default : .spring(duration: 0.38, bounce: 0.25)
+                    .animation(AppStyle.reduceMotion ? .default : AppStyle.moveAnimation
                         .delay(expanded ? Double(index) * 0.03 : 0), value: expanded)
             }
             mainButton
@@ -74,7 +74,7 @@ struct FloatingControls: View {
 
     private var mainButton: some View {
         Button {
-            withAnimation(AppStyle.reduceMotion ? .default : .spring(duration: 0.35, bounce: 0.2)) { expanded.toggle() }
+            withAnimation(AppStyle.reduceMotion ? .default : AppStyle.moveAnimation) { expanded.toggle() }
         } label: {
             Image(systemName: "ellipsis")
                 .font(.title3.weight(.semibold))
@@ -162,7 +162,7 @@ struct FloatingControls: View {
 
     private func collapse() {
         guard expanded else { return }
-        withAnimation(AppStyle.reduceMotion ? .default : .spring(duration: 0.3, bounce: 0.1)) { expanded = false }
+        withAnimation(AppStyle.reduceMotion ? .default : AppStyle.moveAnimation) { expanded = false }
     }
 }
 

@@ -61,6 +61,13 @@ enum AppStyle {
     /// Cards that mark where something happens: the placement card, the
     /// target shelf above "Platte hinzufügen" (see `accentGlassCard`).
     static let featureRadius: CGFloat = 16
+    /// Klassisch draws its controls and the bars around them as rounded
+    /// rectangles where Modern uses capsules: buttons, pickers, the search
+    /// field and the toolbar band. A selection inside such a bar sits 3 pt in
+    /// and takes `atelierControlRadius - 3`, so both corners run parallel.
+    static let atelierControlRadius: CGFloat = 10
+    /// The hover highlight of a row inside a menu.
+    static let menuRowRadius: CGFloat = 6
 
     // MARK: Typography
     static let pageTitle = Font.system(.title, design: .rounded, weight: .semibold)
@@ -127,7 +134,10 @@ enum AppStyle {
     /// Anything that moves or resizes: records travelling to a new sort
     /// position, columns reflowing, a search bar sliding in. `nil` (= instant)
     /// with reduce motion.
-    static var layoutAnimation: Animation? { reduceMotion ? nil : .smooth(duration: 0.3) }
+    static var layoutAnimation: Animation? { reduceMotion ? nil : moveAnimation }
+    /// The curve of `layoutAnimation`, for things that also animate with
+    /// reduce motion on (they choose their own fallback).
+    static let moveAnimation = Animation.smooth(duration: 0.3)
     /// Status lines and pills changing their text or coming and going
     /// (sync status, statistics busy).
     static let statusAnimation = Animation.smooth(duration: 0.45)

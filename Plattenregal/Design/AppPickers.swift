@@ -43,7 +43,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                         .background {
                             if selected {
                                 if AppStyle.isAtelier {
-                                    RoundedRectangle(cornerRadius: 7).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
+                                    RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius - 3).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
                                         .padding(.vertical, 3)
                                         .matchedGeometryEffect(id: "pill", in: pill)
                                 } else {
@@ -71,8 +71,8 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
             row.padding(.horizontal, 3)
                 .background {
                     if AppStyle.isAtelier {
-                        RoundedRectangle(cornerRadius: 10).fill(AtelierPalette.soft)
-                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                        RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(AtelierPalette.soft)
+                            .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(AtelierPalette.border, lineWidth: 1))
                     }
                 }
                 .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
@@ -121,8 +121,8 @@ struct GlassMenuPicker<Value: Hashable, Options: View>: View {
         .frame(height: 30)
         .background {
             if AppStyle.isAtelier {
-                RoundedRectangle(cornerRadius: 9).fill(AtelierPalette.surface)
-                    .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(AtelierPalette.surface)
+                    .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(AtelierPalette.border, lineWidth: 1))
             }
         }
         .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)

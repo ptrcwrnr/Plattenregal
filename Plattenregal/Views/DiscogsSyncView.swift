@@ -130,7 +130,6 @@ struct DiscogsSyncPill: View {
 
     /// How long a step stays before the next one replaces it.
     private static let minimumStep: Duration = .milliseconds(900)
-    private static let entrance = Animation.spring(duration: 0.5, bounce: 0.2)
 
     private var current: Content? {
         guard sync.hasStatus else { return nil }
@@ -182,7 +181,7 @@ struct DiscogsSyncPill: View {
             if wait > .zero {
                 do { try await Task.sleep(for: wait) } catch { return }
             }
-            withAnimation(shown == nil || new == nil ? Self.entrance : AppStyle.statusAnimation) { shown = new }
+            withAnimation(AppStyle.statusAnimation) { shown = new }
             shownSince = .now
         }
     }

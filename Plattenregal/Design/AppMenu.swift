@@ -58,7 +58,7 @@ private struct AppMenuRow: View {
         .font(.callout)
         .foregroundStyle(configuration.role == .destructive ? AnyShapeStyle(AppStyle.errorColor) : AnyShapeStyle(.primary))
         .opacity(isEnabled ? 1 : 0.4)
-        .appHoverable(hovering && isEnabled, cornerRadius: 6)
+        .appHoverable(hovering && isEnabled, cornerRadius: AppStyle.menuRowRadius)
         .onHover { hovering = $0 }
     }
 }

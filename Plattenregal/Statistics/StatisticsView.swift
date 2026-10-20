@@ -54,11 +54,11 @@ struct StatisticsView: View {
                 .animation(AppStyle.standardAnimation, value: model.error)
             }
             .pullToRefresh(disabled: { refreshBlocked }, action: refresh)
-            // The spring belongs to the pill alone: on the page it also caught
+            // The animation belongs to the pill alone: on the page it also caught
             // the new numbers committed with `calculating` and had every chart
             // glide to them (~0.45 s of a fully busy main thread per update).
             .overlay(alignment: .top) {
-                activityPill.animation(.spring(duration: 0.45, bounce: 0.2), value: model.busy || model.calculating)
+                activityPill.animation(AppStyle.statusAnimation, value: model.busy || model.calculating)
             }
         }
         .background { AmbientBackdrop(covers: ambientCovers) }
