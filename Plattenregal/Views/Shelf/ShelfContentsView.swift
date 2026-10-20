@@ -22,35 +22,35 @@ struct ShelfContentsView: View {
     let unplace: (RecordCopy) -> Void
     let delete: (RecordCopy) -> Void
     let setMissing: (RecordCopy, Bool) -> Void
-    @AppStorage("shelfContentsLayout") var layout = OverviewLayout.grid
+    @AppStorage("shelfContentsLayout") private var layout = OverviewLayout.grid
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
     /// Records on the "Verkauf" list (settings tab "Listen"); none while the
     /// list is switched off there.
-    var forSale: Set<UUID> { saleEnabled ? Set(LibraryRecords.of(context).saleMarks.map(\.copyID)) : [] }
+    private var forSale: Set<UUID> { saleEnabled ? Set(LibraryRecords.of(context).saleMarks.map(\.copyID)) : [] }
 
     /// Always in physical order. Sorting the table never changes the grid.
-    @State var items: [ShelfCopyItem] = []
-    @State var tableItems: [ShelfCopyItem] = []
-    var sortOrder: [KeyPathComparator<ShelfCopyItem>] { session.tableSortOrder }
+    @State private var items: [ShelfCopyItem] = []
+    @State private var tableItems: [ShelfCopyItem] = []
+    private var sortOrder: [KeyPathComparator<ShelfCopyItem>] { session.tableSortOrder }
     /// A selection made locally must not center itself under the pointer.
     @State private var clickedID: UUID?
-    @State var quickEditID: UUID?
+    @State private var quickEditID: UUID?
     /// Updates arriving during an edit are applied once its popover closes.
     @State private var reloadPending = false
-    @State var loadedShelfID: UUID?
+    @State private var loadedShelfID: UUID?
     @State private var loadedSignature: Int?
-    @State var menuFor: (id: UUID, anchor: UnitPoint)?
-    @State var gridClicks = GridSecondaryClicks<UUID>()
+    @State private var menuFor: (id: UUID, anchor: UnitPoint)?
+    @State private var gridClicks = GridSecondaryClicks<UUID>()
     @State private var error: String?
-    @State var focusScroll: FocusScroll?
-    @State var gridRestorePending = true
+    @State private var focusScroll: FocusScroll?
+    @State private var gridRestorePending = true
     /// A compartment opened for a record (search, "im Regal zeigen") stays
     /// invisible until it stands at that record, then fades in – instead of
     /// fading in at the top and visibly scrolling through the covers.
-    @State var gridRevealPending: UUID?
+    @State private var gridRevealPending: UUID?
 
-    struct FocusScroll: Equatable {
+    private struct FocusScroll: Equatable {
         let shelfID: UUID
         let layout: OverviewLayout
         let copyID: UUID
@@ -82,28 +82,28 @@ struct ShelfContentsView: View {
         })
     }
 
-    var selection: Binding<UUID?> {
+    private var selection: Binding<UUID?> {
         Binding(
             get: { focusCopy?.id },
             set: { id in selectLocally(id.flatMap { id in items.first { $0.id == id }?.copy }) }
         )
     }
 
-    func selectLocally(_ copy: RecordCopy?) {
+    private func selectLocally(_ copy: RecordCopy?) {
         clickedID = copy?.id
         focusScroll = nil
         select(copy)
     }
 
-    func quickEditBinding(_ id: UUID) -> Binding<Bool> {
+    private func quickEditBinding(_ id: UUID) -> Binding<Bool> {
         Binding(get: { quickEditID == id }, set: { if !$0, quickEditID == id { quickEditID = nil } })
     }
 
-    func menuBinding(_ id: UUID) -> Binding<Bool> {
+    private func menuBinding(_ id: UUID) -> Binding<Bool> {
         Binding(get: { menuFor?.id == id }, set: { if !$0, menuFor?.id == id { menuFor = nil } })
     }
 
-    func scrollPosition(for presentation: OverviewLayout) -> Binding<UUID?> {
+    private func scrollPosition(for presentation: OverviewLayout) -> Binding<UUID?> {
         let shelfID = shelf.id
         return Binding(
             get: {
@@ -173,21 +173,21 @@ struct ShelfContentsView: View {
         focusScroll = FocusScroll(shelfID: shelf.id, layout: layout, copyID: id)
     }
 
-    func edit(_ copy: RecordCopy) {
+    private func edit(_ copy: RecordCopy) {
         menuFor = nil
         selectLocally(copy)
         quickEditID = copy.id
     }
 
-    func activate(_ copy: RecordCopy) {
+    private func activate(_ copy: RecordCopy) {
         edit(copy)
     }
 
-    func quickEditor(_ copy: RecordCopy) -> some View {
+    private func quickEditor(_ copy: RecordCopy) -> some View {
         ShelfCopyQuickEditor(copy: copy)
     }
 
-    func actionMenu(_ copy: RecordCopy) -> some View {
+    private func actionMenu(_ copy: RecordCopy) -> some View {
         AppMenu(dismiss: { menuFor = nil }) { rowMenu(copy) }
     }
 
@@ -297,4 +297,196 @@ struct ShelfContentsView: View {
         }
     }
 
+    private func grid(_ proxy: ScrollViewProxy) -> some View {
+        GeometryReader { geometry in
+            let width = max(0, geometry.size.width - 4)
+            let columns = CoverGrid.columnCount(available: width, minimum: 135)
+            ScrollView {
+                // Every tile carries a glass tag (Modern): one container for
+                // all of them renders them together, ~10 % less per scroll step.
+                GlassEffectContainer(spacing: 0) {
+                    LazyVGrid(columns: CoverGrid.columns(count: columns), alignment: .leading, spacing: CoverGrid.spacing) {
+                        ForEach(items) { item in
+                            Button { activate(item.copy) } label: { tile(item) }
+                                .buttonStyle(.plain)
+                                .id(item.id)
+                                .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
+                                    quickEditor(item.copy)
+                                }
+                                .gridSecondaryClickCell(item.id, in: gridClicks)
+                                .popover(isPresented: menuBinding(item.id),
+                                         attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+                                    actionMenu(item.copy)
+                                }
+                                .help("Position \(item.position) · \(item.artist) · \(item.title)\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen.")
+                                .accessibilityLabel("Position \(item.position), \(item.artist), \(item.title)")
+                                .accessibilityAddTraits(focusCopy?.id == item.id ? .isSelected : [])
+                                .accessibilityAction(named: Text("Exemplar bearbeiten")) { edit(item.copy) }
+                        }
+                    }
+                    .scrollTargetLayout()
+                    .gridSecondaryClickGrid(gridClicks)
+                    .coverGridMotion(width: width, columnCount: columns)
+                    // Room for the covers' shadows inside the scroll view, which
+                    // clips; the negative padding below keeps the covers flush
+                    // with the rack.
+                    .padding(.horizontal, AppStyle.hairSpacing + CoverGrid.shadowRoom)
+                    .padding(.top, AppStyle.hairSpacing)
+                    // The last covers scroll clear of the round button.
+                    .padding(.bottom, CoverGrid.spacing + AppStyle.floatingClearance)
+                }
+            }
+            .onGridSecondaryClick(gridClicks) { id, point in
+                quickEditID = nil
+                menuFor = (id, point)
+            }
+            .padding(.horizontal, -CoverGrid.shadowRoom)
+            .scrollPosition(tracking: scrollPosition(for: .grid))
+            .opacity(gridRevealPending != nil && gridRevealPending == loadedShelfID ? 0 : 1)
+            .id(loadedShelfID)
+            .task(id: loadedShelfID) {
+                let shelfID = shelf.id
+                let saved = session.gridScrollPositions[shelfID]
+                gridRestorePending = true
+                await Task.yield()
+                try? await Task.sleep(for: .milliseconds(25))
+                guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
+                // On mount SwiftUI can publish row zero before applying an
+                // existing scrollPosition. Keep capture closed until an
+                // explicit restore has laid out the saved copy. An external
+                // focus request takes precedence over a remembered position.
+                let hasFocusRequest = focusScroll?.shelfID == shelfID && focusScroll?.layout == .grid
+                if !hasFocusRequest, let saved, items.contains(where: { $0.id == saved }) {
+                    withAnimation(nil) {
+                        session.gridScrollPositions[shelfID] = saved
+                        proxy.scrollTo(saved, anchor: .top)
+                    }
+                }
+                // Opened for a record: jump to it while still invisible.
+                if gridRevealPending == shelfID, let request = focusScroll, request.shelfID == shelfID,
+                   items.contains(where: { $0.id == request.copyID }) {
+                    withAnimation(nil) {
+                        session.gridScrollPositions[shelfID] = request.copyID
+                        proxy.scrollTo(request.copyID, anchor: .center)
+                    }
+                }
+                await Task.yield()
+                try? await Task.sleep(for: .milliseconds(25))
+                if gridRevealPending == shelfID {
+                    withAnimation(AppStyle.fadeAnimation) { gridRevealPending = nil }
+                }
+                guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
+                gridRestorePending = false
+            }
+        }
+    }
+
+    private func tile(_ item: ShelfCopyItem) -> some View {
+        let selected = focusCopy?.id == item.id
+        return VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
+            CoverView(url: item.copy.release?.coverURL, size: nil)
+                .atelierRecordSleeve()
+                .overlay {
+                    RoundedRectangle(cornerRadius: AtelierCoverFrame.usesMat ? AppStyle.cardRadius : 2)
+                        .strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: 2)
+                }
+                .overlay(alignment: .topLeading) {
+                    Text(String(item.position))
+                        .font(.caption.weight(.semibold)).monospacedDigit()
+                        .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
+                        .appChipSurface(in: Capsule())
+                        .padding(AtelierCoverFrame.badgeInset)
+                }
+            // The same caption as in Collection and Wantlist.
+            RecordCaption(release: item.copy.release, emphasized: selected)
+            VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                if item.missing { MissingBadge() }
+                if item.forSale { SaleBadge() }
+                if item.sold {
+                    Text("Nicht in der Collection")
+                        .font(.caption2.weight(.medium)).foregroundStyle(AppStyle.warningColor)
+                        .lineLimit(1).minimumScaleFactor(0.85)
+                }
+            }
+            .frame(minHeight: 14, alignment: .topLeading)
+        }
+        .contentShape(Rectangle())
+    }
+
+    private var table: some View {
+        Table(tableItems, selection: selection, sortOrder: Binding(
+            get: { sortOrder }, set: { session.tableSortOrder = $0 }
+        )) {
+            TableColumn("Pos.", value: \.position) { item in
+                Text(String(item.position)).monospacedDigit().foregroundStyle(.secondary)
+            }
+            .width(min: 34, ideal: 40, max: 52)
+            TableColumn("") { item in CoverView(url: item.copy.release?.coverURL, size: 20) }
+                .width(24)
+            TableColumn("Interpret", value: \.artist) { item in
+                Text(item.artist).lineLimit(1).help(item.artist)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
+                        quickEditor(item.copy)
+                    }
+            }
+            .width(min: 120, ideal: 220)
+            TableColumn("Titel", value: \.title) { item in
+                HStack(spacing: AppStyle.itemSpacing) {
+                    Text(item.title).lineLimit(1).help(item.title)
+                    if item.missing {
+                        MissingBadge()
+                            .help("Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht")
+                    }
+                    if item.forSale { SaleBadge() }
+                    if item.sold {
+                        StatusTag(text: String(localized: "Nicht in der Collection"), color: AppStyle.warningColor)
+                            .help("Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen")
+                    }
+                }
+            }
+            .width(min: 120, ideal: 280)
+            TableColumn("Jahr", value: \.year) { item in
+                Text(item.year > 0 ? String(item.year) : "–").monospacedDigit().foregroundStyle(.secondary)
+            }
+            .width(min: 40, ideal: 48, max: 60)
+            TableColumn("Label", value: \.label) { item in
+                Text(item.label.isEmpty ? "–" : item.label).lineLimit(1).foregroundStyle(.secondary).help(item.label)
+            }
+            .width(min: 80, ideal: 160)
+            TableColumn("Genre", value: \.genre) { item in
+                Text(item.genre.isEmpty ? "–" : item.genre).lineLimit(1).foregroundStyle(.secondary).help(item.genre)
+            }
+            .width(min: 80, ideal: 130)
+        }
+        .tableStyle(.inset)
+        .background(QuietIconColumnHeaders())
+        .background(TableRowClickToggle { selectLocally(nil) })
+        .alternatingRowBackgrounds(.disabled)
+        .scrollContentBackground(.hidden)
+        // The last rows scroll clear of the round button.
+        .contentMargins(.bottom, AppStyle.floatingClearance, for: .scrollContent)
+        .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
+            if let id = ids.first, let copy = items.first(where: { $0.id == id })?.copy { activate(copy) }
+        }
+        .overlay(TableRowClicks(secondary: { row, point in
+            guard tableItems.indices.contains(row) else { return }
+            quickEditID = nil
+            menuFor = (tableItems[row].id, point)
+        }))
+        .popover(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } }),
+                 attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+            if let id = menuFor?.id, let copy = items.first(where: { $0.id == id })?.copy {
+                actionMenu(copy)
+            }
+        }
+        .background(ShelfTableScrollBridge(
+            ids: tableItems.map(\.id),
+            position: scrollPosition(for: .list),
+            revealID: focusScroll?.layout == .list ? focusScroll?.copyID : nil,
+            revealRequest: focusScroll?.layout == .list ? focusScroll?.requestID : nil
+        ))
+        .id(loadedShelfID)
+        .appTableCard()
+    }
 }

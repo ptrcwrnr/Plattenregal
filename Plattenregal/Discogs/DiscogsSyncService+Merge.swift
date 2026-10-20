@@ -4,11 +4,6 @@ import Observation
 import OSLog
 
 extension DiscogsSyncService {
-    /// Off the main actor; cancelling the sync cancels the merge with it.
-    @concurrent nonisolated static func mergeInBackground(_ snapshot: DiscogsSyncSnapshot, container: ModelContainer) async throws -> DiscogsSyncSummary {
-        try merge(snapshot, container: container)
-    }
-
     // A dedicated context isolates rollback from unsaved edits in other windows.
     // Runs on a worker task; no suspension occurs between mutations and the single save.
     nonisolated static func merge(_ snapshot: DiscogsSyncSnapshot, container: ModelContainer, at now: Date = .now) throws -> DiscogsSyncSummary {
