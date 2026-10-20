@@ -41,25 +41,36 @@ enum AppStyle {
     /// Room at the end of every page, so content scrolls clear of the button.
     static let floatingClearance: CGFloat = floatingButtonSize + floatingMargin + itemSpacing
     // MARK: Switching a whole area
-    // A page (`PageStackView.show`), a settings tab, another cabinet: the old
-    // content fades out quickly on the spot, then the new one fades in while
-    // settling down from `pageSettleDistance` above – the same move as the
-    // pill of the switch that chose it (`settleTransition`). Never both half
-    // visible on top of each other. With "Bewegung reduzieren" only the fade.
+    // A page (`PageStackView.show`) with the toolbar above it, a settings
+    // tab, another cabinet: everything that changes fades out quickly on the
+    // spot, then the new state fades in – one beat for the page, the pill of
+    // the switch, the search field and its placeholder. Never both half
+    // visible on top of each other. Areas settle down from
+    // `pageSettleDistance` above while fading in, the pill only from
+    // `pillSettleDistance`. With "Bewegung reduzieren" only the fade.
     static let pageFadeOut: TimeInterval = 0.1
     static let pageFadeInDelay: TimeInterval = 0.07
     static let pageFadeIn: TimeInterval = 0.22
     static let pageSettleDistance: CGFloat = itemSpacing
-    /// `pageFadeOut` … `pageSettleDistance` as a SwiftUI transition, timing included.
-    static var pageTransition: AnyTransition {
-        let insertion: AnyTransition = reduceMotion ? .opacity : .opacity.combined(with: .offset(y: -pageSettleDistance))
-        return .asymmetric(insertion: insertion.animation(.easeOut(duration: pageFadeIn).delay(pageFadeInDelay)),
-                           removal: .opacity.animation(.easeIn(duration: pageFadeOut)))
+    static let pillSettleDistance: CGFloat = hairSpacing
+    /// What goes away on a switch.
+    static var pageOutAnimation: Animation { .easeIn(duration: pageFadeOut) }
+    /// What comes in on a switch, once the old state is gone.
+    static var pageInAnimation: Animation { .easeOut(duration: pageFadeIn).delay(pageFadeInDelay) }
+    /// Only the fade of a switch, timing included (text swapped in place).
+    static var pageFadeTransition: AnyTransition {
+        .asymmetric(insertion: .opacity.animation(pageInAnimation), removal: .opacity.animation(pageOutAnimation))
+    }
+    /// A whole area switched: the fade, and the new one settles down.
+    static var pageTransition: AnyTransition { settling(by: pageSettleDistance) }
+    private static func settling(by distance: CGFloat) -> AnyTransition {
+        let insertion: AnyTransition = reduceMotion ? .opacity : .opacity.combined(with: .offset(y: -distance))
+        return .asymmetric(insertion: insertion.animation(pageInAnimation), removal: .opacity.animation(pageOutAnimation))
     }
     /// Leaving a search: the hits fade out quickly, then the whole list fades
     /// in where it was before the search – timed like a page switch.
     /// Gliding hundreds of covers back in looked busy.
-    static var searchExitFadeOut: Animation { .easeIn(duration: pageFadeOut) }
+    static var searchExitFadeOut: Animation { pageOutAnimation }
     static var searchExitFadeIn: Animation { .easeOut(duration: pageFadeIn) }
 
     // MARK: Corner radii
@@ -159,14 +170,6 @@ enum AppStyle {
     static let statusAnimation = Animation.smooth(duration: 0.45)
     /// Progress rings and bars following their value.
     static let progressAnimation = Animation.smooth(duration: 0.35)
-    /// The pill of a segmented picker moving to the chosen segment (see `settleTransition`).
-    static let selectionAnimation = Animation.smooth(duration: 0.3)
-    /// A segmented picker's pill on a new choice: the old one just fades, the
-    /// new one fades in while settling down from `tightSpacing` above – it
-    /// doesn't slide across the other options. Only a fade with reduce motion.
-    static var settleTransition: AnyTransition {
-        reduceMotion ? .opacity : .asymmetric(insertion: .opacity.combined(with: .offset(y: -tightSpacing)), removal: .opacity)
-    }
     /// Statistics bars growing in when first shown (after `reduceMotion` is checked).
     static let growAnimation = Animation.smooth(duration: 0.7).delay(0.05)
     /// Statistics figures rolling to a new value (after `reduceMotion` is checked).

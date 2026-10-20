@@ -65,7 +65,7 @@ extension AllTests {
         }
 
         @Test func designsKeepTheirStoredValuesUnderTheNewNames() {
-            #expect(SignatureDesign.allCases.map(\.logName) == ["Modern", "Klassisch"])
+            #expect(SignatureDesign.allCases.map(\.logName) == ["Klassisch", "Modern"])
             // The stored values from before the renaming stay readable.
             #expect(SignatureDesign(rawValue: "none") == .liquidGlass)
             #expect(SignatureDesign(rawValue: "atelier") == .atelier)

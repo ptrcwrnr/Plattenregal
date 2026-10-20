@@ -80,7 +80,8 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
 /// The stored values are those of the first names: "none" from when Modern
 /// (Liquid Glass) was the only, unnamed design, "atelier" for Klassisch.
 enum SignatureDesign: String, CaseIterable, Identifiable {
-    case liquidGlass = "none", atelier
+    // Klassisch first: the settings list the designs in this order.
+    case atelier, liquidGlass = "none"
     var id: Self { self }
     var title: String {
         switch self {

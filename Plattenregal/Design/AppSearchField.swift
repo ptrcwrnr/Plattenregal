@@ -12,7 +12,24 @@ struct AppSearchField: View {
     var body: some View {
         HStack(spacing: AppStyle.itemSpacing) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            TextField(placeholder, text: $text).textFieldStyle(.plain).noTextAutoFill()
+            TextField(placeholder, text: $text, prompt: Text(verbatim: ""))
+                .textFieldStyle(.plain).noTextAutoFill()
+                // Its own placeholder instead of the field's: the field swaps
+                // its prompt at once, this one fades to a new text in the beat
+                // of a page switch (toolbar: "Collection durchsuchen" →
+                // "Regal durchsuchen"). Gone at once on the first key.
+                .background(alignment: .leading) {
+                    ZStack(alignment: .leading) {
+                        Text(placeholder)
+                            .foregroundStyle(.placeholder)
+                            .lineLimit(1)
+                            .id(placeholder)
+                            .transition(AppStyle.pageFadeTransition)
+                    }
+                    .opacity(text.isEmpty ? 1 : 0)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                }
                 .focused(focus)
                 // Esc clears the query; with an empty field it gives up the focus.
                 .onKeyPress(.escape) {

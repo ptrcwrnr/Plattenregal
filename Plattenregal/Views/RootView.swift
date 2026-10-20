@@ -117,6 +117,16 @@ struct RootView: View {
             .background(pageShortcuts)
             .background(GlobalShortcuts(selection: destination))
             .background { AmbientGlow() }
+            #if DEBUG
+            // Recording a page switch without clicking: --preview-switch=Statistik
+            // switches there 3 s after launch.
+            .task {
+                guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-switch=") }),
+                      let page = Destination(rawValue: String(raw.dropFirst("--preview-switch=".count))) else { return }
+                try? await Task.sleep(for: .seconds(3))
+                destination.current = page
+            }
+            #endif
     }
 
     /// ⌘1 … ⌘4 switch pages, like the tabs of a browser window; ⌘F puts the

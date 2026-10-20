@@ -1,3 +1,16 @@
+# Toolbar wechselt im Takt der Seite; Klassisch oben in den Designs · 20.10.2026
+
+- **Vorher:** Beim Rubrikenwechsel wirkte die Toolbar grob. Das Suchfeld verschwand zur Statistik schlagartig und kam ebenso zurück: Es wurde aus der Toolbar genommen, macOS baute sie neu auf und übersprang dabei das Ausblenden. Der Platzhalter („Regal durchsuchen“ → „Collection durchsuchen“) sprang um. Die Pill lief gleichmäßig 0,3 s, alte und neue waren kurz beide halb zu sehen, und die Seite darunter wechselte in einem anderen Takt.
+- **Jetzt:** Die ganze Toolbar wechselt im Takt der Seite. Was geht, blendet in 0,1 s aus (`AppStyle.pageOutAnimation`), was kommt, blendet nach 0,07 s in 0,22 s ein (`pageInAnimation`).
+  - **Suchfeld:** bleibt immer in der Toolbar und wird in der Statistik nur ausgeblendet, ohne Klicks, ohne Fokus und für VoiceOver verborgen. Beim Ausblenden behält es Text und Platzhalter der vorigen Seite.
+  - **Platzhalter:** zeichnet `AppSearchField` jetzt selbst, in der Platzhalterfarbe des Systems und an derselben Stelle wie vorher. Er blendet zum neuen Text über und verschwindet beim ersten Tastendruck sofort.
+  - **Pill:** Jede Option hat ihre Pill und zeigt sie nur, wenn sie gewählt ist. Animiert werden nur Deckkraft und Versatz, keine Übergänge beim Einfügen und Entfernen; damit ist der Takt fest. Die Fläche setzt sich um 2 pt (`pillSettleDistance` = `hairSpacing`) statt 4 pt ab, die Beschriftung bewegt sich nicht mehr, sie blendet nur. Ein erster Versuch mit getrennten Übergängen für Fläche und Schrift ließ beim Abwählen kurz eine leere Pill stehen.
+  - Zentral in `AppStyle`: `pageOutAnimation`, `pageInAnimation`, `pageFadeTransition`, `pillSettleDistance`. `selectionAnimation` und `settleTransition` entfallen.
+- **Designs:** In Einstellungen → Darstellung steht Klassisch jetzt oben und Modern darunter (Reihenfolge der Fälle in `SignatureDesign`, gespeicherte Werte unverändert). Der Test zur Reihenfolge ist angepasst.
+- **Aufnahmen ohne Klick (nur Debug):** `--preview-switch=<Rubrik>` und `--preview-switch-tab=<Tab>` wechseln 3 s nach dem Start. Die bisherigen Aufnahmen mit simulierten Klicks und Tastendrücken landeten im jeweils vorderen Fenster; ein verdecktes Fenster zeichnet macOS zudem nicht weiter, was wie ein Hänger aussah.
+- README: Designs, Code-Übersicht (Seiten) und Startargumente.
+- Geprüft: Debug-Build ohne Warnungen, alle 206 Tests erfolgreich. Bildfolgen der Toolbar in der Demo: Regal → Collection und Collection → Statistik in Klassisch, Regal → Statistik in Modern, dazu Allgemein → Darstellung in den Einstellungen (Klassisch). Alte Pill, Suchfeld und Platzhalter sind weg, bevor die neuen kommen. Es entsteht keine leere Pill und kein doppelter Text, und der Platzhalter steht an derselben Stelle wie der alte. Darstellung zeigt Klassisch oben.
+
 # DMG 1.1.2 mit den neuen Übergängen neu ausgegeben · 20.10.2026
 
 - `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2. Neu gegenüber der Ausgabe von 22:13: Die Auswahl in den Umschaltern setzt sich von oben ab statt zu gleiten. Rubriken-Seiten, Einstellungs-Tabs und Regalwechsel blenden ein und setzen sich ebenfalls von oben ab, statt seitlich hereinzufahren. Die Handbuch-PDFs sind unverändert.

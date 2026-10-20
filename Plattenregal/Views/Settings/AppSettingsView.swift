@@ -105,6 +105,16 @@ struct AppSettingsView: View {
         .onChange(of: request.count) { if let asked = request.take() { tab = asked } }
         .navigationTitle(tab.title)
         .toolbar(removing: .title)
+        #if DEBUG
+        // Recording a tab switch without clicking: --preview-switch-tab=Darstellung
+        // switches there 3 s after the settings opened.
+        .task {
+            guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-switch-tab=") }),
+                  let next = Tab(rawValue: String(raw.dropFirst("--preview-switch-tab=".count))) else { return }
+            try? await Task.sleep(for: .seconds(3))
+            tab = next
+        }
+        #endif
         // No separator line under the toolbar, not even on hover.
         // Klassisch shows its petrol toolbar instead (see `SignatureToolbarAppearance`).
         .toolbarBackgroundVisibility(AppStyle.isAtelier ? .visible : .hidden, for: .windowToolbar)

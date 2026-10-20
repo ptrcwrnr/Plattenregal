@@ -2,7 +2,9 @@ import SwiftUI
 
 /// A choice between a few options. The chosen one sits on a pill that, on a
 /// new choice, fades out where it was and settles onto the new option from a
-/// little above (`AppStyle.settleTransition`), the same in both designs: in Modern a Liquid Glass lens
+/// little above, in the beat of a page switch (`AppStyle.pageOutAnimation`,
+/// `pageInAnimation`, `pillSettleDistance`),
+/// the same in both designs: in Modern a Liquid Glass lens
 /// (never a gray or blue fill) with the label in the accent, in Klassisch
 /// cream paper. In the toolbar the toolbar's bar is the background
 /// (`glass: false`, see `toolbarBar`); anywhere else it brings its own capsule.
@@ -36,29 +38,39 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                         // The pill brings the label in its own color (below):
                         // a color fading between the two would, halfway, be as
                         // gray as the half-shown pill and vanish on it. This
-                        // one fades while the pill fades in over it.
+                        // one fades while the pill's fades in at the same spot.
                         .opacity(selected ? 0 : 1)
+                        .animation(AppStyle.pageInAnimation, value: selected)
                         .padding(.horizontal, small ? AppStyle.itemSpacing : AppStyle.rowSpacing)
                         .frame(height: small ? 24 : 30)
+                        // Every option has its pill, shown only when chosen –
+                        // states animated in a fixed beat instead of views
+                        // coming and going: the old one fades out on the spot
+                        // (`pageOutAnimation`), then the new one fades in and
+                        // settles from `pillSettleDistance` above.
                         .background {
-                            if selected {
-                                ZStack {
+                            ZStack {
+                                Group {
                                     if AppStyle.isAtelier {
                                         RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius - 3).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
-                                            .padding(.vertical, 3)
                                     } else {
                                         Capsule().fill(.clear)
                                             .glassEffect(.regular, in: .capsule)
-                                            .padding(.vertical, 3)
                                     }
-                                    // Color only: a heavier weight would widen
-                                    // the label and shift its neighbours.
-                                    label(option)
-                                        .foregroundStyle(selectedStyle)
-                                        .accessibilityHidden(true)
                                 }
-                                .transition(AppStyle.settleTransition)
+                                .padding(.vertical, 3)
+                                // Settles on the way in, lifts as it fades out.
+                                .offset(y: selected || AppStyle.reduceMotion ? 0 : -AppStyle.pillSettleDistance)
+                                // Only fades, it doesn't settle with the pill:
+                                // text moved by a point or two snaps from pixel
+                                // to pixel. Color only: a heavier weight would
+                                // widen the label and shift its neighbours.
+                                label(option)
+                                    .foregroundStyle(selectedStyle)
+                                    .accessibilityHidden(true)
                             }
+                            .opacity(selected ? 1 : 0)
+                            .animation(selected ? AppStyle.pageInAnimation : AppStyle.pageOutAnimation, value: selected)
                         }
                         .contentShape(Capsule())
                 }
@@ -68,7 +80,8 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
             }
         }
         .font(small ? .callout : .body)
-        .animation(AppStyle.selectionAnimation, value: selection)
+        // The separators beside the pill, in the same beat.
+        .animation(AppStyle.pageInAnimation, value: selection)
         .fixedSize()
         // A group: a label given to the picker (`.accessibilityLabel("Modus")`)
         // names the group instead of replacing every option's name.
