@@ -1,3 +1,8 @@
+# DMG 1.1.2 mit den neuen Übergängen neu ausgegeben · 20.10.2026
+
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2. Neu gegenüber der Ausgabe von 22:13: Die Auswahl in den Umschaltern setzt sich von oben ab statt zu gleiten. Rubriken-Seiten, Einstellungs-Tabs und Regalwechsel blenden ein und setzen sich ebenfalls von oben ab, statt seitlich hereinzufahren. Die Handbuch-PDFs sind unverändert.
+- Geprüft: `hdiutil verify` gültig. Eingehängt: nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig. Die App-Binärdatei ist identisch mit dem Release-Build vom Stand `2566713` und enthält die neue senkrechte Seitenbewegung. Beide PDFs sind byte-gleich mit denen im Repository. Das Finder-Fenster der DMG habe ich nicht geöffnet, an Hintergrund und Fensteraufbau hat sich nichts geändert.
+
 # Seiten, Einstellungs-Tabs und Regale setzen sich ab statt zu schieben · 20.10.2026
 
 - **Vorher:** Beim Rubrikenwechsel schob sich die neue Seite 18 pt von der Seite herein, aus der Richtung des Umschalters. Der Inhalt der Einstellungen sprang beim Tab-Wechsel ohne Animation um. Ein anderes Regal fuhr über die ganze Breite herein (`.push`).
