@@ -1,6 +1,5 @@
 import Foundation
 import SwiftData
-import OSLog
 
 nonisolated enum StorageError: LocalizedError {
     case alreadyOpen

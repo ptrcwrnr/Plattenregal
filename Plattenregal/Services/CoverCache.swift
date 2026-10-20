@@ -1,4 +1,3 @@
-import AppKit
 import CryptoKit
 import ImageIO
 import SwiftUI

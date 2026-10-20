@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import ObjectiveC
 
 /// The item at the top of a scrolled page, for `.scrollPosition(id:)`. An
 /// object, not `@State` of the page: the scroll view writes it every time

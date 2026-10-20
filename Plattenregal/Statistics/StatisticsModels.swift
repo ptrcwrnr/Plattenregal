@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 nonisolated struct DiscogsMoney: Equatable, Sendable {
     let amount: Decimal

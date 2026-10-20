@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 extension View {
     func appAppearance() -> some View { modifier(AppAppearanceModifier()) }

@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import OSLog
 
 /// With a single `Window` scene macOS would quit the app when that window
 /// closes; like before, it keeps running (automatic export, tracklist

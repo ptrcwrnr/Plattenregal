@@ -1,6 +1,4 @@
 import SwiftUI
-import SwiftData
-import UniformTypeIdentifiers
 
 /// A settings tab asked for from the main window ("Token eintragen" on an
 /// empty collection, "Belegung wiederherstellen" on an empty shelf). Read

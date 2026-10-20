@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import AppKit
 
 struct CollectionView: View {
     /// Shown or not, without re-rendering the grid on every page switch.

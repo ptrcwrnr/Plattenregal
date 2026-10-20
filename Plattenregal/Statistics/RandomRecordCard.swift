@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import Charts
 
 // MARK: - Random pick
 

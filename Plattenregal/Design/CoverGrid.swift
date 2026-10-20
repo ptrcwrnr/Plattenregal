@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 enum CoverGrid {
     /// The same in both designs (Modern used to be tighter, 8 pt).

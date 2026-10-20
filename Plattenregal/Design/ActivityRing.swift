@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import ObjectiveC
 
 /// The app's activity ring: the same accent ring as the pull-to-refresh
 /// indicator. `progress` fills it; `nil` lets a short arc spin (a still

@@ -1,7 +1,5 @@
 import Foundation
 import SwiftData
-import Observation
-import OSLog
 
 extension DiscogsSyncService {
     // A dedicated context isolates rollback from unsaved edits in other windows.

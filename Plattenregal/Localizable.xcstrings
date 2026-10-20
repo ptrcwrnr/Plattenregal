@@ -536,23 +536,6 @@
         }
       }
     },
-    "%@ – %@ wieder gefunden" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ – %2$@ wieder gefunden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ – %@ found again"
-          }
-        }
-      }
-    },
     "%@ – noch steht keine Platte im Regal" : {
       "localizations" : {
         "en" : {
@@ -700,23 +683,6 @@
         }
       }
     },
-    "%@ in der %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ in der %2$@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ in the %@"
-          }
-        }
-      }
-    },
     "%@ in dieser Sitzung, zuletzt %@. Discogs zählt die Anfragen der letzten Minute." : {
       "localizations" : {
         "de" : {
@@ -771,17 +737,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ with no data%@"
-          }
-        }
-      }
-    },
-    "%@ ohne Fach" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ without a compartment"
           }
         }
       }
@@ -1199,17 +1154,6 @@
         }
       }
     },
-    "%lld pt" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld pt"
-          }
-        }
-      }
-    },
     "%lld Regale" : {
       "localizations" : {
         "en" : {
@@ -1316,39 +1260,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld days"
-          }
-        }
-      }
-    },
-    "%lld Treffer in der %@ anzeigen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show %#@results@ in the %2$@"
-          },
-          "substitutions" : {
-            "results" : {
-              "argNum" : 1,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg result"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg results"
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
@@ -1891,17 +1802,6 @@
         }
       }
     },
-    "Alles kommt von Discogs" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Everything Comes from Discogs"
-          }
-        }
-      }
-    },
     "Alles löschen" : {
       "localizations" : {
         "en" : {
@@ -1978,17 +1878,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alphabetical"
-          }
-        }
-      }
-    },
-    "Alphabetische Navigation" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alphabetical navigation"
           }
         }
       }
@@ -2283,17 +2172,6 @@
         }
       }
     },
-    "Auf Standard (%lld pt) zurücksetzen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset to default (%lld pt)"
-          }
-        }
-      }
-    },
     "Aus" : {
       "localizations" : {
         "en" : {
@@ -2564,17 +2442,6 @@
         }
       }
     },
-    "Beim Einsortieren nicht gefunden – vermutlich noch in einem anderen Fach." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not found while placing – probably still in another compartment."
-          }
-        }
-      }
-    },
     "Beim Öffnen zeigen" : {
       "localizations" : {
         "en" : {
@@ -2701,17 +2568,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collection and wantlist"
-          }
-        }
-      }
-    },
-    "Collection und Wantlist gehen als CSV oder PDF hinaus, auf Wunsch regelmäßig von selbst. Wo deine Platten im Regal stehen, gibt es nur hier – Plattenregal sichert es automatisch." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collection and wantlist go out as CSV or PDF, regularly on their own if you like. Where your records stand on the shelf exists only here – Plattenregal backs it up automatically."
           }
         }
       }
@@ -2893,17 +2749,6 @@
         }
       }
     },
-    "Das + an einem Fach listet alle Platten, die noch keinen Platz haben. Ein Klick stellt eine Platte an ihre alphabetische Stelle; gehört sie in ein anderes Fach, führt dich der Pfeil dorthin." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The + on a compartment lists every record that has no place yet. One click puts a record at its alphabetical spot; if it belongs in another compartment, the arrow takes you there."
-          }
-        }
-      }
-    },
     "Das einzige aktive Regal – mindestens eines muss aktiv bleiben, damit es Platz zum Einsortieren gibt." : {
       "localizations" : {
         "en" : {
@@ -2994,17 +2839,6 @@
         }
       }
     },
-    "Dein Regal, Fach für Fach" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your Shelf, Compartment by Compartment"
-          }
-        }
-      }
-    },
     "Deine Collection kommt von Discogs. Trage deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her." : {
       "localizations" : {
         "en" : {
@@ -3041,17 +2875,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your collection stays open. Please try again later."
-          }
-        }
-      }
-    },
-    "Deine Schallplatten auf dem Mac – die ganze Sammlung auf einen Blick, dein Regal zu Hause als Abbild und immer die Antwort auf die Frage, wo eine Platte steht." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your records on the Mac – the whole collection at a glance, your shelf at home as a picture, and always the answer to where a record is."
           }
         }
       }
@@ -3252,17 +3075,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The next export follows shortly."
-          }
-        }
-      }
-    },
-    "Der Reihe nach herausnehmen und an die neue Stelle stellen. Die übrigen bleiben, wo sie sind." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Take them out one by one and put them in their new place. The others stay where they are."
           }
         }
       }
@@ -3597,17 +3409,6 @@
         }
       }
     },
-    "Die Platte verlässt ihr Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The record leaves its compartment and doesn’t count among the records that still need to be placed."
-          }
-        }
-      }
-    },
     "Die Platten behalten ihre Plätze, sind aber auf der Regalseite ausgeblendet und werden beim Einsortieren übersprungen." : {
       "localizations" : {
         "en" : {
@@ -3654,17 +3455,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The records themselves can always be fetched again from Discogs. Where they stand on the shelf exists only here – the backup preserves exactly that."
-          }
-        }
-      }
-    },
-    "Die Regal-Seite zeigt deine Regale so, wie sie bei dir stehen, mit dem Buchstabenbereich und der Anzahl Platten jedes Fachs. Für jede Platte siehst du, wo sie hingehört: Fach, Position und zwischen welchen beiden Platten." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The Shelf page shows your shelves the way they stand at home, with the letter range and number of records of each compartment. For every record you see where it belongs: compartment, position and between which two records."
           }
         }
       }
@@ -4140,28 +3930,6 @@
         }
       }
     },
-    "Eine Position nach links" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One position to the left"
-          }
-        }
-      }
-    },
-    "Eine Position nach rechts" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One position to the right"
-          }
-        }
-      }
-    },
     "einer Sekunde" : {
       "localizations" : {
         "en" : {
@@ -4454,17 +4222,6 @@
         }
       }
     },
-    "Exemplar bearbeiten …" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit Copy…"
-          }
-        }
-      }
-    },
     "Exemplar endgültig aus der Sammlung löschen?" : {
       "localizations" : {
         "en" : {
@@ -4491,17 +4248,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export"
-          }
-        }
-      }
-    },
-    "Export und Sicherung" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export and Backup"
           }
         }
       }
@@ -5273,17 +5019,6 @@
         }
       }
     },
-    "Immer zuerst nach Interpret. %@ Gilt für Platzsuche, Hinzufügen und „Sortierung prüfen“." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Always by artist first. %@ Applies to finding a spot, adding and “Check Order”."
-          }
-        }
-      }
-    },
     "Immer zuerst nach Interpret. %@ Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection." : {
       "localizations" : {
         "en" : {
@@ -5300,28 +5035,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In %@ – doesn’t count toward the app’s storage."
-          }
-        }
-      }
-    },
-    "In der %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In %@"
-          }
-        }
-      }
-    },
-    "In der %@ anzeigen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show in %@"
           }
         }
       }
@@ -5413,17 +5126,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Content"
-          }
-        }
-      }
-    },
-    "Inhalt anzeigen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Contents"
           }
         }
       }
@@ -5594,28 +5296,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No entries"
-          }
-        }
-      }
-    },
-    "Keine Einträge unter %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No entries under %@"
-          }
-        }
-      }
-    },
-    "Keine Einträge unter Buchstabe %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No entries under letter %@"
           }
         }
       }
@@ -5791,17 +5471,6 @@
         }
       }
     },
-    "Lässt sich auch direkt in Collection und Wantlist umschalten, über den runden Knopf unten rechts." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Can also be switched directly in the collection and wantlist, with the round button at the bottom right."
-          }
-        }
-      }
-    },
     "Leer" : {
       "localizations" : {
         "en" : {
@@ -5828,23 +5497,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empty compartment"
-          }
-        }
-      }
-    },
-    "Leeres Fach (Reihe %lld, Spalte %lld)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Leeres Fach (Reihe %1$lld, Spalte %2$lld)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empty compartment (row %lld, column %lld)"
           }
         }
       }
@@ -6025,17 +5677,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minimum cover size"
-          }
-        }
-      }
-    },
-    "Mindestgröße im Raster" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Minimum size in grid"
           }
         }
       }
@@ -6291,17 +5932,6 @@
         }
       }
     },
-    "Neue Platten einsortieren" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sorting In New Records"
-          }
-        }
-      }
-    },
     "Neueste zuerst" : {
       "localizations" : {
         "en" : {
@@ -6348,17 +5978,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No longer in your Discogs collection – right-click to remove it from the compartment"
-          }
-        }
-      }
-    },
-    "Nicht (mehr) in deiner Discogs-Collection – über den Papierkorb aus dem Fach nehmen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not (or no longer) in your Discogs collection – take it out of the compartment with the trash can"
           }
         }
       }
@@ -6613,17 +6232,6 @@
         }
       }
     },
-    "Noch ohne Fach" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No compartment yet"
-          }
-        }
-      }
-    },
     "Notiz" : {
       "localizations" : {
         "en" : {
@@ -6640,17 +6248,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collection Only"
-          }
-        }
-      }
-    },
-    "Nur leere Fächer lassen sich sperren" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Only empty compartments can be locked"
           }
         }
       }
@@ -6691,17 +6288,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wantlist Only"
-          }
-        }
-      }
-    },
-    "Ohne Fach · Platz finden" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No compartment · find a spot"
           }
         }
       }
@@ -6862,17 +6448,6 @@
         }
       }
     },
-    "Platte im Regal suchen …" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search for a record on the shelf…"
-          }
-        }
-      }
-    },
     "Platte ohne Collection aus dem Regal nehmen?" : {
       "localizations" : {
         "en" : {
@@ -6889,17 +6464,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "records"
-          }
-        }
-      }
-    },
-    "Platten ohne Fach durchsuchen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search records without a compartment"
           }
         }
       }
@@ -7016,17 +6580,6 @@
         }
       }
     },
-    "Plattenregal kommt gerade nicht an den Schlüsselbund von macOS, in dem der Discogs-Token liegt. Erlaube den Zugriff, falls macOS danach fragt, und versuche es noch einmal. (Code %d)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal can’t access the macOS keychain where the Discogs token is stored right now. Allow access if macOS asks, and try again. (Code %d)"
-          }
-        }
-      }
-    },
     "Plattenregal konnte deine gespeicherte Sammlung beim Start nicht laden. Die App hat nichts gelöscht oder zurückgesetzt." : {
       "localizations" : {
         "en" : {
@@ -7093,17 +6646,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plattenregal restarts – with a sample collection to try out. You can change everything: place records, add shelves, change settings. None of it is saved, and your own collection stays untouched.\n\nYou can end the demo at any time with “End Demo”."
-          }
-        }
-      }
-    },
-    "Plattenregal zeigt deine Discogs-Collection und -Wantlist. Trag einmal deinen persönlichen Token ein, dann holt ⌥⌘R alle Platten. Neue Platten trägst du bei Discogs ein – beim nächsten Abgleich sind sie hier." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal shows your Discogs collection and wantlist. Enter your personal token once, then ⌥⌘R fetches all records. Add new records on Discogs – they show up here with the next sync."
           }
         }
       }
@@ -7955,17 +7497,6 @@
         }
       }
     },
-    "Speicherplatz und Cover-Cache stehen unter „Daten“." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Storage and cover cache are under “Data”."
-          }
-        }
-      }
-    },
     "Sprache" : {
       "localizations" : {
         "en" : {
@@ -8096,17 +7627,6 @@
         }
       }
     },
-    "Statistik und Wertentwicklung" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Statistics and Value History"
-          }
-        }
-      }
-    },
     "stehen noch %lld Platten" : {
       "localizations" : {
         "en" : {
@@ -8203,17 +7723,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search"
-          }
-        }
-      }
-    },
-    "Suchen (⌘F)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search (⌘F)"
           }
         }
       }
@@ -8368,17 +7877,6 @@
         }
       }
     },
-    "Technische Details: %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Technical details: %@"
-          }
-        }
-      }
-    },
     "Titel" : {
       "localizations" : {
         "en" : {
@@ -8499,17 +7997,6 @@
         }
       }
     },
-    "Tour durch Plattenregal …" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal Tour …"
-          }
-        }
-      }
-    },
     "Tracklist" : {
       "localizations" : {
         "en" : {
@@ -8550,17 +8037,6 @@
         }
       }
     },
-    "Treffer in der %@ anzeigen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show results in the %@"
-          }
-        }
-      }
-    },
     "Trennzeichen" : {
       "localizations" : {
         "en" : {
@@ -8597,28 +8073,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Also applies “%@” to finding a spot and adding in all compartments."
-          }
-        }
-      }
-    },
-    "Übersicht" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Overview"
-          }
-        }
-      }
-    },
-    "Überspringen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skip"
           }
         }
       }
@@ -8735,17 +8189,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Version %@ (%@)"
-          }
-        }
-      }
-    },
-    "Versuche einen anderen Suchbegriff." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try a different search term."
           }
         }
       }
@@ -8941,17 +8384,6 @@
         }
       }
     },
-    "Was steckt in deiner Sammlung? Künstler, Styles, Jahrzehnte und Labels – und der Wert laut Discogs-Marktplatz, mit jedem Abgleich als Verlauf." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What's in your collection? Artists, styles, decades and labels – and its value on the Discogs marketplace, tracked with every sync."
-          }
-        }
-      }
-    },
     "Weiter" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -9005,17 +8437,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show Less"
-          }
-        }
-      }
-    },
-    "Wenn alles umgestellt ist, die neue Reihenfolge übernehmen." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Once everything is moved, apply the new order."
           }
         }
       }
@@ -9260,28 +8681,6 @@
         }
       }
     },
-    "Zeigen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show"
-          }
-        }
-      }
-    },
-    "Zeigen, zwischen welchen Platten sie steht" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show which records it stands between"
-          }
-        }
-      }
-    },
     "Zeigt, wo die Platte alphabetisch hingehört" : {
       "localizations" : {
         "en" : {
@@ -9328,28 +8727,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Drag to move the section"
-          }
-        }
-      }
-    },
-    "Zu %@ springen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jump to %@"
-          }
-        }
-      }
-    },
-    "Zu Buchstabe %@ springen" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jump to letter %@"
           }
         }
       }

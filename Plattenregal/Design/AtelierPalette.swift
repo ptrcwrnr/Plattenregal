@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 /// The icon's paper, petrol and label gold. These colors only participate in
 /// Signature Designs; the existing system/accent/ambient choices stay intact.

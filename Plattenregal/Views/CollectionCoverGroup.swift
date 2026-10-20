@@ -1,6 +1,4 @@
 import SwiftUI
-import SwiftData
-import AppKit
 
 /// A grid tile represents one release, even when the collection contains
 /// several physical copies. Only the cover and a quiet copy count are shown.

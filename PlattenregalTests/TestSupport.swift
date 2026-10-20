@@ -1,8 +1,6 @@
-import AppKit
 import SwiftUI
 import Foundation
 import Testing
-import SwiftData
 @testable import Plattenregal
 
 /// Parent of all suites. Serialized like XCTest was: the suites share

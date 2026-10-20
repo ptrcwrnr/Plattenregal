@@ -1,6 +1,4 @@
 import SwiftUI
-import SwiftData
-import Charts
 
 enum StatisticsSection: String, CaseIterable, Identifiable {
     case overview, highlights, valueHistory, sound, artists, labels, discover

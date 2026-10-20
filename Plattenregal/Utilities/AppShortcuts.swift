@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 /// The keyboard shortcuts, for the list under Einstellungen → Tastenkürzel. The

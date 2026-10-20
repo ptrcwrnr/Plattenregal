@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import ObjectiveC
 
 /// The caption under a cover in every cover grid (Collection, Wantlist,
 /// compartment), the same in both designs: artist, title (or the track a

@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 /// "Sortierung prüfen": which records of a shelf are out of order, against
 /// the shelf's stored positions.

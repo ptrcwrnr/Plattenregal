@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct ShelfStatusControl: View {
     let soldInShelves: Int

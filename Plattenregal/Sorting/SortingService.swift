@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 enum SortingService {
     static let alphabetNavigationSymbols = ["#"] + (65...90).compactMap(UnicodeScalar.init).map(String.init)

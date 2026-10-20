@@ -1,6 +1,4 @@
-import AppKit
 import Foundation
-import SwiftData
 
 /// Everything about the shelf that exists only in this app and not at
 /// Discogs: which copy stands where, locked compartments and records marked

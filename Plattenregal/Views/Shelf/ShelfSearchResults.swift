@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// The matches of the shelf search (typed into the field in the toolbar),
 /// floating over the rack like a popover so the page layout never shifts

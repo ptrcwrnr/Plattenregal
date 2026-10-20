@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// SwiftUI's Table does not reliably publish or restore scrollPosition on
 /// macOS. Keep the top visible copy through the native clip view instead.

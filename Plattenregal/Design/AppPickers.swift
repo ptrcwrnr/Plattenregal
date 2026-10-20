@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import ObjectiveC
 
 /// A choice between a few options. The chosen one sits on a pill that glides
 /// to a new choice, the same in both designs: in Modern a Liquid Glass lens

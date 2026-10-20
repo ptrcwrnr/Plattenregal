@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 /// The page the main window opens with.

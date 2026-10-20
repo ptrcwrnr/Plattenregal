@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import Charts
 
 /// Statistics as a set of calm, interactive cards: a hero with the collection
 /// value, hoverable charts that explain themselves on mouse-over, a record

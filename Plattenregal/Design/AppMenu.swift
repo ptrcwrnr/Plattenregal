@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import ObjectiveC
 
 /// The app's own context menu: a popover with hover rows instead of the
 /// native macOS menu, without separators. Plain `Button`s inside `content`

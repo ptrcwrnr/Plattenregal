@@ -1,6 +1,4 @@
-import AppKit
 import Foundation
-import SwiftData
 import UniformTypeIdentifiers
 
 // MARK: - Options

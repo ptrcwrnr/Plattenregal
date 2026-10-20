@@ -1,6 +1,5 @@
 import Foundation
 import Testing
-import SwiftData
 import Synchronization
 @testable import Plattenregal
 

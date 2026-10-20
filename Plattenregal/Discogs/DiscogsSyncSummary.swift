@@ -1,7 +1,4 @@
 import Foundation
-import SwiftData
-import Observation
-import OSLog
 
 nonisolated enum DiscogsSyncScope: Equatable, Sendable {
     case collection, wantlist, all, folder(Int)

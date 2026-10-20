@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 extension View {
     /// A table on its glass card, the same on every page (collection,

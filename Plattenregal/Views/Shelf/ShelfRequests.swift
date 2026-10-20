@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// What other pages ask of the shelf page. An object, not a binding: pages
 /// live in separate hosting views (see `PageStack`), and only Observation

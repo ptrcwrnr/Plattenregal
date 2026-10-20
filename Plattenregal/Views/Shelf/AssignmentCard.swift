@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// The card over the covers of "Platte hinzufügen": the shelf the records go to.
 struct AssignmentCard<Trailing: View>: View {

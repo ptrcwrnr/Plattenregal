@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// Two lines at most: what is happening overall (with animated dots and a
 /// small "x" to cancel), and underneath the current step — collection,

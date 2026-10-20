@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 /// Pull-to-refresh for a ScrollView: pulling the page down past its top edge
 /// fills a small ring; a full ring runs `action`. Works with the trackpad's

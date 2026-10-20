@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 /// Shared typography, spacing, color and motion tokens for every window, sheet,
 /// dashboard and card in the app. Views should pull from here instead of writing

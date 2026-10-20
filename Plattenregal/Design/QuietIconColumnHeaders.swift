@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// Icon columns (untitled: cover, row actions) don't need dividers in the
 /// table header, and neither does the end of the last column. SwiftUI offers

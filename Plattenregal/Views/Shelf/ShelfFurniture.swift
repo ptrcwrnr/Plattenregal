@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// The KALLAX as one piece of furniture: a single Liquid Glass body with the
 /// compartments set into it as shallow wells, so the rack is the one distinct

@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import UniformTypeIdentifiers
 
 /// A KALLAX variant or a size of one's own (columns × rows, 1–6 each).
 private struct CabinetSizePicker: View {

@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// A plain click on the already selected row clears the selection, as a
 /// click on the pulled-out spine does. `NSTableView` keeps the row selected

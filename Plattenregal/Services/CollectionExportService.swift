@@ -1,7 +1,5 @@
-import AppKit
 import Foundation
 import SwiftData
-import UniformTypeIdentifiers
 
 /// Builds exports of the collection the app currently mirrors (same account
 /// and copies as the collection page) or of that account's wantlist.

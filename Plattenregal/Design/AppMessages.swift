@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import ObjectiveC
 
 /// Capsule badge/pill used for styles and notes on a record.
 struct AppBadge: View {

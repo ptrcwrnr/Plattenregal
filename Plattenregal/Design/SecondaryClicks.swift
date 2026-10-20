@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 extension View {
     /// Right-click (or Control-click) on this view runs `action` with the

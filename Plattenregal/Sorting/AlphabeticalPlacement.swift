@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 enum AlphabeticalPlacement {
     /// A place in the rack a record fits alphabetically: the shelf, the

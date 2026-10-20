@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 import AppKit
 
 struct RecordCard: View {

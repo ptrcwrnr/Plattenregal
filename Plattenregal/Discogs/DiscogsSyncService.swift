@@ -1,7 +1,6 @@
 import Foundation
 import SwiftData
 import Observation
-import OSLog
 
 @Observable final class DiscogsSyncService {
     static let shared = DiscogsSyncService()

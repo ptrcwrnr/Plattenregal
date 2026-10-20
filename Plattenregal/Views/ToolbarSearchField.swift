@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// The search field at the right end of the toolbar, on the pages that have
 /// one (not on the statistics). It ends flush with the covers below it: the

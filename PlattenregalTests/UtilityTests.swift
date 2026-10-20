@@ -2,7 +2,6 @@ import AppKit
 import SwiftUI
 import Foundation
 import Testing
-import SwiftData
 @testable import Plattenregal
 
 extension AllTests {

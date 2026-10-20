@@ -1,6 +1,4 @@
 import SwiftUI
-import AppKit
-import ObjectiveC
 
 /// One search field for the whole app: icon, text field, clear button in a
 /// Liquid Glass capsule (same look as the search on the shelf page).

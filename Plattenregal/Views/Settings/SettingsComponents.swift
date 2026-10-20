@@ -1,6 +1,4 @@
 import SwiftUI
-import SwiftData
-import UniformTypeIdentifiers
 
 // MARK: - Shared building blocks
 

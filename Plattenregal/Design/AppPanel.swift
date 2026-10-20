@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import ObjectiveC
 
 /// A panel over the page instead of a sheet: no close button – a click
 /// beside it or Esc closes it.

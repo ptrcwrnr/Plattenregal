@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 /// A record being sorted in: the spots it fits (one, or two at a shelf
 /// boundary) and the one currently shown. For a record that already has a
