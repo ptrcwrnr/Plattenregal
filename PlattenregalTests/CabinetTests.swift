@@ -24,41 +24,6 @@ extension AllTests {
             _ = container
         }
 
-        @Test func v11StoreMovesItsCompartmentsIntoTheFirstCabinet() throws {
-            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            defer { try? FileManager.default.removeItem(at: dir) }
-            let url = dir.appendingPathComponent("Migration.store")
-            let copyID: UUID = try autoreleasepool {
-                let schema = Schema(versionedSchema: LibrarySchemaV11.self)
-                let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
-                let context = container.mainContext
-                var shelves: [LibrarySchemaV11.Shelf] = []
-                for number in 1...12 { let shelf = LibrarySchemaV11.Shelf(number: number); context.insert(shelf); shelves.append(shelf) }
-                shelves[6].isReserved = true; shelves[6].name = "Deko"
-                let release = LibrarySchemaV11.Release(discogsID: 7, artist: "Kraftwerk", title: "Computerwelt")
-                context.insert(release)
-                let copy = LibrarySchemaV11.RecordCopy(release: release, instanceID: 70, owner: "fixture")
-                context.insert(copy)
-                copy.shelf = shelves[5]; copy.positionInShelf = 1
-                try context.save()
-                return copy.id
-            }
-            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
-            let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
-                                               configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
-            try LibraryStorage.prepareShelves(in: container.mainContext)
-            let context = container.mainContext
-            let cabinets = try context.fetch(FetchDescriptor<Cabinet>())
-            #expect(cabinets.count == 1)
-            #expect(try context.fetchCount(FetchDescriptor<Shelf>()) == 12)
-            let copy = try #require(context.fetch(FetchDescriptor<RecordCopy>()).first { $0.id == copyID })
-            #expect(copy.shelf?.number == 6 && copy.shelf?.sortOrder == 6 && copy.shelf?.cabinet?.id == cabinets.first?.id)
-            #expect(copy.shelf?.row == 2 && copy.shelf?.column == 2)
-            let deko = try #require(context.fetch(FetchDescriptor<Shelf>()).first { $0.number == 7 })
-            #expect(deko.isReserved && deko.name == "Deko")
-        }
-
         @Test func addedCabinetGetsItsOwnCompartmentsWithFreshNumbers() throws {
             let (container, cabinets, _) = try fixture(); _ = container
             let second = try cabinets.add(name: "Flur", columns: 2, rows: 4)

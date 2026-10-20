@@ -65,9 +65,9 @@ Nach **Alles zurücksetzen** sind die gezeigten Platten gelöscht; die Statistik
 | `Statistics/StatisticsCards.swift` | Karten der Seite: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
-| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, Migrationen bis zum aktuellen Schema V16, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen, Sammlungswert während eines Syncs, gezeigte Platten aus dem Hauptfenster (31 Tests; die Menge prüft `tenThousandRecords` in ScenarioTests) |
+| `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen, Sammlungswert während eines Syncs, gezeigte Platten aus dem Hauptfenster (27 Tests; die Menge prüft `tenThousandRecords` in ScenarioTests) |
 
-Das Modell `ReleaseMarketValue` aus der früheren Einzelpreis-Funktion ist seit Schema V15 entfernt; die Migration verwirft seine Zeilen.
+Das Modell `ReleaseMarketValue` aus der früheren Einzelpreis-Funktion ist seit Schema V15 entfernt.
 
 ## Demo
 

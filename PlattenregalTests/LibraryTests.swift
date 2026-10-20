@@ -753,6 +753,51 @@ extension AllTests {
             } }
             #expect(a.positionInShelf == 1)
         }
+        /// V15 is the oldest store the plan knows; V16 only adds the sale list.
+        @Test func v15StoreMigratesToV16KeepingEverything() throws {
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let url = directory.appendingPathComponent("Migration.store")
+            let (placedID, missingID): (UUID, UUID) = try autoreleasepool {
+                let schema = Schema(versionedSchema: LibrarySchemaV15.self)
+                let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+                let context = container.mainContext
+                let cabinet = Cabinet(name: "Kallax", rows: 1, columns: 2, sortOrder: 0)
+                context.insert(cabinet)
+                let shelf = Shelf(number: 1, cabinet: cabinet, slot: 1)
+                context.insert(shelf)
+                shelf.cabinet = cabinet
+                let release = Release(discogsID: 42, artist: "Air", title: "Moon Safari")
+                context.insert(release)
+                let placed = RecordCopy(release: release, instanceID: 1, owner: "fixture", shelf: shelf, position: 1)
+                let missing = RecordCopy(release: release, instanceID: 2, owner: "fixture", shelf: shelf, position: 2)
+                context.insert(placed); context.insert(missing)
+                context.insert(MissingCopyMark(copyID: missing.id))
+                context.insert(OptimizationExclusion(copyID: placed.id))
+                context.insert(WantlistEntry(owner: "fixture", release: release, releaseID: 42))
+                context.insert(DiscogsAccount(username: "fixture"))
+                try context.save()
+                return (placed.id, missing.id)
+            }
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
+            let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
+                                               configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+            let context = container.mainContext
+            let copies = try context.fetch(FetchDescriptor<RecordCopy>())
+            #expect(copies.count == 2)
+            let placed = try #require(copies.first { $0.id == placedID })
+            #expect(placed.shelf?.number == 1 && placed.positionInShelf == 1 && placed.release?.discogsID == 42)
+            #expect(placed.shelf?.cabinet?.name == "Kallax")
+            #expect(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID) == [missingID])
+            #expect(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID) == [placedID])
+            #expect(try context.fetchCount(FetchDescriptor<WantlistEntry>()) == 1)
+            #expect(try context.fetchCount(FetchDescriptor<DiscogsAccount>()) == 1)
+            #expect(try context.fetchCount(FetchDescriptor<SaleCopyMark>()) == 0)
+            context.insert(SaleCopyMark(copyID: placedID))
+            try context.save()
+            #expect(try context.fetchCount(FetchDescriptor<SaleCopyMark>()) == 1)
+        }
         @Test func persistentStoreCanBeReopened() throws {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

@@ -71,8 +71,8 @@ enum LibraryStorage {
     static func prepareShelves(in context: ModelContext) throws {
         var cabinets = try context.fetch(FetchDescriptor<Cabinet>(sortBy: [SortDescriptor(\Cabinet.sortOrder)]))
         var existing = try context.fetch(FetchDescriptor<Shelf>())
-        // Stores from before cabinets (and fresh installs) get one KALLAX
-        // holding the compartments 1…12, keeping their numbers and places.
+        // A fresh store gets one KALLAX holding the compartments 1…12; a
+        // compartment without a cabinet joins the first, keeping its place.
         if cabinets.isEmpty {
             let cabinet = Cabinet(name: String(localized: "Regal"), rows: ShelfGeometry.rows, columns: ShelfGeometry.columns, sortOrder: 0)
             context.insert(cabinet)

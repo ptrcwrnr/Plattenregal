@@ -311,39 +311,6 @@ extension AllTests {
             #expect(DiscogsAccount.current(in: [a, b])?.username == "b")
             #expect(DiscogsAccount.current(in: []) == nil)
         }
-        @Test func v11MigrationDropsOnlyRecordsWithoutDiscogsIDs() throws {
-            let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            defer { try? FileManager.default.removeItem(at: directory) }
-            let url = directory.appendingPathComponent("Migration.store")
-            let syncedID: UUID = try autoreleasepool {
-                let schema = Schema(versionedSchema: LibrarySchemaV10.self)
-                let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
-                let context = container.mainContext
-                let shelf = LibrarySchemaV10.Shelf(number: 3); context.insert(shelf)
-                let synced = LibrarySchemaV10.Release(artist: "Synced", title: "Album"); synced.discogsID = 42
-                let copy = LibrarySchemaV10.RecordCopy(release: synced, shelf: shelf, position: 1)
-                copy.discogsInstanceID = 100; copy.discogsOwner = "fixture"; copy.discogsActive = false; copy.notes = "BLEIBT"
-                context.insert(copy)
-                let wanted = LibrarySchemaV10.Release(artist: "Wanted", title: "Album"); wanted.discogsID = 43
-                context.insert(LibrarySchemaV10.WantlistEntry(owner: "fixture", release: wanted, releaseID: 43))
-                // Added by hand in an early version: no Discogs IDs anywhere.
-                let manual = LibrarySchemaV10.Release(artist: "Manual", title: "Album")
-                context.insert(LibrarySchemaV10.RecordCopy(release: manual, shelf: shelf, position: 2))
-                try context.save(); return copy.id
-            }
-            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
-            let migrated = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
-                                              configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
-            let context = ModelContext(migrated)
-            let copies = try context.fetch(FetchDescriptor<RecordCopy>())
-            #expect(copies.map(\.id) == [syncedID])
-            #expect(copies.first?.discogsInstanceID == 100); #expect(copies.first?.discogsOwner == "fixture")
-            #expect(copies.first?.discogsActive == false)
-            #expect(copies.first?.shelf?.number == 3)
-            #expect(Set(try context.fetch(FetchDescriptor<Release>()).map(\.discogsID)) == [42, 43])
-            #expect(try context.fetchCount(FetchDescriptor<WantlistEntry>()) == 1)
-        }
         @Test func paginationFailureDoesNotModifyAnyScope() async throws {
             let c = try LibraryStorage.makeContainer(inMemory: true)
             try merge(c, collection: [entry()], wants: [want()], folders: [.init(id: 1, name: "Original", count: 1)])
