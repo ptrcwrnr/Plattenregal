@@ -1,3 +1,9 @@
+# Test-Attrappen in eigenen Dateien · 20.10.2026
+
+- Die URL-Attrappen von `ScenarioTests` (`ScenarioProtocol`) und `StatisticsTests` (`StatisticsURLProtocol`, `StatisticsRequestLog`, `StatisticsHook`) liegen jetzt wie bei den Abgleich-Tests in eigenen Dateien (`ScenarioTestStubs.swift`, `StatisticsTestStubs.swift`). Nur verschoben, der Zeilenbestand ist gleich.
+- Die übrigen App-Dateien über 300 Zeilen bleiben bewusst ganz: `WantlistView`, `PageStack`, `ShelfAutoBackup`, `ShelfFurniture`, `StatisticsCharts`, `AppearanceSettingsView`, `ExportSettingsView`. Jede ist ein geschlossener Typ oder eine zusammengehörige Gruppe. Teilen würde `private` öffnen oder, bei Ansichten, Teile von `body` in andere Dateien verlegen, die der Release-Build einzeln übersetzt.
+- Geprüft: alle 205 Tests erfolgreich.
+
 # Toter Code: verwaiste Texte und überflüssige Imports entfernt · 20.10.2026
 
 - **Gesucht:** Jede Deklaration der App ist gegen den gesamten Quelltext gezählt. Jedes `private` Mitglied ist zusätzlich in seiner eigenen Datei gezählt, denn nur dort kann es benutzt werden. Ungenutzte Funktionen, Typen, Werte oder Enum-Fälle gibt es keine. Die Treffer waren Fehlalarme: der App-Einstieg, `applicationShouldTerminateAfterLastWindowClosed` (ruft macOS auf), die Pflichtangaben der Schema-Versionen und `appDelegate` (der Property-Wrapper meldet den Delegate allein durch seine Existenz an).

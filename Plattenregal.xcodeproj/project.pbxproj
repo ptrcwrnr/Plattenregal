@@ -143,6 +143,8 @@
 		18EB59671F252366178FD33D /* PlattenregalTests/DiscogsSyncTests+Fetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C800577A43575B3854EF3 /* PlattenregalTests/DiscogsSyncTests+Fetching.swift */; };
 		D6BC912289B39045F9F2E614 /* PlattenregalTests/DiscogsSyncTestStubs.swift in Sources */ = {isa = PBXBuildFile; fileRef = E17D3B8AA5E2624E8F25741A /* PlattenregalTests/DiscogsSyncTestStubs.swift */; };
 		90B8CCED9258672967D80BF4 /* Plattenregal/Discogs/DiscogsSyncService+Merge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5622954F011A57F0CA11D20 /* Plattenregal/Discogs/DiscogsSyncService+Merge.swift */; };
+		B3D52D1BE117C55B4316B7D6 /* PlattenregalTests/ScenarioTestStubs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CAC1F14C7509AA2B9F05E5 /* PlattenregalTests/ScenarioTestStubs.swift */; };
+		4456115C64EF0A9337C633EB /* PlattenregalTests/StatisticsTestStubs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C79791E0CE7855D817CE7F12 /* PlattenregalTests/StatisticsTestStubs.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -296,6 +298,8 @@
 		695C800577A43575B3854EF3 /* PlattenregalTests/DiscogsSyncTests+Fetching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlattenregalTests/DiscogsSyncTests+Fetching.swift"; sourceTree = "<group>"; };
 		E17D3B8AA5E2624E8F25741A /* PlattenregalTests/DiscogsSyncTestStubs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/DiscogsSyncTestStubs.swift; sourceTree = "<group>"; };
 		E5622954F011A57F0CA11D20 /* Plattenregal/Discogs/DiscogsSyncService+Merge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Plattenregal/Discogs/DiscogsSyncService+Merge.swift"; sourceTree = "<group>"; };
+		44CAC1F14C7509AA2B9F05E5 /* PlattenregalTests/ScenarioTestStubs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/ScenarioTestStubs.swift; sourceTree = "<group>"; };
+		C79791E0CE7855D817CE7F12 /* PlattenregalTests/StatisticsTestStubs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/StatisticsTestStubs.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -389,6 +393,8 @@
 				E7A0C0DE0000000000000013 /* PlattenregalTests/BackupTests.swift */,
 				ABCDF0000000000000000001 /* PlattenregalTests/SettingsTests.swift */,
 				F81099FF1C0BF4C1C166E06C /* PlattenregalTests/LibraryTests.swift */,
+				C79791E0CE7855D817CE7F12 /* PlattenregalTests/StatisticsTestStubs.swift */,
+				44CAC1F14C7509AA2B9F05E5 /* PlattenregalTests/ScenarioTestStubs.swift */,
 				E17D3B8AA5E2624E8F25741A /* PlattenregalTests/DiscogsSyncTestStubs.swift */,
 				695C800577A43575B3854EF3 /* PlattenregalTests/DiscogsSyncTests+Fetching.swift */,
 				8F21EDCF2D17B44D4EC00D01 /* PlattenregalTests/DiscogsSyncTests+Merge.swift */,
@@ -643,6 +649,8 @@
 				E7A0C0DE0000000000000014 /* PlattenregalTests/BackupTests.swift in Sources */,
 				ABCDF0000000000000000002 /* PlattenregalTests/SettingsTests.swift in Sources */,
 				3E95B2BDE98C47FC3A0124C2 /* PlattenregalTests/LibraryTests.swift in Sources */,
+				4456115C64EF0A9337C633EB /* PlattenregalTests/StatisticsTestStubs.swift in Sources */,
+				B3D52D1BE117C55B4316B7D6 /* PlattenregalTests/ScenarioTestStubs.swift in Sources */,
 				D6BC912289B39045F9F2E614 /* PlattenregalTests/DiscogsSyncTestStubs.swift in Sources */,
 				18EB59671F252366178FD33D /* PlattenregalTests/DiscogsSyncTests+Fetching.swift in Sources */,
 				EFE95B126E70687390C5D444 /* PlattenregalTests/DiscogsSyncTests+Merge.swift in Sources */,
