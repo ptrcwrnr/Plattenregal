@@ -89,6 +89,27 @@ extension AllTests.DiscogsSyncTests {
         // 403 may be the token, not the release: tried again next time.
         #expect(releases[403]?.detailsFetchedAt == nil)
     }
+    /// At launch the download runs unseen: no status line while it loads and
+    /// no "abgeschlossen" afterwards. Only a sync the user starts shows it.
+    @Test @MainActor func tracklistsResumedAtLaunchStayInvisible() async throws {
+        let c = try LibraryStorage.makeContainer(inMemory: true)
+        try merge(c, collection: [entry(1, release: 200)])
+        let sync = DiscogsSyncService(api: .stubbed(TracklistStatusProtocol.self))
+        sync.startTracklists(container: c, fromSync: false)
+        var everShown = false
+        func loaded() throws -> Bool { try ModelContext(c).fetch(FetchDescriptor<Release>()).first?.tracks.isEmpty == false }
+        let deadline = ContinuousClock.now + .seconds(10)
+        while ContinuousClock.now < deadline {
+            everShown = everShown || sync.hasStatus || sync.isRunning
+            if try loaded(), !sync.isWorking { break }
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        #expect(try loaded())
+        #expect(!everShown)
+        // "abgeschlossen" would have been set right at the end.
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(!sync.hasStatus && !sync.isWorking)
+    }
     /// The "x" while the collection value is fetched: the merge is saved
     /// by then, so there is no error to show – and no tracklist download
     /// starting behind a status that is gone.

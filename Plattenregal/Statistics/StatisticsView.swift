@@ -16,7 +16,7 @@ struct StatisticsView: View {
     @State private var filter: StatisticGroup?
     @State private var opened: RecordCopy?
     @State private var reloadTask: Task<Void, Never>?
-    /// `busy` and `isRunning` often end together after a sync; one reload is enough.
+    /// `busy` and `isWorking` often end together after a sync; one reload is enough.
     @State private var syncReloadTask: Task<Void, Never>?
     @State private var soundDimension: SoundDimension = .styles
     @State private var yearsByDecade = true
@@ -70,7 +70,7 @@ struct StatisticsView: View {
         // Read in modifiers of their own: the sync starting and ending must
         // not re-run this page (see `onObservedChange`).
         .onObservedChange(of: { DiscogsSyncService.shared.busy }) { _, busy in if !busy { reloadAfterSync() } }
-        .onObservedChange(of: { DiscogsSyncService.shared.isRunning }) { _, running in if !running { reloadAfterSync() } }
+        .onObservedChange(of: { DiscogsSyncService.shared.isWorking }) { _, working in if !working { reloadAfterSync() } }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { notification in
             // Sorting in, moving and marks change nothing counted here; the
             // random pick follows places on its own (see `RandomRecordCard`).
@@ -78,7 +78,7 @@ struct StatisticsView: View {
             // During a sync and its tracklist download the store saves every few
             // seconds; recomputing everything each time would only stutter.
             // The sync's end reloads once (above).
-            guard !model.busy, !DiscogsSyncService.shared.isRunning else { return }
+            guard !model.busy, !DiscogsSyncService.shared.isWorking else { return }
             // Hidden (e.g. while sorting records on the shelf page): don't
             // recompute the whole collection after every single move — once
             // when the page is shown again is enough.

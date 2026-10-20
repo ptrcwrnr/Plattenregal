@@ -1,3 +1,12 @@
+# Tracklisten beim Start unsichtbar nachladen · 20.10.2026
+
+- **Vorher:** Beim Start lud die App fällige Tracklisten nach (unterbrochene Läufe oder nach 180 Tagen aufzufrischende). Das sollte leise geschehen, zeigte aber trotzdem kurz „Tracklisten werden geladen“ (oft nur 1–6 Stück) und danach „Synchronisierung abgeschlossen“. `loadTracklists` setzte die Anzeige auch im leisen Lauf, und am Ende rief es `finish()` auf.
+- **Jetzt:** Das Nachladen beim Start bleibt von Anfang bis Ende unsichtbar, ohne Statuszeile, ohne Fortschritt und ohne Abschlussmeldung. Fehler bleiben wie bisher still und stehen im Protokoll. Ein Abgleich, den man selbst startet (Ziehen, ⌘R, Knöpfe in Collection, Wantlist und Einstellungen), zeigt die Tracklisten unverändert mit Fortschritt und „abgeschlossen“.
+- **Statistik unverändert:** Sie hält ihre Neuberechnungen zurück, solange geladen wird, und rechnet danach einmal neu (die Länder kommen mit den Tracklisten). Dafür folgt sie jetzt `DiscogsSyncService.isWorking` (Abgleich oder Tracklisten, sichtbar oder nicht) statt `isRunning` (nur Sichtbares). Sonst hätte sie bei einem größeren unsichtbaren Lauf nach jedem Zwischenspeichern neu gerechnet.
+- **Test:** `tracklistsResumedAtLaunchStayInvisible` startet das Nachladen wie beim Start. Er prüft, dass die Tracklist geladen wird, dass zu keinem Zeitpunkt eine Statuszeile erscheint und dass danach keine Abschlussmeldung kommt.
+- README: Absatz „Collection und Wantlist aus Discogs“ beschreibt das unsichtbare Nachladen.
+- Geprüft: Debug-Build ohne Warnungen, alle 206 Tests erfolgreich. In der echten App beim Start nicht angesehen, ob gerade Tracklisten fällig sind, hängt vom Stand der Sammlung ab.
+
 # DMG 1.1.2 mit dem aufgeräumten Stand neu ausgegeben · 20.10.2026
 
 - `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2. Die DMG enthält alles von heute: Schema nur noch V15/V16, die Aufteilung in übersichtliche Dateien, den bereinigten Textkatalog, die zusammengelegten Bausteine und die angeglichenen Animationen und Radien. Die Handbuch-PDFs sind unverändert.

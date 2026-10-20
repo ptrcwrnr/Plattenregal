@@ -24,9 +24,14 @@ import Observation
     /// The sync itself or the tracklist download after it is still running;
     /// only when both are done is the sync reported as finished.
     var isRunning: Bool { busy || (showsTracklists && !cancelledByUser) }
-    /// The tracklist download is shown as part of the sync. After a sync it is
-    /// shown right away; when resumed at launch only once there is work.
+    /// The tracklist download is shown as part of a sync the user started.
+    /// Resumed at launch, it runs unseen (see `tracklistsLoading`).
     private var showsTracklists = false
+    /// Tracklists are being loaded, shown or not.
+    private(set) var tracklistsLoading = false
+    /// The sync or a tracklist download is at work, also one nobody sees
+    /// (at launch). For pages that hold back their own updates meanwhile.
+    var isWorking: Bool { busy || tracklistsLoading }
     /// Set by the "x": whatever ends next clears the status instead of
     /// reporting "abgebrochen", so the lines slide away right after.
     private var cancelledByUser = false
@@ -182,8 +187,8 @@ import Observation
     nonisolated static let tracklistRefreshesPerRun = 100
 
     /// `fromSync`: part of a sync — shown right away, "abgeschlossen" at the
-    /// end, problems reported. Otherwise (app launch) it stays invisible
-    /// unless there is something to load, and fails quietly.
+    /// end, problems reported. Otherwise (app launch) it stays invisible from
+    /// start to end and fails quietly.
     func startTracklists(container: ModelContainer, fromSync: Bool = true) {
         if fromSync { showsTracklists = true }
         // A download cancelled by a new sync may still be winding down; queue
@@ -203,7 +208,7 @@ import Observation
             showsTracklists = false
             tracklistTask = nil
             if Task.isCancelled { if !busy && wasShown { dismissStatus() } }   // the "x"; a new sync keeps its own status
-            else if fromSync || didWork { finish() }
+            else if fromSync { finish() }
         }
     }
 
@@ -258,8 +263,12 @@ import Observation
         }
         guard !pending.isEmpty else { return false }
 
-        showsTracklists = true
-        tracklistProgress = (0, pending.count)
+        tracklistsLoading = true
+        defer { tracklistsLoading = false }
+        if !quiet {
+            showsTracklists = true
+            tracklistProgress = (0, pending.count)
+        }
         var loaded = 0
         /// A failed batch is rolled back; its releases stay without tracklist
         /// and are simply loaded again next time — but say so after a sync.
@@ -303,7 +312,7 @@ import Observation
                 }
                 return true
             }
-            tracklistProgress = (index + 1, pending.count)
+            if !quiet { tracklistProgress = (index + 1, pending.count) }
         }
         save()
         return true
