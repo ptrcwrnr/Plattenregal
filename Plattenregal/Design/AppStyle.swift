@@ -143,8 +143,14 @@ enum AppStyle {
     static let statusAnimation = Animation.smooth(duration: 0.45)
     /// Progress rings and bars following their value.
     static let progressAnimation = Animation.smooth(duration: 0.35)
-    /// The glass lens of a segmented picker gliding to the chosen segment.
+    /// The pill of a segmented picker moving to the chosen segment (see `settleTransition`).
     static let selectionAnimation = Animation.smooth(duration: 0.3)
+    /// A segmented picker's pill on a new choice: the old one just fades, the
+    /// new one fades in while settling down from `tightSpacing` above – it
+    /// doesn't slide across the other options. Only a fade with reduce motion.
+    static var settleTransition: AnyTransition {
+        reduceMotion ? .opacity : .asymmetric(insertion: .opacity.combined(with: .offset(y: -tightSpacing)), removal: .opacity)
+    }
     /// Statistics bars growing in when first shown (after `reduceMotion` is checked).
     static let growAnimation = Animation.smooth(duration: 0.7).delay(0.05)
     /// Statistics figures rolling to a new value (after `reduceMotion` is checked).

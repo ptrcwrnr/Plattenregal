@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// A choice between a few options. The chosen one sits on a pill that glides
-/// to a new choice, the same in both designs: in Modern a Liquid Glass lens
+/// A choice between a few options. The chosen one sits on a pill that, on a
+/// new choice, fades out where it was and settles onto the new option from a
+/// little above (`AppStyle.settleTransition`), the same in both designs: in Modern a Liquid Glass lens
 /// (never a gray or blue fill) with the label in the accent, in Klassisch
 /// cream paper. In the toolbar the toolbar's bar is the background
 /// (`glass: false`, see `toolbarBar`); anywhere else it brings its own capsule.
@@ -15,8 +16,6 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     /// Right-click on an option, with the click position (see `onSecondaryClick`).
     var secondaryClick: ((Value, UnitPoint) -> Void)? = nil
     @ViewBuilder let label: (Value) -> Label
-    /// The selection pill is one view sliding between the options.
-    @Namespace private var pill
 
     var body: some View {
         let row = HStack(spacing: 0) {
@@ -33,25 +32,33 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                 }
                 Button { selection = option } label: {
                     label(option)
-                        // Color only: a heavier weight would widen the label
-                        // and shift its neighbours on every switch.
-                        .foregroundStyle(AppStyle.isAtelier
-                            ? AnyShapeStyle(selected ? (glass ? AtelierPalette.ink : AtelierPalette.toolbarInk) : glass ? AtelierPalette.muted : Color.white.opacity(0.8))
-                            : selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.secondary))
+                        .foregroundStyle(unselectedStyle)
+                        // The pill brings the label in its own color (below):
+                        // a color fading between the two would, halfway, be as
+                        // gray as the half-shown pill and vanish on it. Gone at
+                        // once when chosen, back with the animation when left.
+                        .opacity(selected ? 0 : 1)
+                        .animation(selected ? nil : AppStyle.selectionAnimation, value: selected)
                         .padding(.horizontal, small ? AppStyle.itemSpacing : AppStyle.rowSpacing)
                         .frame(height: small ? 24 : 30)
                         .background {
                             if selected {
-                                if AppStyle.isAtelier {
-                                    RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius - 3).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
-                                        .padding(.vertical, 3)
-                                        .matchedGeometryEffect(id: "pill", in: pill)
-                                } else {
-                                    Capsule().fill(.clear)
-                                        .glassEffect(.regular, in: .capsule)
-                                        .padding(.vertical, 3)
-                                        .matchedGeometryEffect(id: "pill", in: pill)
+                                ZStack {
+                                    if AppStyle.isAtelier {
+                                        RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius - 3).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
+                                            .padding(.vertical, 3)
+                                    } else {
+                                        Capsule().fill(.clear)
+                                            .glassEffect(.regular, in: .capsule)
+                                            .padding(.vertical, 3)
+                                    }
+                                    // Color only: a heavier weight would widen
+                                    // the label and shift its neighbours.
+                                    label(option)
+                                        .foregroundStyle(selectedStyle)
+                                        .accessibilityHidden(true)
                                 }
+                                .transition(AppStyle.settleTransition)
                             }
                         }
                         .contentShape(Capsule())
@@ -79,6 +86,14 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
         } else {
             row
         }
+    }
+
+    private var selectedStyle: AnyShapeStyle {
+        AppStyle.isAtelier ? AnyShapeStyle(glass ? AtelierPalette.ink : AtelierPalette.toolbarInk) : AnyShapeStyle(AppStyle.accent)
+    }
+
+    private var unselectedStyle: AnyShapeStyle {
+        AppStyle.isAtelier ? AnyShapeStyle(glass ? AtelierPalette.muted : Color.white.opacity(0.8)) : AnyShapeStyle(.secondary)
     }
 }
 

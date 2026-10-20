@@ -1,3 +1,11 @@
+# Umschalter: Auswahl setzt sich ab statt zu gleiten · 20.10.2026
+
+- **Vorher:** Die Auswahlkapsel aller Umschalter (Rubriken oben, Einstellungs-Tabs, Regal-Reiter, Raster/Liste, Optionen in den Einstellungen, Statistik, „Sortierung prüfen“) glitt über die anderen Optionen zur neuen Wahl (`matchedGeometryEffect`).
+- **Jetzt:** Die alte Kapsel blendet an Ort und Stelle aus. Die neue blendet ein und setzt sich dabei um `tightSpacing` (4 pt) von oben auf die gewählte Option, in 0,3 s mit `selectionAnimation`. Neu ist dafür die zentrale Stufe `AppStyle.settleTransition`. Bei „Bewegung reduzieren“ wird nur noch geblendet. Das gilt für beide Designs, weil alle Umschalter derselbe Baustein `GlassSegmentedPicker` sind.
+- **Beschriftung in der Kapsel:** Die Kapsel bringt die Beschriftung in der Auswahlfarbe selbst mit, und die normale Beschriftung darunter verschwindet beim Wählen sofort. Im ersten Versuch wechselte die Schrift nur ihre Farbe. Mitten im Übergang war sie dann so grau wie die halb sichtbare Kapsel, und „Collection“ verschwand kurz ganz. Für VoiceOver bleibt nur die normale Beschriftung.
+- README: Absatz zu den Designs beschreibt die neue Bewegung.
+- Geprüft: Debug-Build und alle 206 Tests erfolgreich. Den Wechsel Regal → Collection habe ich in der Demo als Bildfolge aufgenommen, in Klassisch und Modern (hell). Die Kapsel setzt sich von oben ab, die Schrift bleibt in jedem Bild lesbar, und die alte Kapsel blendet sauber aus. Nur die Rubriken habe ich angesehen, nicht die übrigen Umschalter. Die laufen über denselben Baustein.
+
 # DMG 1.1.2 mit unsichtbarem Tracklisten-Nachladen neu ausgegeben · 20.10.2026
 
 - `dist/Plattenregal-1.1.2.dmg` neu gebaut, Version bleibt 1.1.2. Neu gegenüber der Ausgabe von 22:07: Tracklisten werden beim Start unsichtbar nachgeladen. Der erste Versuch brach ab, weil unter `/Volumes/Plattenregal` noch eine andere DMG eingehängt war (eine Kopie aus iCloud Drive). Sie ist ausgeworfen.
