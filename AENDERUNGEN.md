@@ -1,3 +1,8 @@
+# DMG 1.1.2 mit dem aufgeräumten Stand neu ausgegeben · 20.10.2026
+
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2. Die DMG enthält alles von heute: Schema nur noch V15/V16, die Aufteilung in übersichtliche Dateien, den bereinigten Textkatalog, die zusammengelegten Bausteine und die angeglichenen Animationen und Radien. Die Handbuch-PDFs sind unverändert.
+- Geprüft: `hdiutil verify` gültig. Eingehängt: nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig. Die App-Binärdatei ist identisch mit dem frischen Release-Build, beide PDFs sind byte-gleich mit denen im Repository. In der Binärdatei kommen die Namen der entfernten Schema-Versionen V10–V14 nicht mehr vor. Das Finder-Fenster der DMG habe ich nicht geöffnet, an Hintergrund und Fensteraufbau hat sich nichts geändert.
+
 # Federn und Klassisch-Radien an die zentralen Stufen angeglichen · 20.10.2026
 
 - **Eine Bewegungskurve:** `AppStyle` sieht für die ganze App `.smooth` vor, ohne Überschwingen. Gefedert (`.spring` mit `bounce`) haben bisher noch der schwebende Knopf unten rechts (Aufklappen, Zuklappen, gestaffeltes Erscheinen der Einträge) und die beiden Statusanzeigen. Der Knopf nimmt jetzt `moveAnimation` (0,3 s, dieselbe Kurve wie `layoutAnimation`, aber auch bei „Bewegung reduzieren“ verfügbar). Die Staffelung der Einträge und das Verhalten bei „Bewegung reduzieren“ bleiben. Die Ladeanzeige der Statistik (vorher 0,45 s gefedert) und die Statusanzeige des Abgleichs (beim Erscheinen 0,5 s gefedert) erscheinen jetzt beide mit `statusAnimation` (0,45 s). In der App steht kein `.spring` mehr.
