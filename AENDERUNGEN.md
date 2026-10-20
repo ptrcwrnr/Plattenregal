@@ -1,3 +1,9 @@
+# DMG 1.1.2 mit ruhigerer Toolbar neu ausgegeben · 20.10.2026
+
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2. Neu gegenüber der Ausgabe von 22:53: Die Toolbar wechselt im Takt der Seite (Suchfeld blendet aus statt zu springen, Platzhalter blendet über, Pill setzt sich um 2 pt ab, ihre Schrift bleibt stehen). In Einstellungen → Darstellung steht Klassisch oben. Die Handbuch-PDFs sind unverändert.
+- Der erste Lauf brach ab, weil die DMG von 22:53 noch unter `/Volumes/Plattenregal` eingehängt war. Von ihr lief nichts, sie ist ausgeworfen.
+- Geprüft: `hdiutil verify` gültig. Eingehängt: nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig. Die App-Binärdatei ist identisch mit dem Release-Build vom Stand `7184f77` und enthält keine der Debug-Startargumente. Beide PDFs sind byte-gleich mit denen im Repository. Das Finder-Fenster der DMG habe ich nicht geöffnet.
+
 # Toolbar wechselt im Takt der Seite; Klassisch oben in den Designs · 20.10.2026
 
 - **Vorher:** Beim Rubrikenwechsel wirkte die Toolbar grob. Das Suchfeld verschwand zur Statistik schlagartig und kam ebenso zurück: Es wurde aus der Toolbar genommen, macOS baute sie neu auf und übersprang dabei das Ausblenden. Der Platzhalter („Regal durchsuchen“ → „Collection durchsuchen“) sprang um. Die Pill lief gleichmäßig 0,3 s, alte und neue waren kurz beide halb zu sehen, und die Seite darunter wechselte in einem anderen Takt.
