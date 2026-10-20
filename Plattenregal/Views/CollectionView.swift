@@ -4,38 +4,38 @@ import AppKit
 
 struct CollectionView: View {
     /// Shown or not, without re-rendering the grid on every page switch.
-    @State private var activity = PageActivity()
-    @Environment(\.modelContext) private var context
+    @State var activity = PageActivity()
+    @Environment(\.modelContext) var context
     /// Shared with the other pages, fetched only when they change (see `LibraryRecords`).
-    private var records: LibraryRecords { .of(context) }
-    private var copies: [RecordCopy] { records.copies }
-    private var shelves: [Shelf] { records.shelves }
+    var records: LibraryRecords { .of(context) }
+    var copies: [RecordCopy] { records.copies }
+    var shelves: [Shelf] { records.shelves }
     private var exclusions: [OptimizationExclusion] { records.exclusions }
-    private var accounts: [DiscogsAccount] { records.accounts }
+    var accounts: [DiscogsAccount] { records.accounts }
     /// IDs of `exclusions`, looked up per table row and context menu.
-    @State private var excludedIDs: Set<UUID> = []
-    @State private var sync = DiscogsSyncService.shared
+    @State var excludedIDs: Set<UUID> = []
+    @State var sync = DiscogsSyncService.shared
     @State private var changes = LibraryChanges.shared
     // The window's page switch; nil in the statistics drill-down sheet.
-    private let pages: PageSelection<Destination>?
+    let pages: PageSelection<Destination>?
     // The search shared with the wantlist (see `LibrarySearch`); nil in the
     // statistics panel, which has no search. Objects, read directly: this page is
     // built once (see `PageStack`), and a binding handed in would keep the
     // value it had then.
-    private let search: LibrarySearch?
+    let search: LibrarySearch?
     /// The query typed into the search field in the toolbar (see `ToolbarSearchField`).
-    private var query: String { search?.query ?? "" }
+    var query: String { search?.query ?? "" }
 
     let showShelf: (RecordCopy) -> Void
     var analyticsFilter: StatisticGroup? = nil
     /// Kept for as long as the page lives (see `PageStack`), so a section
     /// switch or another page doesn't lose the place.
-    @State private var scroll = ScrollAnchor<UUID>()
-    @AppStorage(DisplaySettings.collectionLayoutKey) private var layout = OverviewLayout.grid
+    @State var scroll = ScrollAnchor<UUID>()
+    @AppStorage(DisplaySettings.collectionLayoutKey) var layout = OverviewLayout.grid
     /// The two lists of the settings tab "Listen"; off, their menu entries are gone.
-    @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
-    @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
-    @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    @AppStorage(DisplaySettings.missingListKey) var missingEnabled = true
+    @AppStorage(DisplaySettings.saleListKey) var saleEnabled = true
+    @AppStorage(ShelfLabelStyle.key) var labelStyle = ShelfLabelStyle.range
     @AppStorage(DisplaySettings.coverSizeKey) private var coverSize = DisplaySettings.defaultCoverSize
     /// Width left for the cover columns, derived from the grid's *current*
     /// size on every layout pass — never cached, so it can't go stale when the
@@ -43,7 +43,7 @@ struct CollectionView: View {
     private func gridContentWidth(in width: CGFloat) -> CGFloat {
         width - 2 * AppStyle.pageMargin
     }
-    @AppStorage(DisplaySettings.collectionOrderKey) private var order = OverviewOrder.alphabetical
+    @AppStorage(DisplaySettings.collectionOrderKey) var order = OverviewOrder.alphabetical
     /// One artist's records follow the shelf's order (Einstellungen › Regal).
     @AppStorage(ShelfSecondaryOrder.key) private var secondaryOrder = ShelfSecondaryOrder.title
     /// List layout: the row whose menu is open, and where it was right-clicked.
@@ -54,15 +54,15 @@ struct CollectionView: View {
     /// List layout: the row whose popover is open (double-click), and where.
     @State private var tableQuickLook: (id: UUID, anchor: UnitPoint)?
     /// Copy whose popover is open (single click on a cover).
-    @State private var quickLook: UUID?
+    @State var quickLook: UUID?
     /// The cover whose right-click menu is open, and where it was clicked.
-    @State private var contextMenu: (id: UUID, anchor: UnitPoint)?
+    @State var contextMenu: (id: UUID, anchor: UnitPoint)?
     @State private var gridClicks = GridSecondaryClicks<UUID>()
     /// The popover closes on the mouse-down of a click outside it; if that
     /// click lands on the same cover, it should stay closed, not reopen.
-    @State private var quickLookDismissed: (id: UUID, at: Date)?
-    @Environment(\.openURL) private var openURL
-    @State private var error: String?
+    @State var quickLookDismissed: (id: UUID, at: Date)?
+    @Environment(\.openURL) var openURL
+    @State var error: String?
 
     init(
         pages: PageSelection<Destination>? = nil,
@@ -80,116 +80,42 @@ struct CollectionView: View {
     // this filter/sort pass to redo its work on every frame — that repeated
     // O(n log n) work over the full collection was the source of the scroll
     // and navigation stutter.
-    @State private var items: [RecordCopy] = []
-    @State private var coverGroups: [CollectionCoverGroup] = []
+    @State var items: [RecordCopy] = []
+    @State var coverGroups: [CollectionCoverGroup] = []
 
     // Search works in two stages so typing stays smooth: `rebuildBase` does
     // the expensive part (filter, sort) only when the data or
     // section changes; `applyQuery` then just filters that sorted list with
     // the search texts folded once (`LibrarySearchIndexes`) on each
     // (debounced) keystroke.
-    @State private var base: [RecordCopy] = []
+    @State var base: [RecordCopy] = []
     /// The query changed while this section was hidden; apply it on return.
-    @State private var queryPending = false
+    @State var queryPending = false
     /// Records, account, metadata or wantlist changed. A sync reports itself
     /// and changes the queries a moment apart; one rebuild covers them all.
     @State private var dataRevision = 0
     /// Records were placed or moved while the page was hidden: its shelf
     /// labels are rebuilt once it shows again (over a second for a very
     /// large collection – not for every record sorted in on the shelf page).
-    @State private var labelsPending = false
+    @State var labelsPending = false
     /// False until the first `rebuildBase`, so the empty state doesn't flash.
-    @State private var loaded = false
+    @State var loaded = false
     /// Whether the visible items are a search result — follows the applied
     /// query, not the raw field (whitespace, debounce).
-    @State private var searching = false
+    @State var searching = false
     /// The query the visible items were filtered with, for the matched track
     /// under a cover – as in the wantlist.
-    @State private var appliedQuery = ""
+    @State var appliedQuery = ""
     /// Where the page was scrolled when the search began, to go back there
     /// when it ends (see `leaveSearch`).
-    @State private var scrollBeforeSearch: UUID?
+    @State var scrollBeforeSearch: UUID?
     /// The results, faded out while leaving a search.
-    @State private var resultsHidden = false
-
-    /// `animated`: records glide to their new place (search or section).
-    /// Data refreshes (e.g. a Discogs sync) and the list layout update
-    /// instantly — animating an NSTable diff of the whole collection would stutter.
-    private func rebuildBase(animated: Bool = false) {
-        let analyticsIDs = analyticsFilter?.copyIDs
-        // Only the current account: copies of an earlier one stay active in
-        // the store (a sync only touches its own), matching the statistics.
-        let owner = DiscogsAccount.current(in: accounts)?.username
-        let matched = copies.filter { copy in
-            (analyticsIDs == nil || analyticsIDs!.contains(copy.id)) &&
-            copy.isInCurrentCollection(owner: owner)
-        }
-        base = order.apply(matched, scope: DisplaySettings.collectionOrderKey, alphabetical: SortingService.sortedByAlphabetSection,
-                           key: { CollectionCoverGroup.identity(of: $0) },
-                           added: { DiscogsDate.parse($0.discogsDateAdded) })
-        shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
-        labelsPending = false
-        loaded = true
-        applyQuery(animated: animated)
-    }
-
-    private func refreshLabels() {
-        guard activity.isActive else { labelsPending = true; return }
-        labelsPending = false
-        shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
-    }
-
-    private func applyQuery(animated: Bool = false) {
-        queryPending = false
-        let words = SearchIndex<UUID>.words(query)
-        let filtered: [RecordCopy]
-        if words.isEmpty { filtered = base } else {
-            let index = LibrarySearchIndexes.shared.collection(copies)
-            filtered = base.filter { index.matches($0.id, words) }
-        }
-        let grouped = CollectionCoverGroup.make(from: filtered)
-        let searchEnded = searching && words.isEmpty
-        withAnimation(animated && layout == .grid ? AppStyle.layoutAnimation : nil) {
-            items = filtered
-            coverGroups = grouped
-            searching = !words.isEmpty
-            appliedQuery = words.isEmpty ? "" : query
-        }
-        // Back where the page was before the search – also when it was
-        // cleared while this page was hidden.
-        if searchEnded {
-            scroll.id = scrollBeforeSearch ?? filtered.first?.id
-            scrollBeforeSearch = nil
-        }
-        // A place filtered away isn't held on to.
-        if let id = scroll.id, !filtered.contains(where: { $0.id == id }) { scroll.id = nil }
-        normalizeGridScrollPosition(in: grouped)
-    }
-
-    private func normalizeGridScrollPosition(in groups: [CollectionCoverGroup]) {
-        guard layout == .grid, let id = scroll.id,
-              let group = groups.first(where: { group in group.copies.contains { $0.id == id } })
-        else { return }
-        if id != group.primary.id { scroll.id = group.primary.id }
-    }
+    @State var resultsHidden = false
 
     // Shelves are named as chosen in the settings, never by their internal number.
-    @State private var shelfLabels = ShelfLabels()
+    @State var shelfLabels = ShelfLabels()
     /// Only shelves whose records changed are read again (see `ShelfLabelsCache`).
-    @State private var labelsCache = ShelfLabelsCache()
-    private func placeLabel(for copy: RecordCopy) -> String {
-        guard let shelf = copy.shelf else {
-            return excludedIDs.contains(copy.id) ? String(localized: "Ohne Regalplatz") : "–"
-        }
-        if shelf.isReserved { return shelfLabels.prefix(for: shelf) + (shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name) }
-        return shelfLabels.prefix(for: shelf) + (shelfLabels[shelf.id] ?? "–")
-    }
-
-    /// Behind the page: the first few covers of the list.
-    private var ambientCovers: [String] {
-        Array(items.lazy.compactMap { $0.release?.coverURL }.prefix(3))
-    }
-
+    @State var labelsCache = ShelfLabelsCache()
     var body: some View {
         VStack(spacing: 0) {
             // Not in the drill-down sheets of the statistics: only on the page itself.
@@ -406,163 +332,4 @@ struct CollectionView: View {
         }
     }
 
-    /// The search ends: fade the hits out, show the whole list where it was
-    /// before the search (see `applyQuery`), fade it in. Typing again
-    /// meanwhile cancels this and brings the results back at once.
-    private func leaveSearch() async {
-        withAnimation(AppStyle.searchExitFadeOut) { resultsHidden = true }
-        try? await Task.sleep(for: .milliseconds(100))
-        if !Task.isCancelled {
-            applyQuery()
-            // One layout pass for the jump, still invisible.
-            try? await Task.sleep(for: .milliseconds(30))
-        }
-        withAnimation(AppStyle.searchExitFadeIn) { resultsHidden = false }
-    }
-
-    // No "Löschen" here: every record shown comes from the Discogs collection,
-    // and the next sync would bring a locally deleted copy back as a new one
-    // (without its shelf place). Records leave via Discogs; "Ohne Regalplatz"
-    // keeps one off the shelf.
-
-    /// "Ohne Regalplatz" / "Wieder einsortieren", depending on whether all
-    /// of the given copies are already kept out of the shelves.
-    @ViewBuilder private func exclusionButton(for selectedCopies: [RecordCopy]) -> some View {
-        let allExcluded = !selectedCopies.isEmpty && selectedCopies.allSatisfy { excludedIDs.contains($0.id) }
-        Button(allExcluded ? "Wieder einsortieren" : "Ohne Regalplatz") {
-            perform { try PositionService(context: context).setExcluded(selectedCopies, !allExcluded) }
-        }
-    }
-
-    @ViewBuilder private func gridContextMenu(_ group: CollectionCoverGroup) -> some View {
-        if group.copies.count > 1 {
-            ForEach(Array(group.copies.enumerated()), id: \.element.id) { index, copy in
-                let excluded = excludedIDs.contains(copy.id)
-                AppMenuSection(title: String(localized: "Exemplar \(index + 1) · \(ShelfRangeLabels.location(of: copy, labels: shelfLabels, excluded: excluded))"))
-                actions(copy)
-            }
-        } else {
-            actions(group.primary)
-        }
-    }
-
-    @ViewBuilder private func tableContextMenu(_ id: UUID, items: [RecordCopy]) -> some View {
-        if let copy = items.first(where: { $0.id == id }) {
-            actions(copy)
-        }
-    }
-
-    /// A click on a cover: its popover – unless that very popover was just
-    /// closed by this click.
-    private func showQuickLook(_ copy: RecordCopy) {
-        let justClosed = quickLookDismissed.map { $0.id == copy.id && Date().timeIntervalSince($0.at) < 0.4 } ?? false
-        if !justClosed { quickLook = copy.id }
-    }
-
-    private func contextMenuBinding(for id: UUID) -> Binding<Bool> {
-        Binding(
-            get: { contextMenu?.id == id },
-            set: { if !$0, contextMenu?.id == id { contextMenu = nil } }
-        )
-    }
-
-    private func quickLookBinding(for id: UUID) -> Binding<Bool> {
-        Binding(
-            get: { quickLook == id },
-            set: { presented in
-                guard !presented, quickLook == id else { return }
-                quickLook = nil
-                quickLookDismissed = (id, Date())
-            }
-        )
-    }
-
-    /// Above the content, right under the toolbar: the grid's covers start
-    /// one `CoverGrid.spacing` below it in both designs (see `CoverGrid.topSpace`).
-    private var topSpace: CGFloat { layout == .grid ? CoverGrid.topSpace : AppStyle.pagePadding }
-
-    /// In the window the page has no header bar: page switch, grid/list and
-    /// search are in the toolbar. The statistics panel has no toolbar, so
-    /// there its title sits beside the layout switch — but no search: it is
-    /// only for looking.
-    private var showsControls: Bool { pages == nil }
-
-    private func collectionControls(items: [RecordCopy]) -> some View {
-        HStack(spacing: AppStyle.rowSpacing) {
-            if let analyticsFilter {
-                // Title and count, like the shelf's detail header.
-                HStack(alignment: .firstTextBaseline, spacing: AppStyle.rowSpacing) {
-                    Text(analyticsFilter.name).font(AppStyle.dialogTitle).lineLimit(1)
-                    Text(AppStyle.records(items.count)).font(.callout).foregroundStyle(.secondary).monospacedDigit()
-                }
-            }
-            Spacer(minLength: AppStyle.rowSpacing)
-            OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))
-        }
-        .frame(height: AppStyle.searchBarHeight)
-    }
-    @ViewBuilder private func actions(_ copy: RecordCopy) -> some View {
-        Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen") { showShelf(copy) }
-        if let url = copy.release?.sourceURL {
-            Button("Auf Discogs öffnen") { openURL(url) }
-        }
-        exclusionButton(for: [copy])
-        if missingEnabled { missingButton(for: copy) }
-        if saleEnabled { saleButton(for: copy) }
-    }
-    /// Marks the copy "Gesucht" (settings tab "Listen") or found again.
-    /// Not offered for one kept out of the shelves ("Ohne Regalplatz"): there
-    /// is nothing to look for, `setExcluded` lifts the mark for the same
-    /// reason, and the settings wouldn't list it.
-    @ViewBuilder private func missingButton(for copy: RecordCopy) -> some View {
-        let missing = records.missingMarks.contains { $0.copyID == copy.id }
-        if missing || !excludedIDs.contains(copy.id) {
-            Button(missing ? "Wieder gefunden" : "Auf die Suchliste setzen") {
-                perform { try PositionService(context: context).setMissing([copy], !missing) }
-            }
-        }
-    }
-    /// Puts the copy on the "Verkauf" list (settings tab "Listen") or takes it off.
-    @ViewBuilder private func saleButton(for copy: RecordCopy) -> some View {
-        let forSale = records.saleMarks.contains { $0.copyID == copy.id }
-        Button(forSale ? "Nicht mehr verkaufen" : "Zum Verkauf vormerken") {
-            perform { try PositionService(context: context).setForSale([copy], !forSale) }
-        }
-    }
-    private func perform(_ action: () throws -> Void) {
-        do { try action() } catch { self.error = error.reportedMessage() }
-    }
-}
-/// A grid tile represents one release, even when the collection contains
-/// several physical copies. Only the cover and a quiet copy count are shown.
-struct CollectionCoverGroup: Identifiable {
-    enum Identity: Hashable {
-        case discogs(Int)
-        case orphan(UUID)
-    }
-
-    let id: Identity
-    var copies: [RecordCopy]
-    var primary: RecordCopy { copies[0] }
-
-    static func make(from copies: [RecordCopy]) -> [Self] {
-        var groups: [Self] = []
-        var positions: [Identity: Int] = [:]
-        for copy in copies {
-            let identity = identity(of: copy)
-            if let position = positions[identity] {
-                groups[position].copies.append(copy)
-            } else {
-                positions[identity] = groups.count
-                groups.append(Self(id: identity, copies: [copy]))
-            }
-        }
-        return groups
-    }
-
-    /// The tile a copy belongs to: its Discogs release.
-    static func identity(of copy: RecordCopy) -> Identity {
-        if let release = copy.release { return .discogs(release.discogsID) }
-        return .orphan(copy.id)
-    }
 }

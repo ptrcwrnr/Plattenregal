@@ -6,18 +6,18 @@ import SwiftData
 /// a cover grid or compact table. The search sits in the toolbar; its
 /// matches float over the top of the page.
 struct KallaxView: View {
-    @Environment(\.modelContext) private var context
+    @Environment(\.modelContext) var context
     /// Shared with the other pages, fetched only when they change (see `LibraryRecords`).
-    private var records: LibraryRecords { .of(context) }
+    var records: LibraryRecords { .of(context) }
     private var allShelves: [Shelf] { records.shelves }
-    private var cabinets: [Cabinet] { records.cabinets }
-    private var allCopies: [RecordCopy] { records.copies }
-    private var exclusions: [OptimizationExclusion] { records.exclusions }
+    var cabinets: [Cabinet] { records.cabinets }
+    var allCopies: [RecordCopy] { records.copies }
+    var exclusions: [OptimizationExclusion] { records.exclusions }
     private var missingMarks: [MissingCopyMark] { records.missingMarks }
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     private var accounts: [DiscogsAccount] { records.accounts }
     /// The compartment selected in the rack.
-    @State private var highlight: UUID?
+    @State var highlight: UUID?
     /// "Im Regal anzeigen" / "Platz im Regal finden" from other pages; taken
     /// over into `placement` right away.
     let requests: ShelfRequests
@@ -25,78 +25,78 @@ struct KallaxView: View {
     let search: ShelfSearch
     @Environment(\.searchRequests) private var searchRequests
     /// The record being sorted in and the spots it fits alphabetically.
-    @State private var placement: Placement?
+    @State var placement: Placement?
     /// "Namen ändern …" from a locked compartment's menu.
-    @State private var showsNameEditor = false
+    @State var showsNameEditor = false
     /// Cabinet tab whose right-click menu is open, and where.
-    @State private var cabinetMenu: (id: UUID, anchor: UnitPoint)?
+    @State var cabinetMenu: (id: UUID, anchor: UnitPoint)?
     /// Cabinet tab whose name popover is open ("Regal umbenennen …").
-    @State private var renamingCabinet: UUID?
-    @State private var lockPreview = ShelfLockPreview()
+    @State var renamingCabinet: UUID?
+    @State var lockPreview = ShelfLockPreview()
     /// The open "Platte hinzufügen" sheet. A new session per opening, so a
     /// reopened sheet always starts from fresh data.
-    @State private var assignment: ShelfAssignmentSession?
+    @State var assignment: ShelfAssignmentSession?
     /// Kept past the sheet's dismissal to pick up its last addition.
-    @State private var closingAssignment: ShelfAssignmentSession?
+    @State var closingAssignment: ShelfAssignmentSession?
     // Last copy taken out of a shelf via the trash button, kept briefly so the
     // removal can be undone (toast button or ⌘Z) instead of confirmed up front.
-    @State private var recentUnplace: UnplacedCopy?
-    @State private var pendingDelete: RecordCopy?
-    @State private var confirmRemoveSold = false
+    @State var recentUnplace: UnplacedCopy?
+    @State var pendingDelete: RecordCopy?
+    @State var confirmRemoveSold = false
     /// Count for the question, taken when it is asked – `soldInShelves` walks
     /// the whole collection and must not run on every rebuild of the page.
-    @State private var soldToRemove = 0
+    @State var soldToRemove = 0
     /// `soldInShelves.count`, taken whenever records, places or the account
     /// change – not on every click in the table.
-    @State private var soldCount = 0
+    @State var soldCount = 0
     /// The open "Sortierung prüfen".
-    @State private var sortCheck: ShelfSortCheckRequest?
-    @State private var error: String?
+    @State var sortCheck: ShelfSortCheckRequest?
+    @State var error: String?
 
     // Search inside the shelf view only lists matches with their location; it
     // never changes the selection below. `focusCopy` is the record picked in
     // the table.
     /// The committed (debounced) query; `search.text` is what is being typed.
-    @State private var searchQuery = ""
-    @State private var searchResults = ShelfSearchResults()
-    @State private var searchIndex = SearchIndex<UUID>()
+    @State var searchQuery = ""
+    @State var searchResults = ShelfSearchResults()
+    @State var searchIndex = SearchIndex<UUID>()
     /// Set when records change; the index is rebuilt on the next search only.
-    @State private var searchIndexStale = true
-    @State private var changes = LibraryChanges.shared
-    @State private var focusCopy: RecordCopy?
+    @State var searchIndexStale = true
+    @State var changes = LibraryChanges.shared
+    @State var focusCopy: RecordCopy?
     /// Repeating an external request for the same copy must reveal it again.
-    @State private var focusRevision = 0
+    @State var focusRevision = 0
     /// Scroll anchors survive a visit to an empty or reserved compartment.
-    @State private var contentsSession = ShelfContentsSession()
+    @State var contentsSession = ShelfContentsSession()
     /// While the search field has focus, ⌘Z belongs to its text, not to the
     /// "Aus Fach entfernt" toast.
-    private var searchFocused: Bool { searchRequests?.fieldFocused ?? false }
+    var searchFocused: Bool { searchRequests?.fieldFocused ?? false }
 
     /// The account the collection shows (see `DiscogsAccount.current`).
-    private var owner: String? { DiscogsAccount.current(in: accounts)?.username }
+    var owner: String? { DiscogsAccount.current(in: accounts)?.username }
 
     // Recomputed only when the underlying placement/style data actually changes
     // (see `statsSignature`), not on every keystroke or unrelated re-render.
     @State private var shelfStats: [UUID: ShelfStatistics] = [:]
-    @State private var rangeLabels = ShelfLabels()
+    @State var rangeLabels = ShelfLabels()
     /// Per-shelf results behind `shelfStats` and `rangeLabels`; only shelves
     /// whose records changed are computed again.
     @State private var shelfContent = ShelfContentCache()
     @State private var settingsTab: AppSettingsView.Tab?
     /// The side the next cabinet slides in from (see `show(_:)`).
-    @State private var cabinetEdge: Edge = .trailing
+    @State var cabinetEdge: Edge = .trailing
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
 
     /// Compartments of the active cabinets, cabinet by cabinet in reading
     /// order. Inactive cabinets keep their records but stay off this page.
-    private var shelves: [Shelf] { Shelf.inUse(allShelves) }
-    private var activeCabinets: [Cabinet] { cabinets.filter(\.isActive) }
+    var shelves: [Shelf] { Shelf.inUse(allShelves) }
+    var activeCabinets: [Cabinet] { cabinets.filter(\.isActive) }
     /// The cabinet drawn at the top: the one holding the selected compartment.
-    private var shownCabinet: Cabinet? {
+    var shownCabinet: Cabinet? {
         committedShelf?.cabinet.flatMap { cabinet in activeCabinets.first { $0.id == cabinet.id } } ?? activeCabinets.first
     }
     private var committedShelf: Shelf? { shelves.first { $0.id == highlight } }
-    private var detailShelf: Shelf? { committedShelf }
+    var detailShelf: Shelf? { committedShelf }
 
     /// Evaluated on every render of this page (a click in the table, too), so
     /// it must not walk the records. Every write reports itself in
@@ -120,7 +120,7 @@ struct KallaxView: View {
     /// given away, or from another account) but still hold a shelf position.
     /// The sync keeps their place on purpose — they may come back — so the
     /// shelf page points them out instead.
-    private var soldInShelves: [RecordCopy] {
+    var soldInShelves: [RecordCopy] {
         let owner = owner
         // Deactivated cabinets are put away and not shown here; their records
         // are neither counted nor taken out from this page.
@@ -131,59 +131,7 @@ struct KallaxView: View {
 
     /// Empty while "Gesucht" is off in the settings: no marks shown anywhere
     /// on this page (they are kept, and return when it is switched on again).
-    private var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
-
-    private func forgetCopies() {
-        closingAssignment = nil; assignment = nil; sortCheck = nil
-        focusCopy = nil; placement = nil; recentUnplace = nil
-        pendingDelete = nil; confirmRemoveSold = false
-    }
-
-    private func setMissing(_ copy: RecordCopy, _ missing: Bool) {
-        do { try PositionService(context: context).setMissing([copy], missing) }
-        catch { self.error = error.reportedMessage() }
-    }
-
-    private func removeSoldFromShelves() {
-        let sold = soldInShelves
-        if let focus = focusCopy, sold.contains(where: { $0.id == focus.id }) { focusCopy = nil }
-        // One transaction: a failure halfway must not leave some sold records
-        // out and others still in, with gaps in between.
-        do { try PositionService(context: context).unplace(sold) }
-        catch { self.error = error.reportedMessage() }
-    }
-
-    /// Runs only when the (debounced) query or the data changes, never in
-    /// `body`: plain substring checks against the prebuilt index instead of
-    /// Unicode-comparing every record's text, tracks included.
-    private func applySearch() {
-        let words = SearchIndex<UUID>.words(searchQuery)
-        guard !words.isEmpty else { searchResults = ShelfSearchResults(); return }
-        if searchIndexStale {
-            searchIndex = SearchIndex(allCopies, id: \.id, text: SortingService.searchText)
-            searchIndexStale = false
-        }
-        let excluded = Set(exclusions.map(\.copyID))
-        let owner = owner
-        var placed: [RecordCopy] = [], unplaced: [RecordCopy] = []
-        for copy in allCopies where searchIndex.matches(copy.id, words) {
-            // Records in an inactive cabinet are put away: neither shown nor offered for placing.
-            if let shelf = copy.shelf { if shelf.isInUse { placed.append(copy) } }
-            // "Ohne Regalplatz" and records outside the current collection
-            // aren't meant to be placed (same rule as "Platte hinzufügen").
-            else if ShelfAssignmentPresentation.isCandidate(copy, owner: owner, excluding: excluded) { unplaced.append(copy) }
-        }
-        // Ties (two copies of one album) by ID, so rows don't swap while typing.
-        func sorted(_ copies: [RecordCopy], _ limit: Int) -> [RecordCopy] {
-            Array(SortingService.sorted(copies).prefix(limit))
-        }
-        searchResults = ShelfSearchResults(
-            placed: sorted(placed, ShelfSearchResults.placedLimit),
-            unplaced: sorted(unplaced, ShelfSearchResults.unplacedLimit),
-            hidden: max(0, placed.count - ShelfSearchResults.placedLimit) + max(0, unplaced.count - ShelfSearchResults.unplacedLimit),
-            litShelfIDs: Set(placed.compactMap { $0.shelf?.id })
-        )
-    }
+    var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
 
     var body: some View {
         GeometryReader { geometry in
@@ -355,412 +303,4 @@ struct KallaxView: View {
         !DemoMode.isActive && !allCopies.isEmpty && !allCopies.contains { $0.shelf != nil }
     }
 
-    /// One tab per active cabinet; ⌘← / ⌘→ step through them.
-    private var cabinetSwitcher: some View {
-        HStack(spacing: AppStyle.itemSpacing) {
-            GlassSegmentedPicker(
-                selection: Binding(get: { shownCabinet?.id }, set: { id in
-                    if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
-                }),
-                options: activeCabinets.map { Optional($0.id) },
-                separators: true,
-                secondaryClick: { id, point in if let id { cabinetMenu = (id, point) } }
-            ) { id in
-                cabinetTab(activeCabinets.first { $0.id == id })
-            }
-            .accessibilityLabel("Regal")
-            Spacer()
-            Button("Vorheriges Regal") { stepCabinet(-1) }
-                .keyboardShortcut(.leftArrow, modifiers: .command)
-                .hidden().frame(width: 0)
-            Button("Nächstes Regal") { stepCabinet(1) }
-                .keyboardShortcut(.rightArrow, modifiers: .command)
-                .hidden().frame(width: 0)
-        }
-        // Tabs and rack belong together: a row's gap instead of a block's.
-        .padding(.bottom, AppStyle.rowSpacing - AppStyle.blockSpacing)
-        .help("Zwischen den Regalen wechseln: ⌘← / ⌘→")
-    }
-
-    /// A tab's name, carrying its right-click menu and the name popover –
-    /// each on its own layer, two popovers on one view get in each other's way.
-    @ViewBuilder private func cabinetTab(_ cabinet: Cabinet?) -> some View {
-        if let cabinet {
-            Text(cabinet.name)
-                .popover(isPresented: Binding(
-                    get: { cabinetMenu?.id == cabinet.id },
-                    set: { if !$0, cabinetMenu?.id == cabinet.id { cabinetMenu = nil } }
-                ), attachmentAnchor: .point(cabinetMenu?.anchor ?? .center), arrowEdge: .bottom) {
-                    AppMenu(dismiss: { cabinetMenu = nil }) {
-                        Button("Regal anzeigen") { show(cabinet) }
-                        Button("Regal umbenennen …") { renamingCabinet = cabinet.id }
-                    }
-                    // Not the tab's accent or gray: popovers inherit it.
-                    .foregroundStyle(.primary)
-                }
-                .background {
-                    Color.clear.popover(isPresented: Binding(
-                        get: { renamingCabinet == cabinet.id },
-                        set: { if !$0, renamingCabinet == cabinet.id { renamingCabinet = nil } }
-                    ), arrowEdge: .bottom) {
-                        CabinetNamePopover(cabinet: cabinet).id(cabinet.id)
-                            .foregroundStyle(.primary)
-                    }
-                }
-        }
-    }
-
-    private func stepCabinet(_ offset: Int) {
-        guard let current = shownCabinet, let index = activeCabinets.firstIndex(where: { $0.id == current.id }) else { return }
-        let next = (index + offset + activeCabinets.count) % activeCabinets.count
-        show(activeCabinets[next])
-    }
-
-    /// Selects the cabinet's starting compartment (see `startShelf(in:)`).
-    private func show(_ cabinet: Cabinet) {
-        guard cabinet.id != shownCabinet?.id, let shelf = startShelf(in: cabinet) else { return }
-        let from = activeCabinets.firstIndex { $0.id == shownCabinet?.id } ?? 0
-        let to = activeCabinets.firstIndex { $0.id == cabinet.id } ?? 0
-        cabinetEdge = to > from ? .trailing : .leading
-        withAnimation(AppStyle.layoutAnimation ?? AppStyle.fadeAnimation) { selectShelf(shelf) }
-    }
-
-    /// The status controls (sold records still in the rack), right-aligned
-    /// above the rack; absent when there are none, so the rack moves up.
-    @ViewBuilder private var header: some View {
-        let sold = soldCount
-        if sold > 0 {
-            ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
-                .frame(height: AppStyle.controlHeight)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.bottom, AppStyle.blockSpacing)
-        }
-    }
-
-    /// Only while the committed query has words, so a field of spaces lists nothing.
-    @ViewBuilder private var searchResultsPanel: some View {
-        let typed = !SearchIndex<UUID>.words(search.text).isEmpty
-        if typed && !SearchIndex<UUID>.words(searchQuery).isEmpty {
-            ShelfSearchResultsPanel(
-                matches: searchResults.placed,
-                unplaced: searchResults.unplaced,
-                hidden: searchResults.hidden,
-                labels: rangeLabels,
-                missing: missingIDs,
-                place: startPlacement
-            )
-            // Still the previous query's matches while typing pauses.
-            .opacity(searchQuery == search.text ? 1 : 0.6)
-            .animation(AppStyle.quickAnimation, value: searchQuery == search.text)
-            .frame(width: AppStyle.toolbarSearchWidth + 60)
-            .padding(.trailing, AppStyle.pageMargin)
-            .padding(.top, AppStyle.itemSpacing)
-            .transition(.opacity)
-        }
-    }
-
-    @ViewBuilder private var shelfDetail: some View {
-        if let shown = detailShelf {
-            // The contents own their grid/list switch.
-            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-                if let placement {
-                    PlacementCard(
-                        placement: placement,
-                        labels: rangeLabels,
-                        missing: missingIDs,
-                        choose: choosePlacementSpot,
-                        confirm: confirmPlacement,
-                        cancel: cancelPlacement
-                    )
-                    .transition(AppStyle.funnelTransition())
-                }
-                // One slot: an animated switch between an empty and a filled
-                // compartment crossfades instead of stacking both for a moment.
-                ZStack(alignment: .topLeading) {
-                if shown.isReserved || shown.copies.isEmpty {
-                    ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
-                        if locked {
-                            detailNote(String(localized: "Gesperrtes Fach – nicht für Platten vorgesehen. Per Rechtsklick auf das Fach kannst du es entsperren."))
-                        } else {
-                            HStack(spacing: AppStyle.itemSpacing) {
-                                detailNote(String(localized: "Noch keine Platten in diesem Fach."))
-                                Button("Platte hinzufügen") { startAssignment(shown) }
-                                    .appLinkButton()
-                            }
-                        }
-                    }
-                } else {
-                    ShelfContentsView(
-                        shelf: shown,
-                        session: contentsSession,
-                        owner: owner,
-                        missing: missingIDs,
-                        focusCopy: focusCopy,
-                        focusRevision: focusRevision,
-                        select: { copy in
-                            if let copy { if focusCopy?.id != copy.id { focusCopy = copy } } else { deselect() }
-                        },
-                        placed: showPlaced,
-                        find: startPlacement,
-                        unplace: unplace,
-                        delete: { pendingDelete = $0 },
-                        setMissing: setMissing
-                    )
-                }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .popover(isPresented: $showsNameEditor, arrowEdge: .top) {
-                // Fresh state per shelf: a name seeded for one shelf must
-                // never be saved onto another.
-                ShelfNamePopover(shelf: shown).id(shown.id)
-            }
-        } else {
-            detailNote(String(localized: "Wähle ein Fach im Regal oder suche oben nach einer Platte."))
-        }
-    }
-
-    private func detailNote(_ text: String) -> some View {
-        Text(text).font(.callout).foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    @ViewBuilder private var undoToast: some View {
-        if let entry = recentUnplace {
-            HStack(spacing: AppStyle.rowSpacing) {
-                Text("Aus Fach entfernt")
-                // A shelf locked meanwhile takes no records, and a record marked
-                // "Ohne Regalplatz" meanwhile stays out; nothing to undo then.
-                if canUndo(entry) {
-                    Button("Rückgängig", action: undoUnplace)
-                        .appLinkButton()
-                        .keyboardShortcut(searchFocused ? nil : KeyboardShortcut("z", modifiers: .command))
-                }
-            }
-            .font(.callout)
-            .padding(.horizontal, AppStyle.cardPadding)
-            .padding(.vertical, AppStyle.itemSpacing)
-            .appChipSurface(in: Capsule())
-            .padding(.bottom, AppStyle.cardPadding)
-            .transition(AppStyle.funnelTransition(from: .bottom))
-            .task(id: entry.id) {
-                try? await Task.sleep(for: .seconds(6))
-                if recentUnplace?.id == entry.id {
-                    withAnimation(AppStyle.standardAnimation) { recentUnplace = nil }
-                }
-            }
-        }
-    }
-
-    /// The compartment's right-click menu (an `AppMenu`, like the collection's).
-    @ViewBuilder private func shelfMenu(for shelf: Shelf) -> some View {
-        let locked = lockPreview.isLocked(shelf)
-        Button("Platte hinzufügen") { selectShelf(shelf); startAssignment(shelf) }
-            .disabled(locked)
-        Button("Sortierung prüfen") { selectShelf(shelf); sortCheck = ShelfSortCheckRequest(shelf: shelf) }
-            .disabled(locked || shelf.copies.count < 2)
-        if locked {
-            Button("Namen ändern …") { selectShelf(shelf); showsNameEditor = true }
-            Button("Fach entsperren") { setLocked(shelf, false) }
-        } else {
-            Button("Fach sperren") { setLocked(shelf, true) }
-                .disabled(!shelf.copies.isEmpty)
-        }
-    }
-
-    /// Shows the new state at once via `lockPreview` and saves once the
-    /// compartment has faded over: saving makes the page recompute, which
-    /// would stutter mid-animation. Unlocking drops the name as well.
-    private func setLocked(_ shelf: Shelf, _ locked: Bool) {
-        withAnimation(AppStyle.standardAnimation) { lockPreview.set(locked, for: shelf) }
-        Task {
-            try? await Task.sleep(for: .milliseconds(350))
-            guard !shelf.isDeleted, shelf.modelContext != nil else { return lockPreview.clear(shelf) }
-            var transaction = Transaction()
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                do { try PositionService(context: context).configure(shelf, name: locked ? shelf.name : "", isReserved: locked) }
-                catch { self.error = error.reportedMessage() }
-                lockPreview.clear(shelf)
-            }
-        }
-    }
-
-    /// New records go to their alphabetical place in the compartment –
-    /// without one (the round button), each to its place in the rack.
-    private func startAssignment(_ shelf: Shelf?) {
-        let session = ShelfAssignmentSession(shelf: shelf)
-        closingAssignment = session
-        assignment = session
-    }
-
-    private func selectShelf(_ shelf: Shelf) {
-        searchQuery = ""; focusCopy = nil
-        // Picking the other fitting shelf switches the spot; any other shelf ends the placement.
-        if let placement {
-            if let index = placement.spots.firstIndex(where: { $0.shelf.id == shelf.id }) {
-                self.placement?.chosen = index
-            } else {
-                cancelPlacement()
-            }
-        }
-        if highlight != shelf.id { showsNameEditor = false }
-        withAnimation(AppStyle.standardAnimation) { highlight = shelf.id }
-    }
-
-    /// After a copy's place changed from the compartment contents: follow it
-    /// to its new shelf, or drop the focus when it left the shelves altogether.
-    private func showPlaced(_ copy: RecordCopy) {
-        guard let shelf = copy.shelf else {
-            if focusCopy?.id == copy.id { focusCopy = nil }
-            return
-        }
-        if highlight != shelf.id { withAnimation(AppStyle.standardAnimation) { highlight = shelf.id } }
-        focusCopy = copy
-        focusRevision += 1
-    }
-
-    // Lets go of the picked record; the shelf itself stays selected.
-    private func deselect() {
-        guard focusCopy != nil else { return }
-        focusCopy = nil
-    }
-
-    /// There is always a selected shelf: the start of the first cabinet, or the
-    /// first occupied compartment of any other one if that cabinet is empty.
-    /// An existing valid selection (e.g. "im Regal zeigen") is kept.
-    private func ensureShelfSelected() {
-        if let highlight, shelves.contains(where: { $0.id == highlight }) { return }
-        highlight = activeCabinets.first.flatMap { cabinet in
-            shelves.first { $0.cabinet?.id == cabinet.id && Self.holdsRecords($0) }
-        }?.id
-            ?? shelves.first(where: Self.holdsRecords)?.id
-            ?? shelves.first?.id
-    }
-
-    /// Where a cabinet is entered, the same for every way in (app start,
-    /// switching cabinets): its first compartment with records in reading
-    /// order – where the app starts the alphabet – else its first one. How the
-    /// real rack is filled doesn't matter here.
-    private func startShelf(in cabinet: Cabinet) -> Shelf? {
-        let own = shelves.filter { $0.cabinet?.id == cabinet.id }
-        return own.first(where: Self.holdsRecords) ?? own.first
-    }
-
-    private static func holdsRecords(_ shelf: Shelf) -> Bool { !shelf.isReserved && !shelf.copies.isEmpty }
-
-    // MARK: Placement
-
-    private func takePlacingRequest() {
-        guard let id = requests.placing else { return }
-        requests.placing = nil
-        if let copy = allCopies.first(where: { $0.id == id }) { startPlacement(copy) }
-    }
-
-    private func takeSortingInRequest() {
-        guard requests.sortingIn else { return }
-        requests.sortingIn = false
-        placement = nil
-        startAssignment(nil)
-    }
-
-    private func startPlacement(_ copy: RecordCopy) {
-        searchQuery = ""; focusCopy = nil; showsNameEditor = false
-        var new = Placement(copy: copy, shelves: shelves)
-        new.excluded = exclusions.contains { $0.copyID == copy.id }
-        new.missing = missingIDs.contains(copy.id)
-        withAnimation(AppStyle.standardAnimation) {
-            placement = new
-            if let shelf = new.spot?.shelf { highlight = shelf.id }
-        }
-        // A placed record is pulled out in the strip and selected in the table.
-        if new.found && new.putAwayIn == nil {
-            focusCopy = copy
-            focusRevision += 1
-        }
-    }
-
-    /// Records may change while the card is open (sync, edits in the table):
-    /// recompute the spots, keeping the chosen shelf if it still fits. The
-    /// card closes once the record was placed or taken out of its shelf.
-    private func refreshPlacement() {
-        guard let current = placement else { return }
-        let copy = current.copy
-        guard !copy.isDeleted, copy.modelContext != nil, (copy.shelf != nil) == current.found else { placement = nil; return }
-        var updated = Placement(copy: copy, shelves: shelves)
-        updated.excluded = current.excluded
-        updated.missing = missingIDs.contains(copy.id)
-        if let shelfID = current.spot?.shelf.id, let index = updated.spots.firstIndex(where: { $0.shelf.id == shelfID }) {
-            updated.chosen = index
-        }
-        placement = updated
-        if let shelf = updated.spot?.shelf, highlight != shelf.id { highlight = shelf.id }
-    }
-
-    private func choosePlacementSpot(_ index: Int) {
-        guard let placement, placement.spots.indices.contains(index) else { return }
-        self.placement?.chosen = index
-        withAnimation(AppStyle.standardAnimation) { highlight = placement.spots[index].shelf.id }
-    }
-
-    private func confirmPlacement() {
-        guard let placement, let spot = placement.spot else { return }
-        if placement.found {
-            // Standing where it should: a "Gesucht" mark is settled.
-            if placement.missing { setMissing(placement.copy, false) }
-            withAnimation(AppStyle.standardAnimation) { self.placement = nil }
-            return
-        }
-        do {
-            try PositionService(context: context).move(placement.copy, to: spot.shelf, position: spot.position, found: true)
-            withAnimation(AppStyle.standardAnimation) { self.placement = nil }
-            focusCopy = placement.copy
-            focusRevision += 1
-        } catch { self.error = error.reportedMessage() }
-    }
-
-    private func cancelPlacement() {
-        withAnimation(AppStyle.standardAnimation) { placement = nil }
-    }
-
-    private func unplace(_ copy: RecordCopy) {
-        guard let shelf = copy.shelf else { return }
-        let entry = UnplacedCopy(copy: copy, shelf: shelf, position: copy.positionInShelf)
-        if focusCopy?.id == copy.id { focusCopy = nil }
-        do {
-            try PositionService(context: context).unplace(copy)
-            withAnimation(AppStyle.standardAnimation) { recentUnplace = entry }
-        } catch { self.error = error.reportedMessage() }
-    }
-
-    private func canUndo(_ entry: UnplacedCopy) -> Bool {
-        // The compartment may be gone meanwhile (cabinet made smaller, backup
-        // restored, reset); reading a deleted model would crash.
-        !entry.copy.isDeleted && entry.copy.modelContext != nil
-            && !entry.shelf.isDeleted && entry.shelf.modelContext != nil
-            && entry.copy.shelf == nil && !entry.shelf.isReserved
-            && !exclusions.contains { $0.copyID == entry.copy.id }
-    }
-
-    private func undoUnplace() {
-        guard let entry = recentUnplace else { return }
-        withAnimation(AppStyle.standardAnimation) { recentUnplace = nil }
-        // Someone may have re-placed the copy meanwhile; don't yank it back.
-        guard canUndo(entry) else { return }
-        let position = min(max(entry.position, 1), entry.shelf.copies.count + 1)
-        do { try PositionService(context: context).move(entry.copy, to: entry.shelf, position: position) }
-        catch { self.error = error.reportedMessage() }
-    }
-
-    private func delete(_ copy: RecordCopy) {
-        // Records still in the Discogs collection leave via Discogs (see the table menu).
-        guard !copy.isInCurrentCollection(owner: owner) else { return }
-        // A deleted model must not stay referenced: reading it afterwards
-        // (strip selection, undo toast, placement card) would crash.
-        if focusCopy?.id == copy.id { focusCopy = nil }
-        if recentUnplace?.copy.id == copy.id { recentUnplace = nil }
-        if placement?.copy.id == copy.id { placement = nil }
-        do { try PositionService(context: context).delete(copy) }
-        catch { self.error = error.reportedMessage() }
-    }
 }
