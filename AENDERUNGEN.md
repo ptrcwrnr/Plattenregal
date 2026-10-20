@@ -1,3 +1,11 @@
+# Code in übersichtliche Dateien aufgeteilt · 20.10.2026
+
+Große Dateien sind entlang ihrer Typen in kleinere zerlegt. Verschoben werden nur ganze Deklarationen samt ihren Kommentaren, ohne Änderung an der Logik. Wo ein Hilfstyp jetzt aus einer anderen Datei gebraucht wird, verliert er sein `private`; sonst bleibt alles, wie es war. Neue Dateien sind in `project.pbxproj` eingetragen.
+
+- **`Design/` (neu, aus `Utilities/AppAppearance.swift`, vorher 1711 Zeilen):** `AppStyle`, `AtelierPalette`, `AppAppearance` (Grundaussehen, Hintergrund), `AppSurfaces`, `AppButtons` (mit `GlassStepper`), `AppPickers`, `AppMenu`, `AppSearchField`, `AppMessages` (Plakette, Banner, Leerzustand), `AppPanel`, `AppInput` (Fokusringe, Eingabequelle), `RecordCaption`, `CoverGrid`, `ViewObservation`, `ActivityRing`, `PullToRefresh`, `SecondaryClicks`. Die größte Datei hat jetzt 182 Zeilen. `AtelierButtonStyle` ist nicht mehr `private`, weil ihn Knöpfe und Flächen nutzen.
+- README: Zeile „Oberfläche“ nennt `Design/` und seine Dateien.
+- Geprüft: Für jede aufgeteilte Datei ist der Zeilenbestand ohne Leer- und `import`-Zeilen vorher und nachher gleich, abgesehen von den genannten Zugriffsänderungen. Es hängen keine Abschnittskommentare an der falschen Stelle. Debug-Build ohne Warnungen, alle 205 Tests erfolgreich.
+
 # Alte Schema-Versionen V1–V14 entfernt · 20.10.2026
 
 - **Schema-Datei gekürzt:** `Models/LibrarySchemas.swift` enthält nur noch V15 und das aktuelle V16, dazu einen einzigen Migrationsschritt V15 → V16. Die Datei hat jetzt 221 statt 1412 Zeilen. Weggefallen sind die eingefrorenen Kopien von V1 bis V14 und die beiden eigenen Migrationsschritte V7 → V8 (reservierte Fächer) und V10 → V11 (Einträge ohne Discogs-IDs). Jede ausgegebene Version ab 1.0.2 hatte schon V15. Auf diesem Mac gibt es nur V15- und V16-Datenbanken, und die App ist bisher nicht weitergegeben worden.
