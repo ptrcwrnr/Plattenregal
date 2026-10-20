@@ -149,7 +149,7 @@ final class PageStackView<Page: Hashable>: NSView {
     fileprivate(set) var hosts: [Page: any PageHosting] = [:]
     /// Pages not built yet (see `host(for:)`).
     private var builders: [Page: () -> any PageHosting] = [:]
-    /// The pages in the order of the switch, for the direction of a switch.
+    /// The pages in the order of the switch, for building them one by one.
     private var order: [Page] = []
     private var shown: Page?
 
@@ -198,24 +198,22 @@ final class PageStackView<Page: Hashable>: NSView {
         return host
     }
 
-    /// How far the incoming page travels: a nudge, not a full slide.
-    private static var shift: CGFloat { 18 }
-    /// The old page is gone before the new one shows up (see `show`).
-    private static var fadeOut: CFTimeInterval { 0.1 }
-    private static var fadeInDelay: CFTimeInterval { 0.07 }
-    private static var fadeIn: CFTimeInterval { 0.22 }
+    /// Timing and travel are the app's for switching a whole area
+    /// (`AppStyle.pageFadeOut` …): the old page is gone before the new one shows up.
+    private static var fadeOut: CFTimeInterval { AppStyle.pageFadeOut }
+    private static var fadeInDelay: CFTimeInterval { AppStyle.pageFadeInDelay }
+    private static var fadeIn: CFTimeInterval { AppStyle.pageFadeIn }
     private static var fadeKey: String { "pageFade" }
     private static var shiftKey: String { "pageShift" }
 
     /// Every switch fades through: the old page fades out quickly on the
-    /// spot, then the new one fades in with a slight push in the direction of
-    /// the switch control – a page to the right comes in from the right –
-    /// whichever way it was triggered (switch control, ⌘1…4, "Im Regal
-    /// anzeigen"). The two pages are never visible on top of each other: a
+    /// spot, then the new one fades in while settling down a little from
+    /// above, like the pill of the switch control – whichever way it was
+    /// triggered (switch control, ⌘1…4, "Im Regal anzeigen"). The two pages are never visible on top of each other: a
     /// crossfade showed both grids half transparent and, shifted against each
     /// other, covers of one page in the gaps of the other. In between there is
     /// only the window background with the ambient glow. With "Bewegung
-    /// reduzieren" the push is dropped, the fade stays. The first page just
+    /// reduzieren" the settling is dropped, the fade stays. The first page just
     /// appears.
     ///
     /// Everything runs as explicit Core Animation on the hosting views'
@@ -223,7 +221,7 @@ final class PageStackView<Page: Hashable>: NSView {
     /// and the model values AppKit manages (position, transform) are never
     /// touched – the shift exists only in the animation. The stack is not
     /// clipped: pages draw their background up under the toolbar, past its
-    /// top edge; sideways the window clips the push anyway.
+    /// top edge.
     fileprivate func show(_ page: Page) {
         guard page != shown, let incoming = host(for: page) else { return }
         let outgoing = shown.flatMap { hosts[$0] }
@@ -240,11 +238,10 @@ final class PageStackView<Page: Hashable>: NSView {
             host.layer?.removeAnimation(forKey: Self.shiftKey)
             host.alphaValue = key == page ? 1 : 0
         }
-        guard let outgoing, let outgoingPage = order.first(where: { hosts[$0] === outgoing }),
-              let incomingLayer = incoming.layer, let outgoingLayer = outgoing.layer else { return }
-        // Going right, the new page comes from the right.
-        let forward = (order.firstIndex(of: page) ?? 0) > (order.firstIndex(of: outgoingPage) ?? 0)
-        let distance = AppStyle.reduceMotion ? 0 : (forward ? Self.shift : -Self.shift)
+        guard let outgoing, let incomingLayer = incoming.layer, let outgoingLayer = outgoing.layer else { return }
+        // The pages' layers count downwards (seen in the window): a negative
+        // offset starts the page above its place.
+        let distance = AppStyle.reduceMotion ? 0 : -AppStyle.pageSettleDistance
 
         let fadeOut = CABasicAnimation(keyPath: "opacity")
         fadeOut.fromValue = 1
@@ -267,7 +264,7 @@ final class PageStackView<Page: Hashable>: NSView {
         if distance != 0 {
             // Critically damped like `AppStyle.layoutAnimation`: no overshoot.
             let push = CASpringAnimation(perceptualDuration: 0.3, bounce: 0)
-            push.keyPath = "transform.translation.x"
+            push.keyPath = "transform.translation.y"
             push.fromValue = distance
             push.toValue = 0
             push.beginTime = start

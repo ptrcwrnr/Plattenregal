@@ -67,18 +67,24 @@ struct AppSettingsView: View {
 
     var body: some View {
         // The same Liquid Glass switch as the main window, instead of tabs.
-        Group {
-            switch tab {
-            case .general: GeneralSettingsView()
-            case .appearance: AppearanceSettingsView()
-            case .shelf: ShelfSettingsView()
-            case .lists: ListsSettingsView()
-            case .discogs: DiscogsSettingsView()
-            case .export: ExportSettingsView()
-            case .backup: BackupSettingsView()
-            case .data: DataSettingsView()
-            case .shortcuts: ShortcutSettingsView()
+        // Another tab fades and settles in like a page of the main window.
+        ZStack {
+            Group {
+                switch tab {
+                case .general: GeneralSettingsView()
+                case .appearance: AppearanceSettingsView()
+                case .shelf: ShelfSettingsView()
+                case .lists: ListsSettingsView()
+                case .discogs: DiscogsSettingsView()
+                case .export: ExportSettingsView()
+                case .backup: BackupSettingsView()
+                case .data: DataSettingsView()
+                case .shortcuts: ShortcutSettingsView()
+                }
             }
+            .id(tab)
+            // Brings its own timing: an animation around it would replace it.
+            .transition(AppStyle.pageTransition)
         }
         // Tall enough for "Allgemein" without a gap below, longer tabs scroll.
         .frame(width: 760, height: 510)

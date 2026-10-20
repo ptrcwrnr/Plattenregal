@@ -40,11 +40,27 @@ enum AppStyle {
     static let floatingMargin: CGFloat = 20
     /// Room at the end of every page, so content scrolls clear of the button.
     static let floatingClearance: CGFloat = floatingButtonSize + floatingMargin + itemSpacing
+    // MARK: Switching a whole area
+    // A page (`PageStackView.show`), a settings tab, another cabinet: the old
+    // content fades out quickly on the spot, then the new one fades in while
+    // settling down from `pageSettleDistance` above – the same move as the
+    // pill of the switch that chose it (`settleTransition`). Never both half
+    // visible on top of each other. With "Bewegung reduzieren" only the fade.
+    static let pageFadeOut: TimeInterval = 0.1
+    static let pageFadeInDelay: TimeInterval = 0.07
+    static let pageFadeIn: TimeInterval = 0.22
+    static let pageSettleDistance: CGFloat = itemSpacing
+    /// `pageFadeOut` … `pageSettleDistance` as a SwiftUI transition, timing included.
+    static var pageTransition: AnyTransition {
+        let insertion: AnyTransition = reduceMotion ? .opacity : .opacity.combined(with: .offset(y: -pageSettleDistance))
+        return .asymmetric(insertion: insertion.animation(.easeOut(duration: pageFadeIn).delay(pageFadeInDelay)),
+                           removal: .opacity.animation(.easeIn(duration: pageFadeOut)))
+    }
     /// Leaving a search: the hits fade out quickly, then the whole list fades
-    /// in where it was before the search – timed like a page switch (see
-    /// `PageStackView.show`). Gliding hundreds of covers back in looked busy.
-    static var searchExitFadeOut: Animation { .easeIn(duration: 0.1) }
-    static var searchExitFadeIn: Animation { .easeOut(duration: 0.22) }
+    /// in where it was before the search – timed like a page switch.
+    /// Gliding hundreds of covers back in looked busy.
+    static var searchExitFadeOut: Animation { .easeIn(duration: pageFadeOut) }
+    static var searchExitFadeIn: Animation { .easeOut(duration: pageFadeIn) }
 
     // MARK: Corner radii
     // Shared corner radius for secondary surfaces (search fields, result

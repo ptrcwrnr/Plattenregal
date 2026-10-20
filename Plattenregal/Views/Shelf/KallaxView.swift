@@ -84,7 +84,6 @@ struct KallaxView: View {
     @State private var shelfContent = ShelfContentCache()
     @State private var settingsTab: AppSettingsView.Tab?
     /// The side the next cabinet slides in from (see `show(_:)`).
-    @State private var cabinetEdge: Edge = .trailing
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
 
     /// Compartments of the active cabinets, cabinet by cabinet in reading
@@ -201,26 +200,29 @@ struct KallaxView: View {
                     header
                     VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
                         if activeCabinets.count > 1 { cabinetSwitcher }
-                        ShelfFurniture(
-                            shelves: shownCabinet.map { cabinet in shelves.filter { $0.cabinet?.id == cabinet.id } } ?? shelves,
-                            rows: shownCabinet?.rows ?? ShelfGeometry.rows,
-                            columns: shownCabinet?.columns ?? ShelfGeometry.columns,
-                            stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
-                            rangeLabel: { rangeLabels[$0.id] },
-                            selectedID: detailShelf?.id,
-                            litIDs: lit,
-                            lockPreview: lockPreview,
-                            select: selectShelf,
-                            add: { shelf in selectShelf(shelf); startAssignment(shelf) },
-                            menu: shelfMenu(for:)
-                        )
-                        // A compact overview with roughly KALLAX-like proportions, so the
-                        // compartment area below (strip + table) gets most of the height.
-                        // Always the full width, flush with the compartment area below.
-                        .frame(height: ShelfFurnitureMetrics.height(rows: shownCabinet?.rows ?? ShelfGeometry.rows))
-                        // Another cabinet slides in from the side it lies on.
-                        .id(shownCabinet?.id)
-                        .transition(AppStyle.reduceMotion ? .opacity : .push(from: cabinetEdge))
+                        // One slot: the old cabinet fades out where the new one settles in.
+                        ZStack {
+                            ShelfFurniture(
+                                shelves: shownCabinet.map { cabinet in shelves.filter { $0.cabinet?.id == cabinet.id } } ?? shelves,
+                                rows: shownCabinet?.rows ?? ShelfGeometry.rows,
+                                columns: shownCabinet?.columns ?? ShelfGeometry.columns,
+                                stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
+                                rangeLabel: { rangeLabels[$0.id] },
+                                selectedID: detailShelf?.id,
+                                litIDs: lit,
+                                lockPreview: lockPreview,
+                                select: selectShelf,
+                                add: { shelf in selectShelf(shelf); startAssignment(shelf) },
+                                menu: shelfMenu(for:)
+                            )
+                            // A compact overview with roughly KALLAX-like proportions, so the
+                            // compartment area below (strip + table) gets most of the height.
+                            // Always the full width, flush with the compartment area below.
+                            .frame(height: ShelfFurnitureMetrics.height(rows: shownCabinet?.rows ?? ShelfGeometry.rows))
+                            // Another cabinet fades and settles in like a page.
+                            .id(shownCabinet?.id)
+                            .transition(AppStyle.pageTransition)
+                        }
                         shelfDetail
                             .frame(maxHeight: .infinity, alignment: .top)
                     }
@@ -419,9 +421,6 @@ struct KallaxView: View {
     /// Selects the cabinet's starting compartment (see `startShelf(in:)`).
     private func show(_ cabinet: Cabinet) {
         guard cabinet.id != shownCabinet?.id, let shelf = startShelf(in: cabinet) else { return }
-        let from = activeCabinets.firstIndex { $0.id == shownCabinet?.id } ?? 0
-        let to = activeCabinets.firstIndex { $0.id == cabinet.id } ?? 0
-        cabinetEdge = to > from ? .trailing : .leading
         withAnimation(AppStyle.layoutAnimation ?? AppStyle.fadeAnimation) { selectShelf(shelf) }
     }
 

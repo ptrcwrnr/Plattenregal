@@ -35,10 +35,9 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                         .foregroundStyle(unselectedStyle)
                         // The pill brings the label in its own color (below):
                         // a color fading between the two would, halfway, be as
-                        // gray as the half-shown pill and vanish on it. Gone at
-                        // once when chosen, back with the animation when left.
+                        // gray as the half-shown pill and vanish on it. This
+                        // one fades while the pill fades in over it.
                         .opacity(selected ? 0 : 1)
-                        .animation(selected ? nil : AppStyle.selectionAnimation, value: selected)
                         .padding(.horizontal, small ? AppStyle.itemSpacing : AppStyle.rowSpacing)
                         .frame(height: small ? 24 : 30)
                         .background {
