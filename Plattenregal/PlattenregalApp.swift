@@ -119,7 +119,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
-        .defaultSize(width: 1300, height: 850)
+        // Whole window incl. toolbar. The minimum height is 772 pt (720 pt
+        // content below the 52 pt toolbar).
+        .defaultSize(width: 1200, height: 780)
         // With --settings-tab the window takes the settings' own size, so
         // screenshots look like the settings window.
         .windowResizability(Self.previewsSettings ? .contentSize : .automatic)

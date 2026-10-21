@@ -1,3 +1,11 @@
+# Standardgröße des Fensters 1200 × 780; DMG 1.1.2 neu ausgegeben · 21.10.2026
+
+- **Vorher:** Das Hauptfenster öffnete beim ersten Start mit 1300 × 850 pt.
+- **Jetzt:** 1200 × 780 pt, nach deinem laufenden Fenster (1203 × 772) auf glatte Werte gebracht. Die Höhe 770 wäre zu knapp: 772 pt sind die Mindesthöhe (720 pt Inhalt unter der 52 pt hohen Toolbar), dein Fenster stand schon dort. `defaultSize` gilt für das ganze Fenster samt Toolbar. Wer das Fenster schon einmal benutzt hat, behält seine gespeicherte Größe; die neue gilt beim ersten Start und wenn macOS keinen Rahmen mehr kennt.
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2. Die Handbuch-PDFs sind unverändert.
+- README: Absatz zum Hauptfenster nennt Standard- und Mindestgröße.
+- Geprüft: Debug-Build ohne Warnungen, alle 206 Tests erfolgreich. Die Demo ohne gespeicherten Rahmen gestartet (`-ApplePersistenceIgnoreState YES`, Rahmen überschrieben): Das Fenster öffnet mit 1200 × 780 und sieht unverändert aus. Gegenprobe mit 1200 × 770 ergab 1200 × 772 (Mindesthöhe), mit 1200 × 800 genau 1200 × 800. Die Probeläufe überschrieben den gespeicherten Rahmen der echten App, er ist danach wieder auf 1203 × 772 gesetzt. DMG: `hdiutil verify` gültig, eingehängt nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig, Binärdatei identisch mit dem Release-Build, ohne Debug-Startargumente.
+
 # Abschlussprüfung der Doku, Meldungen, Protokolle und Übersetzungen · 20.10.2026
 
 - **README:** Die Tabelle der Einstellungen nennt das Design jetzt in der neuen Reihenfolge („Klassisch oder Modern“). Die übrigen Stellen zu Umschaltern, Seiten, Regalen, Einstellungen und Startargumenten waren schon aktuell. Modern bleibt das Standarddesign. Handbuch und Webseite zeigen die Design-Auswahl nicht als Bild und nennen keine Reihenfolge, sie bleiben unverändert.
