@@ -1,3 +1,12 @@
+# DMG-Fenster kompakter: 500 × 290 · 21.10.2026
+
+- **Vorher:** 540 × 330 pt, Symbole bei x = 140 und 400, y = 120.
+- **Jetzt:** 500 × 290 pt, Symbole bei x = 130 und 370, y = 96 (in `make-dmg.sh` und `dmg-background.swift`). Der Pfeil ist 92 statt 104 pt lang, damit er zwischen den näher stehenden Symbolen Luft hat. Papier, gerader Petrolpfeil und die kleine Platte (130 pt Radius, 42 pt unter dem Rand) bleiben, die Platte steht damit im Verhältnis etwas höher. Kleiner habe ich das Fenster nicht gemacht: Darunter würden Pfeil und Platte an Symbole und Beschriftungen stoßen.
+- Probiert und verworfen: statt der einen Platte viele kleine mit bunten Etiketten, erst als Haufen, dann als Band über die ganze Breite (an den Rändern höher), zuletzt größer und weniger.
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2, App und Handbuch-PDFs unverändert.
+- README: Fenstergröße der DMG.
+- Geprüft: Das DMG-Fenster habe ich im Finder geöffnet und aufgenommen. Symbole, Pfeil, Platte und beide Beschriftungen sitzen frei. `hdiutil verify` gültig. Eingehängt: nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig, Binärdatei identisch mit dem Release-Build.
+
 # DMG-Platte kleiner und tiefer · 21.10.2026
 
 - **Vorher:** Die Platte im DMG-Fenster hatte 200 pt Radius und reichte bis kurz unter die Beschriftungen der Symbole. Das war zu groß und zu nah.

@@ -56,7 +56,7 @@ hdiutil create -quiet -srcfolder "$WORK/src" -volname $NAME -fs HFS+ -format UDR
 hdiutil attach -quiet -readwrite -noverify -noautoopen "$WORK/rw.dmg"
 [[ -f $MOUNT/.VolumeIcon.icns ]] && xcrun SetFile -a C "$MOUNT"
 
-# Window 540 × 330 like the background (bounds include the 32 pt title bar);
+# Window 500 × 290 like the background (bounds include the 32 pt title bar);
 # icon centers as in dmg-background.swift.
 layout() {
   osascript <<EOF
@@ -66,14 +66,14 @@ tell application "Finder"
     set current view of container window to icon view
     set toolbar visible of container window to false
     set statusbar visible of container window to false
-    set bounds of container window to {200, 120, 740, 482}
+    set bounds of container window to {200, 120, 700, 442}
     set options to the icon view options of container window
     set arrangement of options to not arranged
     set icon size of options to 112
     set text size of options to 13
     set background picture of options to file ".background:background.tiff"
-    set position of item "$NAME.app" of container window to {140, 120}
-    set position of item "Applications" of container window to {400, 120}
+    set position of item "$NAME.app" of container window to {130, 96}
+    set position of item "Applications" of container window to {370, 96}
     close
     open
     update without registering applications

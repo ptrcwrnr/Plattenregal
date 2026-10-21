@@ -2,7 +2,7 @@
 // the classic design: paper, petrol and the label gold – a straight petrol
 // arrow between the icons and a black record rising from the bottom
 // edge. No title and no written hint: the arrow says it. The app icon sits
-// at (140, 120), the Applications folder at (400, 120) – centers in points,
+// at (130, 96), the Applications folder at (370, 96) – centers in points,
 // matching the icon positions make-dmg.sh sets in the Finder.
 //
 //   swift Scripts/dmg-background.swift <out.png> <scale>
@@ -13,8 +13,8 @@ guard args.count == 3, let scale = Double(args[2]) else {
     FileHandle.standardError.write("swift dmg-background.swift <out.png> <scale>\n".data(using: .utf8)!)
     exit(1)
 }
-let width = 540.0, height = 330.0
-let appX = 140.0, applicationsX = 400.0, iconY = 120.0
+let width = 500.0, height = 290.0
+let appX = 130.0, applicationsX = 370.0, iconY = 96.0
 
 func rgb(_ hex: UInt32, _ alpha: Double = 1) -> NSColor {
     NSColor(srgbRed: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255,
@@ -80,7 +80,7 @@ labelRing.stroke()
 // them. At the icons' center line it looked too high: the folder's body
 // below its tab and the envelope in the app icon carry the weight lower, so
 // it sits on the middle of the folder's body.
-let arrowY = top(iconY + 7), arrowStart = (appX + applicationsX) / 2 - 52, arrowEnd = (appX + applicationsX) / 2 + 52
+let arrowY = top(iconY + 7), arrowStart = (appX + applicationsX) / 2 - 46, arrowEnd = (appX + applicationsX) / 2 + 46
 let arrow = NSBezierPath()
 arrow.move(to: NSPoint(x: arrowStart, y: arrowY))
 arrow.line(to: NSPoint(x: arrowEnd, y: arrowY))
