@@ -6,7 +6,7 @@ import SwiftData
 /// A cover grid in physical shelf order, or the original sortable table.
 /// Owns a cached snapshot that follows actual content changes, not unrelated
 /// page renders. Editing and actions are shared by both presentations.
-struct ShelfContentsView: View {
+struct ShelfContentsView: View, Equatable {
     @Environment(\.modelContext) private var context
     let shelf: Shelf
     let session: ShelfContentsSession
@@ -22,6 +22,16 @@ struct ShelfContentsView: View {
     let unplace: (RecordCopy) -> Void
     let delete: (RecordCopy) -> Void
     let setMissing: (RecordCopy, Bool) -> Void
+
+    /// The page passes new closures on every render of its own (a search
+    /// keystroke, the placement card), and closures never compare equal: the
+    /// whole grid was rebuilt each time, ~50–150 ms with a full compartment.
+    /// They only call into the page's state, so the data decides. Changes
+    /// to the records themselves arrive through Observation anyway.
+    static func == (a: Self, b: Self) -> Bool {
+        a.shelf === b.shelf && a.session === b.session && a.owner == b.owner && a.missing == b.missing
+            && a.focusCopy === b.focusCopy && a.focusRevision == b.focusRevision
+    }
     @AppStorage("shelfContentsLayout") private var layout = OverviewLayout.grid
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
@@ -45,6 +55,8 @@ struct ShelfContentsView: View {
     @State private var error: String?
     @State private var focusScroll: FocusScroll?
     @State private var gridRestorePending = true
+    /// Width of the grid's slot (see `grid`); 0 until it is laid out.
+    @State private var gridWidth: CGFloat = 0
     /// A compartment opened for a record (search, "im Regal zeigen") stays
     /// invisible until it stands at that record, then fades in – instead of
     /// fading in at the top and visibly scrolling through the covers.
@@ -297,87 +309,96 @@ struct ShelfContentsView: View {
         }
     }
 
+    /// Only the width counts (it sets the columns). A `GeometryReader` here
+    /// rebuilt every tile on any change of size – also of the height alone,
+    /// on every frame while the placement card pushed the grid down.
     private func grid(_ proxy: ScrollViewProxy) -> some View {
-        GeometryReader { geometry in
-            let width = max(0, geometry.size.width - 4)
-            let columns = CoverGrid.columnCount(available: width, minimum: 135)
-            ScrollView {
-                // Every tile carries a glass tag (Modern): one container for
-                // all of them renders them together, ~10 % less per scroll step.
-                GlassEffectContainer(spacing: 0) {
-                    LazyVGrid(columns: CoverGrid.columns(count: columns), alignment: .leading, spacing: CoverGrid.spacing) {
-                        ForEach(items) { item in
-                            Button { activate(item.copy) } label: { tile(item) }
-                                .buttonStyle(.plain)
-                                .id(item.id)
-                                .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
-                                    quickEditor(item.copy)
-                                }
-                                .gridSecondaryClickCell(item.id, in: gridClicks)
-                                .popover(isPresented: menuBinding(item.id),
-                                         attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
-                                    actionMenu(item.copy)
-                                }
-                                .help("Position \(item.position) · \(item.artist) · \(item.title)\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen.")
-                                .accessibilityLabel("Position \(item.position), \(item.artist), \(item.title)")
-                                .accessibilityAddTraits(focusCopy?.id == item.id ? .isSelected : [])
-                                .accessibilityAction(named: Text("Exemplar bearbeiten")) { edit(item.copy) }
-                        }
-                    }
-                    .scrollTargetLayout()
-                    .gridSecondaryClickGrid(gridClicks)
-                    .coverGridMotion(width: width, columnCount: columns)
-                    // Room for the covers' shadows inside the scroll view, which
-                    // clips; the negative padding below keeps the covers flush
-                    // with the rack.
-                    .padding(.horizontal, AppStyle.hairSpacing + CoverGrid.shadowRoom)
-                    .padding(.top, AppStyle.hairSpacing)
-                    // The last covers scroll clear of the round button.
-                    .padding(.bottom, CoverGrid.spacing + AppStyle.floatingClearance)
-                }
+        Color.clear
+            .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { gridWidth = $0 }
+            .overlay(alignment: .topLeading) {
+                // Built once the width is known, so it never reflows from zero.
+                if gridWidth > 0 { gridScroll(proxy, width: max(0, gridWidth - 4)) }
             }
-            .onGridSecondaryClick(gridClicks) { id, point in
-                quickEditID = nil
-                menuFor = (id, point)
-            }
-            .padding(.horizontal, -CoverGrid.shadowRoom)
-            .scrollPosition(tracking: scrollPosition(for: .grid))
-            .opacity(gridRevealPending != nil && gridRevealPending == loadedShelfID ? 0 : 1)
-            .id(loadedShelfID)
-            .task(id: loadedShelfID) {
-                let shelfID = shelf.id
-                let saved = session.gridScrollPositions[shelfID]
-                gridRestorePending = true
-                await Task.yield()
-                try? await Task.sleep(for: .milliseconds(25))
-                guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
-                // On mount SwiftUI can publish row zero before applying an
-                // existing scrollPosition. Keep capture closed until an
-                // explicit restore has laid out the saved copy. An external
-                // focus request takes precedence over a remembered position.
-                let hasFocusRequest = focusScroll?.shelfID == shelfID && focusScroll?.layout == .grid
-                if !hasFocusRequest, let saved, items.contains(where: { $0.id == saved }) {
-                    withAnimation(nil) {
-                        session.gridScrollPositions[shelfID] = saved
-                        proxy.scrollTo(saved, anchor: .top)
+    }
+
+    private func gridScroll(_ proxy: ScrollViewProxy, width: CGFloat) -> some View {
+        let columns = CoverGrid.columnCount(available: width, minimum: 135)
+        return ScrollView {
+            // Every tile carries a glass tag (Modern): one container for
+            // all of them renders them together, ~10 % less per scroll step.
+            GlassEffectContainer(spacing: 0) {
+                LazyVGrid(columns: CoverGrid.columns(count: columns), alignment: .leading, spacing: CoverGrid.spacing) {
+                    ForEach(items) { item in
+                        Button { activate(item.copy) } label: { tile(item) }
+                            .buttonStyle(.plain)
+                            .id(item.id)
+                            .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
+                                quickEditor(item.copy)
+                            }
+                            .gridSecondaryClickCell(item.id, in: gridClicks)
+                            .popover(isPresented: menuBinding(item.id),
+                                     attachmentAnchor: .point(menuFor?.anchor ?? .center), arrowEdge: .trailing) {
+                                actionMenu(item.copy)
+                            }
+                            .help("Position \(item.position) · \(item.artist) · \(item.title)\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen.")
+                            .accessibilityLabel("Position \(item.position), \(item.artist), \(item.title)")
+                            .accessibilityAddTraits(focusCopy?.id == item.id ? .isSelected : [])
+                            .accessibilityAction(named: Text("Exemplar bearbeiten")) { edit(item.copy) }
                     }
                 }
-                // Opened for a record: jump to it while still invisible.
-                if gridRevealPending == shelfID, let request = focusScroll, request.shelfID == shelfID,
-                   items.contains(where: { $0.id == request.copyID }) {
-                    withAnimation(nil) {
-                        session.gridScrollPositions[shelfID] = request.copyID
-                        proxy.scrollTo(request.copyID, anchor: .center)
-                    }
-                }
-                await Task.yield()
-                try? await Task.sleep(for: .milliseconds(25))
-                if gridRevealPending == shelfID {
-                    withAnimation(AppStyle.fadeAnimation) { gridRevealPending = nil }
-                }
-                guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
-                gridRestorePending = false
+                .scrollTargetLayout()
+                .gridSecondaryClickGrid(gridClicks)
+                .coverGridMotion(width: width, columnCount: columns)
+                // Room for the covers' shadows inside the scroll view, which
+                // clips; the negative padding below keeps the covers flush
+                // with the rack.
+                .padding(.horizontal, AppStyle.hairSpacing + CoverGrid.shadowRoom)
+                .padding(.top, AppStyle.hairSpacing)
+                // The last covers scroll clear of the round button.
+                .padding(.bottom, CoverGrid.spacing + AppStyle.floatingClearance)
             }
+        }
+        .onGridSecondaryClick(gridClicks) { id, point in
+            quickEditID = nil
+            menuFor = (id, point)
+        }
+        .padding(.horizontal, -CoverGrid.shadowRoom)
+        .scrollPosition(tracking: scrollPosition(for: .grid))
+        .opacity(gridRevealPending != nil && gridRevealPending == loadedShelfID ? 0 : 1)
+        .id(loadedShelfID)
+        .task(id: loadedShelfID) {
+            let shelfID = shelf.id
+            let saved = session.gridScrollPositions[shelfID]
+            gridRestorePending = true
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(25))
+            guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
+            // On mount SwiftUI can publish row zero before applying an
+            // existing scrollPosition. Keep capture closed until an
+            // explicit restore has laid out the saved copy. An external
+            // focus request takes precedence over a remembered position.
+            let hasFocusRequest = focusScroll?.shelfID == shelfID && focusScroll?.layout == .grid
+            if !hasFocusRequest, let saved, items.contains(where: { $0.id == saved }) {
+                withAnimation(nil) {
+                    session.gridScrollPositions[shelfID] = saved
+                    proxy.scrollTo(saved, anchor: .top)
+                }
+            }
+            // Opened for a record: jump to it while still invisible.
+            if gridRevealPending == shelfID, let request = focusScroll, request.shelfID == shelfID,
+               items.contains(where: { $0.id == request.copyID }) {
+                withAnimation(nil) {
+                    session.gridScrollPositions[shelfID] = request.copyID
+                    proxy.scrollTo(request.copyID, anchor: .center)
+                }
+            }
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(25))
+            if gridRevealPending == shelfID {
+                withAnimation(AppStyle.fadeAnimation) { gridRevealPending = nil }
+            }
+            guard !Task.isCancelled, layout == .grid, loadedShelfID == shelfID else { return }
+            gridRestorePending = false
         }
     }
 

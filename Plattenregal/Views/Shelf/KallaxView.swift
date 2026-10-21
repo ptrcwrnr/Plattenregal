@@ -26,6 +26,17 @@ struct KallaxView: View {
     @Environment(\.searchRequests) private var searchRequests
     /// The record being sorted in and the spots it fits alphabetically.
     @State private var placement: Placement?
+    /// Measured height of the placement card; the compartment contents
+    /// make room for it by moving down (see `shelfDetail`).
+    @State private var placementCardHeight: CGFloat = 0
+    /// The contents stand below the card by layout (`true`) or, while the
+    /// card comes, goes or changes height, by an offset (see `moveCard`).
+    @State private var cardSettled = true
+    /// Only the latest of overlapping card moves settles the contents.
+    @State private var cardMove = 0
+    /// A card waiting for its compartment to be built (see `startPlacement`);
+    /// cleared when anything else ends or replaces the placement.
+    @State private var pendingPlacement: UUID?
     /// "Namen ändern …" from a locked compartment's menu.
     @State private var showsNameEditor = false
     /// Cabinet tab whose right-click menu is open, and where.
@@ -134,7 +145,7 @@ struct KallaxView: View {
 
     private func forgetCopies() {
         closingAssignment = nil; assignment = nil; sortCheck = nil
-        focusCopy = nil; placement = nil; recentUnplace = nil
+        focusCopy = nil; placement = nil; pendingPlacement = nil; recentUnplace = nil
         pendingDelete = nil; confirmRemoveSold = false
     }
 
@@ -232,7 +243,7 @@ struct KallaxView: View {
             .padding(.top, AppStyle.pagePadding)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
-            .onExitCommand { if placement != nil { cancelPlacement() } else { deselect() } }
+            .onExitCommand { if placement != nil || pendingPlacement != nil { cancelPlacement() } else { deselect() } }
             .overlay(alignment: .bottom) { undoToast }
             // The matches of the search, right below its field at the
             // right end of the toolbar, floating over the rack.
@@ -460,21 +471,17 @@ struct KallaxView: View {
 
     @ViewBuilder private var shelfDetail: some View {
         if let shown = detailShelf {
-            // The contents own their grid/list switch.
-            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-                if let placement {
-                    PlacementCard(
-                        placement: placement,
-                        labels: rangeLabels,
-                        missing: missingIDs,
-                        choose: choosePlacementSpot,
-                        confirm: confirmPlacement,
-                        cancel: cancelPlacement
-                    )
-                    .transition(AppStyle.funnelTransition())
-                }
+            // The placement card sits above the contents. While it comes, goes
+            // or changes height, they move by an offset and keep their size:
+            // resizing the grid or table on every frame of the animation made
+            // it stutter (every cover's scroll layout and glass recomputed).
+            // Once it stands, a padding takes over in one step that looks
+            // the same, so the last records are reachable again.
+            let cardInset = placement == nil ? 0 : placementCardHeight + AppStyle.sectionSpacing
+            ZStack(alignment: .topLeading) {
                 // One slot: an animated switch between an empty and a filled
                 // compartment crossfades instead of stacking both for a moment.
+                // The contents own their grid/list switch.
                 ZStack(alignment: .topLeading) {
                 if shown.isReserved || shown.copies.isEmpty {
                     ShelfLockReader(shelf: shown, preview: lockPreview) { locked in
@@ -505,7 +512,27 @@ struct KallaxView: View {
                         delete: { pendingDelete = $0 },
                         setMissing: setMissing
                     )
+                    .equatable()
                 }
+                }
+                .padding(.top, cardSettled ? cardInset : 0)
+                .offset(y: cardSettled ? 0 : cardInset)
+                if let placement {
+                    PlacementCard(
+                        placement: placement,
+                        labels: rangeLabels,
+                        missing: missingIDs,
+                        choose: choosePlacementSpot,
+                        confirm: confirmPlacement,
+                        cancel: cancelPlacement
+                    )
+                    // Animated also when measured a frame late (the first
+                    // card, or another spot chosen with more or fewer lines).
+                    .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { height in
+                        guard height != placementCardHeight else { return }
+                        moveCard { placementCardHeight = height }
+                    }
+                    .transition(AppStyle.funnelTransition())
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -594,7 +621,7 @@ struct KallaxView: View {
     }
 
     private func selectShelf(_ shelf: Shelf) {
-        searchQuery = ""; focusCopy = nil
+        searchQuery = ""; focusCopy = nil; pendingPlacement = nil
         // Picking the other fitting shelf switches the spot; any other shelf ends the placement.
         if let placement {
             if let index = placement.spots.firstIndex(where: { $0.shelf.id == shelf.id }) {
@@ -659,7 +686,7 @@ struct KallaxView: View {
     private func takeSortingInRequest() {
         guard requests.sortingIn else { return }
         requests.sortingIn = false
-        placement = nil
+        placement = nil; pendingPlacement = nil
         startAssignment(nil)
     }
 
@@ -668,14 +695,58 @@ struct KallaxView: View {
         var new = Placement(copy: copy, shelves: shelves)
         new.excluded = exclusions.contains { $0.copyID == copy.id }
         new.missing = missingIDs.contains(copy.id)
-        withAnimation(AppStyle.standardAnimation) {
-            placement = new
-            if let shelf = new.spot?.shelf { highlight = shelf.id }
+        let target = new.spot?.shelf.id
+        // Another compartment builds its whole grid or table in one long
+        // frame; a card animating in at the same time would stall and jump.
+        // So the compartment opens first and the card follows once it's built.
+        let waits = target != nil && target != highlight
+        let id = UUID()
+        pendingPlacement = waits ? id : nil
+        moveCard {
+            placement = waits ? nil : new
+            if let target { highlight = target }
         }
         // A placed record is pulled out in the strip and selected in the table.
         if new.found && new.putAwayIn == nil {
             focusCopy = copy
             focusRevision += 1
+        }
+        guard waits else { return }
+        Task {
+            await Self.untilSettled()
+            guard pendingPlacement == id else { return }
+            pendingPlacement = nil
+            moveCard { placement = new }
+            refreshPlacement()
+        }
+    }
+
+    /// Animates a change that moves the contents below the card: by an
+    /// offset while it runs, then by layout again (see `shelfDetail`).
+    private func moveCard(_ change: () -> Void) {
+        cardMove += 1
+        let move = cardMove
+        var instant = Transaction()
+        instant.disablesAnimations = true
+        withTransaction(instant) { cardSettled = false }
+        withAnimation(AppStyle.standardAnimation, change) {
+            guard cardMove == move else { return }
+            withTransaction(instant) { cardSettled = true }
+        }
+    }
+
+    /// Returns once the main thread runs freely again: after a short
+    /// minimum, two short sleeps in a row must come back on time. Gives up
+    /// after about half a second.
+    private static func untilSettled() async {
+        let clock = ContinuousClock()
+        try? await Task.sleep(for: .milliseconds(60))
+        var calm = 0, tries = 0
+        while calm < 2 && tries < 20 {
+            tries += 1
+            let start = clock.now
+            try? await Task.sleep(for: .milliseconds(16))
+            calm = clock.now - start < .milliseconds(32) ? calm + 1 : 0
         }
     }
 
@@ -707,19 +778,20 @@ struct KallaxView: View {
         if placement.found {
             // Standing where it should: a "Gesucht" mark is settled.
             if placement.missing { setMissing(placement.copy, false) }
-            withAnimation(AppStyle.standardAnimation) { self.placement = nil }
+            moveCard { self.placement = nil }
             return
         }
         do {
             try PositionService(context: context).move(placement.copy, to: spot.shelf, position: spot.position, found: true)
-            withAnimation(AppStyle.standardAnimation) { self.placement = nil }
+            moveCard { self.placement = nil }
             focusCopy = placement.copy
             focusRevision += 1
         } catch { self.error = error.reportedMessage() }
     }
 
     private func cancelPlacement() {
-        withAnimation(AppStyle.standardAnimation) { placement = nil }
+        pendingPlacement = nil
+        moveCard { placement = nil }
     }
 
     private func unplace(_ copy: RecordCopy) {
@@ -759,6 +831,7 @@ struct KallaxView: View {
         if focusCopy?.id == copy.id { focusCopy = nil }
         if recentUnplace?.copy.id == copy.id { recentUnplace = nil }
         if placement?.copy.id == copy.id { placement = nil }
+        pendingPlacement = nil
         do { try PositionService(context: context).delete(copy) }
         catch { self.error = error.reportedMessage() }
     }
