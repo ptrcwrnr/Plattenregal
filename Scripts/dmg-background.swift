@@ -40,12 +40,10 @@ NSGradient(starting: NSColor.white.withAlphaComponent(0.55), ending: NSColor.whi
           toCenter: NSPoint(x: appX, y: top(iconY)), radius: 170, options: [])
 
 // A black record rising from the bottom edge like the one in the app icon:
-// grooves, a sheen and the gold label peeking out. Large and high, but its
-// edge stays below the Finder's black icon labels (they end about 94 pt
-// left and right of the middle, 204 pt from the top) with some air, so they
-// stay on the paper.
-let record = NSPoint(x: width / 2, y: top(height + 62))
-let recordRadius = 200.0, labelRadius = 75.0
+// grooves, a sheen and the gold label peeking out. Small and low, well
+// below the Finder's black icon labels, so the window stays calm.
+let record = NSPoint(x: width / 2, y: top(height + 42))
+let recordRadius = 130.0, labelRadius = 48.0
 func disc(_ radius: Double) -> NSBezierPath {
     NSBezierPath(ovalIn: NSRect(x: record.x - radius, y: record.y - radius, width: 2 * radius, height: 2 * radius))
 }

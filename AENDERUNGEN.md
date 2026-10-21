@@ -1,3 +1,12 @@
+# DMG-Platte kleiner und tiefer · 21.10.2026
+
+- **Vorher:** Die Platte im DMG-Fenster hatte 200 pt Radius und reichte bis kurz unter die Beschriftungen der Symbole. Das war zu groß und zu nah.
+- **Jetzt:** 130 pt Radius, Etikett 48 pt, Mitte 42 pt unter dem unteren Rand. Sie reicht in der Mitte bis etwa 242 pt von oben und bleibt weit unter der Schrift. Vom goldenen Etikett ist ein schmaler Rand zu sehen. Papier, Fenstergröße 540 × 330 und der gerade Petrolpfeil bleiben.
+- Probiert und verworfen: die Platte in der Ecke unten rechts, nur feine Rillen als Wasserzeichen und ein Petrol-Hintergrund wie auf der Webseite. Beim Petrol schreibt der Finder die Beschriftungen im hellen Modus schwarz, was sich nicht einstellen lässt. Lesbar wurden sie erst mit einem hellen Schein hinter Symbol und Schrift, und der wirkte wie zwei Scheinwerfer.
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2, App und Handbuch-PDFs unverändert.
+- README: Absatz zur DMG.
+- Geprüft: Das DMG-Fenster habe ich im Finder geöffnet und aufgenommen. Die Platte sitzt unten mittig, beide Beschriftungen stehen frei auf dem Papier. `hdiutil verify` gültig. Eingehängt: nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig, Binärdatei identisch mit dem Release-Build. Nicht geprüft: das Fenster im dunklen Modus. Dort schreibt der Finder die Beschriftungen vermutlich weiß, das gilt aber für jede Papier-Fassung.
+
 # DMG-Fenster kompakter: ohne Petrolband, Pfeil in Petrol, größere Platte · 21.10.2026
 
 - **Vorher:** Das DMG-Fenster war 540 × 380 pt groß. Oben lag ein Petrolband mit dem Titel „Plattenregal“ in New York und einem goldenen Strich. Der Pfeil war petrolfarben mit goldener Spitze, und unten lugte eine Platte mit 150 pt Radius herein.
