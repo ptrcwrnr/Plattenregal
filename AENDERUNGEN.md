@@ -1,3 +1,12 @@
+# DMG-Fenster kompakter: ohne Petrolband, Pfeil in Petrol, größere Platte · 21.10.2026
+
+- **Vorher:** Das DMG-Fenster war 540 × 380 pt groß. Oben lag ein Petrolband mit dem Titel „Plattenregal“ in New York und einem goldenen Strich. Der Pfeil war petrolfarben mit goldener Spitze, und unten lugte eine Platte mit 150 pt Radius herein.
+- **Jetzt:** 540 × 330 pt, nur Papier mit dem leichten Licht hinter der App. Band, Titel und Strich entfallen. Die Symbole stehen 30 pt höher (Mitte bei y = 120 statt 178, in `make-dmg.sh` und `dmg-background.swift`). Der Pfeil ist gerade und ganz petrolfarben, Linie und Spitze in einem Strich. Die Platte hat jetzt 200 statt 150 pt Radius und reicht in der Mitte bis etwa 192 pt von oben statt 230 pt. Das Etikett wächst mit (75 pt). Ihr Rand bleibt mit etwas Luft unter den schwarzen Beschriftungen der Symbole.
+- Zwischendurch probiert und verworfen: ein Bogen und ein mehrfach geschwungener, handschriftlicher Pfeil.
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (`Scripts/make-dmg.sh`), Version bleibt 1.1.2, App und Handbuch-PDFs unverändert.
+- README: Absatz zur DMG.
+- Geprüft: Das eingehängte DMG-Fenster habe ich im Finder geöffnet und aufgenommen. Hintergrund, Symbole und Pfeil sitzen wie gedacht, und beide Beschriftungen stehen vollständig auf dem Papier. Eine erste Fassung mit 6 pt höherer Platte kam den Unterlängen zu nahe. `hdiutil verify` gültig. Eingehängt: nur `Plattenregal.app` und `Applications`, Version 1.1.2, Signatur gültig, Binärdatei identisch mit dem Release-Build.
+
 # Standardgröße des Fensters 1200 × 780; DMG 1.1.2 neu ausgegeben · 21.10.2026
 
 - **Vorher:** Das Hauptfenster öffnete beim ersten Start mit 1300 × 850 pt.
