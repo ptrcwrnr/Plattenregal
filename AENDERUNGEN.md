@@ -1,3 +1,10 @@
+# Einsortier-Karte wechselt das Fach nicht mehr · 21.10.2026
+
+- **Vorher:** Ein Klick auf einen Suchtreffer im Regal öffnete das Fach der Platte und baute dafür dessen ganzes Cover-Raster auf (bei ~85 Platten rund 0,3 s, der größte Rest des Ruckelns).
+- **Jetzt:** Die Karte erscheint über dem gerade offenen Fach, das bleibt. Im Regal ist das Fach der Platte hell, die übrigen treten zurück – wie bei den Suchtreffern. Ein Klick auf das markierte Fach öffnet es; die Karte bleibt stehen, eine einsortierte Platte ist dort hervorgehoben. „Passt genauso … – dorthin wechseln“ setzt nur die Markierung um, nach „Gefunden“/„Hier einsortieren“ bleibt das offene Fach. Das Fach öffnet weiterhin gleich mit, wenn die Platte in einem anderen Regal steht (die Markierung wäre sonst nicht zu sehen) und bei „Im Regal anzeigen“ von Collection, Detailkarte oder Statistik.
+- README: Absatz zur Suche auf der Regalseite, Architekturzeile „Regal“.
+- Geprüft mit Instruments in der Testkopie der Sammlung (Cover-Raster, optimierter Build): Klick auf den Treffer 25–33 ms, einmal 75 ms statt vorher 300 ms Fachaufbau plus Einblendung; Abbrechen ruckelfrei. Bildschirmfotos: offenes Fach bleibt, Ziel-Fach markiert, Karte darüber; Klick aufs Ziel-Fach öffnet es mit hervorgehobener Platte und stehender Karte; Platte im EKET öffnet dessen Fach. Build ohne neue Warnungen, Tests bestanden. DMG 1.1.2 neu ausgegeben.
+
 # Einsortier-Karte im Regal ruckelfrei · 21.10.2026
 
 - **Vorher:** Ein Klick auf einen Suchtreffer im Regal ließ die Karte („Hier steht …“, Abbrechen/Gefunden) ruckelig hereinkommen, vor allem beim ersten Mal. Gemessen mit Instruments (Testsammlung mit ~85 Platten je Fach, Cover-Raster): Aussetzer von 300–390 ms und während der ganzen Einblendung verpasste Bilder.

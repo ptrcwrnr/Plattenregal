@@ -197,7 +197,8 @@ struct KallaxView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let lit = searchResults.litShelfIDs
+            // The search's hits, else the compartment the card points to.
+            let lit = searchResults.litShelfIDs ?? placement?.spot.map { [$0.shelf.id] }
             VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
                 if DemoMode.showsBanner { DemoBanner() }
                 if nothingPlaced {
@@ -298,7 +299,7 @@ struct KallaxView: View {
                 if let shelf = committedShelf { startAssignment(shelf) }
             } else if let raw = arguments.first(where: { $0.hasPrefix("--preview-place=") }) {
                 let artist = String(raw.dropFirst("--preview-place=".count))
-                if let copy = allCopies.first(where: { $0.release?.artist == artist }) { startPlacement(copy) }
+                if let copy = allCopies.first(where: { $0.release?.artist == artist }) { startPlacement(copy, opensShelf: true) }
             } else if arguments.contains("--preview-sortin") {
                 startAssignment(nil)
             } else if arguments.contains("--preview-sortcheck") {
@@ -457,7 +458,7 @@ struct KallaxView: View {
                 hidden: searchResults.hidden,
                 labels: rangeLabels,
                 missing: missingIDs,
-                place: startPlacement
+                place: { startPlacement($0) }
             )
             // Still the previous query's matches while typing pauses.
             .opacity(searchQuery == search.text ? 1 : 0.6)
@@ -507,7 +508,7 @@ struct KallaxView: View {
                             if let copy { if focusCopy?.id != copy.id { focusCopy = copy } } else { deselect() }
                         },
                         placed: showPlaced,
-                        find: startPlacement,
+                        find: { startPlacement($0) },
                         unplace: unplace,
                         delete: { pendingDelete = $0 },
                         setMissing: setMissing
@@ -632,6 +633,12 @@ struct KallaxView: View {
         }
         if highlight != shelf.id { showsNameEditor = false }
         withAnimation(AppStyle.standardAnimation) { highlight = shelf.id }
+        // Opening the compartment the card points to: a placed record is
+        // picked out there, as if the card had opened it.
+        if let placement, placement.found, placement.putAwayIn == nil, placement.spot?.shelf.id == shelf.id {
+            focusCopy = placement.copy
+            focusRevision += 1
+        }
     }
 
     /// After a copy's place changed from the compartment contents: follow it
@@ -680,7 +687,7 @@ struct KallaxView: View {
     private func takePlacingRequest() {
         guard let id = requests.placing else { return }
         requests.placing = nil
-        if let copy = allCopies.first(where: { $0.id == id }) { startPlacement(copy) }
+        if let copy = allCopies.first(where: { $0.id == id }) { startPlacement(copy, opensShelf: true) }
     }
 
     private func takeSortingInRequest() {
@@ -690,28 +697,35 @@ struct KallaxView: View {
         startAssignment(nil)
     }
 
-    private func startPlacement(_ copy: RecordCopy) {
+    /// Shows the card for the record. The open compartment stays as it is
+    /// and the rack marks the one the card points to – opening another
+    /// compartment builds its whole grid. It is opened only when asked for
+    /// (`opensShelf`: "Im Regal anzeigen" from another page) or when it
+    /// stands in another cabinet, where the mark couldn't be seen.
+    private func startPlacement(_ copy: RecordCopy, opensShelf: Bool = false) {
         searchQuery = ""; focusCopy = nil; showsNameEditor = false
         var new = Placement(copy: copy, shelves: shelves)
         new.excluded = exclusions.contains { $0.copyID == copy.id }
         new.missing = missingIDs.contains(copy.id)
-        let target = new.spot?.shelf.id
+        let target = new.spot?.shelf
+        let otherCabinet = target.map { $0.cabinet?.id != shownCabinet?.id } ?? false
+        let opens = target != nil && target?.id != highlight && (opensShelf || otherCabinet)
         // Another compartment builds its whole grid or table in one long
         // frame; a card animating in at the same time would stall and jump.
         // So the compartment opens first and the card follows once it's built.
-        let waits = target != nil && target != highlight
         let id = UUID()
-        pendingPlacement = waits ? id : nil
+        pendingPlacement = opens ? id : nil
         moveCard {
-            placement = waits ? nil : new
-            if let target { highlight = target }
+            placement = opens ? nil : new
+            if opens, let target { highlight = target.id }
         }
-        // A placed record is pulled out in the strip and selected in the table.
-        if new.found && new.putAwayIn == nil {
+        // A placed record is picked out in the grid and selected in the table,
+        // when its compartment is the open one.
+        if new.found && new.putAwayIn == nil && target?.id == highlight {
             focusCopy = copy
             focusRevision += 1
         }
-        guard waits else { return }
+        guard opens else { return }
         Task {
             await Self.untilSettled()
             guard pendingPlacement == id else { return }
@@ -764,13 +778,12 @@ struct KallaxView: View {
             updated.chosen = index
         }
         placement = updated
-        if let shelf = updated.spot?.shelf, highlight != shelf.id { highlight = shelf.id }
     }
 
     private func choosePlacementSpot(_ index: Int) {
         guard let placement, placement.spots.indices.contains(index) else { return }
+        // Moves the mark in the rack; the open compartment stays.
         self.placement?.chosen = index
-        withAnimation(AppStyle.standardAnimation) { highlight = placement.spots[index].shelf.id }
     }
 
     private func confirmPlacement() {
@@ -784,8 +797,10 @@ struct KallaxView: View {
         do {
             try PositionService(context: context).move(placement.copy, to: spot.shelf, position: spot.position, found: true)
             moveCard { self.placement = nil }
-            focusCopy = placement.copy
-            focusRevision += 1
+            if spot.shelf.id == highlight {
+                focusCopy = placement.copy
+                focusRevision += 1
+            }
         } catch { self.error = error.reportedMessage() }
     }
 
