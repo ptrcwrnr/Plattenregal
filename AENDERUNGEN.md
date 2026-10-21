@@ -1,3 +1,11 @@
+# Produktbilder für App Store und Social Media · 21.10.2026
+
+- **Neu:** `Marketing/Bilder/` mit zehn durchgestalteten Produktbildern aus der echten Sammlung (keine Demo-Platten): sechs fürs Mac-App-Store-Format 2880 × 1800 (Collection, Regal, Plattenkarte mit Standort, Sortierung prüfen, Statistik, Klassisch/Modern hell/dunkel), drei Instagram-Beiträge 1080 × 1350 (Cover-Wand „850 Platten. Ein Regal.“, Regal, Plattenkarte) und eine Story 1080 × 1920. Gestaltung wie Webseite und Handbuch: Petrol, Creme und Gold, Überschriften in New York, die Schallplatte mit goldenem Etikett.
+- **Werkzeuge:** `Scripts/marketing-shots.sh` nimmt die Fenster mit `screencapture` auf (echtes Liquid Glass statt des flacheren `--snapshot`) und holt Cover aus dem Cache; `Marketing/Produktbilder.html` ist die Vorlage, `Scripts/make-marketing.swift` rendert sie. Die Rohaufnahmen (`Marketing/Aufnahmen/`) stehen in `.gitignore`.
+- Weggelassen: „Einsortieren“ und „Platte hinzufügen“ – in der echten Sammlung ist alles einsortiert, das Fenster zeigt nur „Nur noch gesuchte Platten“.
+- README: Abschnitt „Produktbilder“.
+- Geprüft: alle zehn Bilder in voller Größe angesehen (Größen 2880 × 1800, 1080 × 1350, 1080 × 1920, ohne Alphakanal). Korrigiert nach dem ersten Durchgang: Platten berührten Überschriften, ein Fensterrand endete knapp über dem Bildrand, die Plattenkarte war im Beitrag zu groß, und eine Karte blieb leer, weil das Foto noch nicht dekodiert war (der Renderer wartet jetzt darauf, mit Zeitlimit). Ein erster Lauf des Aufnahme-Skripts brach an einem leeren Cover-Ordner ab und ließ die Fenstergröße 1280 × 800 stehen; sie ist wieder auf 1203 × 772 gesetzt, das Skript setzt sie jetzt auch bei Fehlern zurück (`TRAPEXIT`). App-Code unverändert, Tests nicht ausgeführt.
+
 # DMG-Fenster kompakter: 500 × 290 · 21.10.2026
 
 - **Vorher:** 540 × 330 pt, Symbole bei x = 140 und 400, y = 120.
