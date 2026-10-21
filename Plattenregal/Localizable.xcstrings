@@ -8939,6 +8939,266 @@
           }
         }
       }
+    },
+    "Apple TV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple TV"
+          }
+        }
+      }
+    },
+    "Plattenregal für Apple TV zeigt Collection, Wantlist, Statistik und das Regal auf dem Fernseher. Discogs-Token und Belegung holt es von hier – im Heimnetz und verschlüsselt, solange Plattenregal am Mac geöffnet ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal for Apple TV shows your collection, wantlist, statistics and shelf on the TV. It gets the Discogs token and the shelf layout from here – over your home network, encrypted, while Plattenregal is open on the Mac."
+          }
+        }
+      }
+    },
+    "Was das Apple TV bekommt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What the Apple TV gets"
+          }
+        }
+      }
+    },
+    "In der Demo ist die Verbindung zum Apple TV aus – die Beispielsammlung soll nicht auf deinen Fernseher." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Apple TV link is off in the demo – the sample collection shouldn't end up on your TV."
+          }
+        }
+      }
+    },
+    "Noch kein Apple TV verbunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Apple TV connected yet."
+          }
+        }
+      }
+    },
+    "Neues Apple TV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Apple TV"
+          }
+        }
+      }
+    },
+    "Auf dem Apple TV: Plattenregal öffnen, dann Einstellungen → „Mit Mac verbinden …“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the Apple TV: open Plattenregal, then Einstellungen → “Mit Mac verbinden …”."
+          }
+        }
+      }
+    },
+    "Discogs-Token mitschicken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Discogs token"
+          }
+        }
+      }
+    },
+    "Dann gleicht das Apple TV selbst mit Discogs ab. Ohne Token muss er dort von Hand eingetragen werden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Apple TV then syncs with Discogs by itself. Without it, the token has to be entered there by hand."
+          }
+        }
+      }
+    },
+    "Die Belegung geht immer mit – dieselben Angaben wie in einer Sicherung: Regale, Fächer, Sperren und der Platz jeder Platte. Das Apple TV holt sie beim Start und alle paar Minuten und ändert selbst nichts daran." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The shelf layout is always sent – the same details as in a backup: shelves, compartments, locks and the place of every record. The Apple TV fetches it at launch and every few minutes and never changes it."
+          }
+        }
+      }
+    },
+    "Apple TV verbinden …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Apple TV …"
+          }
+        }
+      }
+    },
+    "Öffne auf dem Apple TV Plattenregal → Einstellungen → „Mit Mac verbinden …“ und wähle „%@“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the Apple TV, open Plattenregal → Einstellungen → “Mit Mac verbinden …” and choose “%@”."
+          }
+        }
+      }
+    },
+    "„%@“ möchte sich verbinden. Gib den Code ein, den der Fernseher zeigt:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” wants to connect. Enter the code shown on the TV:"
+          }
+        }
+      }
+    },
+    "Sechsstelliger Code" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Six-digit code"
+          }
+        }
+      }
+    },
+    "Verbinden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect"
+          }
+        }
+      }
+    },
+    "Prüfe den Code …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the code …"
+          }
+        }
+      }
+    },
+    "„%@“ ist verbunden und holt sich jetzt Token und Regal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” is connected and is now fetching the token and shelf."
+          }
+        }
+      }
+    },
+    "Fertig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "Noch einmal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        }
+      }
+    },
+    "Zuletzt abgeholt %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last fetched %@"
+          }
+        }
+      }
+    },
+    "Verbunden am %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected on %@"
+          }
+        }
+      }
+    },
+    "Mac" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac"
+          }
+        }
+      }
+    },
+    "Der Code hat sechs Ziffern." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The code has six digits."
+          }
+        }
+      }
+    },
+    "Die Verbindung zum Apple TV ist abgebrochen. Starte die Kopplung auf beiden Seiten neu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The connection to the Apple TV was lost. Start pairing again on both devices."
+          }
+        }
+      }
+    },
+    "Plattenregal ist im Heimnetz gerade nicht erreichbar (%@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal can't be reached on the home network right now (%@)."
+          }
+        }
+      }
+    },
+    "Plattenregal ist im Heimnetz gerade nicht erreichbar (%@). Erlaube den Zugriff aufs lokale Netzwerk unter Systemeinstellungen → Datenschutz & Sicherheit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal can't be reached on the home network right now (%@). Allow local network access in System Settings → Privacy & Security."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

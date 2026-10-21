@@ -1,3 +1,12 @@
+# Apple TV verbinden · 21.10.2026
+
+- **Neu:** Einstellungen → **Apple TV**. „Apple TV verbinden …“ wartet auf Plattenregal für Apple TV (eigenes Projekt `~/Desktop/Plattenregal-tvOS`); man tippt den sechsstelligen Code vom Fernseher ein. Verbundene Apple TVs stehen mit „Zuletzt abgeholt“ und „Entfernen“ in der Liste; „Discogs-Token mitschicken“ lässt sich abschalten.
+- Solange ein Apple TV verbunden oder eine Kopplung offen ist, bietet die App den Bonjour-Dienst `_plattenregal._tcp` an (`Link/AppleTVLink.swift`) und beantwortet Abholungen mit Token und Belegung im Format der Sicherung, versiegelt mit dem Schlüssel des Apple TV. Protokoll und Verschlüsselung in `Link/TVLink.swift`, wortgleich im tvOS-Projekt. In der Demo aus.
+- Sandbox: eingehende Verbindungen erlaubt, Begründung fürs lokale Netzwerk im Info.plist. Das Einstellungsfenster ist 860 statt 760 pt breit – mit zehn Tabs blendete die Toolbar den Umschalter sonst ganz aus.
+- Neue Texte auf Englisch im Katalog; Absagen ans Apple TV bleiben deutsch, weil dessen App nur Deutsch spricht.
+- README: Tab-Tabelle, Abschnitt „Apple TV“, Dateiliste.
+- Geprüft: Build ohne neue Warnungen, alle 206 Tests bestanden; Fensteraufnahmen der Einstellungen (Demo, Klassisch dunkel) mit allen zehn Tabs. Das Gegenstück auf dem Apple TV gegen einen nachgebauten Mac mit derselben `TVLink.swift` geprüft (Kopplung, falscher Code, Abholen). Noch nicht geprüft: diese Mac-App gegen das Apple TV – dafür muss der Code am Mac von Hand eingetippt werden.
+
 # Einsortier-Karte wechselt das Fach nicht mehr · 21.10.2026
 
 - **Vorher:** Ein Klick auf einen Suchtreffer im Regal öffnete das Fach der Platte und baute dafür dessen ganzes Cover-Raster auf (bei ~85 Platten rund 0,3 s, der größte Rest des Ruckelns).

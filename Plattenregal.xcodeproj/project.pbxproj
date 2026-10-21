@@ -145,6 +145,9 @@
 		90B8CCED9258672967D80BF4 /* Plattenregal/Discogs/DiscogsSyncService+Merge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5622954F011A57F0CA11D20 /* Plattenregal/Discogs/DiscogsSyncService+Merge.swift */; };
 		B3D52D1BE117C55B4316B7D6 /* PlattenregalTests/ScenarioTestStubs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CAC1F14C7509AA2B9F05E5 /* PlattenregalTests/ScenarioTestStubs.swift */; };
 		4456115C64EF0A9337C633EB /* PlattenregalTests/StatisticsTestStubs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C79791E0CE7855D817CE7F12 /* PlattenregalTests/StatisticsTestStubs.swift */; };
+		9076B44A62D6D51EE41BA5A2 /* Plattenregal/Link/TVLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AD8AD734FB19F93FBDA6B4 /* Plattenregal/Link/TVLink.swift */; };
+		B41250BB5E929EF90FCD752C /* Plattenregal/Link/AppleTVLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CAB8B5E82000703434ED0A5 /* Plattenregal/Link/AppleTVLink.swift */; };
+		2F69D82A366C443498A74CD5 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9969D26BE0D923643AA8FCB4 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -300,6 +303,9 @@
 		E5622954F011A57F0CA11D20 /* Plattenregal/Discogs/DiscogsSyncService+Merge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Plattenregal/Discogs/DiscogsSyncService+Merge.swift"; sourceTree = "<group>"; };
 		44CAC1F14C7509AA2B9F05E5 /* PlattenregalTests/ScenarioTestStubs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/ScenarioTestStubs.swift; sourceTree = "<group>"; };
 		C79791E0CE7855D817CE7F12 /* PlattenregalTests/StatisticsTestStubs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/StatisticsTestStubs.swift; sourceTree = "<group>"; };
+		A4AD8AD734FB19F93FBDA6B4 /* Plattenregal/Link/TVLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Link/TVLink.swift; sourceTree = "<group>"; };
+		6CAB8B5E82000703434ED0A5 /* Plattenregal/Link/AppleTVLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Link/AppleTVLink.swift; sourceTree = "<group>"; };
+		9969D26BE0D923643AA8FCB4 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/AppleTVSettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -376,6 +382,7 @@
 				E30B4F4A69D252D1867EE142 /* Views */,
 				E8764D70B53FA9D06CBC14A9 /* Services */,
 				DB551B1C67382329FED30FF6 /* Discogs */,
+				10668A686AC4255CA7B5D319 /* Link */,
 				C5E1C5A9244778B33EE7DFB4 /* Storage */,
 				FA64D2BB06C8F8E2B19BE399 /* Sorting */,
 				121BBCBF42974BB31BC56237 /* Utilities */,
@@ -410,6 +417,15 @@
 				ABCDE0000000000000000001 /* PlattenregalTests/DiscogsSyncTests.swift */,
 			);
 			name = PlattenregalTests;
+			sourceTree = "<group>";
+		};
+		10668A686AC4255CA7B5D319 /* Link */ = {
+			isa = PBXGroup;
+			children = (
+				6CAB8B5E82000703434ED0A5 /* Plattenregal/Link/AppleTVLink.swift */,
+				A4AD8AD734FB19F93FBDA6B4 /* Plattenregal/Link/TVLink.swift */,
+			);
+			name = Link;
 			sourceTree = "<group>";
 		};
 		C5E1C5A9244778B33EE7DFB4 /* Storage */ = {
@@ -499,6 +515,7 @@
 				5AA1B36AD1D91AE5280CADCD /* Plattenregal/Views/Settings/ListsSettingsView.swift */,
 				8A93AD766090CB8691F407AB /* Plattenregal/Views/Settings/DataSettingsView.swift */,
 				3119463BACF2AA3543C3D81E /* Plattenregal/Views/Settings/BackupSettingsView.swift */,
+				9969D26BE0D923643AA8FCB4 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift */,
 				FE8D1C341BE89FDFA4390300 /* Plattenregal/Views/Settings/ExportSettingsView.swift */,
 				FC89C15A0DAFF2CBB4E7FB89 /* Plattenregal/Views/Settings/DiscogsSettingsView.swift */,
 				21C776C8DD5C24E09EAA225E /* Plattenregal/Services/LibraryChanges.swift */,
@@ -753,6 +770,9 @@
 				AC0E485B3C5E3B4597E5C370 /* Plattenregal/Sorting/AlphabeticalPlacement.swift in Sources */,
 				412C0DFD5B2D5717D47DA7F3 /* Plattenregal/Sorting/SearchIndex.swift in Sources */,
 				F8E70039DDFA5D7C397353FB /* Plattenregal/Storage/KeychainStore.swift in Sources */,
+				9076B44A62D6D51EE41BA5A2 /* Plattenregal/Link/TVLink.swift in Sources */,
+				B41250BB5E929EF90FCD752C /* Plattenregal/Link/AppleTVLink.swift in Sources */,
+				2F69D82A366C443498A74CD5 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift in Sources */,
 				D5265016C5C82E398723387A /* Plattenregal/Storage/LibraryStorage.swift in Sources */,
 				6566C7AC1470738E11F8FE66 /* Plattenregal/Utilities/PreviewData.swift in Sources */,
 				21696825085B5E1E09BFB6A8 /* Plattenregal/Views/Settings/AppSettingsView.swift in Sources */,
@@ -807,6 +827,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 102026;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
@@ -814,6 +835,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Plattenregal;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Plattenregal schickt Discogs-Token und Regal-Belegung an Plattenregal auf deinem Apple TV.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -916,6 +938,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 102026;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
@@ -923,6 +946,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Plattenregal;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Plattenregal schickt Discogs-Token und Regal-Belegung an Plattenregal auf deinem Apple TV.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

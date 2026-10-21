@@ -52,8 +52,21 @@ Die Tabs stehen als Umschalter in derselben Leiste wie im Hauptfenster, mitten i
 | Discogs | Token, Verbindungstest, Synchronisierung |
 | Export | CSV/PDF von Collection, Wantlist oder Verkaufsliste, automatischer Export in einen Ordner |
 | Sicherung | Belegung sichern und wiederherstellen, automatische Sicherung, Aufbewahrung, Speicherort |
+| Apple TV | Apple TV verbinden (Code vom Fernseher eintippen), verbundene Apple TVs mit „Zuletzt abgeholt“ und „Entfernen“, Discogs-Token mitschicken an/aus – siehe „Apple TV“ |
 | Daten | Speicherplatz, Cover-Cache, Protokoll, Discogs-Anfragen, Zurücksetzen |
 | Tastenkürzel | Alle Kürzel der App nach Ort (nur zum Nachschlagen) |
+
+## Apple TV
+
+Plattenregal für Apple TV (eigenes Projekt in `~/Desktop/Plattenregal-tvOS`) zeigt Collection, Wantlist, Regal und Statistik auf dem Fernseher, im Stil von Klassisch. Discogs-Token und Belegung holt es von hier, übers Heimnetz:
+
+1. Hier unter **Einstellungen → Apple TV** auf **„Apple TV verbinden …“** klicken.
+2. Auf dem Apple TV in Plattenregal **Einstellungen → „Mit Mac verbinden …“** öffnen und diesen Mac wählen.
+3. Den sechsstelligen Code, den der Fernseher zeigt, hier eintippen.
+
+Solange ein Apple TV verbunden ist oder eine Kopplung offen ist, bietet die App den Bonjour-Dienst `_plattenregal._tcp` an (Name des Macs, im TXT-Eintrag seine ID; Berechtigung „eingehende Verbindungen“ der Sandbox, beim ersten Mal fragt macOS nach dem lokalen Netzwerk). Das Apple TV fragt beim Start, bei jeder Rückkehr und alle fünf Minuten; der Mac antwortet mit dem Token (abschaltbar) und der Belegung im Format der Sicherung (`ShelfBackupService.makeBackup`, ohne die Plattennamen), versiegelt mit dem Schlüssel dieses Apple TV. Das Apple TV ändert nichts zurück. In der Demo ist der Dienst aus, damit die Beispielsammlung nicht auf den Fernseher kommt; eine Anfrage bekommt dann eine Absage. Absagen ans Apple TV sind deutsch, weil dessen App nur Deutsch spricht.
+
+Kopplung: frische X25519-Schlüssel beider Seiten, daraus mit dem Code per HKDF-SHA256 der gemeinsame Schlüssel; der Mac beweist ihn mit einer versiegelten Bestätigung (ChaChaPoly), das Apple TV bricht nach drei falschen Codes ab. Danach liegt der Schlüssel im Schlüsselbund (`de.private.Plattenregal.appletv`, je Apple TV), die Liste der Geräte in den Einstellungen. „Entfernen“ löscht beides. Protokoll und Verschlüsselung stehen in `Link/TVLink.swift` – **wortgleich** in beiden Projekten; ändert sich die Datei, dann in beiden.
 
 ## Daten, Sicherung und Export
 
@@ -133,6 +146,7 @@ atos -o Plattenregal.app/Contents/MacOS/Plattenregal -l <Ladeadresse> <Adresse> 
 | Regal | `Services/PositionService.swift`, `Services/CabinetService.swift`, `Views/Shelf/` | Positionen, Regale, „Ohne Regalplatz“ und „Gesucht“, jede Änderung als eine Transaktion; Regalseite, „Platte hinzufügen“ nur mit verfügbaren Platten (`Views/Shelf/ShelfAssignment.swift`, Sitzung in `ShelfAssignmentSession.swift`; gesuchte listet `Views/Settings/ListsSettingsView.swift`, Auswahl in `MissingCopies.listed`) und „Sortierung prüfen“ (`Views/Shelf/ShelfSortCheckView.swift`); die Einsortier-Karte wechselt das Fach nicht, sondern markiert es im Regal (`litIDs` wie bei der Suche); muss sie es doch öffnen (anderes Regal, „Im Regal anzeigen“), öffnet zuerst das Fach und die Karte blendet erst ein, wenn dessen Raster oder Liste aufgebaut ist; der Fachinhalt rückt währenddessen per Versatz und übernimmt die Lage erst danach ins Layout, und das Raster misst nur seine Breite (kein `GeometryReader`), damit nichts Bild für Bild neu aufgebaut wird |
 | Sortierung | `Sorting/SortingService.swift`, `Sorting/AlphabeticalPlacement.swift`, `Sorting/ShelfSortCheck.swift`, `Sorting/SearchIndex.swift` | Sortierschlüssel (Interpret, dann `ShelfSecondaryOrder`), Platzsuche (`AlphabeticalPlacement`), Umstellschritte (`ShelfSortCheck`: alle außer einer längsten schon richtig stehenden Folge), Suchtexte für Collection und Wantlist gemeinsam (`LibrarySearchIndexes`, erst bei der nächsten Suche nach einer Änderung aufgebaut) |
 | Sicherung | `Services/ShelfBackup.swift`, `Services/ShelfBackupService.swift`, `Services/ShelfAutoBackup.swift` | Sichern, Wiederherstellen, automatische Sicherung |
+| Apple TV | `Link/TVLink.swift` (wortgleich im tvOS-Projekt), `Link/AppleTVLink.swift`, `Views/Settings/AppleTVSettingsView.swift` | Protokoll, Schlüssel und Verbindung; Bonjour-Dienst, Kopplung und Antworten mit Token und Belegung; Einstellungs-Tab |
 | Export | `Services/ExportOptions.swift`, `Services/CollectionExportService.swift`, `Services/ExportWriters.swift`, `Services/ScheduledExportService.swift` | CSV/PDF, automatischer Export |
 | Zurücksetzen | `Services/ResetService.swift` | Standorte, Einstellungen, alles |
 | Änderungen | `Services/LibraryChanges.swift`, `Services/ShelfStatisticsService.swift` | Gemeinsamer Bestand aller Seiten (`LibraryRecords`: Platten und Wünsche nur nach Einfügen/Löschen neu gelesen, statt einer `@Query` pro Seite), Zähler, an denen Seiten ihre zwischengespeicherten Listen, Suchindizes und Fach-Beschriftungen neu aufbauen. Ein Abgleich meldet sich dort nur, wenn er wirklich etwas geändert hat (`DiscogsSyncSummary.hasChanges`); Fach-Beschriftungen lesen nur Fächer neu, deren Platten sich geändert haben (`ShelfContentCache`, `ShelfLabelsCache`) |

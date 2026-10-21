@@ -37,7 +37,7 @@ private struct SettingsOpener: ViewModifier {
 /// quiet card surfaces and the shared button vocabulary.
 struct AppSettingsView: View {
     enum Tab: String, CaseIterable { case general = "Allgemein", appearance = "Darstellung", shelf = "Regal", lists = "Listen", discogs = "Discogs"
-        case export = "Export", backup = "Sicherung", data = "Daten", shortcuts = "Tastenkürzel"
+        case export = "Export", backup = "Sicherung", appleTV = "Apple TV", data = "Daten", shortcuts = "Tastenkürzel"
         var title: String {
             switch self {
             case .general: String(localized: "Allgemein")
@@ -47,6 +47,7 @@ struct AppSettingsView: View {
             case .discogs: String(localized: "Discogs")
             case .export: String(localized: "Export")
             case .backup: String(localized: "Sicherung")
+            case .appleTV: String(localized: "Apple TV")
             case .data: String(localized: "Daten")
             case .shortcuts: String(localized: "Tastenkürzel")
             }
@@ -78,6 +79,7 @@ struct AppSettingsView: View {
                 case .discogs: DiscogsSettingsView()
                 case .export: ExportSettingsView()
                 case .backup: BackupSettingsView()
+                case .appleTV: AppleTVSettingsView()
                 case .data: DataSettingsView()
                 case .shortcuts: ShortcutSettingsView()
                 }
@@ -87,7 +89,9 @@ struct AppSettingsView: View {
             .transition(AppStyle.pageTransition)
         }
         // Tall enough for "Allgemein" without a gap below, longer tabs scroll.
-        .frame(width: 760, height: 510)
+        // Wide enough for all ten tabs in the toolbar's switch; with fewer
+        // room the toolbar drops the whole switch.
+        .frame(width: 860, height: 510)
         // Only the area switch in the title bar: no window buttons next to
         // it. Esc and ⌘W close the window instead.
         .background { WindowButtonsHidden() }
