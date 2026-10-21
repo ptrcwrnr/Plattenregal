@@ -34,7 +34,10 @@ nonisolated enum TVLink {
     static let macIDKey = "id"
     /// So lange wartet eine Kopplung auf den Code vom Mac.
     static let pairingTimeout: Duration = .seconds(180)
-    /// Für alles andere: Verbinden und jede Antwort.
+    /// Verbindungsaufbau samt Bonjour-Auflösung – in einem trägen WLAN
+    /// gemessen bis gut 12 Sekunden, darum großzügig.
+    static let connectTimeout: Duration = .seconds(30)
+    /// Jede Antwort und jedes Senden.
     static let replyTimeout: Duration = .seconds(15)
     /// So oft darf am Mac ein falscher Code kommen, dann bricht das Apple TV ab.
     static let codeAttempts = 3
@@ -89,10 +92,11 @@ nonisolated enum TVLink {
         try ChaChaPoly.open(ChaChaPoly.SealedBox(combined: data), using: key, authenticating: Data(device.uuidString.utf8))
     }
 
-    /// Sechs Ziffern aus dem sicheren Zufall des Systems.
+    /// Sechs Ziffern aus dem sicheren Zufall des Systems, mit führenden Nullen.
     static func makeCode() -> String {
         var generator = SystemRandomNumberGenerator()
-        return String(format: "%06d", Int.random(in: 0..<1_000_000, using: &generator))
+        let digits = String(Int.random(in: 0..<1_000_000, using: &generator))
+        return String(repeating: "0", count: 6 - digits.count) + digits
     }
 
     static func makeNonce() -> Data {
@@ -145,43 +149,56 @@ nonisolated final class TVLinkConnection: Sendable {
     }
 
     /// Baut die Verbindung auf; scheitert nach `timeout`.
-    func open(timeout: Duration = TVLink.replyTimeout) async throws {
+    func open(timeout: Duration = TVLink.connectTimeout) async throws {
         let once = TVLinkFlag()
-        let timer = Task { [connection] in
-            try await Task.sleep(for: timeout)
-            connection.cancel()
-        }
-        defer { timer.cancel() }
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            @Sendable func finish(_ result: Result<Void, Error>) {
-                guard once.take() else { return }
-                continuation.resume(with: result)
-            }
-            connection.stateUpdateHandler = { state in
-                switch state {
-                case .ready: finish(.success(()))
-                case .failed(let error), .waiting(let error): finish(.failure(error))
-                case .cancelled: finish(.failure(TVLinkError.timeout))
-                default: break
+        try await withDeadline(timeout) {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                @Sendable func finish(_ result: Result<Void, Error>) {
+                    guard once.take() else { return }
+                    continuation.resume(with: result)
                 }
+                self.connection.stateUpdateHandler = { state in
+                    switch state {
+                    case .ready: finish(.success(()))
+                    case .failed(let error), .waiting(let error): finish(.failure(error))
+                    case .cancelled: finish(.failure(TVLinkError.closed))
+                    default: break
+                    }
+                }
+                self.connection.start(queue: Self.queue)
             }
-            connection.start(queue: Self.queue)
         }
     }
 
-    func send(_ message: TVLink.Message) async throws {
+    func send(_ message: TVLink.Message, timeout: Duration = TVLink.replyTimeout) async throws {
         let body = try TVLink.encode(message)
         var length = UInt32(body.count).bigEndian
         let frame = Data(bytes: &length, count: 4) + body
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            connection.send(content: frame, completion: .contentProcessed { error in
-                if let error { continuation.resume(throwing: error) } else { continuation.resume() }
-            })
+        try await withDeadline(timeout) {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                self.connection.send(content: frame, completion: .contentProcessed { error in
+                    if let error { continuation.resume(throwing: error) } else { continuation.resume() }
+                })
+            }
         }
     }
 
     /// Die nächste ganze Nachricht; nach `timeout` wird die Verbindung geschlossen.
     func receive(timeout: Duration = TVLink.replyTimeout) async throws -> TVLink.Message {
+        try await withDeadline(timeout) {
+            let header = try await self.read(4)
+            let length = header.reduce(0) { $0 << 8 | Int($1) }
+            guard length > 0, length <= TVLink.maximumMessageSize else { throw TVLinkError.invalid }
+            return try TVLink.decode(TVLink.Message.self, from: try await self.read(length))
+        }
+    }
+
+    /// Führt `operation` aus und schließt die Verbindung, wenn sie zu lange
+    /// dauert oder ihr Auftrag abgebrochen wird – sonst hinge ein Warten auf
+    /// das Netz weiter (etwa nach dem Verlassen der Koppel-Seite) und hielte
+    /// die Gegenseite fest. Das Schließen beendet jedes laufende Warten mit
+    /// einem Fehler; der wird zu `.timeout` bzw. `CancellationError`.
+    private func withDeadline<T: Sendable>(_ timeout: Duration, _ operation: @Sendable () async throws -> T) async throws -> T {
         let expired = TVLinkFlag()
         let timer = Task { [connection] in
             try await Task.sleep(for: timeout)
@@ -190,12 +207,10 @@ nonisolated final class TVLinkConnection: Sendable {
         }
         defer { timer.cancel() }
         do {
-            let header = try await read(4)
-            let length = header.reduce(0) { $0 << 8 | Int($1) }
-            guard length > 0, length <= TVLink.maximumMessageSize else { throw TVLinkError.invalid }
-            return try TVLink.decode(TVLink.Message.self, from: try await read(length))
+            return try await withTaskCancellationHandler(operation: operation) { [connection] in connection.cancel() }
         } catch {
             if expired.isSet { throw TVLinkError.timeout }
+            if Task.isCancelled { throw CancellationError() }
             throw error
         }
     }

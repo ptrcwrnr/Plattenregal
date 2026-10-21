@@ -3,6 +3,7 @@ import Network
 import CryptoKit
 import SwiftData
 import Observation
+import SystemConfiguration
 
 /// The link to Plattenregal on Apple TV, Mac side. While at least one Apple
 /// TV is paired, or a pairing is open in the settings, the app offers the
@@ -45,9 +46,16 @@ import Observation
 
     /// This Mac towards the Apple TVs; stays the same across launches.
     let macID: UUID
-    static var macName: String { Host.current().localizedName ?? String(localized: "Mac") }
+    /// The computer name from the system settings, read once: `Host.current()`
+    /// resolves network names and can stall the main thread for seconds.
+    static let macName: String = (SCDynamicStoreCopyComputerName(nil, nil) as String?) ?? String(localized: "Mac")
 
     private var listener: NWListener?
+    /// A failed service comes back by itself after `listenerRetry` (a Wi-Fi
+    /// change, say) – otherwise the Apple TV couldn't reach the Mac until
+    /// something changed here.
+    private var listenerRetry: Task<Void, Never>?
+    private static let listenerRetryDelay: Duration = .seconds(30)
     private var container: ModelContainer?
     private var pending: PendingPairing?
 
@@ -135,6 +143,12 @@ import Observation
         }
     }
 
+    /// The settings page closed: an open pairing ends, a finished one is put away.
+    func closePairing() {
+        guard pairing != nil else { return }
+        cancelPairing()
+    }
+
     /// "Fertig" after a pairing.
     func finishPairing() {
         pairing = nil
@@ -165,10 +179,13 @@ import Observation
         let needed = container != nil && !DemoMode.isActive && (!devices.isEmpty || pairing != nil)
         if needed, listener == nil {
             startListener()
-        } else if !needed, let listener {
-            listener.cancel()
-            self.listener = nil
+        } else if !needed {
+            listenerRetry?.cancel()
+            listenerRetry = nil
+            listener?.cancel()
+            listener = nil
             isListening = false
+            listenerError = nil
         }
     }
 
@@ -178,17 +195,32 @@ import Observation
             listener.service = NWListener.Service(name: Self.macName, type: TVLink.serviceType,
                                                   txtRecord: NWTXTRecord([TVLink.macIDKey: macID.uuidString]))
             // Everything on the main queue: the handlers touch this object.
-            listener.stateUpdateHandler = { [weak self] state in
-                MainActor.assumeIsolated { self?.listenerChanged(state) }
+            // A replaced listener's late events are ignored.
+            listener.stateUpdateHandler = { [weak self, weak listener] state in
+                MainActor.assumeIsolated {
+                    guard let self, let listener, self.listener === listener else { return }
+                    self.listenerChanged(state)
+                }
             }
             listener.newConnectionHandler = { [weak self] connection in
                 MainActor.assumeIsolated { self?.accept(connection) }
             }
-            listener.start(queue: .main)
             self.listener = listener
+            listener.start(queue: .main)
         } catch {
             listenerError = String(localized: "Plattenregal ist im Heimnetz gerade nicht erreichbar (\(error.localizedDescription)).")
             AppLog.warning("Apple TV", "Dienst nicht gestartet: \(error)")
+            scheduleListenerRetry()
+        }
+    }
+
+    private func scheduleListenerRetry() {
+        listenerRetry?.cancel()
+        listenerRetry = Task { [weak self] in
+            try? await Task.sleep(for: Self.listenerRetryDelay)
+            guard !Task.isCancelled, let self else { return }
+            self.listenerRetry = nil
+            self.updateListener()
         }
     }
 
@@ -203,6 +235,7 @@ import Observation
             listener = nil
             listenerError = String(localized: "Plattenregal ist im Heimnetz gerade nicht erreichbar (\(error.localizedDescription)). Erlaube den Zugriff aufs lokale Netzwerk unter Systemeinstellungen → Datenschutz & Sicherheit.")
             AppLog.warning("Apple TV", "Dienst ausgefallen: \(error)")
+            scheduleListenerRetry()
         default:
             break
         }
@@ -214,9 +247,15 @@ import Observation
     }
 
     private func serve(_ link: TVLinkConnection) async {
+        // Connections that never say anything are no requests: the system
+        // tries several addresses at once and keeps only one (seen as a few
+        // silent connections per fetch). Only a request that went wrong is logged.
+        var spoke = false
         do {
             try await link.open()
-            switch try await link.receive() {
+            let message = try await link.receive()
+            spoke = true
+            switch message {
             case let .hello(deviceID, deviceName, tvKey, version):
                 try await beginPairing(link, deviceID: deviceID, deviceName: deviceName, tvKey: tvKey, version: version)
             case let .fetch(deviceID, nonce):
@@ -227,9 +266,7 @@ import Observation
             }
         } catch {
             link.close()
-            // A connection that closes before saying anything is no request
-            // (seen right after the service appears); not worth a warning.
-            if error as? TVLinkError != .closed { AppLog.warning("Apple TV", "Anfrage abgebrochen: \(error)") }
+            if spoke { AppLog.warning("Apple TV", "Anfrage abgebrochen: \(error)") }
         }
     }
 

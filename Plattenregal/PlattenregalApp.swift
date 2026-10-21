@@ -52,8 +52,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             // A first backup for layouts that haven't changed since the feature arrived.
             if let container { ShelfAutoBackup.shared.scheduleBackup(of: container) }
-            // Offers the collection to paired Apple TVs (never the demo's).
-            if let container, !DemoMode.isActive { AppleTVLink.shared.attach(container) }
+            // Offers the collection to paired Apple TVs – never the demo's, and
+            // not from a test run, whose in-memory store would answer in the
+            // real Mac's name.
+            if let container, !DemoMode.isActive, ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+                AppleTVLink.shared.attach(container)
+            }
         }
         catch StorageError.alreadyOpen {
             container = nil; openElsewhere = true

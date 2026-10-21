@@ -1,3 +1,14 @@
+# Apple TV: Durchsicht auf Robustheit · 21.10.2026
+
+- **Rechnername:** aus den Systemeinstellungen (`SCDynamicStoreCopyComputerName`), einmal gelesen – `Host.current()` löst Netzwerknamen auf und konnte den Hauptthread blockieren, auch beim Zeichnen der Einstellungen.
+- **Dienst kommt wieder:** Fällt der Bonjour-Dienst aus (etwa beim WLAN-Wechsel), startet er nach 30 Sekunden von selbst neu; Ereignisse eines ersetzten Dienstes werden ignoriert.
+- **Offene Kopplung endet** mit dem Schließen der Seite „Apple TV“, statt weiter Anfragen beliebiger Apple TVs anzunehmen.
+- **Kein Dienst aus Testläufen:** Die Test-App mit ihrer Datenbank im Arbeitsspeicher bot den Dienst sonst unter der ID des echten Macs an.
+- **Protokoll:** Verbindungen, die nie etwas sagen (das System probiert mehrere Adressen parallel), schreiben keine Warnungen mehr – vorher vier „Anfrage abgebrochen: timeout“ alle fünf Minuten.
+- `Link/TVLink.swift` (wortgleich mit dem tvOS-Projekt): Verbinden, Senden und Empfangen enden bei Zeitüberschreitung und bei Abbruch; Verbindungsaufbau bis 30 s.
+- README: Abschnitt „Apple TV“.
+- Geprüft: Build ohne neue Warnungen, 206 Tests bestanden. Ein Prüf-Client mit derselben `TVLink.swift` bekam über Loopback in 16 ms die richtige Absage für ein unbekanntes Gerät; das Apple TV im Simulator holte von dieser Mac-App erfolgreich ab (der Aufbau brauchte im WLAN dieses Rechners rund 12 s).
+
 # Apple TV verbinden · 21.10.2026
 
 - **Neu:** Einstellungen → **Apple TV**. „Apple TV verbinden …“ wartet auf Plattenregal für Apple TV (eigenes Projekt `~/Desktop/Plattenregal-tvOS`); man tippt den sechsstelligen Code vom Fernseher ein. Verbundene Apple TVs stehen mit „Zuletzt abgeholt“ und „Entfernen“ in der Liste; „Discogs-Token mitschicken“ lässt sich abschalten.

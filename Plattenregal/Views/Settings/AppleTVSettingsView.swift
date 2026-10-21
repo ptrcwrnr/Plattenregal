@@ -34,6 +34,8 @@ struct AppleTVSettingsView: View {
                 }
             }
             .animation(AppStyle.standardAnimation, value: link.pairing)
+            // A pairing left open would keep accepting any Apple TV that asks.
+            .onDisappear { link.closePairing() }
 
             SettingsCard(title: String(localized: "Was das Apple TV bekommt")) {
                 SettingsRow(title: String(localized: "Discogs-Token mitschicken"),
