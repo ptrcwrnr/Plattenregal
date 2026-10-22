@@ -10,12 +10,15 @@ struct StatisticsView: View {
     @Environment(\.modelContext) private var context
     /// Shown or not, without re-rendering every card on each page switch.
     @State private var activity = PageActivity()
-    /// Something was saved while the page was hidden; reload when it's shown.
-    @State private var stale = false
+    /// What was saved while the page was hidden; reloaded when it's shown.
+    @State private var stale = StatisticsChange.none
     let model: StatisticsViewModel
     @State private var filter: StatisticGroup?
     @State private var opened: RecordCopy?
     @State private var reloadTask: Task<Void, Never>?
+    /// The largest change saved since the pending reload was scheduled: a
+    /// value saved right after new records must not shrink it to the history.
+    @State private var pendingChange = StatisticsChange.none
     /// `busy` and `isWorking` often end together after a sync; one reload is enough.
     @State private var syncReloadTask: Task<Void, Never>?
     @State private var soundDimension: SoundDimension = .styles
@@ -54,12 +57,9 @@ struct StatisticsView: View {
                 .animation(AppStyle.standardAnimation, value: model.error)
             }
             .pullToRefresh(disabled: { refreshBlocked }, action: refresh)
-            // The animation belongs to the pill alone: on the page it also caught
-            // the new numbers committed with `calculating` and had every chart
-            // glide to them (~0.45 s of a fully busy main thread per update).
-            .overlay(alignment: .top) {
-                activityPill.animation(AppStyle.statusAnimation, value: model.busy || model.calculating)
-            }
+            // A view of its own: read here, `busy` and `calculating` re-ran this
+            // whole page (every card) as each reload started and ended.
+            .overlay(alignment: .top) { StatisticsActivityPill(model: model) }
         }
         .background { AmbientBackdrop(covers: ambientCovers) }
         // Loading starts eagerly at app launch (see RootView) so this page is
@@ -74,19 +74,31 @@ struct StatisticsView: View {
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { notification in
             // Sorting in, moving and marks change nothing counted here; the
             // random pick follows places on its own (see `RandomRecordCard`).
-            guard Self.affectsStatistics(notification) else { return }
+            let change = Self.change(notification)
+            guard change != .none else { return }
+            // A refresh loads the history itself at its end; it counts the
+            // collection again only if a save changed it meanwhile.
+            if model.busy {
+                if change == .collection { model.collectionChangedDuringRefresh = true }
+                return
+            }
             // During a sync and its tracklist download the store saves every few
             // seconds; recomputing everything each time would only stutter.
             // The sync's end reloads once (above).
-            guard !model.busy, !DiscogsSyncService.shared.isWorking else { return }
+            guard !DiscogsSyncService.shared.isWorking else { return }
             // Hidden (e.g. while sorting records on the shelf page): don't
             // recompute the whole collection after every single move — once
             // when the page is shown again is enough.
-            guard activity.isActive else { stale = true; return }
+            guard activity.isActive else { stale = max(stale, change); return }
+            pendingChange = max(pendingChange, change)
             reloadTask?.cancel()
             reloadTask = Task {
                 do { try await Task.sleep(for: .milliseconds(250)) } catch { return }
-                await model.reload(container: context.container)
+                let pending = pendingChange
+                pendingChange = .none
+                // Only a collection value saved: the counts stay as they are.
+                if pending == .history { model.reloadHistory(container: context.container) }
+                else { await model.reload(container: context.container) }
             }
         }
         // Token stored or removed in the settings window: this page stays
@@ -94,11 +106,17 @@ struct StatisticsView: View {
         .onChange(of: DiscogsSyncService.shared.tokenRevision) { _, _ in model.updateTokenState() }
         .trackPageActivity(activity) { active in
             if active { model.updateTokenState() }
-            guard active, stale else { return }
-            stale = false
-            Task { await model.reload(container: context.container) }
+            guard active, stale != .none else { return }
+            let change = stale
+            stale = .none
+            if change == .history { model.reloadHistory(container: context.container) }
+            else { Task { await model.reload(container: context.container) } }
         }
-        .onDisappear { reloadTask?.cancel() }
+        .onDisappear {
+            // Not lost: done when the page is shown again.
+            reloadTask?.cancel()
+            stale = max(stale, pendingChange); pendingChange = .none
+        }
         // The model already let go of its records (see `StatisticsViewModel.forget`).
         .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in
             opened = nil; filter = nil
@@ -127,21 +145,23 @@ struct StatisticsView: View {
         Array(model.statistics.recentlyAdded.lazy.compactMap { model.copiesByID[$0]?.release?.coverURL }.prefix(3))
     }
 
-    /// Whether a save touched what the page counts: releases, the value
-    /// history, accounts, or records added or removed. Changes to records
-    /// alone are places and marks – a sync's changes to them reload at its end.
-    /// Without the details every save counts.
-    static func affectsStatistics(_ notification: Notification) -> Bool {
+    /// What a save touched of what the page shows: the collection it counts
+    /// (releases, accounts, records added or removed) or only the value
+    /// history. Changes to records alone are places and marks – a sync's
+    /// changes to them reload at its end. Without the details every save
+    /// counts as a change to the collection.
+    static func change(_ notification: Notification) -> StatisticsChange {
         func identifiers(_ key: ModelContext.NotificationKey) -> [PersistentIdentifier]? {
             notification.userInfo?[key.rawValue] as? [PersistentIdentifier]
         }
         guard let inserted = identifiers(.insertedIdentifiers), let updated = identifiers(.updatedIdentifiers),
-              let deleted = identifiers(.deletedIdentifiers) else { return true }
-        let counted: Set<String> = [Schema.entityName(for: Release.self), Schema.entityName(for: CollectionValueSnapshot.self),
-                                    Schema.entityName(for: DiscogsAccount.self)]
+              let deleted = identifiers(.deletedIdentifiers) else { return .collection }
+        let counted: Set<String> = [Schema.entityName(for: Release.self), Schema.entityName(for: DiscogsAccount.self)]
         let records = Schema.entityName(for: RecordCopy.self)
-        return (inserted + deleted).contains { counted.contains($0.entityName) || $0.entityName == records }
-            || updated.contains { counted.contains($0.entityName) }
+        let snapshots = Schema.entityName(for: CollectionValueSnapshot.self)
+        if (inserted + deleted).contains(where: { counted.contains($0.entityName) || $0.entityName == records })
+            || updated.contains(where: { counted.contains($0.entityName) }) { return .collection }
+        return (inserted + updated + deleted).contains { $0.entityName == snapshots } ? .history : .none
     }
 
     private var refreshBlocked: Bool { model.busy || DiscogsSyncService.shared.busy }
@@ -156,31 +176,13 @@ struct StatisticsView: View {
             // Hidden: the sync capsule on the page shown is just changing to
             // "Synchronisiert" – all charts redrawn underneath made it stutter.
             // Once when this page is shown again is enough, as for other saves.
-            guard activity.isActive else { stale = true; return }
+            guard activity.isActive else { stale = .collection; return }
             await model.reload(container: context.container)
         }
     }
     private func refresh() {
         guard !refreshBlocked else { return }
         Task { await model.refresh(container: context.container) }
-    }
-
-    /// Floating status while the collection value is refreshed or recalculated.
-    @ViewBuilder private var activityPill: some View {
-        if model.busy || model.calculating {
-            HStack(spacing: AppStyle.itemSpacing) {
-                ActivityRing()
-                Text(model.busy ? "Sammlungswert wird aktualisiert" : "Wird berechnet")
-                    .font(.callout)
-                    .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
-                    .contentTransition(.interpolate)
-            }
-            .geometryGroup()
-            .activityPillChrome()
-            .animation(AppStyle.statusAnimation, value: model.busy)
-            .transition(.scale(scale: 0.6, anchor: .top).combined(with: .opacity))
-            .allowsHitTesting(false)
-        }
     }
 
     private var footnotes: some View {
@@ -266,4 +268,39 @@ struct StatisticsView: View {
     /// The page's records are the app's own (see `StatisticsViewModel.reload`),
     /// so the detail panel and its editor save them through the main context.
     private func open(_ copy: RecordCopy) { opened = copy }
+}
+
+/// What a save changed of what the statistics page shows, from nothing to
+/// the collection it counts.
+enum StatisticsChange: Int, Comparable {
+    case none, history, collection
+    static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
+}
+
+/// Floating status while the collection value is refreshed or recalculated.
+/// A view of its own, so only it follows `busy` and `calculating`.
+private struct StatisticsActivityPill: View {
+    let model: StatisticsViewModel
+    var body: some View {
+        Group {
+            if model.busy || model.calculating {
+                HStack(spacing: AppStyle.itemSpacing) {
+                    ActivityRing()
+                    Text(model.busy ? "Sammlungswert wird aktualisiert" : "Wird berechnet")
+                        .font(.callout)
+                        .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
+                        .contentTransition(.interpolate)
+                }
+                .geometryGroup()
+                .activityPillChrome()
+                .animation(AppStyle.statusAnimation, value: model.busy)
+                .transition(.scale(scale: 0.6, anchor: .top).combined(with: .opacity))
+                .allowsHitTesting(false)
+            }
+        }
+        // The animation belongs to the pill alone: on the page it also caught
+        // the new numbers committed with `calculating` and had every chart
+        // glide to them (~0.45 s of a fully busy main thread per update).
+        .animation(AppStyle.statusAnimation, value: model.busy || model.calculating)
+    }
 }

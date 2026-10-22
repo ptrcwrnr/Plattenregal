@@ -50,12 +50,13 @@ nonisolated struct AnalyticsItem: Sendable {
         }
     }
 
-    init(_ raw: Raw) {
+    /// `decoder`: one for the whole collection instead of a new one per record.
+    init(_ raw: Raw, decoder: JSONDecoder = JSONDecoder()) {
         id = raw.id
         releaseKey = raw.releaseKey
         year = raw.year.flatMap(Self.plausibleYear)
         genres = raw.genres; styles = raw.styles; country = raw.country
-        let basic = raw.basicInformation.flatMap { try? JSONDecoder().decode(DiscogsBasicInformation.self, from: $0) }
+        let basic = raw.basicInformation.flatMap { try? decoder.decode(DiscogsBasicInformation.self, from: $0) }
         let basicArtists: [DiscogsBasicInformation.Artist] = basic?.artists ?? []
         // Grouped by Discogs ID under the artist's canonical name, not the name
         // variation a single release credits ("Biesmans" for Joris Biesmans):

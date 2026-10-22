@@ -71,7 +71,7 @@ struct RandomRecordCard: View {
         .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { width = $0 }
         // Whenever the pick is gone (first load, or a sync removed it) and
         // there is something to pick — not only when the count changes.
-        // Places change without a reload of the page (see `StatisticsView.affectsStatistics`).
+        // Places change without a reload of the page (see `StatisticsView.change`).
         .task(id: [version, labelStyle.hashValue, secondaryOrder.hashValue, LibraryChanges.shared.placementsVersion, LibraryChanges.shared.shelvesVersion]) {
             labels = nil
             if pick == nil { pickID = copies.randomElement()?.id }

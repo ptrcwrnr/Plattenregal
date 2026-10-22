@@ -34,18 +34,23 @@ extension AllTests {
             let shelves = try context.fetch(FetchDescriptor<Shelf>(sortBy: [SortDescriptor(\.number)]))
             let service = PositionService(context: context)
             let first = try service.insert(release: Release(artist: "A", title: "Eins"), shelf: shelves[0])
-            #expect(StatisticsView.affectsStatistics(try #require(saved.value)))
+            #expect(StatisticsView.change(try #require(saved.value)) == .collection)
             let second = try service.insert(release: Release(artist: "B", title: "Zwei"), shelf: shelves[0], position: 2)
             saved.value = nil
             try service.move(second, to: shelves[1], position: 1)
-            #expect(!StatisticsView.affectsStatistics(try #require(saved.value)))
+            #expect(StatisticsView.change(try #require(saved.value)) == .none)
             saved.value = nil
             try service.setMissing([first], true)
-            #expect(!StatisticsView.affectsStatistics(try #require(saved.value)))
+            #expect(StatisticsView.change(try #require(saved.value)) == .none)
             saved.value = nil
             first.release?.title = "Neu"
             try context.save()
-            #expect(StatisticsView.affectsStatistics(try #require(saved.value)))
+            #expect(StatisticsView.change(try #require(saved.value)) == .collection)
+            // A collection value alone: only the history is loaded again.
+            saved.value = nil
+            try CollectionValueHistoryService.store(value: value(), owner: "fixture", count: 2, signature: "s", context: context)
+            #expect(StatisticsView.change(try #require(saved.value)) == .history)
+            #expect(StatisticsChange.history < .collection && StatisticsChange.none < .history)
         }
         @Test func implausibleYearsCountAsUnknown() {
             #expect(AnalyticsItem.plausibleYear(1997) == 1997)
@@ -261,6 +266,22 @@ extension AllTests {
         /// The page reads and counts off the main thread, in a context of its
         /// own; the records it shows are the app's, so the detail panel opened
         /// from here saves its edits through the main context.
+        /// A stored collection value reloads the history only; the
+        /// collection isn't counted again for it.
+        @Test @MainActor func valueHistoryReloadsWithoutRecounting() async throws {
+            let container = try LibraryStorage.makeContainer(inMemory: true)
+            container.mainContext.insert(try makeCopy()); try container.mainContext.save()
+            let model = StatisticsViewModel()
+            // Set directly: resolving it would read the keychain.
+            model.owner = "fixture"
+            await model.reload(container: container)
+            #expect(model.owner == "fixture" && model.history.isEmpty && model.statistics.totalItems == 1)
+            let version = model.version
+            try CollectionValueHistoryService.store(value: value(), owner: "fixture", count: 1, signature: "s", context: ModelContext(container))
+            model.reloadHistory(container: container)
+            #expect(model.history.count == 1 && model.history.first?.medianValue == 100)
+            #expect(model.version == version && !model.calculating)
+        }
         @Test @MainActor func statisticsShowTheAppsOwnRecords() async throws {
             let container = try LibraryStorage.makeContainer(inMemory: true)
             let kept = try makeCopy(); container.mainContext.insert(kept)

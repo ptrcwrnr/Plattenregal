@@ -17,6 +17,9 @@ import Observation
     /// something derived from `copies` refresh on it.
     private(set) var version = 0
     private var generation = 0
+    /// Set by the page when a save during `refresh` touched the collection
+    /// itself, not only the value history; see `refresh`.
+    @ObservationIgnored var collectionChangedDuringRefresh = false
 
     init() {
         // After "Alles zurücksetzen" `copies` are deleted records: reading
@@ -45,7 +48,7 @@ import Observation
             guard current == generation, !Task.isCancelled else { return }
             // Fetch everything before committing any of it, so a failure here can't leave
             // `copies`/`statistics` reflecting a different owner than `history`.
-            let newHistory = try ModelContext(container).fetch(FetchDescriptor<CollectionValueSnapshot>(predicate: #Predicate { $0.owner == owner }, sortBy: [SortDescriptor(\.date)]))
+            let newHistory = try Self.history(container, owner: owner)
             // The records shown (top artists, latest additions, random pick)
             // are the app's own, already loaded for every page: the same
             // objects the detail panel edits, and gone after a reset.
@@ -56,6 +59,15 @@ import Observation
             history = newHistory
             version += 1
         } catch { self.error = ReadError.wrapping(error).reportedMessage() }
+    }
+    /// Only the value history again, without recounting the collection: all
+    /// a newly stored collection value changes.
+    func reloadHistory(container: ModelContainer) {
+        do { history = try Self.history(container, owner: owner) }
+        catch { self.error = ReadError.wrapping(error).reportedMessage() }
+    }
+    private static func history(_ container: ModelContainer, owner: String) throws -> [CollectionValueSnapshot] {
+        try ModelContext(container).fetch(FetchDescriptor<CollectionValueSnapshot>(predicate: #Predicate { $0.owner == owner }, sortBy: [SortDescriptor(\.date)]))
     }
     func initialLoad(container: ModelContainer) async {
         await resolveOwner(container: container)
@@ -81,7 +93,7 @@ import Observation
     }
     func refresh(container: ModelContainer, force: Bool = true) async {
         guard !busy else { return }
-        busy = true; error = nil
+        busy = true; error = nil; collectionChangedDuringRefresh = false
         defer { busy = false }
         await reload(container: container)
         // No Discogs in the demo: recalculating is all a refresh does.
@@ -91,7 +103,11 @@ import Observation
             catch is CancellationError { return }
             catch { self.error = error.reportedMessage() }
         }
-        await reload(container: container)
+        // The value only adds to the history; the collection was counted
+        // just now. Counted again only if a save meanwhile changed it (the
+        // page holds back its own reloads while `busy`).
+        if collectionChangedDuringRefresh { await reload(container: container) }
+        else { reloadHistory(container: container) }
     }
 
     /// Off the main actor, in a context of its own, so large collections
@@ -107,6 +123,7 @@ import Observation
         descriptor.relationshipKeyPathsForPrefetching = [\.release]
         let selected = try context.fetch(descriptor).filter { $0.isInCurrentCollection(owner: owner) }
         let inputs = selected.map(AnalyticsItem.Raw.init)
-        return (CollectionAnalyticsService.calculate(inputs.map(AnalyticsItem.init)), inputs.map(\.id))
+        let decoder = JSONDecoder()
+        return (CollectionAnalyticsService.calculate(inputs.map { AnalyticsItem($0, decoder: decoder) }), inputs.map(\.id))
     }
 }

@@ -319,7 +319,11 @@ extension AllTests {
             let hits = measure("Suche (ein Tastendruck)") { copies.filter { index.matches($0.id, words) } }
             #expect(!hits.isEmpty)
 
-            let stats = measure("Statistik berechnen") { CollectionAnalyticsService.calculate(copies.map(AnalyticsItem.init)) }
+            // As the app does it: one decoder for the whole collection.
+            let stats = measure("Statistik berechnen") {
+                let decoder = JSONDecoder()
+                return CollectionAnalyticsService.calculate(copies.map { AnalyticsItem(.init($0), decoder: decoder) })
+            }
             #expect(stats.totalItems == 10_000 && stats.uniqueReleases == 8_000)
 
             let service = CollectionExportService(context: context)

@@ -24,9 +24,8 @@ struct SoundDonut: View {
     let select: (StatisticGroup) -> Void
     @Environment(\.statisticsColumns) private var columns
     @State private var width: CGFloat = 0
-    @State private var hovered: String?
 
-    private struct Slice: Identifiable {
+    fileprivate struct Slice: Identifiable {
         let group: StatisticGroup
         let label: String
         let color: Color
@@ -51,8 +50,7 @@ struct SoundDonut: View {
         }
     }
 
-    private var slices: [Slice] {
-        let groups = groups
+    private func slices(_ groups: [StatisticGroup]) -> [Slice] {
         let colors = StatisticsPalette.colors
         let top = groups.prefix(colors.count)
         var result = top.enumerated().map { index, group in
@@ -71,33 +69,56 @@ struct SoundDonut: View {
     }
 
     var body: some View {
-        let slices = slices
+        let groups = groups
+        let slices = slices(groups)
         Group {
             if slices.isEmpty {
                 Text("Keine Angaben vorhanden").font(.callout).foregroundStyle(.secondary)
             } else {
-                // Donut on the first two columns, legend across the rest.
-                let donutSize = min(StatisticsLayout.span(2, of: columns, in: width), 280)
-                HStack(alignment: .center, spacing: StatisticsLayout.gutter) {
-                    donut(slices).frame(width: donutSize, height: donutSize)
-                        .frame(width: StatisticsLayout.span(2, of: columns, in: width), alignment: .leading)
-                    VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                        legend(slices)
-                        // The shares are of all records, so say how many have no value here.
-                        if missing > 0 {
-                            Text("\(AppStyle.records(missing)) ohne Angabe\(dimension == .countries ? String(localized: " – Länder kommen mit den Tracklisten von Discogs") : "")")
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                }
+                // The slices are worked out here, the pointer is followed in
+                // `SoundDonutChart`: a slice hovered doesn't build them again
+                // (with "Weitere" merging the records of every other entry).
+                SoundDonutChart(slices: slices, total: statistics.totalItems, entries: groups.count, missing: missing,
+                                dimension: dimension, span: StatisticsLayout.span(2, of: columns, in: width), select: select)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { width = $0 }
     }
+}
 
-    private func donut(_ slices: [Slice]) -> some View {
+/// The donut and its legend for given slices, following the pointer: a
+/// hovered slice draws only this again.
+private struct SoundDonutChart: View {
+    let slices: [SoundDonut.Slice]
+    let total: Int
+    /// All entries of the dimension, including those under "Weitere".
+    let entries: Int
+    let missing: Int
+    let dimension: SoundDimension
+    /// Width of the first two grid columns, where the donut sits.
+    let span: CGFloat
+    let select: (StatisticGroup) -> Void
+    @State private var hovered: String?
+
+    var body: some View {
+        // Donut on the first two columns, legend across the rest.
+        HStack(alignment: .center, spacing: StatisticsLayout.gutter) {
+            donut(slices).frame(width: min(span, 280), height: min(span, 280))
+                .frame(width: span, alignment: .leading)
+            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                legend(slices)
+                // The shares are of all records, so say how many have no value here.
+                if missing > 0 {
+                    Text("\(AppStyle.records(missing)) ohne Angabe\(dimension == .countries ? String(localized: " – Länder kommen mit den Tracklisten von Discogs") : "")")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private func donut(_ slices: [SoundDonut.Slice]) -> some View {
         let sum = max(1, slices.reduce(0) { $0 + $1.group.count })
         return Chart(slices) { slice in
             SectorMark(angle: .value("Exemplare", slice.group.count),
@@ -141,7 +162,7 @@ struct SoundDonut: View {
     }
 
     /// Maps a point to the slice under it. Sectors start at 12 o'clock and run clockwise.
-    private func slice(at point: CGPoint, in rect: CGRect, slices: [Slice], sum: Int) -> Slice? {
+    private func slice(at point: CGPoint, in rect: CGRect, slices: [SoundDonut.Slice], sum: Int) -> SoundDonut.Slice? {
         let dx = point.x - rect.midX, dy = point.y - rect.midY
         let radius = min(rect.width, rect.height) / 2
         let distance = (dx * dx + dy * dy).squareRoot()
@@ -157,10 +178,10 @@ struct SoundDonut: View {
         return slices.last
     }
 
-    @ViewBuilder private func center(_ slices: [Slice]) -> some View {
+    @ViewBuilder private func center(_ slices: [SoundDonut.Slice]) -> some View {
         if let hovered, let slice = slices.first(where: { $0.id == hovered }) {
             VStack(spacing: AppStyle.hairSpacing) {
-                Text(slice.group.percentage(of: statistics.totalItems))
+                Text(slice.group.percentage(of: total))
                     .font(.system(.title, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(slice.color)
                 Text(slice.label).font(.callout.weight(.medium)).lineLimit(2).multilineTextAlignment(.center)
                 Text("\(AppStyle.records(slice.group.count))").font(.caption).foregroundStyle(.secondary)
@@ -168,14 +189,14 @@ struct SoundDonut: View {
         } else {
             VStack(spacing: AppStyle.hairSpacing) {
                 // All of them, including those under "Weitere".
-                Text(groups.count.formatted())
+                Text(entries.formatted())
                     .font(.system(.title, design: AppStyle.figureDesign, weight: .bold))
                 Text(dimension.title).font(.callout).foregroundStyle(.secondary)
             }
         }
     }
 
-    private func legend(_ slices: [Slice]) -> some View {
+    private func legend(_ slices: [SoundDonut.Slice]) -> some View {
         // Measured against the largest named entry: "Weitere" bundles many and
         // would shrink every real bar to a few pixels; it is capped at full.
         let named = slices.filter { !$0.id.hasPrefix("weitere:") }
@@ -191,7 +212,7 @@ struct SoundDonut: View {
                             .frame(width: 70 * min(1, CGFloat(slice.group.count) / maximum), height: 4)
                             .frame(width: 70, alignment: .leading)
                         Text(slice.group.count.formatted()).monospacedDigit().frame(minWidth: 36, alignment: .trailing)
-                        Text(slice.group.percentage(of: statistics.totalItems)).monospacedDigit().foregroundStyle(.secondary)
+                        Text(slice.group.percentage(of: total)).monospacedDigit().foregroundStyle(.secondary)
                             .frame(minWidth: 40, alignment: .trailing)
                     }
                     .font(.callout)

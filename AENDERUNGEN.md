@@ -1,3 +1,14 @@
+# Statistik: keine doppelte Rechenarbeit · 22.10.2026
+
+- **Durchgesehen:** Die Berechnung lief schon im Hintergrund und nur bei relevanten Änderungen. Drei Stellen arbeiteten trotzdem doppelt:
+  - **Aktualisieren (⌘R, Herunterziehen) zählte die Sammlung zweimal:** vor dem Abruf des Sammlungswerts und danach noch einmal vollständig, obwohl der Wert nur den Verlauf ändert. Jetzt wird danach nur der Verlauf nachgeladen (`StatisticsViewModel.reloadHistory`); vollständig nur, wenn währenddessen ein Speichern die Sammlung selbst geändert hat. Ebenso lässt ein gespeicherter Sammlungswert außerhalb davon nur den Verlauf neu laden (`StatisticsView.change`: nichts · Verlauf · Sammlung).
+  - **Die Statuskapsel baute die ganze Seite neu auf:** „Wird berechnet“ wurde im Rumpf der Seite gelesen, sodass Ein- und Ausblenden bei jedem Neuladen alle Karten zweimal zusätzlich neu aufbaute. Jetzt eine eigene Ansicht (`StatisticsActivityPill`).
+  - **Klangbild beim Überfahren:** Jeder neu überfahrene Eintrag bildete alle Tortenstücke samt Sammelgruppe „Weitere“ (Vereinigung der Platten aller übrigen Einträge) neu. Jetzt folgt nur `SoundDonutChart` dem Zeiger.
+- Kleinigkeit: ein gemeinsamer JSON-Decoder für die ganze Berechnung statt einer je Platte (10.000 Platten: 610 → 601 ms, also kaum messbar).
+- Verborgene Seite: Merkt sich jetzt, *was* sich geändert hat, und lädt beim Anzeigen nur den Verlauf, wenn nur der betroffen ist; ein beim Verlassen noch ausstehendes Neuladen geht nicht mehr verloren.
+- STATISTIK.md: Aktualisierung, Tests.
+- Geprüft: Build ohne Warnungen, alle 222 Tests bestanden (neu: `valueHistoryReloadsWithoutRecounting`; `onlyRelevantSavesReloadStatistics` prüft die Einstufung „nur Verlauf“). In der Demo (`--statistics-demo`) angesehen: Seite, Zahlen, ⌘R und das Überfahren im Klangbild verhalten sich wie vorher.
+
 # Collection und Wantlist: keine Arbeit im Verborgenen · 22.10.2026
 
 - **Durchgesehen:** Beide Seiten waren schon sparsam gebaut (gemeinsam geladene Listen, Sortierung nur bei Datenänderung, Suche über einen vorab gefalteten Index, gedrosselte Eingabe). Drei Stellen rechneten trotzdem unnötig:
