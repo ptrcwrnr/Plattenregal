@@ -28,6 +28,19 @@ nonisolated enum TrackVideoLink {
     }
 }
 
+/// The popover's links, matched again only when tracks, videos or artist
+/// change – not at every redraw (a large compilation takes some milliseconds).
+@MainActor final class TrackVideoLinkCache {
+    private var key: (tracks: [Track], videos: [ReleaseVideo], artist: String)?
+    private var value: [URL] = []
+    func urls(for tracks: [Track], videos: [ReleaseVideo], artist: String) -> [URL] {
+        if let key, key.tracks == tracks, key.videos == videos, key.artist == artist { return value }
+        value = TrackVideoLink.urls(for: tracks, videos: videos, artist: artist)
+        key = (tracks, videos, artist)
+        return value
+    }
+}
+
 /// Matches the videos of a release to its tracks by their titles. Discogs
 /// lists videos per release, titled the way uploaders name them – mostly
 /// "Artist - Title (Mix)", sometimes with a label or "Official Video".
@@ -135,7 +148,9 @@ nonisolated enum TrackVideoMatcher {
     }
 
     /// " - ", " – ", " — ", "|" and " / " between artist, title and label.
-    private static var segmentSeparator: Regex<Substring> { /\s+[-–—]\s+|\s*\|\s*|\s+\/\s+/ }
+    /// Built once: compiling it for every video took half the matching time.
+    /// Never mutated, only matched against, so sharing it is safe.
+    nonisolated(unsafe) private static let segmentSeparator = /\s+[-–—]\s+|\s*\|\s*|\s+\/\s+/
 
     /// Lowercased words without accents or punctuation ("Airwave (Sunset Mix)"
     /// → airwave, sunset, mix). Apostrophes join ("Don't" → dont); spellings

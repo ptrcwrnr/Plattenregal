@@ -253,6 +253,24 @@ import Observation
         LibraryChanges.shared.tracksDidChange()
     }
 
+    /// The videos of a release whose tracklist was loaded before videos were
+    /// stored – quietly, for the popover, which links its tracks with them.
+    /// Brings the rest of the release up to date too. A release Discogs no
+    /// longer has gets an empty list, so it isn't asked at every opening;
+    /// other failures (offline, no token) are left for the background download.
+    func loadVideos(for release: Release, context: ModelContext) async {
+        let id = release.discogsID
+        func markAsked() {
+            guard !release.isDeleted else { return }
+            do { try ReleaseVideoList.store([], for: id, in: context); try context.save() }
+            catch { context.rollback() }
+        }
+        do { try await loadTracklist(for: release, context: context) }
+        catch DiscogsError.notFound { markAsked() }
+        catch DiscogsError.http(let code) where (400...499).contains(code) { markAsked() }
+        catch {}
+    }
+
     /// Returns whether anything had to be loaded. Internal for the tests.
     func loadTracklists(container: ModelContainer, quiet: Bool) async -> Bool {
         let context = ModelContext(container)

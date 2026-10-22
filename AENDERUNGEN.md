@@ -1,3 +1,11 @@
+# YouTube-Links: Durchsicht auf Robustheit · 22.10.2026
+
+- **Popover holt Videos auch während des Nachladens:** Bisher wartete es, solange der Hintergrund-Download lief – gerade in der ersten halben Stunde nach dem Update. Jetzt fragt es fehlende Videos sofort selbst (`DiscogsSyncService.loadVideos`), nur nicht während eines laufenden Abgleichs.
+- **Keine Dauer-Anfragen:** Kennt Discogs eine Platte nicht mehr (404 oder anderer 4xx), merkt sich das Popover das mit einer leeren Videoliste, statt sie bei jedem Öffnen erneut anzufragen. Offline, ohne Token oder bei 403 bleibt es beim späteren Versuch.
+- **Schneller:** Das Trennmuster für Videotitel wird einmal gebaut statt für jedes Video (Zuordnung etwa doppelt so schnell), und das Popover ordnet nur neu zu, wenn sich Tracks, Videos oder Interpret ändern (`TrackVideoLinkCache`, wie `ShelfLabelCache`). Gemessen an echten Discogs-Daten: im Schnitt 1 ms je Platte, höchstens 6 ms (85 Videos), eine Kompilation mit 40 Tracks und 100 Videos 7 ms.
+- Handbuch (deutsch und englisch): Satz zum Klick auf einen Track. README: Popover, Tests.
+- Geprüft: Build ohne neue Warnungen, alle 220 Tests bestanden. Neu: Migration einer V16-Datenbank (Stand der ausgelieferten App) nach V17 mit Tracklist und „Verkauf“; Popover und Hintergrund speichern die Videos derselben Platte gleichzeitig in zwei Kontexten – ein Eintrag, kein Fehler; stilles Nachladen im Popover für 200/404/403; Videos kommen beim Nachladen mit. Zuordnung auf beiden echten Stichproben (86 Platten) unverändert. DMG 1.1.2 neu ausgegeben.
+
 # Tracks öffnen YouTube · 22.10.2026
 
 - **Neu:** Im Platten-Popover (Collection und Wantlist) ist jeder Track anklickbar. Der Klick öffnet im Browser das YouTube-Video, das Discogs für genau diesen Track führt, sonst eine YouTube-Suche nach Interpret und Track. Im Ruhezustand sieht die Tracklist aus wie bisher; unter dem Mauszeiger hebt sich die Zeile ab (die gemeinsame Hover-Fläche der App), ein Hinweistext sagt „Video auf YouTube öffnen“ oder „Auf YouTube suchen“. Videos, die keinem Track zugeordnet werden können, erscheinen nicht.

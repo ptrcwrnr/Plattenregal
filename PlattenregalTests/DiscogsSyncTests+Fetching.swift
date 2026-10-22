@@ -88,6 +88,27 @@ extension AllTests.DiscogsSyncTests {
         #expect(releases[404]?.detailsFetchedAt != nil)
         // 403 may be the token, not the release: tried again next time.
         #expect(releases[403]?.detailsFetchedAt == nil)
+        // Videos come with the same request; the removed release counts as asked.
+        let lists = Dictionary(uniqueKeysWithValues: try ModelContext(c).fetch(FetchDescriptor<ReleaseVideoList>()).map { ($0.discogsID, $0.videos) })
+        #expect(lists[200]?.map(\.url) == ["https://www.youtube.com/watch?v=intro"])
+        #expect(lists[404] == [])
+        #expect(lists[403] == nil)
+    }
+    /// The popover fetches the videos of a release loaded before videos were
+    /// stored. Gone from Discogs: an empty list, so it isn't asked at every
+    /// opening; a 403 may be the token: left for later.
+    @Test @MainActor func popoverLoadsMissingVideosQuietly() async throws {
+        let c = try LibraryStorage.makeContainer(inMemory: true)
+        try merge(c, collection: [entry(1, release: 404), entry(2, release: 403), entry(3, release: 200)])
+        let context = c.mainContext
+        let releases = Dictionary(uniqueKeysWithValues: try context.fetch(FetchDescriptor<Release>()).map { ($0.discogsID, $0) })
+        let sync = DiscogsSyncService(api: .stubbed(TracklistStatusProtocol.self))
+        for id in [404, 403, 200] { await sync.loadVideos(for: try #require(releases[id]), context: context) }
+        let lists = Dictionary(uniqueKeysWithValues: try ModelContext(c).fetch(FetchDescriptor<ReleaseVideoList>()).map { ($0.discogsID, $0.videos) })
+        #expect(lists[200]?.map(\.title) == ["Artist - Intro"])
+        #expect(releases[200]?.tracks.map(\.title) == ["Intro"])
+        #expect(lists[404] == [])
+        #expect(lists[403] == nil)
     }
     /// At launch the download runs unseen: no status line while it loads and
     /// no "abgeschlossen" afterwards. Only a sync the user starts shows it.

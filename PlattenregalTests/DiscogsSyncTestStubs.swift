@@ -40,14 +40,14 @@ nonisolated final class SyncPaginationProtocol: URLProtocol, @unchecked Sendable
     override func stopLoading() {}
 }
 
-/// `/releases/<status>` answers with that HTTP status; 200 with a one-track release.
+/// `/releases/<status>` answers with that HTTP status; 200 with a one-track release and its video.
 nonisolated final class TracklistStatusProtocol: URLProtocol, @unchecked Sendable {
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
         guard let url = request.url else { return }
         let status = Int(url.lastPathComponent) ?? 500
-        let body = status == 200 ? #"{"id":200,"title":"Album","tracklist":[{"position":"A1","title":"Intro","duration":"1:00"}]}"# : "{}"
+        let body = status == 200 ? #"{"id":200,"title":"Album","tracklist":[{"position":"A1","title":"Intro","duration":"1:00"}],"videos":[{"uri":"https://www.youtube.com/watch?v=intro","title":"Artist - Intro"}]}"# : "{}"
         let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil)!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: Data(body.utf8)); client?.urlProtocolDidFinishLoading(self)

@@ -158,6 +158,7 @@ struct RecordPopover: View {
     @State private var triedLoadingTracks = false
     /// Width of the position column (A1, B2 …), measured from the tracklist.
     @State private var positionWidth: CGFloat = 0
+    @State private var linkCache = TrackVideoLinkCache()
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
@@ -229,8 +230,10 @@ struct RecordPopover: View {
                 // Tracklist from before videos were stored: fetch the videos
                 // quietly now instead of waiting for the background download.
                 // Until then (or if it fails) a click searches on YouTube.
-                guard videoLists.isEmpty, !DiscogsSyncService.shared.busy, !DiscogsSyncService.shared.tracklistsLoading else { return }
-                try? await DiscogsSyncService.shared.loadTracklist(for: release, context: context)
+                // Also while the background download runs: it may need half
+                // an hour to get to this release.
+                guard videoLists.isEmpty, !DiscogsSyncService.shared.busy else { return }
+                await DiscogsSyncService.shared.loadVideos(for: release, context: context)
                 return
             }
             // Already asked: Discogs has no tracklist for it. Not again on every
@@ -252,7 +255,7 @@ struct RecordPopover: View {
     /// or else a search for it. At rest the list looks as before; a row
     /// lights up under the pointer like every other clickable row.
     private func trackList(_ tracks: [Track]) -> some View {
-        let links = TrackVideoLink.urls(for: tracks, videos: videoLists.first?.videos ?? [], artist: release?.artist ?? "")
+        let links = linkCache.urls(for: tracks, videos: videoLists.first?.videos ?? [], artist: release?.artist ?? "")
         return ScrollView {
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 ForEach(Array(tracks.enumerated()), id: \.offset) { index, track in

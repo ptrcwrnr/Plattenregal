@@ -137,6 +137,58 @@ extension AllTests.LibraryTests {
         try context.save()
         #expect(try context.fetch(FetchDescriptor<ReleaseVideoList>()).first?.videos.map(\.title) == ["Air - Sexy Boy"])
     }
+    /// A V16 store (every store the released app wrote lately) opens as V17
+    /// with its records, tracklists and sale marks; the new list starts empty.
+    @Test func v16StoreMigratesToV17KeepingEverything() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("Migration.store")
+        let copyID: UUID = try autoreleasepool {
+            let schema = Schema(versionedSchema: LibrarySchemaV16.self)
+            let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
+                                               configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+            let context = container.mainContext
+            let release = Release(discogsID: 34491154, artist: "Rank 1", title: "Airwave")
+            release.tracks = [Track(position: "A1", title: "Airwave (Original Mix)", duration: "8:23")]
+            release.detailsFetchedAt = .now
+            context.insert(release)
+            let copy = RecordCopy(release: release, instanceID: 1, owner: "fixture")
+            context.insert(copy)
+            context.insert(SaleCopyMark(copyID: copy.id))
+            try context.save()
+            return copy.id
+        }
+        let schema = Schema(versionedSchema: LibrarySchemaV17.self)
+        let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
+                                           configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+        let context = container.mainContext
+        let release = try #require(try context.fetch(FetchDescriptor<Release>()).first)
+        #expect(release.tracks.map(\.title) == ["Airwave (Original Mix)"] && release.detailsFetchedAt != nil)
+        #expect(release.copies.map(\.id) == [copyID])
+        #expect(try context.fetch(FetchDescriptor<SaleCopyMark>()).map(\.copyID) == [copyID])
+        #expect(try context.fetchCount(FetchDescriptor<ReleaseVideoList>()) == 0)
+    }
+    /// Popover and background download may store the videos of the same
+    /// release at once, each in its own context: one row stays, no error.
+    @Test func videoListsFromTwoContextsDontClash() throws {
+        let c = try LibraryStorage.makeContainer(inMemory: true)
+        let popover = ModelContext(c), download = ModelContext(c)
+        let older = [ReleaseVideo(title: "A - B", url: "https://www.youtube.com/watch?v=1")]
+        let newer = older + [ReleaseVideo(title: "A - C", url: "https://www.youtube.com/watch?v=2")]
+        try ReleaseVideoList.store(older, for: 7, in: download)
+        try ReleaseVideoList.store(newer, for: 7, in: popover)
+        try popover.save()
+        try download.save()
+        let rows = try ModelContext(c).fetch(FetchDescriptor<ReleaseVideoList>())
+        #expect(rows.count == 1)
+        #expect(rows.first?.discogsID == 7)
+        // And storing again updates the row instead of adding one.
+        let again = ModelContext(c)
+        try ReleaseVideoList.store(newer, for: 7, in: again)
+        try again.save()
+        #expect(try ModelContext(c).fetch(FetchDescriptor<ReleaseVideoList>()).map(\.videos) == [newer])
+    }
     @Test func persistentStoreCanBeReopened() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
