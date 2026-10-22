@@ -182,6 +182,8 @@ import Observation
     // if a run was interrupted — and stored with `detailsFetchedAt`, so every
     // release is asked once (even if Discogs has no tracklist) and refreshed
     // after `tracklistRefreshAge`, at most `tracklistRefreshesPerRun` per run.
+    // The same request brings the release's videos (`ReleaseVideoList`); a
+    // release with details but no video list yet is asked once more.
 
     nonisolated static let tracklistRefreshAge: TimeInterval = 180 * 86400
     nonisolated static let tracklistRefreshesPerRun = 100
@@ -242,7 +244,11 @@ import Observation
         guard !release.isDeleted else { return }
         // Not through `PositionService.save`: no place in the shelf changes,
         // so no layout backup and no new shelf labels.
-        do { dto.applyDetails(to: release); try context.save() }
+        do {
+            dto.applyDetails(to: release)
+            try ReleaseVideoList.store(dto.releaseVideos, for: id, in: context)
+            try context.save()
+        }
         catch { context.rollback(); throw error }
         LibraryChanges.shared.tracksDidChange()
     }
@@ -285,17 +291,21 @@ import Observation
             let id = release.discogsID
             do {
                 let dto = try await api.release(id: id)
-                if !release.isDeleted { dto.applyDetails(to: release); loaded += 1 }
+                if !release.isDeleted {
+                    dto.applyDetails(to: release)
+                    try? ReleaseVideoList.store(dto.releaseVideos, for: id, in: context)
+                    loaded += 1
+                }
                 // Save in small batches: few UI updates, little lost on quit.
                 if loaded % 10 == 0 { save() }
             } catch DiscogsError.notFound {
                 // Removed on Discogs: stamped like a release without tracklist,
                 // so it isn't asked again at every launch (and the status line
                 // doesn't flash up each time), only with the regular refresh.
-                if !release.isDeleted { release.detailsFetchedAt = .now }
+                if !release.isDeleted { release.detailsFetchedAt = .now; try? ReleaseVideoList.store([], for: id, in: context) }
             } catch DiscogsError.http(let code) where (400...499).contains(code) {
                 // Same: specific to this release.
-                if !release.isDeleted { release.detailsFetchedAt = .now }
+                if !release.isDeleted { release.detailsFetchedAt = .now; try? ReleaseVideoList.store([], for: id, in: context) }
             } catch DiscogsError.forbidden, DiscogsError.invalidResponse {
                 // Possibly this release only – or the token or a Discogs outage,
                 // which would hit every release: skip without stamping.
@@ -330,25 +340,37 @@ import Observation
         wantDescriptor.relationshipKeyPathsForPrefetching = [\.release]
         let copies = try context.fetch(copyDescriptor)
         let wants = try context.fetch(wantDescriptor)
+        let videoLists = try context.fetch(FetchDescriptor<ReleaseVideoList>())
+        let withVideos = Set(videoLists.map(\.discogsID))
+        // Videos of releases that are gone (sold, removed from the wantlist).
+        let releaseIDs = Set((copies.compactMap(\.release) + wants.compactMap(\.release)).map(\.discogsID))
+        for list in videoLists where !releaseIDs.contains(list.discogsID) { context.delete(list) }
         let now = Date()
         var seen = Set<PersistentIdentifier>()
-        var missing: [Release] = [], stale: [Release] = []
+        var missing: [Release] = [], withoutVideos: [Release] = [], stale: [Release] = []
         // Collection first, then the wantlist (its tracks make search find wanted records too).
         for release in copies.filter(\.discogsActive).compactMap(\.release) + wants.compactMap(\.release)
         where seen.insert(release.persistentModelID).inserted {
-            if let fetched = release.detailsFetchedAt {
-                if now.timeIntervalSince(fetched) > tracklistRefreshAge { stale.append(release) }
-            } else if release.tracks.isEmpty {
+            if release.detailsFetchedAt == nil, release.tracks.isEmpty {
                 missing.append(release)
-            } else {
+                continue
+            }
+            if release.detailsFetchedAt == nil {
                 // Loaded before details were stamped: date it somewhere in the
                 // refresh window, so refreshes trickle in instead of all at once.
                 release.detailsFetchedAt = now.addingTimeInterval(-.random(in: 0..<tracklistRefreshAge))
             }
+            // Details loaded before videos were stored: once more, right
+            // after the missing tracklists.
+            if !withVideos.contains(release.discogsID) {
+                withoutVideos.append(release)
+            } else if let fetched = release.detailsFetchedAt, now.timeIntervalSince(fetched) > tracklistRefreshAge {
+                stale.append(release)
+            }
         }
         if context.hasChanges { try? context.save() }
         stale.sort { ($0.detailsFetchedAt ?? now) < ($1.detailsFetchedAt ?? now) }
-        return (missing + stale.prefix(tracklistRefreshesPerRun)).map(\.persistentModelID)
+        return (missing + withoutVideos + stale.prefix(tracklistRefreshesPerRun)).map(\.persistentModelID)
     }
 
     /// Off the main actor; cancelling the sync cancels the merge with it.

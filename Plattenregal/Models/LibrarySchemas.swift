@@ -199,8 +199,26 @@ enum LibrarySchemaV16: VersionedSchema {
     }
 }
 
-// The current schema is V16 (see `LibraryStorage`); its models are those of
-// V15 plus `SaleCopyMark`.
+// V17 adds the YouTube videos Discogs lists for a release (`ReleaseVideoList`),
+// again as a model of its own, so V15 and V16 are carried over unchanged.
+enum LibrarySchemaV17: VersionedSchema {
+    static let versionIdentifier = Schema.Version(17, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        LibrarySchemaV16.models + [ReleaseVideoList.self]
+    }
+
+    /// The videos of one Discogs release, as Discogs lists them. Stored raw,
+    /// matched to the tracks when the popover shows them (`TrackVideoMatcher`).
+    /// A row without videos means: asked, Discogs has none.
+    @Model final class ReleaseVideoList {
+        @Attribute(.unique) var discogsID: Int
+        var videos: [ReleaseVideo]
+        init(discogsID: Int, videos: [ReleaseVideo]) { self.discogsID = discogsID; self.videos = videos }
+    }
+}
+
+// The current schema is V17 (see `LibraryStorage`); its models are those of
+// V15 plus `SaleCopyMark` and `ReleaseVideoList`.
 typealias Release = LibrarySchemaV15.Release
 typealias RecordCopy = LibrarySchemaV15.RecordCopy
 typealias Shelf = LibrarySchemaV15.Shelf
@@ -212,10 +230,12 @@ typealias CollectionValueSnapshot = LibrarySchemaV15.CollectionValueSnapshot
 typealias OptimizationExclusion = LibrarySchemaV15.OptimizationExclusion
 typealias MissingCopyMark = LibrarySchemaV15.MissingCopyMark
 typealias SaleCopyMark = LibrarySchemaV16.SaleCopyMark
+typealias ReleaseVideoList = LibrarySchemaV17.ReleaseVideoList
 
 enum LibraryMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [LibrarySchemaV15.self, LibrarySchemaV16.self] }
+    static var schemas: [any VersionedSchema.Type] { [LibrarySchemaV15.self, LibrarySchemaV16.self, LibrarySchemaV17.self] }
     static var stages: [MigrationStage] {
-        [.lightweight(fromVersion: LibrarySchemaV15.self, toVersion: LibrarySchemaV16.self)]
+        [.lightweight(fromVersion: LibrarySchemaV15.self, toVersion: LibrarySchemaV16.self),
+         .lightweight(fromVersion: LibrarySchemaV16.self, toVersion: LibrarySchemaV17.self)]
     }
 }

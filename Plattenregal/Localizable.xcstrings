@@ -171,6 +171,16 @@
         }
       }
     },
+    "Auf YouTube suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search on YouTube"
+          }
+        }
+      }
+    },
     "Aus: keine Suchliste. Bereits gesuchte Platten bleiben gemerkt, falls du sie wieder einschaltest." : {
       "localizations" : {
         "en" : {
@@ -331,6 +341,16 @@
         }
       }
     },
+    "Sucht den Track auf YouTube" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searches for the track on YouTube"
+          }
+        }
+      }
+    },
     "Verkauf" : {
       "localizations" : {
         "en" : {
@@ -367,6 +387,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Decrease"
+          }
+        }
+      }
+    },
+    "Video auf YouTube öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open video on YouTube"
           }
         }
       }
@@ -413,6 +443,16 @@
     },
     "·" : {
       "shouldTranslate" : false
+    },
+    "Öffnet das Video auf YouTube" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the video on YouTube"
+          }
+        }
+      }
     },
     "„%@ – %@“" : {
       "localizations" : {

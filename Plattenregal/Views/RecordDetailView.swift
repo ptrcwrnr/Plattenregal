@@ -139,10 +139,16 @@ struct RecordPopover: View {
     var discogsURL: URL?
     @Environment(\.openURL) private var openURL
 
-    init(copy: RecordCopy) { release = copy.release }
+    /// The release's videos from Discogs (at most one row); live, so links
+    /// appear as soon as the background download has stored them.
+    @Query private var videoLists: [ReleaseVideoList]
+
+    init(copy: RecordCopy) { self.init(release: copy.release) }
     init(release: Release?, discogsURL: URL? = nil) {
         self.release = release
         self.discogsURL = discogsURL
+        let id = release?.discogsID ?? -1
+        _videoLists = Query(filter: #Predicate<ReleaseVideoList> { $0.discogsID == id })
     }
     /// Tracklists are loaded after each collection sync; this only covers a
     /// record whose tracklist isn't there yet (e.g. while that is still running).
@@ -150,6 +156,8 @@ struct RecordPopover: View {
     /// Why the tracklist couldn't be loaded, in plain words; nil = no failure.
     @State private var trackLoadError: String?
     @State private var triedLoadingTracks = false
+    /// Width of the position column (A1, B2 …), measured from the tracklist.
+    @State private var positionWidth: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
@@ -216,7 +224,15 @@ struct RecordPopover: View {
         }
         .task(id: release?.persistentModelID) {
             // The demo is offline and has no tracklists; no attempt, no error.
-            guard !DemoMode.isActive, let release, release.tracks.isEmpty else { return }
+            guard !DemoMode.isActive, let release else { return }
+            guard release.tracks.isEmpty else {
+                // Tracklist from before videos were stored: fetch the videos
+                // quietly now instead of waiting for the background download.
+                // Until then (or if it fails) a click searches on YouTube.
+                guard videoLists.isEmpty, !DiscogsSyncService.shared.busy, !DiscogsSyncService.shared.tracklistsLoading else { return }
+                try? await DiscogsSyncService.shared.loadTracklist(for: release, context: context)
+                return
+            }
             // Already asked: Discogs has no tracklist for it. Not again on every
             // opening – that cost a request and a spinner each time.
             if release.detailsFetchedAt != nil { triedLoadingTracks = true; return }
@@ -232,25 +248,68 @@ struct RecordPopover: View {
         .appPopoverSurface()
     }
 
+    /// Each track opens its video on YouTube – the one Discogs lists for it,
+    /// or else a search for it. At rest the list looks as before; a row
+    /// lights up under the pointer like every other clickable row.
     private func trackList(_ tracks: [Track]) -> some View {
-        ScrollView {
-            Grid(alignment: .leading, horizontalSpacing: AppStyle.rowSpacing, verticalSpacing: 5) {
-                ForEach(Array(tracks.enumerated()), id: \.offset) { _, track in
-                    GridRow {
-                        Text(track.position).monospaced().foregroundStyle(.secondary)
-                        Text(track.title).lineLimit(2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Text(track.duration).monospacedDigit().foregroundStyle(.secondary)
-                    }
+        let links = TrackVideoLink.urls(for: tracks, videos: videoLists.first?.videos ?? [], artist: release?.artist ?? "")
+        return ScrollView {
+            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
+                ForEach(Array(tracks.enumerated()), id: \.offset) { index, track in
+                    TrackLinkRow(track: track, url: links[index], positionWidth: positionWidth)
                 }
             }
             .font(.callout)
+            // The widest position sets the column, like the grid did before.
+            .background {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(Set(tracks.map(\.position))), id: \.self) { Text($0).monospaced() }
+                }
+                .font(.callout).fixedSize().hidden()
+                .onGeometryChange(for: CGFloat.self, of: \.size.width) { positionWidth = $0 }
+            }
         }
+        // The rows' hover background reaches past the text; the list keeps
+        // its edge in line with the heading above.
+        .padding(.horizontal, -AppStyle.tightSpacing)
         .frame(maxHeight: 220)
         .fixedSize(horizontal: false, vertical: true)
     }
 
     private func label(_ text: String) -> some View {
         Text(text).foregroundStyle(.secondary)
+    }
+}
+
+/// A track in the popover's tracklist as a button: position, title and
+/// duration as before, the hover background of the app's rows, and a hint
+/// whether the click opens a video or a search.
+private struct TrackLinkRow: View {
+    let track: Track
+    let url: URL
+    let positionWidth: CGFloat
+    @Environment(\.openURL) private var openURL
+    @State private var hovering = false
+
+    var body: some View {
+        let isSearch = TrackVideoLink.isSearch(url)
+        Button { openURL(url) } label: {
+            HStack(alignment: .firstTextBaseline, spacing: AppStyle.rowSpacing) {
+                Text(track.position).monospaced().foregroundStyle(.secondary)
+                    .frame(width: positionWidth, alignment: .leading)
+                Text(track.title).lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(track.duration).monospacedDigit().foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, AppStyle.tightSpacing)
+            .padding(.vertical, AppStyle.hairSpacing)
+            .contentShape(Rectangle())
+            .appHoverable(hovering, cornerRadius: AppStyle.menuRowRadius)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .help(isSearch ? "Auf YouTube suchen" : "Video auf YouTube öffnen")
+        .accessibilityLabel("\(track.position) \(track.title)")
+        .accessibilityHint(isSearch ? "Sucht den Track auf YouTube" : "Öffnet das Video auf YouTube")
     }
 }

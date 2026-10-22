@@ -81,35 +81,44 @@ extension AllTests {
         }
 
         /// Which releases the download after a sync asks Discogs for: those
-        /// never asked and those asked long ago – not the rest, every time.
+        /// never asked, those asked before videos were stored, and those asked
+        /// long ago – not the rest, every time.
         @Test func tracklistsAreLoadedOnlyWhenDue() async throws {
             ScenarioProtocol.reset(online: true)
             let c = try LibraryStorage.makeContainer(inMemory: true)
             let context = ModelContext(c)
-            func release(_ id: Int, tracks: [String], asked: Date?) {
+            func release(_ id: Int, tracks: [String], asked: Date?, videos: Bool = true) throws {
                 let release = Release(discogsID: id, artist: "Artist", title: "Album \(id)")
                 release.tracks = tracks.map { Track(position: "", title: $0, duration: "") }
                 release.detailsFetchedAt = asked
                 context.insert(release)
                 context.insert(RecordCopy(release: release, instanceID: id, owner: "scenario"))
+                if videos { try ReleaseVideoList.store([], for: id, in: context) }
             }
-            release(1, tracks: ["Alt"], asked: .now.addingTimeInterval(-DiscogsSyncService.tracklistRefreshAge - 86_400))
+            try release(1, tracks: ["Alt"], asked: .now.addingTimeInterval(-DiscogsSyncService.tracklistRefreshAge - 86_400))
             // Loaded before the date was kept: dated, not asked again.
-            release(2, tracks: ["Bleibt"], asked: nil)
+            try release(2, tracks: ["Bleibt"], asked: nil)
             // Asked the other day, Discogs has no tracklist for it.
-            release(3, tracks: [], asked: .now.addingTimeInterval(-86_400))
+            try release(3, tracks: [], asked: .now.addingTimeInterval(-86_400))
+            // Asked the other day, before videos were stored: once more.
+            try release(4, tracks: ["Ohne Videos"], asked: .now.addingTimeInterval(-86_400), videos: false)
+            // Videos of a release that is gone.
+            try ReleaseVideoList.store([], for: 99, in: context)
             try context.save()
 
             let sync = DiscogsSyncService(api: api())
             #expect(await sync.loadTracklists(container: c, quiet: true))
-            #expect(ScenarioProtocol.requests == 1)
-            let releases = Dictionary(uniqueKeysWithValues: try ModelContext(c).fetch(FetchDescriptor<Release>()).map { ($0.discogsID, $0) })
+            #expect(ScenarioProtocol.requests == 2)
+            let check = ModelContext(c)
+            let releases = Dictionary(uniqueKeysWithValues: try check.fetch(FetchDescriptor<Release>()).map { ($0.discogsID, $0) })
             #expect(releases[1]?.tracks.map(\.title) == ["Intro"])
             #expect(releases[2]?.tracks.map(\.title) == ["Bleibt"] && releases[2]?.detailsFetchedAt != nil)
             #expect(releases[3]?.tracks.isEmpty == true)
+            #expect(releases[4]?.tracks.map(\.title) == ["Intro"])
+            #expect(Set(try check.fetch(FetchDescriptor<ReleaseVideoList>()).map(\.discogsID)) == [1, 2, 3, 4])
             // Nothing is due any more.
             #expect(await sync.loadTracklists(container: c, quiet: true) == false)
-            #expect(ScenarioProtocol.requests == 1)
+            #expect(ScenarioProtocol.requests == 2)
         }
 
         @Test func discogsRateLimitIsWaitedOut() async throws {

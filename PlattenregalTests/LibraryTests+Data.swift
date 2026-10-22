@@ -87,8 +87,9 @@ extension AllTests.LibraryTests {
         } }
         #expect(a.positionInShelf == 1)
     }
-    /// V15 is the oldest store the plan knows; V16 only adds the sale list.
-    @Test func v15StoreMigratesToV16KeepingEverything() throws {
+    /// V15 is the oldest store the plan knows; V16 only adds the sale list,
+    /// V17 the release videos.
+    @Test func v15StoreMigratesToV17KeepingEverything() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -114,7 +115,7 @@ extension AllTests.LibraryTests {
             try context.save()
             return (placed.id, missing.id)
         }
-        let schema = Schema(versionedSchema: LibrarySchemaV16.self)
+        let schema = Schema(versionedSchema: LibrarySchemaV17.self)
         let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
                                            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
         let context = container.mainContext
@@ -131,12 +132,16 @@ extension AllTests.LibraryTests {
         context.insert(SaleCopyMark(copyID: placedID))
         try context.save()
         #expect(try context.fetchCount(FetchDescriptor<SaleCopyMark>()) == 1)
+        #expect(try context.fetchCount(FetchDescriptor<ReleaseVideoList>()) == 0)
+        try ReleaseVideoList.store([ReleaseVideo(title: "Air - Sexy Boy", url: "https://www.youtube.com/watch?v=1")], for: 42, in: context)
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<ReleaseVideoList>()).first?.videos.map(\.title) == ["Air - Sexy Boy"])
     }
     @Test func persistentStoreCanBeReopened() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
-        let schema = Schema(versionedSchema: LibrarySchemaV16.self)
+        let schema = Schema(versionedSchema: LibrarySchemaV17.self)
         let config = ModelConfiguration(schema: schema, url: directory.appendingPathComponent("Test.store"), cloudKitDatabase: .none)
         let id: UUID = try autoreleasepool {
             let first = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)

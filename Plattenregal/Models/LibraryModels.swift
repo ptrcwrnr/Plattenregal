@@ -87,6 +87,24 @@ nonisolated struct Track: Codable, Hashable, Sendable {
     var duration: String
 }
 
+/// A video Discogs lists for a release (almost always on YouTube).
+nonisolated struct ReleaseVideo: Codable, Hashable, Sendable {
+    var title: String
+    var url: String
+}
+
+extension ReleaseVideoList {
+    /// Stores what Discogs listed for the release, replacing an older list.
+    /// An empty list is stored too: it marks the release as asked.
+    static func store(_ videos: [ReleaseVideo], for discogsID: Int, in context: ModelContext) throws {
+        if let row = try context.fetch(FetchDescriptor<ReleaseVideoList>(predicate: #Predicate { $0.discogsID == discogsID })).first {
+            if row.videos != videos { row.videos = videos }
+        } else {
+            context.insert(ReleaseVideoList(discogsID: discogsID, videos: videos))
+        }
+    }
+}
+
 extension DiscogsAccount {
     /// The account the app currently mirrors: the one synced most recently.
     /// Copies of an earlier account stay in the store but aren't shown.
