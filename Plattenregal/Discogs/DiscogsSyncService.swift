@@ -358,7 +358,10 @@ import Observation
         wantDescriptor.relationshipKeyPathsForPrefetching = [\.release]
         let copies = try context.fetch(copyDescriptor)
         let wants = try context.fetch(wantDescriptor)
-        let videoLists = try context.fetch(FetchDescriptor<ReleaseVideoList>())
+        // Only the IDs: the videos themselves (a few KB per release) aren't needed here.
+        var videoDescriptor = FetchDescriptor<ReleaseVideoList>()
+        videoDescriptor.propertiesToFetch = [\.discogsID]
+        let videoLists = try context.fetch(videoDescriptor)
         let withVideos = Set(videoLists.map(\.discogsID))
         // Videos of releases that are gone (sold, removed from the wantlist).
         let releaseIDs = Set((copies.compactMap(\.release) + wants.compactMap(\.release)).map(\.discogsID))

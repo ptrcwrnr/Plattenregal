@@ -1,3 +1,9 @@
+# YouTube-Links: dritte Durchsicht · 22.10.2026
+
+- **Schlanker beim Start:** Zum Aufräumen verwaister Videolisten lädt der Hintergrund bei jedem Start und Abgleich nur noch die Platten-Nummern (`propertiesToFetch`), nicht mehr alle Videos (bei 1.688 Platten einige MB).
+- Durchgesehen ohne Änderungsbedarf: Abbruch beim Schließen des Popovers, Fehlerpfade (offline, ohne Token, 403/404), gleichzeitiges Speichern, Übersetzung, Fokus. Die Track-Zeilen sind Knöpfe; mit eingeschalteter Tastaturnavigation zeigen sie wie alle Knöpfe der App keinen Fokusring (`focusEffectDisabled`, `FocusRings`).
+- Geprüft: Build ohne neue Warnungen, alle 221 Tests bestanden (das Aufräumen deckt der Nachlade-Test ab). DMG 1.1.2 neu ausgegeben.
+
 # YouTube-Links: zweite Durchsicht · 22.10.2026
 
 - **Nur YouTube:** Die Videolinks tragen Discogs-Nutzer ein, das Popover verspricht „Video auf YouTube öffnen“. Übernommen werden jetzt nur Adressen von youtube.com (auch www., m., music.) und youtu.be, immer über https; alles andere fällt weg, der Track sucht dann. Beim Anzeigen wird zusätzlich nur eine https-Adresse geöffnet.
