@@ -91,11 +91,24 @@ extension AllTests {
             let various = TrackVideoLink.search(track("1", "Dreamer"), artist: "Various")
             #expect(URLComponents(url: various, resolvingAgainstBaseURL: false)?.queryItems?.first?.value == "Dreamer")
         }
-        @Test func releaseVideosKeepOnlyWebAddresses() throws {
-            let data = Data(#"{"id":1,"videos":[{"uri":"https://www.youtube.com/watch?v=a","title":"A - B"},{"uri":"javascript:alert(1)","title":"x"},{"title":"no uri"}]}"#.utf8)
+        /// Only YouTube, always over https: Discogs users enter the links.
+        @Test func releaseVideosKeepOnlyYouTube() throws {
+            let data = Data(#"{"id":1,"videos":[{"uri":"https://www.youtube.com/watch?v=a","title":"A - B"},{"uri":"http://www.youtube.com/watch?v=b","title":"A - C"},{"uri":"https://youtu.be/c","title":"A - D"},{"uri":"https://example.com/watch?v=x","title":"elsewhere"},{"uri":"https://youtube.com.example.com/x","title":"lookalike"},{"uri":"javascript:alert(1)","title":"x"},{"title":"no uri"}]}"#.utf8)
             let dto = try JSONDecoder().decode(DiscogsReleaseDTO.self, from: data)
-            #expect(dto.releaseVideos == [ReleaseVideo(title: "A - B", url: "https://www.youtube.com/watch?v=a")])
+            #expect(dto.releaseVideos.map(\.url) == ["https://www.youtube.com/watch?v=a", "https://www.youtube.com/watch?v=b", "https://youtu.be/c"])
             #expect(try JSONDecoder().decode(DiscogsReleaseDTO.self, from: Data(#"{"id":1}"#.utf8)).releaseVideos.isEmpty)
+            // A stored address that isn't https falls back to the search.
+            let urls = TrackVideoLink.urls(for: [track("A", "B")], videos: [ReleaseVideo(title: "A - B", url: "http://www.youtube.com/watch?v=a")], artist: "A")
+            #expect(TrackVideoLink.isSearch(urls[0]))
+        }
+        @Test func videoTitlesSplitAtSeparatorsOnly() {
+            #expect(TrackVideoMatcher.segments("Rank 1 - Airwave (Sunset Mix)") == ["Rank 1", " Airwave (Sunset Mix)"])
+            #expect(TrackVideoMatcher.segments("Trans-Europa Express | Kraftwerk") == ["Trans-Europa Express ", " Kraftwerk"])
+            #expect(TrackVideoMatcher.segments("A – B — C / D") == ["A", " B", " C", " D"])
+            #expect(TrackVideoMatcher.segments("Altitude-Tears In The Rain") == ["Altitude-Tears In The Rain"])
+            #expect(TrackVideoMatcher.segments("AC/DC - Thunderstruck -") == ["AC/DC", " Thunderstruck -"])
+            #expect(TrackVideoMatcher.segments(" | A ||") == [" A "])
+            #expect(TrackVideoMatcher.segments("") == [])
         }
     }
 }

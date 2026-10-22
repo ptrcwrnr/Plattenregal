@@ -1,3 +1,9 @@
+# YouTube-Links: zweite Durchsicht · 22.10.2026
+
+- **Nur YouTube:** Die Videolinks tragen Discogs-Nutzer ein, das Popover verspricht „Video auf YouTube öffnen“. Übernommen werden jetzt nur Adressen von youtube.com (auch www., m., music.) und youtu.be, immer über https; alles andere fällt weg, der Track sucht dann. Beim Anzeigen wird zusätzlich nur eine https-Adresse geöffnet.
+- **Sicher bei Nebenläufigkeit:** Videotitel werden mit einem einfachen Zeichen-Scan an „ - “, „ – “, „ — “, „ / “ und „|“ geteilt (`TrackVideoMatcher.segments`) statt mit einem geteilten `Regex`, der nur mit `nonisolated(unsafe)` durchging. Gleiches Ergebnis, etwas schneller (Schnitt 0,8 ms je Platte, Kompilation 40 × 100: 6 ms).
+- Geprüft: Build ohne neue Warnungen, alle 221 Tests bestanden (neu: nur YouTube und https, fremde und nachgemachte Adressen, Teilen der Videotitel). Zuordnung auf beiden echten Stichproben (86 Platten) Zeichen für Zeichen unverändert; alle 946 Videolinks dort sind www.youtube.com, keiner geht verloren. Neue Texte werden beim Build als übersetzbar erkannt (englisch im Katalog). README: Videolinks. Praxis mit der zuvor installierten Fassung (nur lesend nachgesehen): Die echte Sammlung wurde auf V17 umgestellt, das Nachladen lief 12:53–13:24 ohne Fehler im Protokoll, 1.667 von 1.688 Platten haben Videos. DMG 1.1.2 neu ausgegeben.
+
 # YouTube-Links: Durchsicht auf Robustheit · 22.10.2026
 
 - **Popover holt Videos auch während des Nachladens:** Bisher wartete es, solange der Hintergrund-Download lief – gerade in der ersten halben Stunde nach dem Update. Jetzt fragt es fehlende Videos sofort selbst (`DiscogsSyncService.loadVideos`), nur nicht während eines laufenden Abgleichs.

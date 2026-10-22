@@ -7,7 +7,8 @@ nonisolated enum TrackVideoLink {
     static func urls(for tracks: [Track], videos: [ReleaseVideo], artist: String) -> [URL] {
         let matched = TrackVideoMatcher.match(tracks: tracks, videos: videos, artist: artist)
         return tracks.indices.map { index in
-            matched[index].flatMap { URL(string: $0.url) } ?? search(tracks[index], artist: artist)
+            matched[index].flatMap { URL(string: $0.url) }.flatMap { $0.scheme == "https" ? $0 : nil }
+                ?? search(tracks[index], artist: artist)
         }
     }
 
@@ -123,7 +124,7 @@ nonisolated enum TrackVideoMatcher {
 
     private static func parseVideo(_ title: String, artistWords: Set<String>) -> ParsedVideo {
         var parts: [VideoPart] = [], artistOnly: [(part: Int, title: [String])] = [], extra = Set<String>(), original = false
-        for segment in title.split(separator: segmentSeparator).map(String.init) {
+        for segment in segments(title) {
             let parsed = parse(segment)
             original = original || parsed.original
             extra.formUnion(parsed.mix)
@@ -147,10 +148,27 @@ nonisolated enum TrackVideoMatcher {
         return ParsedVideo(parts: parts, extra: extra, original: original)
     }
 
-    /// " - ", " – ", " — ", "|" and " / " between artist, title and label.
-    /// Built once: compiling it for every video took half the matching time.
-    /// Never mutated, only matched against, so sharing it is safe.
-    nonisolated(unsafe) private static let segmentSeparator = /\s+[-–—]\s+|\s*\|\s*|\s+\/\s+/
+    /// The parts of a video title, split at " - ", " – ", " — ", " / " (a
+    /// space on both sides, so "Trans-Europa" stays whole) and at "|".
+    /// A plain scan: a shared `Regex` isn't `Sendable`.
+    static func segments(_ title: String) -> [String] {
+        let chars = Array(title)
+        var parts: [String] = [], current = "", i = 0
+        while i < chars.count {
+            let char = chars[i]
+            if char == "|" { parts.append(current); current = ""; i += 1; continue }
+            guard char.isWhitespace else { current.append(char); i += 1; continue }
+            var j = i
+            while j < chars.count, chars[j].isWhitespace { j += 1 }
+            if j + 1 < chars.count, "-–—/".contains(chars[j]), chars[j + 1].isWhitespace {
+                parts.append(current); current = ""; i = j + 1
+            } else {
+                current.append(contentsOf: chars[i..<j]); i = j
+            }
+        }
+        parts.append(current)
+        return parts.filter { !$0.allSatisfy(\.isWhitespace) }
+    }
 
     /// Lowercased words without accents or punctuation ("Airwave (Sunset Mix)"
     /// → airwave, sunset, mix). Apostrophes join ("Don't" → dont); spellings
