@@ -26,6 +26,8 @@ struct WantlistView: View {
     @State private var queryPending = false
     /// Entries, account or metadata changed; one rebuild for all (see CollectionView).
     @State private var dataRevision = 0
+    /// Changed while the page was hidden: rebuilt once it shows (see CollectionView).
+    @State private var rebuildPending = false
     /// The query the visible entries were filtered with — the track lines
     /// follow it, not the raw field, so they match what is shown.
     @State private var appliedQuery = ""
@@ -111,7 +113,7 @@ struct WantlistView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.entry.release?.coverURL }.prefix(3))) }
         .settingsOpener($settingsTab)
-        .onChange(of: order) { _, _ in scroll.id = nil; rebuild() }
+        .onChange(of: order) { _, _ in scroll.id = nil; rebuildWhenShown() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
         .task { rebuild() }
         .onChange(of: entries) { _, _ in dataRevision += 1 }
@@ -122,11 +124,15 @@ struct WantlistView: View {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
-            LibrarySearchIndexes.shared.invalidate()
-            rebuild()
+            LibrarySearchIndexes.shared.invalidate(.wantlist)
+            rebuildWhenShown()
         }
-        // New tracks are found by a running search (the index follows them).
-        .onObservedChange(of: { changes.tracksVersion }) { _, _ in if !query.isEmpty { applyQuery() } }
+        // New tracks are found by a running search (the index follows them);
+        // a hidden page catches up when shown.
+        .onObservedChange(of: { changes.tracksVersion }) { _, _ in
+            guard !query.isEmpty else { return }
+            if activity.isActive { applyQuery() } else { queryPending = true }
+        }
         .onObservedChange(of: { query }) { old, new in
             if old.isEmpty && !new.isEmpty && appliedQuery.isEmpty { scrollBeforeSearch = scroll.id }
         }
@@ -138,7 +144,10 @@ struct WantlistView: View {
             guard !Task.isCancelled else { return }
             applyQuery(animated: true)
         }
-        .trackPageActivity(activity) { active in if active && queryPending { applyQuery() } }
+        .trackPageActivity(activity) { active in
+            guard active else { return }
+            if rebuildPending { rebuild() } else if queryPending { applyQuery() }
+        }
     }
 
     /// The search ends: hits out, the whole list back where it was (see
@@ -162,7 +171,14 @@ struct WantlistView: View {
         sortedEntries = WantlistItem.make(from: order.apply(owned, scope: DisplaySettings.wantlistOrderKey, alphabetical: WantlistPresentation.sorted,
                                                             key: \.releaseID, added: { DiscogsDate.parse($0.dateAdded) }))
         loaded = true
+        rebuildPending = false
         applyQuery()
+    }
+
+    /// `rebuild` now if the page is shown, else once it is.
+    private func rebuildWhenShown() {
+        guard activity.isActive else { rebuildPending = true; return }
+        rebuild()
     }
 
     /// `animated`: search results glide into place (grid only; a sync

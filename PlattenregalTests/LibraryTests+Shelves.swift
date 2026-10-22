@@ -49,7 +49,7 @@ extension AllTests.LibraryTests {
         #expect(records.copies.count == 1)
     }
 
-    /// Both pages share one index; it follows tracklists and new records.
+    /// The collection's index follows tracklists, new records and its own page's rebuilds.
     @Test func sharedSearchIndexFollowsChanges() throws {
         let container = try LibraryStorage.makeContainer(inMemory: true)
         let context = container.mainContext
@@ -71,7 +71,10 @@ extension AllTests.LibraryTests {
         // Changed without any report (e.g. read before the page saw it): a page rebuild catches up.
         second.release?.label = "Source"
         #expect(try !index().matches(second.id, ["source"]))
-        LibrarySearchIndexes.shared.invalidate()
+        // The wantlist's rebuild leaves the collection's index alone; its own page's catches up.
+        LibrarySearchIndexes.shared.invalidate(.wantlist)
+        #expect(try !index().matches(second.id, ["source"]))
+        LibrarySearchIndexes.shared.invalidate(.collection)
         #expect(try index().matches(second.id, ["source"]))
     }
     /// Kept ends give the same labels as computing everything afresh, also after moves.

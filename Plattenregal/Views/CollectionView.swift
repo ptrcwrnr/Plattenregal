@@ -93,6 +93,11 @@ struct CollectionView: View {
     /// Records, account, metadata or wantlist changed. A sync reports itself
     /// and changes the queries a moment apart; one rebuild covers them all.
     @State private var dataRevision = 0
+    /// The data or the order changed while the page was hidden: filtered,
+    /// sorted and grouped once it shows again – not with every sync or
+    /// setting change while another page is in front (and the hidden grid
+    /// then diffed against the whole new list).
+    @State private var rebuildPending = false
     /// Records were placed or moved while the page was hidden: its shelf
     /// labels are rebuilt once it shows again (over a second for a very
     /// large collection – not for every record sorted in on the shelf page).
@@ -128,8 +133,15 @@ struct CollectionView: View {
                            added: { DiscogsDate.parse($0.discogsDateAdded) })
         shelfLabels = labelsCache.labels(for: shelves, style: labelStyle)
         labelsPending = false
+        rebuildPending = false
         loaded = true
         applyQuery(animated: animated)
+    }
+
+    /// `rebuildBase` now if the page is shown, else once it is.
+    private func rebuildWhenShown(animated: Bool = false) {
+        guard activity.isActive else { rebuildPending = true; return }
+        rebuildBase(animated: animated)
     }
 
     private func refreshLabels() {
@@ -364,11 +376,11 @@ struct CollectionView: View {
             Button("OK") { error = nil }
         } message: { Text(error ?? "") }
         .onChange(of: layout) { _, _ in normalizeGridScrollPosition(in: coverGroups) }
-        .onChange(of: order) { _, _ in scroll.id = nil; rebuildBase(animated: true) }
-        .onChange(of: secondaryOrder) { _, _ in rebuildBase(animated: true) }
+        .onChange(of: order) { _, _ in scroll.id = nil; rebuildWhenShown(animated: true) }
+        .onChange(of: secondaryOrder) { _, _ in rebuildWhenShown(animated: true) }
         .task { excludedIDs = Set(exclusions.map(\.copyID)); rebuildBase() }
         .onChange(of: copies) { _, _ in dataRevision += 1 }
-        .onChange(of: labelStyle) { _, style in shelfLabels = labelsCache.labels(for: shelves, style: style) }
+        .onChange(of: labelStyle) { _, _ in refreshLabels() }
         .onObservedChange(of: { changes.shelvesVersion }) { _, _ in refreshLabels() }
         .onObservedChange(of: { changes.placementsVersion }) { _, _ in refreshLabels() }
         .onChange(of: exclusions) { _, exclusions in excludedIDs = Set(exclusions.map(\.copyID)) }
@@ -380,11 +392,15 @@ struct CollectionView: View {
             guard dataRevision > 0 else { return }
             try? await Task.sleep(for: .milliseconds(50))
             guard !Task.isCancelled else { return }
-            LibrarySearchIndexes.shared.invalidate()
-            rebuildBase()
+            LibrarySearchIndexes.shared.invalidate(.collection)
+            rebuildWhenShown()
         }
-        // New tracks are found by a running search (the index follows them).
-        .onObservedChange(of: { changes.tracksVersion }) { _, _ in if !query.isEmpty { applyQuery() } }
+        // New tracks are found by a running search (the index follows them);
+        // a hidden page catches up when shown.
+        .onObservedChange(of: { changes.tracksVersion }) { _, _ in
+            guard !query.isEmpty else { return }
+            if activity.isActive { applyQuery() } else { queryPending = true }
+        }
         // Debounced, and only for the visible section — the hidden ones
         // share the query but catch up when they're shown again.
         .onObservedChange(of: { query }) { old, new in
@@ -400,8 +416,11 @@ struct CollectionView: View {
             applyQuery(animated: true)
         }
         .trackPageActivity(activity) { active in
-            if active && labelsPending { refreshLabels() }
-            if active && queryPending { applyQuery() }
+            guard active else { return }
+            // A rebuild brings labels and search along.
+            if rebuildPending { rebuildBase(); return }
+            if labelsPending { refreshLabels() }
+            if queryPending { applyQuery() }
         }
     }
 

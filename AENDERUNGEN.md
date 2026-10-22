@@ -1,3 +1,13 @@
+# Collection und Wantlist: keine Arbeit im Verborgenen · 22.10.2026
+
+- **Durchgesehen:** Beide Seiten waren schon sparsam gebaut (gemeinsam geladene Listen, Sortierung nur bei Datenänderung, Suche über einen vorab gefalteten Index, gedrosselte Eingabe). Drei Stellen rechneten trotzdem unnötig:
+  - **Verborgene Seiten sortierten neu.** Jeder Abgleich, jede geänderte Sortierung (auch die Reihenfolge innerhalb eines Interpreten) ließ die gerade nicht gezeigte Seite filtern, sortieren, gruppieren und ihr Raster gegen die ganze neue Liste abgleichen – ein Wantlist-Abgleich also auch die Collection mit allen Platten. Jetzt merkt sich eine verborgene Seite nur, dass etwas zu tun ist, und baut einmal neu auf, sobald sie gezeigt wird (wie schon die Fach-Beschriftungen und die Suche).
+  - **Neue Tracklisten während einer Suche** filterten beide Seiten neu, auch die verborgene. Jetzt nur die gezeigte; die andere holt es beim Zeigen nach.
+  - **Ein Suchindex warf den anderen weg:** Baute eine Seite neu auf, galten beide Indizes als veraltet, und die nächste Suche in der anderen Seite faltete deren ganze Liste samt Tracklisten neu. Jetzt hat jede Liste ihren eigenen Stand (`LibrarySearchIndexes.invalidate(_:)`).
+- Geänderter Beschriftungsstil der Fächer wird im Verborgenen ebenfalls nur vorgemerkt.
+- README: Architektur (Sortierung, Seiten).
+- Geprüft: Build ohne neue Warnungen, alle 221 Tests bestanden (der Index-Test prüft jetzt, dass ein Neuaufbau der Wantlist den Collection-Index stehen lässt). In der Demo mit vorübergehenden Messausgaben: Die Wantlist-Sortierung bei gezeigter Collection umgestellt – die Wantlist merkt es nur vor; nach ⌘2 baut sie einmal neu auf und zeigt die neue Reihenfolge. Nicht mit der großen Sammlung gemessen (die Testkopie fragt den Schlüsselbund ab).
+
 # YouTube-Links: dritte Durchsicht · 22.10.2026
 
 - **Schlanker beim Start:** Zum Aufräumen verwaister Videolisten lädt der Hintergrund bei jedem Start und Abgleich nur noch die Platten-Nummern (`propertiesToFetch`), nicht mehr alle Videos (bei 1.688 Platten einige MB).
