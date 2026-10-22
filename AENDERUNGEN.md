@@ -8,6 +8,7 @@
 - Verborgene Seite: Merkt sich jetzt, *was* sich geändert hat, und lädt beim Anzeigen nur den Verlauf, wenn nur der betroffen ist; ein beim Verlassen noch ausstehendes Neuladen geht nicht mehr verloren.
 - STATISTIK.md: Aktualisierung, Tests.
 - Geprüft: Build ohne Warnungen, alle 222 Tests bestanden (neu: `valueHistoryReloadsWithoutRecounting`; `onlyRelevantSavesReloadStatistics` prüft die Einstufung „nur Verlauf“). In der Demo (`--statistics-demo`) angesehen: Seite, Zahlen, ⌘R und das Überfahren im Klangbild verhalten sich wie vorher.
+- DMG 1.1.2 (Build 102026) neu ausgegeben: Prüfsumme gültig, App arm64, Signatur in Ordnung, Handbuch und Handbook enthalten, die neuen Statistik-Bausteine sind drin.
 
 # Collection und Wantlist: keine Arbeit im Verborgenen · 22.10.2026
 
