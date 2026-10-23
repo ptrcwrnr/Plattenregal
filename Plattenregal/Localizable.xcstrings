@@ -14,22 +14,22 @@
         }
       }
     },
-    " – Länder kommen mit den Tracklisten von Discogs" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " – countries come with the tracklists from Discogs"
-          }
-        }
-      }
-    },
     " – gesucht" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : " – on search list"
+          }
+        }
+      }
+    },
+    " – Länder kommen mit den Tracklisten von Discogs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " – countries come with the tracklists from Discogs"
           }
         }
       }
@@ -121,26 +121,6 @@
         }
       }
     },
-    "%@ gehört in „%@“" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ belongs in “%2$@”"
-          }
-        }
-      }
-    },
-    "%@ – %@: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ – %2$@: %3$@"
-          }
-        }
-      }
-    },
     ", %lld Exemplare" : {
       "localizations" : {
         "en" : {
@@ -151,308 +131,8 @@
         }
       }
     },
-    "Alle %lld Platten auf der Verkaufsliste sind verkauft?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All %lld records on the sale list are sold?"
-          }
-        }
-      }
-    },
-    "Alle übrigen noch nicht einsortierten Platten stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All remaining records not placed yet are on the search list. Mark them as found in Settings under “Lists”."
-          }
-        }
-      }
-    },
-    "Auf YouTube suchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search on YouTube"
-          }
-        }
-      }
-    },
-    "Aus: keine Suchliste. Bereits gesuchte Platten bleiben gemerkt, falls du sie wieder einschaltest." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Off: no search list. Records already on it are remembered in case you switch it back on."
-          }
-        }
-      }
-    },
-    "Aus: keine Verkaufsliste. Bereits vorgemerkte Platten bleiben gemerkt, falls du sie wieder einschaltest." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Off: no sale list. Records already marked are remembered in case you switch it back on."
-          }
-        }
-      }
-    },
-    "Die Platte auf der Verkaufsliste ist verkauft?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The record on the sale list is sold?"
-          }
-        }
-      }
-    },
-    "Erhöhen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Increase"
-          }
-        }
-      }
-    },
-    "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast. Als CSV oder PDF gibt es die Liste unter „Export“." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For records you want to sell some day: right-click to mark them. They stay on the shelf until you have sold them all. Export the list as CSV or PDF under “Export”."
-          }
-        }
-      }
-    },
-    "Für Platten, die gerade nicht zu finden sind: per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For records you can’t find right now: right-click to add them to the search list. Until you mark them as found here, they are not offered for placing."
-          }
-        }
-      }
-    },
-    "Gehört in „%@“" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Belongs in “%@”"
-          }
-        }
-      }
-    },
-    "Handbuch" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "User Guide"
-          }
-        }
-      }
-    },
-    "Keine Platte ist zum Verkauf vorgemerkt." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No record is marked for sale."
-          }
-        }
-      }
-    },
-    "Klick: an ihrer alphabetischen Stelle ins Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click: add to the compartment at its alphabetical place. Right-click: more actions."
-          }
-        }
-      }
-    },
-    "Klick: hier einsortieren. Rechtsklick: weitere Aktionen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click: place here. Right-click: more actions."
-          }
-        }
-      }
-    },
-    "Klick: trotzdem in dieses Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click: add to this compartment anyway. Right-click: more actions."
-          }
-        }
-      }
-    },
-    "Listen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lists"
-          }
-        }
-      }
-    },
-    "Nicht mehr verkaufen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No longer for sale"
-          }
-        }
-      }
-    },
-    "Position %lld · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position %1$lld · %2$@"
-          }
-        }
-      }
-    },
-    "Sie werden aus ihren Fächern genommen und auf „Ohne Regalplatz“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "They are taken out of their compartments and set to “Kept off shelf”, the remaining records move up, and the list is emptied. They only leave the collection once you remove them on Discogs and sync."
-          }
-        }
-      }
-    },
-    "Sucht den Track auf YouTube" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Searches for the track on YouTube"
-          }
-        }
-      }
-    },
-    "Verkauf" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For sale"
-          }
-        }
-      }
-    },
-    "Verkaufsliste" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sale list"
-          }
-        }
-      }
-    },
-    "Verkauft" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sold"
-          }
-        }
-      }
-    },
-    "Verringern" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrease"
-          }
-        }
-      }
-    },
-    "Video auf YouTube öffnen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open video on YouTube"
-          }
-        }
-      }
-    },
-    "Von der Verkaufsliste nehmen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Take off the sale list"
-          }
-        }
-      }
-    },
-    "Zum Fach hinzufügen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add to Compartment"
-          }
-        }
-      }
-    },
-    "Zum Verkauf vorgemerkt – die Liste steht in den Einstellungen unter „Listen“" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Marked for sale – the list is in Settings under “Lists”"
-          }
-        }
-      }
-    },
-    "Zum Verkauf vormerken" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mark for sale"
-          }
-        }
-      }
-    },
     "·" : {
       "shouldTranslate" : false
-    },
-    "Öffnet das Video auf YouTube" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens the video on YouTube"
-          }
-        }
-      }
     },
     "„%@ – %@“" : {
       "localizations" : {
@@ -496,12 +176,32 @@
         }
       }
     },
+    "„%@“ ist verbunden und holt sich jetzt Token und Regal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” is connected and is now fetching the token and shelf."
+          }
+        }
+      }
+    },
     "„%@“ löschen?" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete “%@”?"
+          }
+        }
+      }
+    },
+    "„%@“ möchte sich verbinden. Gib den Code ein, den der Fernseher zeigt:" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” wants to connect. Enter the code shown on the TV:"
           }
         }
       }
@@ -572,6 +272,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add %@ – %@ to the compartment"
+          }
+        }
+      }
+    },
+    "%@ – %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@: %3$@"
           }
         }
       }
@@ -683,6 +393,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ compartments · %@ placed%@"
+          }
+        }
+      }
+    },
+    "%@ gehört in „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ belongs in “%2$@”"
           }
         }
       }
@@ -1014,16 +734,6 @@
         }
       }
     },
-    "%lld ohne Regalplatz" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld kept off shelf"
-          }
-        }
-      }
-    },
     "%lld nicht in der Collection" : {
       "localizations" : {
         "en" : {
@@ -1040,6 +750,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld without year"
+          }
+        }
+      }
+    },
+    "%lld ohne Regalplatz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld kept off shelf"
           }
         }
       }
@@ -1682,6 +1402,16 @@
         }
       }
     },
+    "Alle %lld Platten auf der Verkaufsliste sind verkauft?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All %lld records on the sale list are sold?"
+          }
+        }
+      }
+    },
     "Alle %lld Platten stehen in der richtigen Reihenfolge." : {
       "localizations" : {
         "en" : {
@@ -1788,6 +1518,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All tracks in one column"
+          }
+        }
+      }
+    },
+    "Alle übrigen noch nicht einsortierten Platten stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All remaining records not placed yet are on the search list. Mark them as found in Settings under “Lists”."
           }
         }
       }
@@ -1982,36 +1722,6 @@
         }
       }
     },
-    "Auf die Suchliste setzen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add to Search List"
-          }
-        }
-      }
-    },
-    "Steht auf der Suchliste – beim Einsortieren gilt sie als gefunden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On the search list – it counts as found when placed."
-          }
-        }
-      }
-    },
-    "Steht auf der Suchliste – hier sollte sie stehen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On the search list – this is where it should be."
-          }
-        }
-      }
-    },
     "Ältestes Release" : {
       "localizations" : {
         "en" : {
@@ -2172,6 +1882,26 @@
         }
       }
     },
+    "Apple TV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple TV"
+          }
+        }
+      }
+    },
+    "Apple TV verbinden …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Apple TV …"
+          }
+        }
+      }
+    },
     "Auch die Regale werden auf den Stand der Sicherung gebracht – Anzahl, Größe und Namen." : {
       "localizations" : {
         "en" : {
@@ -2192,6 +1922,26 @@
         }
       }
     },
+    "Auf dem Apple TV: Plattenregal öffnen, dann Einstellungen → „Mit Mac verbinden …“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the Apple TV: open Plattenregal, then Einstellungen → “Mit Mac verbinden …”."
+          }
+        }
+      }
+    },
+    "Auf die Suchliste setzen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Search List"
+          }
+        }
+      }
+    },
     "Auf Discogs öffnen" : {
       "localizations" : {
         "en" : {
@@ -2208,6 +1958,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "At a glance"
+          }
+        }
+      }
+    },
+    "Auf YouTube suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search on YouTube"
           }
         }
       }
@@ -2288,6 +2048,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete from Collection…"
+          }
+        }
+      }
+    },
+    "Aus: keine Suchliste. Bereits gesuchte Platten bleiben gemerkt, falls du sie wieder einschaltest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off: no search list. Records already on it are remembered in case you switch it back on."
+          }
+        }
+      }
+    },
+    "Aus: keine Verkaufsliste. Bereits vorgemerkte Platten bleiben gemerkt, falls du sie wieder einschaltest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off: no sale list. Records already marked are remembered in case you switch it back on."
           }
         }
       }
@@ -2769,6 +2549,16 @@
         }
       }
     },
+    "Dann gleicht das Apple TV selbst mit Discogs ab. Ohne Token muss er dort von Hand eingetragen werden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Apple TV then syncs with Discogs by itself. Without it, the token has to be entered there by hand."
+          }
+        }
+      }
+    },
     "Darstellung" : {
       "localizations" : {
         "en" : {
@@ -2798,6 +2588,12 @@
           }
         }
       }
+    },
+    "Das Fach, in dem die Platte vorher stand, gibt es nicht mehr – etwa weil ein Regal verkleinert wurde." : {
+
+    },
+    "Das Fach, in dem die Platte vorher stand, ist inzwischen gesperrt. Entsperre es per Rechtsklick, dann geht es." : {
+
     },
     "Das gemeinsame Protokoll der App – in der Demo lässt es sich nicht leeren." : {
       "localizations" : {
@@ -2845,6 +2641,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "File"
+          }
+        }
+      }
+    },
+    "Datei „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File “%@”"
           }
         }
       }
@@ -3015,6 +2821,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Demo: These settings only apply to the demo. Your own stay as they are."
+          }
+        }
+      }
+    },
+    "Der Code hat sechs Ziffern." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The code has six digits."
           }
         }
       }
@@ -3299,6 +3115,16 @@
         }
       }
     },
+    "Die Belegung geht immer mit – dieselben Angaben wie in einer Sicherung: Regale, Fächer, Sperren und der Platz jeder Platte. Das Apple TV holt sie beim Start und alle paar Minuten und ändert selbst nichts daran." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The shelf layout is always sent – the same details as in a backup: shelves, compartments, locks and the place of every record. The Apple TV fetches it at launch and every few minutes and never changes it."
+          }
+        }
+      }
+    },
     "Die Belegung konnte nicht wiederhergestellt werden. Dein Regal ist unverändert. Bitte versuche es noch einmal." : {
       "localizations" : {
         "en" : {
@@ -3419,6 +3245,16 @@
         }
       }
     },
+    "Die Platte auf der Verkaufsliste ist verkauft?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record on the sale list is sold?"
+          }
+        }
+      }
+    },
     "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen." : {
       "localizations" : {
         "en" : {
@@ -3439,6 +3275,9 @@
         }
       }
     },
+    "Die Platte ist nicht mehr in der Sammlung." : {
+
+    },
     "Die Platte oder das Fach gibt es nicht mehr – vielleicht wurde gerade etwas geändert. Bitte versuche es noch einmal." : {
       "localizations" : {
         "en" : {
@@ -3448,6 +3287,12 @@
           }
         }
       }
+    },
+    "Die Platte steht inzwischen auf „Ohne Regalplatz“ und kommt deshalb nicht zurück ins Fach." : {
+
+    },
+    "Die Platte wurde seitdem noch einmal bewegt. Mache zuerst die neuere Änderung rückgängig." : {
+
     },
     "Die Platten behalten ihre Plätze, sind aber auf der Regalseite ausgeblendet und werden beim Einsortieren übersprungen." : {
       "localizations" : {
@@ -3570,6 +3415,16 @@
         }
       }
     },
+    "Die Verbindung zum Apple TV ist abgebrochen. Starte die Kopplung auf beiden Seiten neu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The connection to the Apple TV was lost. Start pairing again on both devices."
+          }
+        }
+      }
+    },
     "Die vorhandenen Sicherungen ließen sich nicht in den neuen Ordner kopieren. Es bleibt beim bisherigen Ordner. Prüfe, ob du im neuen Ordner speichern darfst und genug Platz ist." : {
       "localizations" : {
         "en" : {
@@ -3599,6 +3454,9 @@
           }
         }
       }
+    },
+    "Diese Änderung ist schon rückgängig gemacht." : {
+
     },
     "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter …“ oder automatisch erstellt hat." : {
       "localizations" : {
@@ -3860,6 +3718,16 @@
         }
       }
     },
+    "Discogs-Token mitschicken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Discogs token"
+          }
+        }
+      }
+    },
     "Discogs-Verweise" : {
       "localizations" : {
         "en" : {
@@ -4020,6 +3888,12 @@
         }
       }
     },
+    "Einsortiert in „%@“" : {
+
+    },
+    "Einsortiert, verschoben, herausgenommen – „Rückgängig“ stellt die Platte wieder dorthin, wo sie vorher stand." : {
+
+    },
     "Einstellungen" : {
       "localizations" : {
         "en" : {
@@ -4122,6 +3996,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The last %lld versions are kept."
+          }
+        }
+      }
+    },
+    "Erhöhen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Increase"
           }
         }
       }
@@ -4378,6 +4262,12 @@
         }
       }
     },
+    "Fach gesperrt" : {
+
+    },
+    "Fach gibt es nicht mehr" : {
+
+    },
     "Fach sperren" : {
       "localizations" : {
         "en" : {
@@ -4444,6 +4334,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show error details"
+          }
+        }
+      }
+    },
+    "Fertig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
           }
         }
       }
@@ -4528,6 +4428,26 @@
         }
       }
     },
+    "Für Platten, die du irgendwann verkaufen willst: per Rechtsklick vormerken. Sie bleiben im Regal, bis du alle verkauft hast. Als CSV oder PDF gibt es die Liste unter „Export“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For records you want to sell some day: right-click to mark them. They stay on the shelf until you have sold them all. Export the list as CSV or PDF under “Export”."
+          }
+        }
+      }
+    },
+    "Für Platten, die gerade nicht zu finden sind: per Rechtsklick auf die Suchliste setzen. Bis du sie hier als gefunden markierst, werden sie nicht zum Einsortieren angeboten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For records you can’t find right now: right-click to add them to the search list. Until you mark them as found here, they are not offered for placing."
+          }
+        }
+      }
+    },
     "ganz links" : {
       "localizations" : {
         "en" : {
@@ -4584,6 +4504,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Found via the track “%@”"
+          }
+        }
+      }
+    },
+    "Gehört in „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belongs in “%@”"
           }
         }
       }
@@ -4684,6 +4614,19 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Locked compartment – not meant for records. You can unlock it by right-clicking the compartment."
+          }
+        }
+      }
+    },
+    "Gestern" : {
+
+    },
+    "Gesucht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking for"
           }
         }
       }
@@ -4789,6 +4732,16 @@
         }
       }
     },
+    "Handbuch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User Guide"
+          }
+        }
+      }
+    },
     "Häufigkeit" : {
       "localizations" : {
         "en" : {
@@ -4839,6 +4792,9 @@
         }
       }
     },
+    "Herausgenommen aus „%@“" : {
+
+    },
     "Herausnehmen rückgängig machen" : {
       "localizations" : {
         "en" : {
@@ -4848,6 +4804,9 @@
           }
         }
       }
+    },
+    "Heute" : {
+
     },
     "Heute aus deiner Sammlung" : {
       "localizations" : {
@@ -5075,6 +5034,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In %@ – doesn’t count toward the app’s storage."
+          }
+        }
+      }
+    },
+    "In der Demo ist die Verbindung zum Apple TV aus – die Beispielsammlung soll nicht auf deinen Fernseher." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Apple TV link is off in the demo – the sample collection shouldn't end up on your TV."
           }
         }
       }
@@ -5340,12 +5309,32 @@
         }
       }
     },
+    "Keine Liste gewählt – ohne Auswahl wird nichts exportiert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No list chosen – nothing is exported without a selection."
+          }
+        }
+      }
+    },
     "Keine Platte aus dieser Sicherung ist gerade in deiner Sammlung. Synchronisiere zuerst die Collection mit Discogs – oder die Sicherung gehört zu einem anderen Discogs-Konto. Es wurde nichts verändert." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "None of the records in this backup are currently in your collection. Sync the collection with Discogs first – or the backup belongs to another Discogs account. Nothing was changed."
+          }
+        }
+      }
+    },
+    "Keine Platte ist zum Verkauf vorgemerkt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No record is marked for sale."
           }
         }
       }
@@ -5427,6 +5416,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Small"
+          }
+        }
+      }
+    },
+    "Klick: an ihrer alphabetischen Stelle ins Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click: add to the compartment at its alphabetical place. Right-click: more actions."
+          }
+        }
+      }
+    },
+    "Klick: hier einsortieren. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click: place here. Right-click: more actions."
+          }
+        }
+      }
+    },
+    "Klick: trotzdem in dieses Fach hinzufügen. Rechtsklick: weitere Aktionen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click: add to this compartment anyway. Right-click: more actions."
           }
         }
       }
@@ -5601,6 +5620,16 @@
         }
       }
     },
+    "Listen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lists"
+          }
+        }
+      }
+    },
     "Los geht’s" : {
       "localizations" : {
         "en" : {
@@ -5617,6 +5646,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete"
+          }
+        }
+      }
+    },
+    "Mac" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac"
           }
         }
       }
@@ -5972,6 +6011,16 @@
         }
       }
     },
+    "Neues Apple TV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Apple TV"
+          }
+        }
+      }
+    },
     "Neueste zuerst" : {
       "localizations" : {
         "en" : {
@@ -6032,16 +6081,6 @@
         }
       }
     },
-    "Ohne Regalplatz" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kept off shelf"
-          }
-        }
-      }
-    },
     "Nicht in der Collection" : {
       "localizations" : {
         "en" : {
@@ -6062,6 +6101,19 @@
         }
       }
     },
+    "Nicht mehr in der Sammlung" : {
+
+    },
+    "Nicht mehr verkaufen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No longer for sale"
+          }
+        }
+      }
+    },
     "Nichts hinzugefügt" : {
       "localizations" : {
         "en" : {
@@ -6078,6 +6130,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low"
+          }
+        }
+      }
+    },
+    "Nimmt die Platte wieder aus dem Fach – sie steht dann wieder unter „Noch nicht einsortiert“." : {
+
+    },
+    "Noch einmal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        }
+      }
+    },
+    "Noch kein Apple TV verbunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Apple TV connected yet."
           }
         }
       }
@@ -6202,16 +6277,6 @@
         }
       }
     },
-    "Noch nicht einsortiert" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not placed yet"
-          }
-        }
-      }
-    },
     "Noch nicht alle Tracklisten geladen – %lld fehlen und werden später automatisch nachgeholt. " : {
       "localizations" : {
         "de" : {
@@ -6252,6 +6317,16 @@
         }
       }
     },
+    "Noch nicht einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not placed yet"
+          }
+        }
+      }
+    },
     "Noch nicht exportiert" : {
       "localizations" : {
         "en" : {
@@ -6271,6 +6346,9 @@
           }
         }
       }
+    },
+    "Noch nichts im Verlauf" : {
+
     },
     "Notiz" : {
       "localizations" : {
@@ -6332,12 +6410,42 @@
         }
       }
     },
+    "Öffne auf dem Apple TV Plattenregal → Einstellungen → „Mit Mac verbinden …“ und wähle „%@“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the Apple TV, open Plattenregal → Einstellungen → “Mit Mac verbinden …” and choose “%@”."
+          }
+        }
+      }
+    },
+    "Öffnet das Video auf YouTube" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the video on YouTube"
+          }
+        }
+      }
+    },
     "Ohne Platten wird nichts exportiert, damit keine leere Liste die letzte Datei ersetzt." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Without records nothing is exported, so an empty list never replaces the last file."
+          }
+        }
+      }
+    },
+    "Ohne Regalplatz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kept off shelf"
           }
         }
       }
@@ -6580,6 +6688,16 @@
         }
       }
     },
+    "Plattenregal für Apple TV zeigt Collection, Wantlist, Statistik und das Regal auf dem Fernseher. Discogs-Token und Belegung holt es von hier – im Heimnetz und verschlüsselt, solange Plattenregal am Mac geöffnet ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal for Apple TV shows your collection, wantlist, statistics and shelf on the TV. It gets the Discogs token and the shelf layout from here – over your home network, encrypted, while Plattenregal is open on the Mac."
+          }
+        }
+      }
+    },
     "Plattenregal ist bereits geöffnet" : {
       "localizations" : {
         "en" : {
@@ -6606,6 +6724,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plattenregal is already open in another instance. Quit this one and use the other."
+          }
+        }
+      }
+    },
+    "Plattenregal ist im Heimnetz gerade nicht erreichbar (%@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal can't be reached on the home network right now (%@)."
+          }
+        }
+      }
+    },
+    "Plattenregal ist im Heimnetz gerade nicht erreichbar (%@). Erlaube den Zugriff aufs lokale Netzwerk unter Systemeinstellungen → Datenschutz & Sicherheit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal can't be reached on the home network right now (%@). Allow local network access in System Settings → Privacy & Security."
           }
         }
       }
@@ -6770,12 +6908,32 @@
         }
       }
     },
+    "Position %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position %1$lld · %2$@"
+          }
+        }
+      }
+    },
     "Position %lld · %@ · %@\nKlick: Exemplar bearbeiten. Rechtsklick: weitere Aktionen." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Position %1$lld · %2$@ · %3$@\nClick: edit copy. Right-click: more actions."
+          }
+        }
+      }
+    },
+    "Position %lld → %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Position %1$lld → %2$lld"
           }
         }
       }
@@ -6836,6 +6994,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show Log in Finder"
+          }
+        }
+      }
+    },
+    "Prüfe den Code …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the code …"
           }
         }
       }
@@ -7180,6 +7348,9 @@
         }
       }
     },
+    "Rückgängig gemacht" : {
+
+    },
     "Rund 50 Platten in zwei Regalen, Wantlist und Wertverlauf. Alles lässt sich ändern, nichts wird gespeichert, deine Sammlung bleibt unberührt. Plattenregal startet dafür neu." : {
       "localizations" : {
         "en" : {
@@ -7300,22 +7471,12 @@
         }
       }
     },
-    "Datei „%@“" : {
+    "Sechsstelliger Code" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "File “%@”"
-          }
-        }
-      }
-    },
-    "Keine Liste gewählt – ohne Auswahl wird nichts exportiert." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No list chosen – nothing is exported without a selection."
+            "value" : "Six-digit code"
           }
         }
       }
@@ -7359,6 +7520,9 @@
           }
         }
       }
+    },
+    "Seitdem bewegt" : {
+
     },
     "Seite %lld" : {
       "localizations" : {
@@ -7420,6 +7584,16 @@
         }
       }
     },
+    "Sie werden aus ihren Fächern genommen und auf „Ohne Regalplatz“ gesetzt, die übrigen Platten rücken auf, die Liste wird geleert. Aus der Collection verschwinden sie erst, wenn du sie auf Discogs entfernst und synchronisierst." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They are taken out of their compartments and set to “Kept off shelf”, the remaining records move up, and the list is emptied. They only leave the collection once you remove them on Discogs and sync."
+          }
+        }
+      }
+    },
     "So klein geht es gerade nicht: In den Fächern, die wegfallen würden, %@. Nimm sie zuerst heraus oder wähle eine größere Variante." : {
       "localizations" : {
         "en" : {
@@ -7429,6 +7603,9 @@
           }
         }
       }
+    },
+    "Sobald du Platten einsortierst, verschiebst oder aus einem Fach nimmst, stehen sie hier – und lassen sich rückgängig machen." : {
+
     },
     "Sortierung prüfen" : {
       "localizations" : {
@@ -7577,6 +7754,9 @@
         }
       }
     },
+    "Stand an Position %lld" : {
+
+    },
     "Standard" : {
       "localizations" : {
         "en" : {
@@ -7687,6 +7867,26 @@
         }
       }
     },
+    "Steht auf der Suchliste – beim Einsortieren gilt sie als gefunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the search list – it counts as found when placed."
+          }
+        }
+      }
+    },
+    "Steht auf der Suchliste – hier sollte sie stehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the search list – this is where it should be."
+          }
+        }
+      }
+    },
     "Steht im deaktivierten Regal „%@“. Aktiviere es in den Einstellungen unter „Regale“, um sie hier zu sehen." : {
       "localizations" : {
         "en" : {
@@ -7706,6 +7906,9 @@
           }
         }
       }
+    },
+    "Stellt die Platte wieder an ihren vorigen Platz." : {
+
     },
     "Stile" : {
       "localizations" : {
@@ -7763,6 +7966,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search"
+          }
+        }
+      }
+    },
+    "Suchliste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search list"
+          }
+        }
+      }
+    },
+    "Suchliste …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search list …"
+          }
+        }
+      }
+    },
+    "Sucht den Track auf YouTube" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searches for the track on YouTube"
           }
         }
       }
@@ -8117,6 +8350,9 @@
         }
       }
     },
+    "Umgestellt in „%@“" : {
+
+    },
     "Unbekannt" : {
       "localizations" : {
         "en" : {
@@ -8167,6 +8403,16 @@
         }
       }
     },
+    "Verbinden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect"
+          }
+        }
+      }
+    },
     "Verbunden als %@" : {
       "localizations" : {
         "en" : {
@@ -8176,6 +8422,52 @@
           }
         }
       }
+    },
+    "Verbunden am %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected on %@"
+          }
+        }
+      }
+    },
+    "Verkauf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For sale"
+          }
+        }
+      }
+    },
+    "Verkaufsliste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sale list"
+          }
+        }
+      }
+    },
+    "Verkauft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold"
+          }
+        }
+      }
+    },
+    "Verlauf" : {
+
+    },
+    "Verlauf – zuletzt einsortiert, verschoben, herausgenommen" : {
+
     },
     "Verlauf des Sammlungswerts" : {
       "localizations" : {
@@ -8187,32 +8479,15 @@
         }
       }
     },
-    "Gesucht" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Looking for"
-          }
-        }
-      }
+    "Verlauf: Einsortiertes und Verschobenes rückgängig machen" : {
+
     },
-    "Suchliste" : {
+    "Verringern" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search list"
-          }
-        }
-      }
-    },
-    "Suchliste …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search list …"
+            "value" : "Decrease"
           }
         }
       }
@@ -8243,6 +8518,26 @@
         }
       }
     },
+    "Video auf YouTube öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open video on YouTube"
+          }
+        }
+      }
+    },
+    "Von „%@“ nach „%@“" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Von „%1$@“ nach „%2$@“"
+          }
+        }
+      }
+    },
     "von %lld" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8250,6 +8545,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "of %lld"
+          }
+        }
+      }
+    },
+    "Von der Verkaufsliste nehmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take off the sale list"
           }
         }
       }
@@ -8400,6 +8705,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading wantlist"
+          }
+        }
+      }
+    },
+    "Was das Apple TV bekommt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What the Apple TV gets"
           }
         }
       }
@@ -8857,6 +9172,16 @@
         }
       }
     },
+    "Zuletzt abgeholt %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last fetched %@"
+          }
+        }
+      }
+    },
     "Zuletzt bei Discogs hinzugefügt zuerst." : {
       "localizations" : {
         "en" : {
@@ -8893,6 +9218,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To refresh, pull the page down (trackpad or with the mouse button held) or press ⌘R."
+          }
+        }
+      }
+    },
+    "Zum Fach hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Compartment"
+          }
+        }
+      }
+    },
+    "Zum Verkauf vorgemerkt – die Liste steht in den Einstellungen unter „Listen“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marked for sale – the list is in Settings under “Lists”"
+          }
+        }
+      }
+    },
+    "Zum Verkauf vormerken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark for sale"
           }
         }
       }
@@ -8976,266 +9331,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Switch between shelves: ⌘← / ⌘→"
-          }
-        }
-      }
-    },
-    "Apple TV" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple TV"
-          }
-        }
-      }
-    },
-    "Plattenregal für Apple TV zeigt Collection, Wantlist, Statistik und das Regal auf dem Fernseher. Discogs-Token und Belegung holt es von hier – im Heimnetz und verschlüsselt, solange Plattenregal am Mac geöffnet ist." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal for Apple TV shows your collection, wantlist, statistics and shelf on the TV. It gets the Discogs token and the shelf layout from here – over your home network, encrypted, while Plattenregal is open on the Mac."
-          }
-        }
-      }
-    },
-    "Was das Apple TV bekommt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What the Apple TV gets"
-          }
-        }
-      }
-    },
-    "In der Demo ist die Verbindung zum Apple TV aus – die Beispielsammlung soll nicht auf deinen Fernseher." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The Apple TV link is off in the demo – the sample collection shouldn't end up on your TV."
-          }
-        }
-      }
-    },
-    "Noch kein Apple TV verbunden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Apple TV connected yet."
-          }
-        }
-      }
-    },
-    "Neues Apple TV" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Apple TV"
-          }
-        }
-      }
-    },
-    "Auf dem Apple TV: Plattenregal öffnen, dann Einstellungen → „Mit Mac verbinden …“." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On the Apple TV: open Plattenregal, then Einstellungen → “Mit Mac verbinden …”."
-          }
-        }
-      }
-    },
-    "Discogs-Token mitschicken" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Send Discogs token"
-          }
-        }
-      }
-    },
-    "Dann gleicht das Apple TV selbst mit Discogs ab. Ohne Token muss er dort von Hand eingetragen werden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The Apple TV then syncs with Discogs by itself. Without it, the token has to be entered there by hand."
-          }
-        }
-      }
-    },
-    "Die Belegung geht immer mit – dieselben Angaben wie in einer Sicherung: Regale, Fächer, Sperren und der Platz jeder Platte. Das Apple TV holt sie beim Start und alle paar Minuten und ändert selbst nichts daran." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The shelf layout is always sent – the same details as in a backup: shelves, compartments, locks and the place of every record. The Apple TV fetches it at launch and every few minutes and never changes it."
-          }
-        }
-      }
-    },
-    "Apple TV verbinden …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connect Apple TV …"
-          }
-        }
-      }
-    },
-    "Öffne auf dem Apple TV Plattenregal → Einstellungen → „Mit Mac verbinden …“ und wähle „%@“." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On the Apple TV, open Plattenregal → Einstellungen → “Mit Mac verbinden …” and choose “%@”."
-          }
-        }
-      }
-    },
-    "„%@“ möchte sich verbinden. Gib den Code ein, den der Fernseher zeigt:" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“%@” wants to connect. Enter the code shown on the TV:"
-          }
-        }
-      }
-    },
-    "Sechsstelliger Code" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Six-digit code"
-          }
-        }
-      }
-    },
-    "Verbinden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connect"
-          }
-        }
-      }
-    },
-    "Prüfe den Code …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checking the code …"
-          }
-        }
-      }
-    },
-    "„%@“ ist verbunden und holt sich jetzt Token und Regal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“%@” is connected and is now fetching the token and shelf."
-          }
-        }
-      }
-    },
-    "Fertig" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
-          }
-        }
-      }
-    },
-    "Noch einmal" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try again"
-          }
-        }
-      }
-    },
-    "Zuletzt abgeholt %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last fetched %@"
-          }
-        }
-      }
-    },
-    "Verbunden am %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connected on %@"
-          }
-        }
-      }
-    },
-    "Mac" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mac"
-          }
-        }
-      }
-    },
-    "Der Code hat sechs Ziffern." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The code has six digits."
-          }
-        }
-      }
-    },
-    "Die Verbindung zum Apple TV ist abgebrochen. Starte die Kopplung auf beiden Seiten neu." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The connection to the Apple TV was lost. Start pairing again on both devices."
-          }
-        }
-      }
-    },
-    "Plattenregal ist im Heimnetz gerade nicht erreichbar (%@)." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal can't be reached on the home network right now (%@)."
-          }
-        }
-      }
-    },
-    "Plattenregal ist im Heimnetz gerade nicht erreichbar (%@). Erlaube den Zugriff aufs lokale Netzwerk unter Systemeinstellungen → Datenschutz & Sicherheit." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal can't be reached on the home network right now (%@). Allow local network access in System Settings → Privacy & Security."
           }
         }
       }

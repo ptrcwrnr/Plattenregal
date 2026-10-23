@@ -1,3 +1,9 @@
+# Regal: Suche hebt nur das gemeinte Fach hervor · 23.10.2026
+
+- Klickte man in der Regalsuche einen Treffer an, blieb neben dem Fach der Platte auch das vorher offene Fach markiert (blass, aber mit Goldrand bzw. Akzentrand). Jetzt verliert ein zurückgetretenes Fach seine Auswahl samt „+“, solange Suche oder Einsortier-Karte auf andere Fächer zeigen; danach ist es wieder ausgewählt (`ShelfFurniture`). Der Fachinhalt darunter bleibt wie bisher stehen.
+- README: Suche auf der Regalseite.
+- Geprüft: Build ohne Warnungen, alle 233 Tests bestanden. In der Demo (Klassisch) angesehen: Suche „Massive“ hebt nur „Ma – Mo“ hervor, das offene „A – Be“ ohne Goldrand; Suche ohne Treffer lässt kein Fach markiert.
+
 # Regal: Einsortieren über zwei Regale, Verlauf mit Rückgängig · 23.10.2026
 
 - **Fehler:** Das runde „+“ („Einsortieren“) legte Platten an der Grenze zweier Fächer immer ins frühere – auch über zwei Regale hinweg. KALLAX endet mit „Various“/„X“, EKET beginnt mit „Yakooza“; ein neues „Yakooza“ passt an beide Stellen und landete am Ende von KALLAX, obwohl EKET offen war und dort schon Yakooza stand. Jetzt entscheidet bei Gleichstand: die Seite mit demselben Interpreten, dann das offene Fach, dann das gezeigte Regal, sonst das frühere (`AlphabeticalPlacement.preferredIndex`). Gilt für „Einsortieren“ und die Einsortier-Karte der Suche; „Platte hinzufügen“ am Fach legt wie bisher in genau dieses Fach.

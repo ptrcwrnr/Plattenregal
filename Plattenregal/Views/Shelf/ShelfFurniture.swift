@@ -4,7 +4,9 @@ import SwiftUI
 /// compartments set into it as shallow wells, so the rack is the one distinct
 /// shape on the page. The selected compartment rises out of its well as a
 /// raised plate, fading in within its own compartment (no gliding across
-/// the rack); the compartment under the pointer brightens a little.
+/// the rack); the compartment under the pointer brightens a little. While a
+/// search or the placement card lights some compartments, the others fade
+/// and the selection shows only if it is one of the lit ones.
 struct ShelfFurniture<Menu: View>: View {
     let shelves: [Shelf]
     let rows: Int
@@ -45,15 +47,20 @@ struct ShelfFurniture<Menu: View>: View {
                 HStack(spacing: Self.gap) {
                     ForEach(row, id: \.0) { _, shelf in
                         if let shelf {
+                            // While a search or the placement card points at other
+                            // compartments, only those stand out: the open one
+                            // drops its selection too instead of keeping a faded gold rim.
+                            let dimmed = litIDs.map { !$0.contains(shelf.id) } ?? false
+                            let selected = selectedID == shelf.id && !dimmed
                             Button { select(shelf) } label: {
                                 ShelfCompartment(
                                     shelf: shelf,
                                     stats: stats(shelf),
                                     rangeLabel: rangeLabel(shelf),
                                     lockPreview: lockPreview,
-                                    selected: selectedID == shelf.id,
+                                    selected: selected,
                                     hovered: hoveredID == shelf.id,
-                                    dimmed: litIDs.map { !$0.contains(shelf.id) } ?? false
+                                    dimmed: dimmed
                                 )
                             }
                             .buttonStyle(.plain)
@@ -63,7 +70,7 @@ struct ShelfFurniture<Menu: View>: View {
                             // Where the count stands, which gives way to it.
                             .overlay(alignment: .topTrailing) {
                                 CompartmentAddButton(shelf: shelf, lockPreview: lockPreview,
-                                                     shown: hoveredID == shelf.id || selectedID == shelf.id) { add(shelf) }
+                                                     shown: hoveredID == shelf.id || selected) { add(shelf) }
                                     .padding(.top, AppStyle.tightSpacing)
                                     .padding(.trailing, AppStyle.itemSpacing)
                             }
