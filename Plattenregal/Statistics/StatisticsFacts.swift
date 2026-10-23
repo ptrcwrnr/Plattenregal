@@ -60,15 +60,11 @@ struct StatisticsFacts: View {
                 VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
                     HStack(spacing: AppStyle.itemSpacing) {
                         // Klassisch: one petrol for all, no rainbow.
-                        Image(systemName: fact.systemImage)
-                            .font(.callout.weight(.semibold))
-                            .foregroundStyle(AppStyle.isAtelier ? AppStyle.accent : fact.color)
-                            .frame(width: 28, height: 28)
-                            .background(AppStyle.isAtelier ? AtelierPalette.soft : fact.color.opacity(0.14), in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+                        SymbolTile(systemImage: fact.systemImage, color: fact.color)
                         Text(fact.title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                         Spacer(minLength: 0)
                         if fact.group != nil {
-                            Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
+                            Image(systemName: "chevron.right").font(AppStyle.captionMark).foregroundStyle(.tertiary)
                                 .opacity(hovering ? 1 : 0)
                         }
                     }

@@ -166,11 +166,11 @@ struct HistoryLineChart: View {
                         // Swift Charts receives a rendering conversion only. Storage and arithmetic stay Decimal.
                         let value = NSDecimalNumber(decimal: point.value).doubleValue
                         AreaMark(x: .value("Datum", point.date), yStart: .value("Basis", baseline), yEnd: .value("Wert", value))
-                            .interpolationMethod(.monotone)
-                            .foregroundStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.25), AppStyle.accent.opacity(0)], startPoint: .top, endPoint: .bottom))
+                            .interpolationMethod(AppStyle.chartInterpolation)
+                            .foregroundStyle(LinearGradient(colors: [AppStyle.accent.opacity(AppStyle.chartAreaOpacity), AppStyle.accent.opacity(0)], startPoint: .top, endPoint: .bottom))
                         LineMark(x: .value("Datum", point.date), y: .value("Wert", value))
-                            .interpolationMethod(.monotone)
-                            .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
+                            .interpolationMethod(AppStyle.chartInterpolation)
+                            .lineStyle(StrokeStyle(lineWidth: AppStyle.chartLineWidth, lineCap: .round))
                             .foregroundStyle(AppStyle.accent)
                         if points.count == 1 || selected?.id == point.id {
                             PointMark(x: .value("Datum", point.date), y: .value("Wert", value))
@@ -213,7 +213,7 @@ struct HistoryLineChart: View {
                 Group {
                     if let selected {
                         HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
-                            Text(formatted(selected.value)).font(.callout.weight(.semibold)).monospacedDigit()
+                            Text(formatted(selected.value)).font(AppStyle.strongCallout).monospacedDigit()
                             Text(selected.date.formatted(date: .abbreviated, time: .omitted)).font(.caption).foregroundStyle(.secondary)
                         }
                     } else {
@@ -249,7 +249,7 @@ struct ChangeLabel: View {
             HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                 if change.amount != 0 {
                     Image(systemName: change.amount > 0 ? "arrow.up.right" : "arrow.down.right")
-                        .font(.caption.weight(.semibold))
+                        .font(AppStyle.captionMark)
                         .foregroundStyle(change.amount > 0 ? AppStyle.successColor : AppStyle.errorColor)
                 }
                 Text((change.amount > 0 ? "+" : "") + DiscogsMoney.format(change.amount, currency: currency))

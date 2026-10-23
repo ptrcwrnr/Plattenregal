@@ -69,7 +69,7 @@ struct AppBanner: View {
                 // faint wash, not in a see-through tint.
                 shape.fill(AtelierPalette.surface)
                     .overlay(shape.fill(kind.color.opacity(kind == .info ? 0 : 0.06)))
-                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
             } else {
                 shape.fill(kind.color.opacity(0.1))
             }
@@ -105,5 +105,49 @@ struct AppEmptyState: View {
         .frame(maxWidth: 420)
         .padding(AppStyle.pagePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+}
+
+/// A symbol on a small tinted round tile, leading a figure or a line: the
+/// statistics' figures and facts, the sync lines in the settings. Modern tints
+/// it in the symbol's color, Klassisch lays it on soft paper in petrol.
+struct SymbolTile: View {
+    let systemImage: String
+    /// The symbol's color in Modern; the accent when none is given.
+    var color: Color?
+    var body: some View {
+        let tint = color ?? AppStyle.accent
+        Image(systemName: systemImage)
+            .font(AppStyle.tileSymbol)
+            .foregroundStyle(AppStyle.isAtelier ? AppStyle.accent : tint)
+            .frame(width: AppStyle.symbolTileSize, height: AppStyle.symbolTileSize)
+            .background(AppStyle.isAtelier ? AtelierPalette.soft : tint.opacity(0.12), in: Circle())
+            .accessibilityHidden(true)
+    }
+}
+
+/// The number of a step in a fine ring – no filled badge: the steps of the
+/// welcome, the moves of the sort check. A step done shows a check instead.
+/// `prominent` draws number and ring in the accent.
+struct StepNumber: View {
+    let number: Int
+    var done = false
+    var prominent = false
+    var body: some View {
+        Text(number, format: .number)
+            .font(AppStyle.captionMark).monospacedDigit()
+            .foregroundStyle(prominent ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.secondary))
+            .opacity(done ? 0 : 1)
+            .frame(width: AppStyle.smallControlHeight, height: AppStyle.smallControlHeight)
+            .overlay {
+                Circle()
+                    .strokeBorder(prominent ? AppStyle.accent.opacity(0.6) : Color.secondary.opacity(0.4), lineWidth: AppStyle.borderWidth)
+                    .opacity(done ? 0 : 1)
+            }
+            .overlay {
+                if done {
+                    Image(systemName: "checkmark.circle.fill").font(AppStyle.statusSymbol).foregroundStyle(AppStyle.successColor)
+                }
+            }
     }
 }

@@ -74,11 +74,11 @@ struct StatisticsHero: View {
             Chart(sameCurrency) { snapshot in
                 let value = NSDecimalNumber(decimal: snapshot.medianValue).doubleValue
                 AreaMark(x: .value("Datum", snapshot.date), y: .value("Wert", value))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(LinearGradient(colors: [AppStyle.accent.opacity(0.35), AppStyle.accent.opacity(0)], startPoint: .top, endPoint: .bottom))
+                    .interpolationMethod(AppStyle.chartInterpolation)
+                    .foregroundStyle(LinearGradient(colors: [AppStyle.accent.opacity(AppStyle.chartAreaOpacity), AppStyle.accent.opacity(0)], startPoint: .top, endPoint: .bottom))
                 LineMark(x: .value("Datum", snapshot.date), y: .value("Wert", value))
-                    .interpolationMethod(.catmullRom)
-                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .interpolationMethod(AppStyle.chartInterpolation)
+                    .lineStyle(StrokeStyle(lineWidth: AppStyle.chartLineWidth, lineCap: .round))
                     .foregroundStyle(AppStyle.accent)
             }
             .chartXAxis(.hidden).chartYAxis(.hidden)
@@ -90,14 +90,10 @@ struct StatisticsHero: View {
 
     private func figure(_ title: String, _ value: Int, _ systemImage: String) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            Image(systemName: systemImage)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(AppStyle.accent)
-                .frame(width: 34, height: 34)
-                .background(AppStyle.isAtelier ? AtelierPalette.soft : AppStyle.accent.opacity(0.12), in: Circle())
+            SymbolTile(systemImage: systemImage)
             VStack(alignment: .leading, spacing: 0) {
                 RollingNumber(value: Double(value)) { Int($0.rounded()).formatted() }
-                    .font(.system(.title2, design: AppStyle.figureDesign, weight: .semibold))
+                    .font(AppStyle.figure)
                 Text(title).font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -122,7 +118,7 @@ private struct DeltaChip: View {
                 Text("(" + (percent > 0 ? "+" : "") + (percent / 100).formatted(.percent.precision(.fractionLength(2))) + ")")
             }
         }
-        .font(.caption.weight(.semibold)).monospacedDigit()
+        .font(AppStyle.captionMark).monospacedDigit()
         .foregroundStyle(color)
         .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
         .background(color.opacity(0.12), in: Capsule())

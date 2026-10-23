@@ -133,7 +133,7 @@ struct ShelfSortCheckView: View {
                     .font(.headline)
                 Spacer(minLength: AppStyle.itemSpacing)
                 Text("\(finished) von \(steps.count)")
-                    .font(.callout.weight(.medium)).monospacedDigit()
+                    .font(AppStyle.rowTitle).monospacedDigit()
                     .foregroundStyle(complete ? AppStyle.successColor : AppStyle.accent)
                     .contentTransition(.numericText())
             }
@@ -199,24 +199,16 @@ private struct SortStepRow: View {
         let release = step.copy.release
         Button(action: toggle) {
             HStack(spacing: AppStyle.rowSpacing) {
-                ZStack {
-                    Circle().strokeBorder(done ? Color.clear : Color.secondary.opacity(0.4), lineWidth: 1)
-                    if done {
-                        Image(systemName: "checkmark.circle.fill").font(AppStyle.statusSymbol).foregroundStyle(AppStyle.successColor)
-                    } else {
-                        Text("\(number)").font(.caption.weight(.semibold)).monospacedDigit().foregroundStyle(.secondary)
-                    }
-                }
-                .frame(width: 22, height: 22)
+                StepNumber(number: number, done: done)
                 CoverView(url: release?.coverURL, size: 40)
                 VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text("\(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
-                        .font(.callout.weight(.medium)).lineLimit(1).truncationMode(.middle)
+                        .font(AppStyle.rowTitle).lineLimit(1).truncationMode(.middle)
                     // Where it goes is what matters at the shelf: in the text's
                     // own color, only the current place muted.
                     HStack(spacing: AppStyle.tightSpacing) {
                         Text("Platz \(step.position)").monospacedDigit().foregroundStyle(.secondary)
-                        Image(systemName: "arrow.right").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                        Image(systemName: "arrow.right").font(AppStyle.indicatorSymbol).foregroundStyle(.secondary)
                         if let neighbour = step.before ?? step.after {
                             CoverView(url: neighbour.release?.coverURL, size: 16)
                             Text(target(neighbour)).lineLimit(1).truncationMode(.middle)
@@ -233,7 +225,7 @@ private struct SortStepRow: View {
             .background {
                 if current {
                     RoundedRectangle(cornerRadius: AppStyle.rowRadius).fill(AppStyle.selectedBackground)
-                        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.selectedBorder, lineWidth: 1.5))
+                        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.selectedBorder, lineWidth: AppStyle.selectionLineWidth))
                 }
             }
         }

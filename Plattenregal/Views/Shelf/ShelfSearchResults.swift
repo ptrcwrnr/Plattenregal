@@ -44,7 +44,7 @@ struct ShelfSearchResultsPanel: View {
                 }
                 if !unplaced.isEmpty {
                     Text("Noch nicht einsortiert")
-                        .font(.caption.weight(.semibold))
+                        .font(AppStyle.captionMark)
                         .foregroundStyle(SearchPanelInk.muted)
                         .padding(.horizontal, AppStyle.itemSpacing)
                         .padding(.top, matches.isEmpty ? AppStyle.tightSpacing : AppStyle.rowSpacing)
@@ -60,7 +60,7 @@ struct ShelfSearchResultsPanel: View {
                 if hidden > 0 {
                     // In the accent like the sync capsule's second line (Klassisch: petrol).
                     Text("\(hidden) weitere Treffer – Suche genauer eingrenzen")
-                        .font(.caption.weight(.medium))
+                        .font(AppStyle.captionLabel)
                         .foregroundStyle(AppStyle.accent)
                         .frame(maxWidth: .infinity)
                         .padding(.top, AppStyle.itemSpacing)
@@ -88,7 +88,7 @@ private extension View {
             .background {
                 if AppStyle.isAtelier {
                     shape.fill(AtelierPalette.surface)
-                        .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+                        .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                 }
             }
             .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: shape)
@@ -108,7 +108,7 @@ private struct SearchResultRow: View {
             CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(copy.release?.displayArtist ?? "—")
-                    .font(.callout.weight(.medium))
+                    .font(AppStyle.rowTitle)
                     .foregroundStyle(SearchPanelInk.ink)
                 HStack(spacing: AppStyle.itemSpacing) {
                     Text(copy.release?.displayTitle ?? "—")
@@ -135,19 +135,19 @@ private struct SearchResultRow: View {
         VStack(alignment: .trailing, spacing: AppStyle.hairSpacing) {
             if placeable || copy.shelf == nil {
                 // "Noch nicht einsortiert" already heads the section.
-                Text("Platz finden").font(.caption.weight(.medium)).foregroundStyle(AppStyle.accent)
+                Text("Platz finden").font(AppStyle.captionLabel).foregroundStyle(AppStyle.accent)
             } else if let shelf = copy.shelf {
                 let prefix = labels.prefix(for: shelf)
                 if shelf.isReserved {
                     Text(shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name)
-                        .font(.caption.weight(.medium)).foregroundStyle(SearchPanelInk.ink)
+                        .font(AppStyle.captionLabel).foregroundStyle(SearchPanelInk.ink)
                     if !prefix.isEmpty {
                         Text(prefix.trimmingCharacters(in: CharacterSet(charactersIn: " ·")))
                             .font(.caption2).foregroundStyle(SearchPanelInk.muted)
                     }
                 } else {
                     Text(labels[shelf.id] ?? String(localized: "Leeres Fach"))
-                        .font(.caption.weight(.medium)).foregroundStyle(SearchPanelInk.ink)
+                        .font(AppStyle.captionLabel).foregroundStyle(SearchPanelInk.ink)
                     Text(prefix + String(localized: "Position \(copy.positionInShelf)"))
                         .font(.caption2.monospacedDigit()).foregroundStyle(SearchPanelInk.muted)
                 }

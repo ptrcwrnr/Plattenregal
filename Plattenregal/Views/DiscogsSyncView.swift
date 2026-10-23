@@ -200,7 +200,7 @@ struct DiscogsSyncPill: View {
                 if let subtitle = content.subtitle {
                     // In the accent like the ring and the checkmark (Klassisch: petrol), not grey.
                     Text(subtitle)
-                        .font(.caption.weight(.medium)).foregroundStyle(AppStyle.accent)
+                        .font(AppStyle.captionLabel).foregroundStyle(AppStyle.accent)
                         .monospacedDigit().lineLimit(1)
                         .contentTransition(.numericText())
                         .transition(.opacity.combined(with: .offset(y: -4)))

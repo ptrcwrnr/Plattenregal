@@ -29,7 +29,7 @@ struct HoverBarChart: View {
         Group {
             if let bar = bars.first(where: { $0.id == hovered }) {
                 HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
-                    Text(bar.label).font(.callout.weight(.semibold))
+                    Text(bar.label).font(AppStyle.strongCallout)
                     Text(AppStyle.records(bar.count)).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                 }
             } else {
@@ -112,7 +112,7 @@ struct TimeTravel: View {
 
     private func span(_ title: String, _ year: Int?) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(year.map(String.init) ?? "—").font(.system(.title2, design: AppStyle.figureDesign, weight: .semibold)).monospacedDigit()
+            Text(year.map(String.init) ?? "—").font(AppStyle.figure).monospacedDigit()
             Text(title).font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -139,12 +139,12 @@ struct AcquisitionChart: View {
             LazyVGrid(columns: StatisticsLayout.columns(columns), alignment: .leading, spacing: StatisticsLayout.gutter) {
                 if let peak = source.max(by: { $0.count < $1.count }) {
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("\(AppStyle.records(peak.count))").font(.system(.title2, design: AppStyle.figureDesign, weight: .semibold)).monospacedDigit()
+                        Text("\(AppStyle.records(peak.count))").font(AppStyle.figure).monospacedDigit()
                         Text("Rekord: \(peak.date.formatted(byYear ? .dateTime.year() : .dateTime.year().month(.wide)))").font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("\(AppStyle.records(source.reduce(0) { $0 + $1.count }))").font(.system(.title2, design: AppStyle.figureDesign, weight: .semibold)).monospacedDigit()
+                    Text("\(AppStyle.records(source.reduce(0) { $0 + $1.count }))").font(AppStyle.figure).monospacedDigit()
                     Text("mit bekanntem Datum").font(.caption).foregroundStyle(.secondary)
                 }
             }
@@ -211,7 +211,7 @@ private struct CoverTile: View {
                 .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
                 .scaleEffect(hovering ? 1.04 : 1)
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                Text(artist).font(.callout.weight(.medium)).lineLimit(1)
+                Text(artist).font(AppStyle.rowTitle).lineLimit(1)
                 Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 let date = DiscogsDate.parse(copy.discogsDateAdded)
                 Text(date.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? String(localized: "Datum unbekannt"))
@@ -233,7 +233,7 @@ struct StatFigure: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(value)
-                .font(.system(.title, design: AppStyle.figureDesign, weight: .semibold))
+                .font(AppStyle.largeFigure)
                 .monospacedDigit()
                 .lineLimit(1)
             Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)

@@ -181,11 +181,7 @@ struct DiscogsSettingsView: View {
 
     private func syncTile(_ title: String, count: Int, date: Date?, systemImage: String) -> some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            Image(systemName: systemImage)
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(AppStyle.accent)
-                .frame(width: 28, height: 28)
-                .background(AppStyle.accent.opacity(0.12), in: Circle())
+            SymbolTile(systemImage: systemImage)
             VStack(alignment: .leading, spacing: 0) {
                 Text(title).font(.headline)
                 // Ticks along while the window stays open ("vor 2 Minuten" …).

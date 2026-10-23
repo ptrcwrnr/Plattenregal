@@ -159,7 +159,7 @@ struct ShelfSettingsView: View {
                             .padding(.horizontal, AppStyle.rowSpacing)
                             .frame(minHeight: 52)
                             .background(Color.primary.opacity(adding ? 0.08 : 0.03), in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
-                            .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.borderColor, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                            .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.borderColor, style: StrokeStyle(lineWidth: AppStyle.borderWidth, dash: [4, 3])))
                             .contentShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
                     }
                     .buttonStyle(.plain)
@@ -222,7 +222,7 @@ private struct CabinetChip: View {
                 HStack(spacing: AppStyle.tightSpacing) {
                     Circle().fill(cabinet.isActive ? AppStyle.successColor : Color.secondary.opacity(0.5))
                         .frame(width: 7, height: 7)
-                    Text(cabinet.name).font(.callout.weight(.semibold)).lineLimit(1)
+                    Text(cabinet.name).font(AppStyle.strongCallout).lineLimit(1)
                 }
                 Text("\(cabinet.sizeText) · \(AppStyle.records(cabinet.recordCount))")
                     .font(.caption).foregroundStyle(.secondary).monospacedDigit().lineLimit(1)
@@ -234,7 +234,7 @@ private struct CabinetChip: View {
                         in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
             .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius)
                 .strokeBorder(selected ? AppStyle.selectedBorder.opacity(focused ? 0.8 : 0.35) : AppStyle.borderColor,
-                              lineWidth: selected && focused ? 1.5 : 1))
+                              lineWidth: selected && focused ? AppStyle.selectionLineWidth : AppStyle.borderWidth))
             .contentShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
         }
         .buttonStyle(.plain)
@@ -259,7 +259,7 @@ private struct ShelfTile: View {
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 HStack(spacing: AppStyle.tightSpacing) {
                     if shelf.isReserved { Image(systemName: "lock.fill").font(.caption2) }
-                    Text(title).font(.callout.weight(.semibold)).lineLimit(1)
+                    Text(title).font(AppStyle.strongCallout).lineLimit(1)
                 }
                 Text(detail).font(.caption).foregroundStyle(.secondary).monospacedDigit().lineLimit(1)
             }

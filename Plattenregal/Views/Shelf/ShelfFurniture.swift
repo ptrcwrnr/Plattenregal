@@ -102,7 +102,7 @@ struct ShelfFurniture<Menu: View>: View {
                     .fill(AtelierPalette.soft)
                     .overlay {
                         RoundedRectangle(cornerRadius: Self.wellRadius + Self.gap)
-                            .strokeBorder(AtelierPalette.border, lineWidth: 1)
+                            .strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth)
                     }
             }
         }
@@ -126,11 +126,11 @@ private struct ShelfWell: View {
             // Klassisch: matte paper with a fine rim, like the sleeves and
             // cards – no glassy shading or light catching the edge.
             shape.fill(AtelierPalette.surface)
-                .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+                .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
         } else {
             shape
                 .fill(Self.fill.shadow(.inner(color: Self.shade, radius: 2.5, y: 1.5)))
-                .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, Self.rim], startPoint: .center, endPoint: .bottom), lineWidth: 1))
+                .overlay(shape.strokeBorder(LinearGradient(colors: [.clear, Self.rim], startPoint: .center, endPoint: .bottom), lineWidth: AppStyle.borderWidth))
         }
     }
 }
@@ -146,18 +146,7 @@ private struct CompartmentAddButton: View {
     var body: some View {
         ShelfLockReader(shelf: shelf, preview: lockPreview) { locked in
             let visible = shown && !locked
-            Button(action: action) {
-                Image(systemName: "plus")
-                    .font(AppStyle.buttonSymbol)
-                    .foregroundStyle(AppStyle.accent)
-                    .frame(width: 24, height: 24)
-                    .contentShape(Circle())
-                    .background(AppStyle.isAtelier ? AtelierPalette.surface : .clear, in: Circle())
-                    .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .circle)
-            }
-            .buttonStyle(.plain)
-            .help("Platte hinzufügen")
-            .accessibilityLabel("Platte hinzufügen")
+            SmallRoundButton(systemImage: "plus", help: String(localized: "Platte hinzufügen"), action: action)
             .opacity(visible ? 1 : 0)
             .scaleEffect(visible ? 1 : 0.6)
             // Fades and grows in (and out again) however it gets shown: on
@@ -194,12 +183,12 @@ private struct RaisedPlate: View {
             .fill(fill)
             .overlay {
                 if AppStyle.isAtelier {
-                    shape.strokeBorder(edge, lineWidth: 1.5)
+                    shape.strokeBorder(edge, lineWidth: AppStyle.selectionLineWidth)
                 } else {
                     // A selection carries a rim in both designs (Klassisch:
                     // gold); here the accent, as on the chosen design card.
-                    shape.strokeBorder(LinearGradient(colors: [edge, .clear], startPoint: .top, endPoint: .center), lineWidth: 1)
-                    shape.strokeBorder(AppStyle.selectedBorder.opacity(0.5), lineWidth: 1)
+                    shape.strokeBorder(LinearGradient(colors: [edge, .clear], startPoint: .top, endPoint: .center), lineWidth: AppStyle.borderWidth)
+                    shape.strokeBorder(AppStyle.selectedBorder.opacity(0.5), lineWidth: AppStyle.borderWidth)
                 }
             }
             .shadow(color: AppStyle.isAtelier ? AtelierPalette.petrol.opacity(0.15) : Self.shadow,
@@ -215,7 +204,7 @@ private struct FrostedWell: View {
         let frost = AppStyle.isAtelier ? AtelierPalette.paper.opacity(0.65) : Self.frost
         RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
             .fill(LinearGradient(colors: [frost, frost.opacity(0.5)], startPoint: .top, endPoint: .bottom))
-            .overlay(RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius).strokeBorder(frost, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius).strokeBorder(frost, lineWidth: AppStyle.borderWidth))
     }
 }
 
@@ -284,7 +273,7 @@ private struct ShelfCompartment: View {
             // The range in the top left corner, the count in the top right.
             HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
                 Text(rangeLabel ?? "—")
-                    .font(.system(.title3, design: .rounded, weight: .semibold))
+                    .font(AppStyle.sectionTitle)
                     // The accent marks the choice, in the text only.
                     .foregroundStyle(selected ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.primary))
                     .lineLimit(1)

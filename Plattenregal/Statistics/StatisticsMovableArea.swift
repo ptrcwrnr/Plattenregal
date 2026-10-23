@@ -22,7 +22,7 @@ struct StatisticsMovableArea<Content: View>: View {
                 // Without an icon in front, so the title starts at the same
                 // edge as the values and words below it.
                 Text(section.title)
-                    .font(.system(.title3, design: AppStyle.figureDesign, weight: .semibold))
+                    .font(AppStyle.figureHeading)
                     .lineLimit(1)
                     .draggable("plattenregal-statistics:\(section.rawValue)")
                     .help("Am Titel ziehen, um den Bereich anzuordnen")
@@ -47,7 +47,7 @@ struct StatisticsMovableArea<Content: View>: View {
         // A frame only marks the drop target.
         .overlay {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
-                .strokeBorder(AppStyle.selectedBorder.opacity(isTargeted ? 1 : 0), lineWidth: 2)
+                .strokeBorder(AppStyle.selectedBorder.opacity(isTargeted ? 1 : 0), lineWidth: AppStyle.selectionLineWidth)
         }
         .dropDestination(for: String.self) { items, _ in
             guard let first = items.first else { return false }
@@ -68,11 +68,11 @@ extension View {
         return background {
             if AppStyle.isAtelier {
                 shape.fill(AtelierPalette.surface)
-                    .overlay(shape.strokeBorder(hovering ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
+                    .overlay(shape.strokeBorder(hovering ? AtelierPalette.gold : AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                     .shadow(color: AtelierPalette.shadow, radius: hovering ? 8 : 5, y: hovering ? 3 : 2)
             } else {
                 shape.fill(.background.opacity(0.6))
-                    .overlay(shape.strokeBorder(hovering ? AppStyle.selectedBorder.opacity(0.6) : AppStyle.borderColor, lineWidth: 1))
+                    .overlay(shape.strokeBorder(hovering ? AppStyle.selectedBorder.opacity(0.6) : AppStyle.borderColor, lineWidth: AppStyle.borderWidth))
                     .shadow(color: .black.opacity(hovering ? 0.12 : 0.05), radius: hovering ? 8 : 5, y: hovering ? 3 : 2)
             }
         }

@@ -29,7 +29,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                     let besidePill = selected || options[index - 1] == selection
                     Rectangle()
                         .fill(Color.primary.opacity(0.12))
-                        .frame(width: 1, height: small ? 12 : 14)
+                        .frame(width: AppStyle.borderWidth, height: small ? 12 : 14)
                         .opacity(besidePill ? 0 : 1)
                 }
                 Button { selection = option } label: {
@@ -42,7 +42,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                         .opacity(selected ? 0 : 1)
                         .animation(AppStyle.pageInAnimation, value: selected)
                         .padding(.horizontal, small ? AppStyle.itemSpacing : AppStyle.rowSpacing)
-                        .frame(height: small ? 24 : 30)
+                        .frame(height: small ? AppStyle.smallControlHeight : AppStyle.controlHeight)
                         // Every option has its pill, shown only when chosen –
                         // states animated in a fixed beat instead of views
                         // coming and going: the old one fades out on the spot
@@ -52,13 +52,13 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                             ZStack {
                                 Group {
                                     if AppStyle.isAtelier {
-                                        RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius - 3).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
+                                        RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius - AppStyle.controlInset).fill(glass ? AtelierPalette.surface : AtelierPalette.toolbarSelection)
                                     } else {
                                         Capsule().fill(.clear)
                                             .glassEffect(.regular, in: .capsule)
                                     }
                                 }
-                                .padding(.vertical, 3)
+                                .padding(.vertical, AppStyle.controlInset)
                                 // Settles on the way in, lifts as it fades out.
                                 .offset(y: selected || AppStyle.reduceMotion ? 0 : -AppStyle.pillSettleDistance)
                                 // Only fades, it doesn't settle with the pill:
@@ -87,11 +87,11 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
         // names the group instead of replacing every option's name.
         .accessibilityElement(children: .contain)
         if glass {
-            row.padding(.horizontal, 3)
+            row.padding(.horizontal, AppStyle.controlInset)
                 .background {
                     if AppStyle.isAtelier {
                         RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(AtelierPalette.soft)
-                            .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                            .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                     }
                 }
                 .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
@@ -135,7 +135,7 @@ struct GlassMenuPicker<Value: Hashable, Options: View>: View {
             HStack(spacing: AppStyle.itemSpacing) {
                 Text(current)
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.caption2.weight(.semibold))
+                    .font(AppStyle.indicatorSymbol)
                     .foregroundStyle(.secondary)
             }
         }
@@ -145,11 +145,11 @@ struct GlassMenuPicker<Value: Hashable, Options: View>: View {
         .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .padding(.horizontal, AppStyle.cardPadding)
-        .frame(height: 30)
+        .frame(height: AppStyle.controlHeight)
         .background {
             if AppStyle.isAtelier {
                 RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(AtelierPalette.surface)
-                    .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
             }
         }
         .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)

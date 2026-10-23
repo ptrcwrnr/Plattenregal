@@ -87,7 +87,7 @@ struct RandomRecordCard: View {
     private func details(_ pick: RecordCopy, _ release: Release) -> some View {
         VStack(alignment: .leading, spacing: StatisticsLayout.gutter) {
             VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                Text("Heute aus deiner Sammlung").font(.caption.weight(.semibold)).foregroundStyle(AppStyle.accent)
+                Text("Heute aus deiner Sammlung").font(AppStyle.captionMark).foregroundStyle(AppStyle.accent)
                 Text(release.displayArtist)
                     .font(.system(.largeTitle, design: AppStyle.figureDesign, weight: .bold))
                     .lineLimit(2)
@@ -124,7 +124,7 @@ struct RandomRecordCard: View {
     @ViewBuilder private func detail(_ title: String, _ value: String?) -> some View {
         VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(.callout.weight(.medium)).lineLimit(1)
+            Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(AppStyle.rowTitle).lineLimit(1)
         }
         .help(value ?? "")
     }

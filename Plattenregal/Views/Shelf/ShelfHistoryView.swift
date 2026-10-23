@@ -49,7 +49,7 @@ struct ShelfHistoryView: View {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(Self.days(entries), id: \.day) { group in
                             Text(Self.title(of: group.day))
-                                .font(.caption.weight(.semibold))
+                                .font(AppStyle.captionMark)
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, AppStyle.itemSpacing)
                                 .padding(.top, AppStyle.rowSpacing)
@@ -143,13 +143,13 @@ private struct ShelfHistoryRow: View {
         HStack(spacing: AppStyle.rowSpacing) {
             CoverView(url: release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                Text(release?.displayArtist ?? entry.artist).font(.callout.weight(.medium))
+                Text(release?.displayArtist ?? entry.artist).font(AppStyle.rowTitle)
                 Text(release?.displayTitle ?? entry.title).font(.caption).foregroundStyle(.secondary)
             }
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .trailing, spacing: AppStyle.hairSpacing) {
-                Text(what.headline).font(.caption.weight(.medium))
+                Text(what.headline).font(AppStyle.captionLabel)
                 Text("\(entry.date.formatted(date: .omitted, time: .shortened)) · \(what.detail)")
                     .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
             }

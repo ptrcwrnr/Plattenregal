@@ -546,7 +546,7 @@ struct KallaxView: View {
             // Still the previous query's matches while typing pauses.
             .opacity(searchQuery == search.text ? 1 : 0.6)
             .animation(AppStyle.quickAnimation, value: searchQuery == search.text)
-            .frame(width: AppStyle.toolbarSearchWidth + 60)
+            .frame(width: AppStyle.searchResultsWidth)
             .padding(.trailing, AppStyle.pageMargin)
             .padding(.top, AppStyle.itemSpacing)
             .transition(.opacity)

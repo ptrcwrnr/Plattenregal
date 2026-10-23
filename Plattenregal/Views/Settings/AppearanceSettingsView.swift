@@ -145,7 +145,7 @@ private struct SignatureDesignOption: View {
                 }
                 .frame(width: 112, height: 72)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                    Text(design.title).font(.body.weight(.semibold))
+                    Text(design.title).font(.headline)
                         .foregroundStyle(.primary)
                     Text(design == .atelier
                          ? String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Papierflächen statt Glas.")
@@ -157,7 +157,7 @@ private struct SignatureDesignOption: View {
                         ForEach(Array(swatches.enumerated()), id: \.offset) { _, color in
                             Circle().fill(color)
                                 .frame(width: 12, height: 12)
-                                .overlay(Circle().strokeBorder(design == .atelier ? AtelierPalette.border : Color.primary.opacity(0.15), lineWidth: 0.5))
+                                .overlay(Circle().strokeBorder(design == .atelier ? AtelierPalette.border : Color.primary.opacity(0.15), lineWidth: AppStyle.hairlineWidth))
                         }
                     }
                     .padding(.top, AppStyle.hairSpacing)
@@ -177,7 +177,8 @@ private struct SignatureDesignOption: View {
                         in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
-                    .strokeBorder(selected ? AppStyle.selectedBorder.opacity(AppStyle.isAtelier ? 1 : 0.5) : AppStyle.borderColor, lineWidth: 1)
+                    .strokeBorder(selected ? AppStyle.selectedBorder.opacity(AppStyle.isAtelier ? 1 : 0.5) : AppStyle.borderColor,
+                                  lineWidth: selected ? AppStyle.selectionLineWidth : AppStyle.borderWidth)
             }
             .contentShape(RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
         }
@@ -198,7 +199,7 @@ private struct LiquidGlassDesignPreview: View {
             RadialGradient(colors: [glow.opacity(0.35), .clear], center: .top, startRadius: 0, endRadius: 80)
             VStack(spacing: 7) {
                 Capsule().fill(.white.opacity(0.55))
-                    .overlay(Capsule().strokeBorder(.white.opacity(0.8), lineWidth: 0.5))
+                    .overlay(Capsule().strokeBorder(.white.opacity(0.8), lineWidth: AppStyle.hairlineWidth))
                     .overlay(Capsule().fill(preferences.accent.color.opacity(0.9)).frame(width: 12, height: 3))
                     .frame(width: 46, height: 10)
                     .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
@@ -217,8 +218,8 @@ private struct LiquidGlassDesignPreview: View {
             }
             .padding(.top, 6)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(Color.primary.opacity(0.1), lineWidth: AppStyle.hairlineWidth))
         .accessibilityHidden(true)
     }
 }
@@ -258,8 +259,8 @@ private struct AtelierDesignPreview: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(AtelierPalette.paper)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AtelierPalette.border, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AtelierPalette.border, lineWidth: AppStyle.hairlineWidth))
         .accessibilityHidden(true)
     }
 }
@@ -292,7 +293,7 @@ private struct ColorSwatch: View {
             .frame(width: 18, height: 18)
             .overlay(Circle().strokeBorder(Color.primary.opacity(0.15)))
             .padding(3)
-            .overlay(Circle().strokeBorder(selected ? (off ? Color.secondary : color) : .clear, lineWidth: 2))
+            .overlay(Circle().strokeBorder(selected ? (off ? Color.secondary : color) : .clear, lineWidth: AppStyle.selectionLineWidth))
             .contentShape(Circle())
         }
         .buttonStyle(.plain)

@@ -123,7 +123,7 @@ struct ReleaseHeaderView: View {
     @ViewBuilder private func detail(_ title: String, _ value: String?) -> some View {
         VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(.callout.weight(.medium)).lineLimit(2)
+            Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(AppStyle.rowTitle).lineLimit(2)
                 .textSelection(.enabled)
         }
     }
@@ -180,22 +180,7 @@ struct RecordPopover: View {
                 }
                 Spacer(minLength: 0)
                 if let discogsURL {
-                    Button { openURL(discogsURL) } label: {
-                        Image(systemName: "arrow.up.forward")
-                            .font(AppStyle.buttonSymbol)
-                            .frame(width: 26, height: 26)
-                            .contentShape(Circle())
-                            .background {
-                                if AppStyle.isAtelier {
-                                    Circle().fill(AtelierPalette.soft)
-                                        .overlay(Circle().strokeBorder(AtelierPalette.border, lineWidth: 1))
-                                }
-                            }
-                            .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .circle)
-                    }
-                    .buttonStyle(.plain)
-                    .help("Auf Discogs öffnen")
-                    .accessibilityLabel("Auf Discogs öffnen")
+                    SmallRoundButton(systemImage: "arrow.up.forward", help: String(localized: "Auf Discogs öffnen")) { openURL(discogsURL) }
                 }
             }
 

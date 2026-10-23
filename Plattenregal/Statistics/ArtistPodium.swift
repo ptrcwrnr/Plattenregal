@@ -66,8 +66,8 @@ struct ArtistPodium: View {
                         .scaleEffect(hovering ? 1.03 : 1)
                     VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                         HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
-                            Text("\(rank)").font(.system(.caption, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(AppStyle.accent)
-                            Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
+                            Text("\(rank)").font(AppStyle.rankFigure).foregroundStyle(AppStyle.accent)
+                            Text(group.name).font(AppStyle.rowTitle).lineLimit(1)
                         }
                         Text("\(AppStyle.records(group.count)) · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
                     }

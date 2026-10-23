@@ -15,7 +15,7 @@ struct ActivityRing: View {
 
     var body: some View {
         ZStack {
-            Circle().stroke(Color.primary.opacity(0.1), lineWidth: 2.5)
+            Circle().stroke(Color.primary.opacity(0.1), lineWidth: AppStyle.progressLineWidth)
             if let progress {
                 arc(to: max(0.02, min(1, progress)))
                     .animation(AppStyle.progressAnimation, value: progress)
@@ -34,7 +34,7 @@ struct ActivityRing: View {
 
     private func arc(to end: Double) -> some View {
         Circle().trim(from: 0, to: end)
-            .stroke(AppStyle.accent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+            .stroke(AppStyle.accent, style: StrokeStyle(lineWidth: AppStyle.progressLineWidth, lineCap: .round))
             .rotationEffect(.degrees(-90))
     }
 }
@@ -49,7 +49,7 @@ extension View {
             .background {
                 if AppStyle.isAtelier {
                     Capsule().fill(AtelierPalette.surface)
-                        .overlay(Capsule().strokeBorder(AtelierPalette.border, lineWidth: 1))
+                        .overlay(Capsule().strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                 }
             }
             .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .capsule)

@@ -80,7 +80,7 @@ struct ShelfAssignmentView: View {
                        detail: detail) {
             if session.addedCount > 0 {
                 Label(session.isRackWide ? "\(session.addedCount) einsortiert" : "\(session.addedCount) hinzugefügt", systemImage: "checkmark")
-                    .font(.callout.weight(.medium))
+                    .font(AppStyle.rowTitle)
                     .foregroundStyle(AppStyle.accent)
                     .contentTransition(.numericText())
                     .fixedSize()
@@ -250,7 +250,7 @@ private struct ShelfAssignmentRow: View {
         if let location {
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(elsewhere ? String(localized: "Gehört in „\(location.shelf)“") : location.shelf)
-                    .font(.title3.weight(.semibold))
+                    .font(AppStyle.sectionTitle)
                     .foregroundStyle(elsewhere ? AnyShapeStyle(.secondary) : AnyShapeStyle(AppStyle.accent))
                 Text("Position \(location.position) · \(location.neighbours)")
                     .font(.callout).monospacedDigit().foregroundStyle(.secondary)

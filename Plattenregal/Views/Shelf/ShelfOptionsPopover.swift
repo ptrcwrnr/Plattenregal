@@ -119,7 +119,7 @@ private struct NamePopoverLayout: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-            Text(title).font(.callout.weight(.medium))
+            Text(title).font(AppStyle.rowTitle)
             GlassTextField(placeholder: placeholder, text: $name, onSubmit: submit, focus: focus)
             Text(error ?? hint)
                 .font(.caption)

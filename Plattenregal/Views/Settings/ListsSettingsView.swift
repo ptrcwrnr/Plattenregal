@@ -199,7 +199,7 @@ private struct ListSettingsRow: View {
         HStack(spacing: AppStyle.rowSpacing) {
             CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                Text(artist).font(.callout.weight(.medium))
+                Text(artist).font(AppStyle.rowTitle)
                 Text(title).font(.caption).foregroundStyle(.secondary)
             }
             .lineLimit(1)

@@ -19,7 +19,7 @@ struct RecordCaption: View {
         let muted = AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary)
         VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
             Text(release?.displayArtist ?? fallbackArtist)
-                .font(.callout.weight(.medium)).foregroundStyle(emphasized ? AnyShapeStyle(AppStyle.accent) : ink)
+                .font(AppStyle.rowTitle).foregroundStyle(emphasized ? AnyShapeStyle(AppStyle.accent) : ink)
                 .lineLimit(1)
             if let matchedTrack {
                 MatchedTrackLine(track: matchedTrack)

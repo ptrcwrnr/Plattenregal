@@ -83,9 +83,9 @@ private struct PullToRefresh: ViewModifier {
         let travel = max(pull, mousePull)
         if travel > 4 {
             ZStack {
-                Circle().stroke(Color.primary.opacity(0.1), lineWidth: 2.5)
+                Circle().stroke(Color.primary.opacity(0.1), lineWidth: AppStyle.progressLineWidth)
                 Circle().trim(from: 0, to: progress)
-                    .stroke(AppStyle.accent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .stroke(AppStyle.accent, style: StrokeStyle(lineWidth: AppStyle.progressLineWidth, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                 Image(systemName: progress >= 1 ? "checkmark" : "arrow.down")
                     .font(.caption.weight(.bold))

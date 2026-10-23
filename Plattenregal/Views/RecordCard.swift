@@ -22,7 +22,7 @@ struct RecordCard: View {
             .overlay(alignment: .bottomTrailing) {
                 if copyCount > 1 {
                     Text("\(copyCount)×")
-                        .font(.caption.weight(.semibold))
+                        .font(AppStyle.captionMark)
                         .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
                         .padding(.horizontal, AppStyle.itemSpacing)
                         .padding(.vertical, AppStyle.tightSpacing)
@@ -62,7 +62,7 @@ extension View {
             environment(\.coverCornerRadius, 2)
                 .overlay {
                     RoundedRectangle(cornerRadius: 2)
-                        .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: 0.5)
+                        .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: AppStyle.hairlineWidth)
                 }
                 .shadow(color: AtelierPalette.petrol.opacity(0.18), radius: 1, y: 1)
                 .shadow(color: AtelierPalette.petrol.opacity(0.14), radius: 10, y: 6)
@@ -75,7 +75,7 @@ extension View {
                         .fill(AppStyle.isAtelier ? AtelierPalette.surface : AtelierCoverFrame.modernMat)
                         .overlay {
                             RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                                .strokeBorder(AppStyle.borderColor, lineWidth: 1)
+                                .strokeBorder(AppStyle.borderColor, lineWidth: AppStyle.borderWidth)
                         }
                 }
                 .shadow(color: .black.opacity(0.08), radius: 8, y: 3)

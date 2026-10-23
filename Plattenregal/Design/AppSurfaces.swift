@@ -15,7 +15,7 @@ extension View {
             if AppStyle.isAtelier {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(AtelierPalette.surface)
-                    .overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                     .shadow(color: AtelierPalette.shadow, radius: 7, y: 2)
             }
         }
@@ -32,7 +32,7 @@ extension View {
         return background {
             if AppStyle.isAtelier {
                 shape.fill(AtelierPalette.surface)
-                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                     .shadow(color: AtelierPalette.shadow, radius: 7, y: 2)
             } else {
                 Rectangle().fill(.clear)
@@ -79,7 +79,7 @@ extension View {
         background {
             if AppStyle.isAtelier {
                 RoundedRectangle(cornerRadius: AppStyle.featureRadius).fill(AtelierPalette.surface)
-                    .overlay(RoundedRectangle(cornerRadius: AppStyle.featureRadius).strokeBorder(AtelierPalette.gold, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: AppStyle.featureRadius).strokeBorder(AtelierPalette.gold, lineWidth: AppStyle.borderWidth))
             }
         }
         .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: AppStyle.featureRadius))
@@ -90,13 +90,13 @@ extension View {
     /// controls bring no background of their own.
     @ViewBuilder func toolbarBar() -> some View {
         if AppStyle.isAtelier {
-            padding(.horizontal, 3)
+            padding(.horizontal, AppStyle.controlInset)
                 .background {
                     RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(Color.black.opacity(0.16))
-                        .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
+                        .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(Color.white.opacity(0.08), lineWidth: AppStyle.borderWidth))
                 }
         } else {
-            padding(.horizontal, 3).glassEffect(.regular, in: .capsule)
+            padding(.horizontal, AppStyle.controlInset).glassEffect(.regular, in: .capsule)
         }
     }
 
@@ -107,7 +107,7 @@ extension View {
         if AppStyle.isAtelier {
             background {
                 Circle().fill(prominent ? AtelierPalette.petrol : AtelierPalette.surface)
-                    .overlay(Circle().strokeBorder(prominent ? Color.clear : AtelierPalette.border, lineWidth: 1))
+                    .overlay(Circle().strokeBorder(prominent ? Color.clear : AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                     .shadow(color: .black.opacity(prominent ? 0.18 : 0.1), radius: prominent ? 10 : 6, y: prominent ? 4 : 2)
             }
         } else {
@@ -125,7 +125,7 @@ extension View {
         if AppStyle.isAtelier {
             background {
                 shape.fill(AtelierPalette.surface)
-                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: 1))
+                    .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
             }
         } else {
             glassEffect(interactive ? .regular.interactive() : .regular, in: shape)
@@ -152,13 +152,13 @@ extension View {
     /// instead of following the toolbar's (see `AtelierPalette.toolbarField`).
     @ViewBuilder func searchBarChrome(onToolbar: Bool = false) -> some View {
         let field = padding(.horizontal, AppStyle.rowSpacing)
-            .frame(height: AppStyle.searchBarHeight)
+            .frame(height: AppStyle.controlHeight)
             .background {
                 if AppStyle.isAtelier {
                     RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius)
                         .fill(onToolbar ? AtelierPalette.toolbarField : AtelierPalette.surface)
                         .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius)
-                            .strokeBorder(onToolbar ? AtelierPalette.toolbarFieldBorder : AtelierPalette.border, lineWidth: 1))
+                            .strokeBorder(onToolbar ? AtelierPalette.toolbarFieldBorder : AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                 }
             }
             .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)

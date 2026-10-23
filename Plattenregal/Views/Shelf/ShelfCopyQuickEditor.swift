@@ -74,7 +74,7 @@ struct ShelfCopyQuickEditor: View {
                 GeometryReader { geometry in
                     if isSliding {
                         Text(String(position))
-                            .font(.caption.weight(.semibold))
+                            .font(AppStyle.captionMark)
                             .monospacedDigit()
                             .foregroundStyle(AppStyle.accent)
                             .position(

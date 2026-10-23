@@ -23,7 +23,7 @@ struct StatusTag: View {
     let color: Color
     var body: some View {
         Text(text)
-            .font(.caption2.weight(.medium))
+            .font(AppStyle.badge)
             .foregroundStyle(color)
             .padding(.horizontal, AppStyle.tightSpacing).padding(.vertical, AppStyle.hairSpacing)
             .background(color.opacity(0.12), in: Capsule())

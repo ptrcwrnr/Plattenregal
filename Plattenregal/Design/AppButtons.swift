@@ -10,7 +10,7 @@ struct AtelierButtonStyle: ButtonStyle {
             .padding(.horizontal, AppStyle.rowSpacing).padding(.vertical, 6)
             .background(primary ? AtelierPalette.gold : configuration.isPressed ? AtelierPalette.soft : AtelierPalette.surface,
                         in: RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius))
-            .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(primary ? AtelierPalette.gold : AtelierPalette.border, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(primary ? AtelierPalette.gold : AtelierPalette.border, lineWidth: AppStyle.borderWidth))
             .opacity(isEnabled ? 1 : 0.45)
     }
 }
@@ -82,7 +82,7 @@ struct GlassStepper: View {
         }
         .animation(AppStyle.quickAnimation, value: value)
         .padding(.horizontal, AppStyle.itemSpacing)
-        .frame(height: 30)
+        .frame(height: AppStyle.controlHeight)
         .appChipSurface(in: Capsule(), interactive: true)
         .fixedSize()
         .accessibilityElement(children: .combine)
@@ -124,5 +124,28 @@ private struct GlassStepButton: View {
         .help(help)
         .opacity(isEnabled ? 1 : 0.35)
         .onHover { hovering = $0 }
+    }
+}
+
+/// The small round button with a symbol only ("Platte hinzufügen" on a
+/// compartment, "Auf Discogs öffnen" in a record's details): the glyph in the
+/// accent on the chip surface – Liquid Glass in Modern, paper with a fine
+/// rim in Klassisch (see `appChipSurface`).
+struct SmallRoundButton: View {
+    let systemImage: String
+    let help: String
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(AppStyle.buttonSymbol)
+                .foregroundStyle(AppStyle.accent)
+                .frame(width: AppStyle.smallControlHeight, height: AppStyle.smallControlHeight)
+                .contentShape(Circle())
+                .appChipSurface(in: Circle(), interactive: true)
+        }
+        .buttonStyle(.plain)
+        .help(help)
+        .accessibilityLabel(help)
     }
 }

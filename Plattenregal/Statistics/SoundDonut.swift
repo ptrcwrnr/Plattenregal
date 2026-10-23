@@ -182,15 +182,15 @@ private struct SoundDonutChart: View {
         if let hovered, let slice = slices.first(where: { $0.id == hovered }) {
             VStack(spacing: AppStyle.hairSpacing) {
                 Text(slice.group.percentage(of: total))
-                    .font(.system(.title, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(slice.color)
-                Text(slice.label).font(.callout.weight(.medium)).lineLimit(2).multilineTextAlignment(.center)
+                    .font(AppStyle.largeFigure).foregroundStyle(slice.color)
+                Text(slice.label).font(AppStyle.rowTitle).lineLimit(2).multilineTextAlignment(.center)
                 Text("\(AppStyle.records(slice.group.count))").font(.caption).foregroundStyle(.secondary)
             }
         } else {
             VStack(spacing: AppStyle.hairSpacing) {
                 // All of them, including those under "Weitere".
                 Text(entries.formatted())
-                    .font(.system(.title, design: AppStyle.figureDesign, weight: .bold))
+                    .font(AppStyle.largeFigure)
                 Text(dimension.title).font(.callout).foregroundStyle(.secondary)
             }
         }

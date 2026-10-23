@@ -517,7 +517,7 @@ struct CollectionView: View {
             Spacer(minLength: AppStyle.rowSpacing)
             OverviewLayoutPicker(selection: $layout.animation(AppStyle.fadeAnimation))
         }
-        .frame(height: AppStyle.searchBarHeight)
+        .frame(height: AppStyle.controlHeight)
     }
     @ViewBuilder private func actions(_ copy: RecordCopy) -> some View {
         Button(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen") { showShelf(copy) }

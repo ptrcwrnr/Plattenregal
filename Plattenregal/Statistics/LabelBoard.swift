@@ -48,11 +48,11 @@ struct LabelBoard: View {
             Button { select(group) } label: {
                 VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
                     HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
-                        Text("\(rank)").font(.system(.caption, design: AppStyle.figureDesign, weight: .bold)).foregroundStyle(AppStyle.accent)
-                        Text(group.name).font(.callout.weight(.medium)).lineLimit(1)
+                        Text("\(rank)").font(AppStyle.rankFigure).foregroundStyle(AppStyle.accent)
+                        Text(group.name).font(AppStyle.rowTitle).lineLimit(1)
                     }
                     HStack(alignment: .firstTextBaseline, spacing: AppStyle.tightSpacing) {
-                        Text(group.count.formatted()).font(.system(.title3, design: AppStyle.figureDesign, weight: .semibold)).monospacedDigit()
+                        Text(group.count.formatted()).font(AppStyle.figureHeading).monospacedDigit()
                         Text("\(group.count == 1 ? String(localized: "Platte") : String(localized: "Platten")) · \(group.percentage(of: total))").font(.caption).foregroundStyle(.secondary)
                     }
                     GeometryReader { geo in

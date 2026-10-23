@@ -123,14 +123,9 @@ struct WelcomeView: View {
         .frame(width: Self.width)
     }
 
-    /// The step's number in an accent ring – no filled badge.
+    /// The step's number in an accent ring.
     private func number(_ value: Int) -> some View {
-        Text(value, format: .number)
-            .font(.callout.weight(.semibold).monospacedDigit())
-            .foregroundStyle(AppStyle.accent)
-            .frame(width: 26, height: 26)
-            .overlay { Circle().strokeBorder(AppStyle.accent.opacity(0.6), lineWidth: 1.5) }
-            .accessibilityHidden(true)
+        StepNumber(number: value, prominent: true).accessibilityHidden(true)
     }
 
     @ViewBuilder

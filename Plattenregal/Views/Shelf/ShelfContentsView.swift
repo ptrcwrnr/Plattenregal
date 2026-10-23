@@ -409,11 +409,11 @@ struct ShelfContentsView: View, Equatable {
                 .atelierRecordSleeve()
                 .overlay {
                     RoundedRectangle(cornerRadius: AtelierCoverFrame.usesMat ? AppStyle.cardRadius : 2)
-                        .strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: 2)
+                        .strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: AppStyle.selectionLineWidth)
                 }
                 .overlay(alignment: .topLeading) {
                     Text(String(item.position))
-                        .font(.caption.weight(.semibold)).monospacedDigit()
+                        .font(AppStyle.captionMark).monospacedDigit()
                         .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
                         .appChipSurface(in: Capsule())
                         .padding(AtelierCoverFrame.badgeInset)
@@ -425,7 +425,7 @@ struct ShelfContentsView: View, Equatable {
                 if item.forSale { SaleBadge() }
                 if item.sold {
                     Text("Nicht in der Collection")
-                        .font(.caption2.weight(.medium)).foregroundStyle(AppStyle.warningColor)
+                        .font(AppStyle.badge).foregroundStyle(AppStyle.warningColor)
                         .lineLimit(1).minimumScaleFactor(0.85)
                 }
             }

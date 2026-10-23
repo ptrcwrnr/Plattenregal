@@ -85,7 +85,7 @@ struct FloatingControls: View {
             withAnimation(AppStyle.reduceMotion ? .default : AppStyle.moveAnimation) { expanded.toggle() }
         } label: {
             Image(systemName: "ellipsis")
-                .font(.title3.weight(.semibold))
+                .font(AppStyle.floatingSymbol)
                 .rotationEffect(.degrees(expanded ? 90 : 0))
                 .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.toolbarSelection) : AnyShapeStyle(.primary))
                 .frame(width: AppStyle.floatingButtonSize, height: AppStyle.floatingButtonSize)
@@ -103,7 +103,7 @@ struct FloatingControls: View {
     private func shelfButton(_ systemImage: String, help: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.title3.weight(.semibold))
+                .font(AppStyle.floatingSymbol)
                 .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.toolbarSelection) : AnyShapeStyle(.primary))
                 .frame(width: AppStyle.floatingButtonSize, height: AppStyle.floatingButtonSize)
                 .floatingCircle(prominent: true)
@@ -149,7 +149,7 @@ struct FloatingControls: View {
             perform()
         } label: {
             Image(systemName: systemImage)
-                .font(.body.weight(.medium))
+                .font(AppStyle.floatingItemSymbol)
                 .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary))
                 .frame(width: AppStyle.floatingItemSize, height: AppStyle.floatingItemSize)
                 .floatingCircle(prominent: false)
