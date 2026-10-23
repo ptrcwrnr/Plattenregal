@@ -1,16 +1,18 @@
 import SwiftUI
 
-/// The card over the covers of "Platte hinzufügen": the shelf the records go to.
+/// The card over the covers of "Platte hinzufügen" (the shelf the records go
+/// to) and of the "Verlauf" (what it is for).
 struct AssignmentCard<Trailing: View>: View {
     /// Covers in the lists below; the symbol is centered above them.
     static var coverSize: CGFloat { 38 }
+    var systemImage = "square.grid.3x3.fill"
     let title: String
     let detail: String
     @ViewBuilder var trailing: Trailing
 
     var body: some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            Image(systemName: "square.grid.3x3.fill")
+            Image(systemName: systemImage)
                 .resizable()
                 .frame(width: 24, height: 24)
                 .foregroundStyle(AppStyle.accent)
@@ -35,4 +37,7 @@ struct AssignmentCard<Trailing: View>: View {
 /// Rows of the shelf search, the "Gesucht" list and the sort check: the same height.
 enum AssignmentRowMetrics {
     static let height: CGFloat = 52
+    /// The large rows of "Platte hinzufügen" and the "Verlauf": the cover
+    /// about as wide as in a compartment's grid.
+    static let largeCoverSize: CGFloat = 132
 }

@@ -202,8 +202,6 @@ private struct ShelfAssignmentGrid: View {
 /// compartment, position and the records it would stand between. A click
 /// adds it; a right-click offers the search list.
 private struct ShelfAssignmentRow: View {
-    /// About the width of a cover in the compartment's grid.
-    static let coverSize: CGFloat = 132
     let copy: RecordCopy
     /// Where it would stand in the compartment it belongs to.
     let location: AssignmentLocation?
@@ -221,7 +219,7 @@ private struct ShelfAssignmentRow: View {
         let title = copy.release?.displayTitle ?? "—"
         Button(action: add) {
             HStack(alignment: .center, spacing: AppStyle.sectionSpacing) {
-                CoverView(url: copy.release?.coverURL, size: Self.coverSize)
+                CoverView(url: copy.release?.coverURL, size: AssignmentRowMetrics.largeCoverSize)
                     .atelierRecordSleeve()
                 VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                     VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {

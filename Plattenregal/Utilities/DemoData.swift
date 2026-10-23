@@ -6,7 +6,10 @@ import SwiftData
 /// The sample collection of the demo (see `DemoMode`): about fifty well-known
 /// albums across genres, two cabinets, a few records still without a place,
 /// a locked compartment, a wantlist and a year and a half of value history –
-/// enough for every page to show what it does. Kept in memory only.
+/// enough for every page to show what it does. Every state of a record has
+/// an example: on the search list ("Gesucht"), on the sale list, "Ohne
+/// Regalplatz", still in a compartment but no longer in the collection, and
+/// changes in the shelf's "Verlauf" (one already undone). Kept in memory only.
 enum DemoData {
     static let owner = "Demo-Sammlung"
 
@@ -93,6 +96,38 @@ enum DemoData {
         ("Talk Talk", "Spirit of Eden", 1988, "Parlophone"),
     ]
 
+    /// Sold on Discogs, still on the shelf ("nicht in der Collection").
+    private static let leftCollection = "Fleetwood Mac"
+
+    /// A few changes in the "Verlauf", matching where the records stand now,
+    /// so each can be undone: sorted in an hour ago, moved yesterday, taken
+    /// out two days ago – and one sorted in and undone again.
+    private static func insertHistory(copies: [RecordCopy], living: [Shelf], hall: [Shelf], now: Date, in context: ModelContext) {
+        func copy(_ artist: String) -> RecordCopy? { copies.first { $0.release?.artist == artist } }
+        func hoursAgo(_ hours: Int) -> Date { now.addingTimeInterval(-Double(hours) * 3_600) }
+        func entry(_ copy: RecordCopy, from: Shelf?, _ fromPosition: Int, to: Shelf?, _ toPosition: Int, at date: Date) -> ShelfHistoryEntry {
+            let entry = ShelfHistoryEntry(copyID: copy.id, artist: copy.release?.displayArtist ?? "", title: copy.release?.displayTitle ?? "",
+                                          fromShelfID: from?.id, fromPosition: from == nil ? 0 : fromPosition, fromName: from.map(PositionService.name) ?? "",
+                                          toShelfID: to?.id, toPosition: to == nil ? 0 : toPosition, toName: to.map(PositionService.name) ?? "",
+                                          date: date)
+            context.insert(entry)
+            return entry
+        }
+        if let miles = copy("Miles Davis"), let shelf = miles.shelf {
+            _ = entry(miles, from: nil, 0, to: shelf, miles.positionInShelf, at: hoursAgo(1))
+        }
+        if let nils = copy("Nils Frahm"), living.count > 2 {
+            entry(nils, from: nil, 0, to: living[2], 1, at: hoursAgo(3)).undoneAt = hoursAgo(2)
+        }
+        if let daft = copies.first(where: { $0.release?.title == "Homework" }), let shelf = daft.shelf,
+           let other = living.first(where: { $0.id != shelf.id }) {
+            _ = entry(daft, from: other, 2, to: shelf, daft.positionInShelf, at: hoursAgo(26))
+        }
+        if let tycho = copy("Tycho"), let last = living.last {
+            _ = entry(tycho, from: last, 3, to: nil, 0, at: hoursAgo(50))
+        }
+    }
+
     static func makeContainer() throws -> ModelContainer {
         let container = try LibraryStorage.makeContainer(inMemory: true)
         let context = container.mainContext
@@ -167,6 +202,9 @@ enum DemoData {
         if placed.count > 2 { context.insert(MissingCopyMark(copyID: placed[2].copy.id)) }
         // Two are meant to be sold some day.
         for item in placed.dropFirst(5).prefix(2) { context.insert(SaleCopyMark(copyID: item.copy.id)) }
+        // One was sold on Discogs but still stands in its compartment.
+        copies.first { $0.album.artist == leftCollection }?.copy.discogsActive = false
+        insertHistory(copies: copies.map(\.copy), living: living, hall: hallShelves, now: now, in: context)
 
         for (index, want) in wants.enumerated() {
             let release = Release(discogsID: 5_000 + index, artist: want.artist, title: want.title)

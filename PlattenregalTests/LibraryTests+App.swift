@@ -72,7 +72,10 @@ extension AllTests.LibraryTests {
         let copies = try context.fetch(FetchDescriptor<RecordCopy>())
         let account = DiscogsAccount.current(in: try context.fetch(FetchDescriptor<DiscogsAccount>()))
         #expect(account?.username == DemoData.owner)
-        #expect(copies.count > 40 && copies.allSatisfy { $0.isInCurrentCollection(owner: DemoData.owner) })
+        #expect(copies.count > 40)
+        // One example of every state: left the collection but still on the shelf, …
+        let left = copies.filter { !$0.isInCurrentCollection(owner: DemoData.owner) }
+        #expect(left.count == 1 && left.allSatisfy { $0.shelf != nil })
         #expect(copies.filter { $0.shelf == nil }.count >= 5)
         let cabinets = try context.fetch(FetchDescriptor<Cabinet>())
         #expect(cabinets.count == 2)
@@ -85,6 +88,16 @@ extension AllTests.LibraryTests {
         #expect(try context.fetchCount(FetchDescriptor<WantlistEntry>()) == 10)
         #expect(try context.fetchCount(FetchDescriptor<CollectionValueSnapshot>()) == 18)
         #expect(try context.fetchCount(FetchDescriptor<OptimizationExclusion>()) == 1)
+        #expect(try context.fetchCount(FetchDescriptor<MissingCopyMark>()) == 1)
+        #expect(try context.fetchCount(FetchDescriptor<SaleCopyMark>()) == 2)
+        // … and a "Verlauf" whose open changes can all be undone, one already undone.
+        let history = try context.fetch(FetchDescriptor<ShelfHistoryEntry>())
+        #expect(history.count == 4)
+        let byID = Dictionary(uniqueKeysWithValues: copies.map { ($0.id, $0) })
+        let blockers = ShelfHistory.blockers(history, copies: byID, shelves: Dictionary(uniqueKeysWithValues: shelves.map { ($0.id, $0) }),
+                                             excluded: Set(try context.fetch(FetchDescriptor<OptimizationExclusion>()).map(\.copyID)))
+        #expect(history.filter { blockers[$0.id] == nil }.count == 3)
+        #expect(history.filter { blockers[$0.id] == .undone }.count == 1)
     }
     @Test func onlyAFreshRequestStartsTheDemo() {
         let now = Date.now

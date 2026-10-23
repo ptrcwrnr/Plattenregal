@@ -15,6 +15,8 @@ struct ShelfHistoryView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \ShelfHistoryEntry.date, order: .reverse) private var entries: [ShelfHistoryEntry]
     @State private var error: String?
+    /// Changes taken back since the panel opened, counted on the card.
+    @State private var undoneCount = 0
 
     static let width: CGFloat = 660
     static let height: CGFloat = 640
@@ -27,42 +29,54 @@ struct ShelfHistoryView: View {
         // with every move, which the query alone wouldn't see.
         let blockers = ShelfHistory.blockers(entries, copies: copies, shelves: shelves,
                                              excluded: Set(records.exclusions.map(\.copyID)))
-        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                Text("Verlauf").font(AppStyle.dialogTitle)
-                Text("Einsortiert, verschoben, herausgenommen – „Rückgängig“ stellt die Platte wieder dorthin, wo sie vorher stand.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+        // Built like "Platte hinzufügen": a card saying what the panel is for,
+        // below it one large row per change – cover, caption, and larger,
+        // what happened.
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                AssignmentCard(systemImage: "clock.arrow.circlepath", title: String(localized: "Verlauf"),
+                               detail: String(localized: "„Rückgängig“ stellt eine Platte wieder dorthin, wo sie vorher stand")) {
+                    if undoneCount > 0 {
+                        Label("\(undoneCount) rückgängig gemacht", systemImage: "checkmark")
+                            .font(AppStyle.rowTitle)
+                            .foregroundStyle(AppStyle.accent)
+                            .contentTransition(.numericText())
+                            .fixedSize()
+                            .transition(.opacity)
+                    }
+                }
+                .animation(AppStyle.standardAnimation, value: undoneCount)
+                if let error {
+                    AppBanner(message: error, kind: .error)
+                        .transition(AppStyle.funnelTransition())
+                }
             }
             .padding(.horizontal, AppStyle.pagePadding)
             .padding(.top, AppStyle.pagePadding)
-            if let error {
-                AppBanner(message: error, kind: .error)
-                    .padding(.horizontal, AppStyle.pagePadding)
-                    .transition(AppStyle.funnelTransition())
-            }
             if entries.isEmpty {
                 AppEmptyState(String(localized: "Noch nichts im Verlauf"), systemImage: "clock.arrow.circlepath",
                               description: Text("Sobald du Platten einsortierst, verschiebst oder aus einem Fach nimmst, stehen sie hier – und lassen sich rückgängig machen."))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
+                    LazyVStack(alignment: .leading, spacing: CoverGrid.spacing) {
                         ForEach(Self.days(entries), id: \.day) { group in
-                            Text(Self.title(of: group.day))
-                                .font(AppStyle.captionMark)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, AppStyle.itemSpacing)
-                                .padding(.top, AppStyle.rowSpacing)
-                                .padding(.bottom, AppStyle.tightSpacing)
-                            ForEach(group.entries) { entry in
-                                ShelfHistoryRow(entry: entry, copy: copies[entry.copyID],
-                                                what: what(entry, shelves: shelves), blocker: blockers[entry.id]) {
-                                    undo(entry)
+                            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                                Text(Self.title(of: group.day))
+                                    .font(AppStyle.captionMark)
+                                    .foregroundStyle(.secondary)
+                                ForEach(group.entries) { entry in
+                                    ShelfHistoryRow(entry: entry, copy: copies[entry.copyID],
+                                                    what: what(entry, shelves: shelves), blocker: blockers[entry.id]) {
+                                        undo(entry)
+                                    }
+                                    .padding(.bottom, AppStyle.itemSpacing)
                                 }
                             }
                         }
                     }
-                    .padding(.horizontal, AppStyle.cardPadding)
+                    .padding(.horizontal, AppStyle.pagePadding)
+                    .padding(.top, AppStyle.sectionSpacing)
                     .padding(.bottom, AppStyle.pagePadding)
                 }
                 .scrollIndicators(.automatic)
@@ -76,6 +90,7 @@ struct ShelfHistoryView: View {
         do {
             try PositionService(context: context).undo(entry)
             error = nil
+            undoneCount += 1
         } catch { self.error = error.reportedMessage() }
     }
 
@@ -127,8 +142,10 @@ struct ShelfHistoryView: View {
     }
 }
 
-/// One change: the record as in the shelf search (same cover and height),
-/// what happened and when, and "Rückgängig" – or why that isn't possible.
+/// One change, as large as a row of "Platte hinzufügen": the cover as in a
+/// compartment's grid, beside it the record's caption, larger what happened
+/// (accent while it can be undone), when and where, and "Rückgängig" – or a
+/// tag saying why that isn't possible.
 private struct ShelfHistoryRow: View {
     let entry: ShelfHistoryEntry
     /// `nil` once the record left the collection.
@@ -136,53 +153,39 @@ private struct ShelfHistoryRow: View {
     let what: (headline: String, detail: String)
     let blocker: ShelfHistory.Blocker?
     let undo: () -> Void
-    @State private var hovering = false
 
     var body: some View {
         let release = copy.flatMap { $0.isDeleted || $0.modelContext == nil ? nil : $0.release }
-        HStack(spacing: AppStyle.rowSpacing) {
-            CoverView(url: release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
-            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                Text(release?.displayArtist ?? entry.artist).font(AppStyle.rowTitle)
-                Text(release?.displayTitle ?? entry.title).font(.caption).foregroundStyle(.secondary)
+        HStack(alignment: .center, spacing: AppStyle.sectionSpacing) {
+            CoverView(url: release?.coverURL, size: AssignmentRowMetrics.largeCoverSize)
+                .atelierRecordSleeve()
+            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                // The same caption as in the compartment, Collection and Wantlist.
+                RecordCaption(release: release, fallbackArtist: entry.artist, fallbackTitle: entry.title)
+                VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
+                    Text(what.headline)
+                        .font(AppStyle.sectionTitle)
+                        .foregroundStyle(blocker == nil ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.secondary))
+                    Text("\(entry.date.formatted(date: .omitted, time: .shortened)) · \(what.detail)")
+                        .font(.callout).monospacedDigit().foregroundStyle(.secondary)
+                }
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                action
             }
-            .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
-            VStack(alignment: .trailing, spacing: AppStyle.hairSpacing) {
-                Text(what.headline).font(AppStyle.captionLabel)
-                Text("\(entry.date.formatted(date: .omitted, time: .shortened)) · \(what.detail)")
-                    .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
-            }
-            .lineLimit(1)
-            .truncationMode(.middle)
-            .layoutPriority(1)
-            action
-                .frame(width: Self.actionWidth, alignment: .trailing)
         }
-        .padding(.horizontal, AppStyle.itemSpacing)
-        .frame(height: AssignmentRowMetrics.height)
         .opacity(entry.undoneAt == nil ? 1 : 0.55)
-        .appHoverable(hovering, cornerRadius: AppStyle.rowRadius)
-        .onHover { hovering = $0 }
         .animation(AppStyle.standardAnimation, value: blocker)
     }
 
-    /// Room for the longest status, so the columns stay put when one changes.
-    private static let actionWidth: CGFloat = 132
-
     @ViewBuilder private var action: some View {
         if let blocker {
-            Text(blocker.title)
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.trailing)
-                .lineLimit(2)
+            StatusTag(text: blocker.title, color: .secondary)
                 .help(blocker.message)
                 .transition(.opacity)
         } else {
-            Button("Rückgängig", action: undo)
-                .appLinkButton()
-                .font(.callout)
+            SecondaryButton(title: String(localized: "Rückgängig"), action: undo)
                 .help(ShelfHistory.kind(of: entry) == .sortedIn
                       ? String(localized: "Nimmt die Platte wieder aus dem Fach – sie steht dann wieder unter „Noch nicht einsortiert“.")
                       : String(localized: "Stellt die Platte wieder an ihren vorigen Platz."))
