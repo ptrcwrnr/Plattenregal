@@ -6,6 +6,7 @@
 - **Debug:** `--preview-fullscreen` schaltet das Hauptfenster nach dem Start ins Vollbild (holt die App nach vorn, versucht es bis zu 12 s).
 - README: Toolbar im Vollbild, Startschalter `--preview-fullscreen`.
 - Geprüft: Build ohne Warnungen, alle 233 Tests bestanden (der vorige Eintrag nannte 234 – da war der vorübergehende Messtest mitgezählt). In der Demo im Vollbild angesehen (Aufnahmen der App-Fenster): Klassisch hell und dunkel petrol, auch nach Wechsel auf Regal und Statistik; Designwechsel Klassisch → Modern → Klassisch und Hell → Dunkel im Vollbild; Vollbild verlassen (Fenster unverändert, Modern-Fenster weiter mit durchlaufender Farbe) und erneut betreten. Modern hell und dunkel im Vollbild jetzt wie im Fenster. Nicht geprüft: Toolbar, die im Vollbild erst beim Zeigen an den oberen Rand erscheint (macOS-Einstellung „Menüleiste automatisch ausblenden“), und ein zweiter Bildschirm.
+- DMG 1.1.2 (Build 102026) neu ausgegeben, wie zuletzt mit unveränderter Versionsnummer: Prüfsumme gültig, App arm64, Signatur in Ordnung, Mindestsystem 27.0, Handbuch und Handbook enthalten, die Vollbild-Korrektur ist drin (der Debug-Schalter nicht). Die Release-App selbst nicht im Vollbild gestartet; der Code ist derselbe wie im geprüften Debug-Build.
 - **Aufgefallen, nicht geändert:** In Modern dunkel ist die gewählte Option der Umschalter (z. B. „Statistik“, „Median“, „Alles“) blaue Schrift auf bläulichem Glas und schlecht lesbar – im Fenster wie im Vollbild.
 
 # Regal: keine Arbeit im Verborgenen, Fachliste einmal je Aufbau · 23.10.2026
