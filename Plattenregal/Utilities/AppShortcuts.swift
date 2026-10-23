@@ -11,6 +11,7 @@ enum AppShortcuts {
     static let largerCovers = KeyboardShortcut("+", modifiers: .command)
     static let smallerCovers = KeyboardShortcut("-", modifiers: .command)
     static let defaultCovers = KeyboardShortcut("0", modifiers: .command)
+    static let shelfHistory = KeyboardShortcut("y", modifiers: .command)
 
     /// A tooltip that names its shortcut, the same way everywhere:
     /// „Synchronisieren (⌘R)“.
@@ -46,6 +47,7 @@ enum AppShortcuts {
             Group(title: String(localized: "Regal"), entries: [
                 Entry(keys: "⌘← / ⌘→", title: String(localized: "Vorheriges / nächstes Regal")),
                 Entry(keys: "⌘Z", title: String(localized: "Herausnehmen rückgängig machen")),
+                Entry(keys: "⌘Y", title: String(localized: "Verlauf: Einsortiertes und Verschobenes rückgängig machen")),
             ]),
             Group(title: String(localized: "Statistik"), entries: [
                 Entry(keys: "⇧⌘R", title: String(localized: "Zufallsfund: neue Platte ziehen")),

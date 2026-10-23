@@ -24,6 +24,7 @@
 		396FABE61801C3CB7E42432A /* Plattenregal/Views/Shelf/ShelfOptionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E19798396FABE61801C3CB /* Plattenregal/Views/Shelf/ShelfOptionsPopover.swift */; };
 		3E95B2BDE98C47FC3A0124C2 /* PlattenregalTests/LibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81099FF1C0BF4C1C166E06C /* PlattenregalTests/LibraryTests.swift */; };
 		48DC48083636F94264CBD20F /* Plattenregal/Sorting/SortingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A335583DF28095E79A0F590 /* Plattenregal/Sorting/SortingService.swift */; };
+		DC4C499363F04B70A10D8BBB /* Plattenregal/Services/ShelfHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F26BDD59CA34F408F43B03F /* Plattenregal/Services/ShelfHistory.swift */; };
 		4F4BF2DB9A464CA3B85E0B04 /* Plattenregal/Services/ShelfStatisticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61F0D9CB6F4BCA8BB2E43B /* Plattenregal/Services/ShelfStatisticsService.swift */; };
 		5BA397DACC8BC6DDF20ABFCB /* Plattenregal/Statistics/StatisticsCharts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C46AB085BA397DACC8BC6DD /* Plattenregal/Statistics/StatisticsCharts.swift */; };
 		6090CB8691F407AB4F7595F8 /* Plattenregal/Views/Settings/DataSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A93AD766090CB8691F407AB /* Plattenregal/Views/Settings/DataSettingsView.swift */; };
@@ -43,6 +44,7 @@
 		A1C0DE00000000000000C0B1 /* Plattenregal/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */; };
 		A1C0DE00000000000000C0B2 /* Plattenregal/Handbuch.pdf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE00000000000000C0F2 /* Plattenregal/Handbuch.pdf */; };
 		A1C0DE00000000000000C0B3 /* Plattenregal/Handbook.pdf in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE00000000000000C0F3 /* Plattenregal/Handbook.pdf */; };
+		4334130526044346A33C765F /* PlattenregalTests/ShelfHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7030A606B2D04D8993B18266 /* PlattenregalTests/ShelfHistoryTests.swift */; };
 		A2EB97D6247703AE58EB8E07 /* PlattenregalTests/CabinetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533299BAA2EB97D6247703AE /* PlattenregalTests/CabinetTests.swift */; };
 		ABCDD0000000000000000002 /* PlattenregalTests/StatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDD0000000000000000001 /* PlattenregalTests/StatisticsTests.swift */; };
 		ABCDE0000000000000000002 /* PlattenregalTests/DiscogsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDE0000000000000000001 /* PlattenregalTests/DiscogsSyncTests.swift */; };
@@ -92,6 +94,7 @@
 		C0DA563308E8B621F9E331B7 /* Plattenregal/Design/PullToRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA30C7252295ED7A9FA234C /* Plattenregal/Design/PullToRefresh.swift */; };
 		9AAA9EBFFAB13F7DD61CCB92 /* Plattenregal/Design/AppMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DFBC317660E930BF379B80 /* Plattenregal/Design/AppMenu.swift */; };
 		DA788AF5277795C8B7CF175D /* Plattenregal/Design/SecondaryClicks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079F8FFB5159397E06B09783 /* Plattenregal/Design/SecondaryClicks.swift */; };
+		20D918E2EDD8442792E44E9C /* Plattenregal/Views/Shelf/ShelfHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A16271EE497548FC8759F593 /* Plattenregal/Views/Shelf/ShelfHistoryView.swift */; };
 		DFC20CB758032A2D650B1F48 /* Plattenregal/Views/Shelf/ShelfAssignmentSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71AAF7DD616D1693EF64465C /* Plattenregal/Views/Shelf/ShelfAssignmentSession.swift */; };
 		C5C866F1BA86B719140EB3FB /* Plattenregal/Views/Shelf/AssignmentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76173CCCB90245037FFF8955 /* Plattenregal/Views/Shelf/AssignmentCard.swift */; };
 		F488999E37CD18AF2598E831 /* Plattenregal/Views/Shelf/ShelfSortCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C91A83AD710A7B6251A7C46 /* Plattenregal/Views/Shelf/ShelfSortCheckView.swift */; };
@@ -183,12 +186,14 @@
 		4A335583DF28095E79A0F590 /* Plattenregal/Sorting/SortingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Sorting/SortingService.swift; sourceTree = "<group>"; };
 		5110D643748BDD81ADC00EDB /* Plattenregal/Services/CoverCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/CoverCache.swift; sourceTree = "<group>"; };
 		52D3EB1966C3DDF43C7DE6D7 /* Plattenregal/Statistics/CollectionValueHistoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/CollectionValueHistoryService.swift; sourceTree = "<group>"; };
+		7030A606B2D04D8993B18266 /* PlattenregalTests/ShelfHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/ShelfHistoryTests.swift; sourceTree = "<group>"; };
 		533299BAA2EB97D6247703AE /* PlattenregalTests/CabinetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/CabinetTests.swift; sourceTree = "<group>"; };
 		56D13B317B8B52745B4AA0E9 /* Plattenregal/Views/RecordDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/RecordDetailView.swift; sourceTree = "<group>"; };
 		57AF03A5D9192B3C48928D65 /* Plattenregal/Views/CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/CollectionView.swift; sourceTree = "<group>"; };
 		5AA1B36AD1D91AE5280CADCC /* Plattenregal/Views/Settings/ShelfSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/ShelfSettingsView.swift; sourceTree = "<group>"; };
 		5AA1B36AD1D91AE5280CADCD /* Plattenregal/Views/Settings/ListsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/ListsSettingsView.swift; sourceTree = "<group>"; };
 		5C0FF87FB8B623B08B35F8F6 /* Plattenregal/Statistics/StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/StatisticsView.swift; sourceTree = "<group>"; };
+		5F26BDD59CA34F408F43B03F /* Plattenregal/Services/ShelfHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/ShelfHistory.swift; sourceTree = "<group>"; };
 		6D61F0D9CB6F4BCA8BB2E43B /* Plattenregal/Services/ShelfStatisticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/ShelfStatisticsService.swift; sourceTree = "<group>"; };
 		7326E43CAB42FD70589F5501 /* Plattenregal/Views/RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/RootView.swift; sourceTree = "<group>"; };
 		7833C2D45EB971604C106375 /* Plattenregal/Views/Settings/AppSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/AppSettingsView.swift; sourceTree = "<group>"; };
@@ -252,6 +257,7 @@
 		ADA30C7252295ED7A9FA234C /* Plattenregal/Design/PullToRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/PullToRefresh.swift; sourceTree = "<group>"; };
 		63DFBC317660E930BF379B80 /* Plattenregal/Design/AppMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/AppMenu.swift; sourceTree = "<group>"; };
 		079F8FFB5159397E06B09783 /* Plattenregal/Design/SecondaryClicks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/SecondaryClicks.swift; sourceTree = "<group>"; };
+		A16271EE497548FC8759F593 /* Plattenregal/Views/Shelf/ShelfHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfHistoryView.swift; sourceTree = "<group>"; };
 		71AAF7DD616D1693EF64465C /* Plattenregal/Views/Shelf/ShelfAssignmentSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfAssignmentSession.swift; sourceTree = "<group>"; };
 		76173CCCB90245037FFF8955 /* Plattenregal/Views/Shelf/AssignmentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/AssignmentCard.swift; sourceTree = "<group>"; };
 		5C91A83AD710A7B6251A7C46 /* Plattenregal/Views/Shelf/ShelfSortCheckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfSortCheckView.swift; sourceTree = "<group>"; };
@@ -398,6 +404,7 @@
 			isa = PBXGroup;
 			children = (
 				533299BAA2EB97D6247703AE /* PlattenregalTests/CabinetTests.swift */,
+				7030A606B2D04D8993B18266 /* PlattenregalTests/ShelfHistoryTests.swift */,
 				ABCDD0000000000000000001 /* PlattenregalTests/StatisticsTests.swift */,
 				E7A0C0DE0000000000000003 /* PlattenregalTests/ExportTests.swift */,
 				E7A0C0DE00000000000000A1 /* PlattenregalTests/ScenarioTests.swift */,
@@ -479,6 +486,7 @@
 				5C91A83AD710A7B6251A7C46 /* Plattenregal/Views/Shelf/ShelfSortCheckView.swift */,
 				76173CCCB90245037FFF8955 /* Plattenregal/Views/Shelf/AssignmentCard.swift */,
 				71AAF7DD616D1693EF64465C /* Plattenregal/Views/Shelf/ShelfAssignmentSession.swift */,
+				A16271EE497548FC8759F593 /* Plattenregal/Views/Shelf/ShelfHistoryView.swift */,
 				56D13B317B8B52745B4AA0E9 /* Plattenregal/Views/RecordDetailView.swift */,
 				7326E43CAB42FD70589F5501 /* Plattenregal/Views/RootView.swift */,
 				500F435AE4E17221E001B560 /* Plattenregal/Views/CoverView.swift */,
@@ -541,6 +549,7 @@
 				5110D643748BDD81ADC00EDB /* Plattenregal/Services/CoverCache.swift */,
 				19E0AD8DA08D7E3BED87977C /* Plattenregal/Services/PositionService.swift */,
 				6D61F0D9CB6F4BCA8BB2E43B /* Plattenregal/Services/ShelfStatisticsService.swift */,
+				5F26BDD59CA34F408F43B03F /* Plattenregal/Services/ShelfHistory.swift */,
 				E7A0C0DE0000000000000001 /* Plattenregal/Services/CollectionExportService.swift */,
 				E7A0C0DE0000000000000011 /* Plattenregal/Services/ShelfBackupService.swift */,
 				68B32945858BE9BD96301E66 /* Plattenregal/Services/ExportWriters.swift */,
@@ -666,6 +675,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A2EB97D6247703AE58EB8E07 /* PlattenregalTests/CabinetTests.swift in Sources */,
+				4334130526044346A33C765F /* PlattenregalTests/ShelfHistoryTests.swift in Sources */,
 				ABCDD0000000000000000002 /* PlattenregalTests/StatisticsTests.swift in Sources */,
 				E7A0C0DE0000000000000004 /* PlattenregalTests/ExportTests.swift in Sources */,
 				E7A0C0DE00000000000000A2 /* PlattenregalTests/ScenarioTests.swift in Sources */,
@@ -767,6 +777,7 @@
 				B87FA9BA1B9E10EF66214449 /* Plattenregal/Services/CoverCache.swift in Sources */,
 				005BAF1A4673DA152131D179 /* Plattenregal/Services/PositionService.swift in Sources */,
 				4F4BF2DB9A464CA3B85E0B04 /* Plattenregal/Services/ShelfStatisticsService.swift in Sources */,
+				DC4C499363F04B70A10D8BBB /* Plattenregal/Services/ShelfHistory.swift in Sources */,
 				E7A0C0DE0000000000000002 /* Plattenregal/Services/CollectionExportService.swift in Sources */,
 				E7A0C0DE0000000000000012 /* Plattenregal/Services/ShelfBackupService.swift in Sources */,
 				5B797AA02C3F571AF98EE110 /* Plattenregal/Services/ExportWriters.swift in Sources */,
@@ -801,6 +812,7 @@
 				F488999E37CD18AF2598E831 /* Plattenregal/Views/Shelf/ShelfSortCheckView.swift in Sources */,
 				C5C866F1BA86B719140EB3FB /* Plattenregal/Views/Shelf/AssignmentCard.swift in Sources */,
 				DFC20CB758032A2D650B1F48 /* Plattenregal/Views/Shelf/ShelfAssignmentSession.swift in Sources */,
+				20D918E2EDD8442792E44E9C /* Plattenregal/Views/Shelf/ShelfHistoryView.swift in Sources */,
 				C60ED484EF79070BBD2D0D51 /* Plattenregal/Views/RecordDetailView.swift in Sources */,
 				6CE58895D0157E81E6D3E3E0 /* Plattenregal/Views/RootView.swift in Sources */,
 				DA7C9C2D90EF1DC414B78E1C /* Plattenregal/Views/CoverView.swift in Sources */,

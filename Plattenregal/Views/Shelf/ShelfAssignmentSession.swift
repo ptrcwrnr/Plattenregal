@@ -33,9 +33,16 @@ final class ShelfAssignmentSession: Identifiable {
     /// The row under the pointer; the target card tells where it would go.
     private(set) var hoveredID: UUID?
     var error: String?
+    /// Rack-wide: where the page stands – the open compartment and the
+    /// cabinet shown. At a shelf boundary they decide which of the two
+    /// fitting shelves a record goes to (see `AlphabeticalPlacement.preferredIndex`).
+    private let openShelf: UUID?
+    private let shownCabinet: UUID?
 
-    init(shelf: Shelf?) {
+    init(shelf: Shelf?, openShelf: UUID? = nil, shownCabinet: UUID? = nil) {
         self.shelf = shelf
+        self.openShelf = openShelf
+        self.shownCabinet = shownCabinet
     }
 
     /// `nil` once the record or the shelf is gone (see `isGone`).
@@ -60,7 +67,7 @@ final class ShelfAssignmentSession: Identifiable {
     /// whole rack – between two shelves the end of the first. `nil` while no
     /// shelf holds records yet.
     func spot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
-        guard let shelf else { return AlphabeticalPlacement.spots(for: copy, in: shelves).first }
+        guard let shelf else { return rackSpot(for: copy) }
         let items = PositionService.inShelfOrder(shelf.copies, excluding: copy.id)
         let position = AlphabeticalPlacement.position(for: copy, in: shelf)
         return AlphabeticalPlacement.Spot(shelf: shelf, position: position,
@@ -81,10 +88,15 @@ final class ShelfAssignmentSession: Identifiable {
     func place(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
         if let known = placeCache[copy.id] { return known }
         guard !isGone(copy) else { return nil }
-        let spot = shelf != nil && belongsElsewhere[copy.id] == nil ? spot(for: copy)
-            : AlphabeticalPlacement.spots(for: copy, in: shelves).first
+        let spot = shelf != nil && belongsElsewhere[copy.id] == nil ? spot(for: copy) : rackSpot(for: copy)
         placeCache[copy.id] = .some(spot)
         return spot
+    }
+    /// Its place in the whole rack; at a shelf boundary the preferred side.
+    private func rackSpot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
+        let spots = AlphabeticalPlacement.spots(for: copy, in: shelves)
+        guard !spots.isEmpty else { return nil }
+        return spots[AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf, cabinet: shownCabinet)]
     }
     @ObservationIgnored private var placeCache: [UUID: AlphabeticalPlacement.Spot?] = [:]
 

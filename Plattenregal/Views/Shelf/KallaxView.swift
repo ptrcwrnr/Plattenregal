@@ -62,6 +62,8 @@ struct KallaxView: View {
     @State private var soldCount = 0
     /// The open "Sortierung prüfen".
     @State private var sortCheck: ShelfSortCheckRequest?
+    /// The open "Verlauf".
+    @State private var history: ShelfHistoryRequest?
     @State private var error: String?
 
     // Search inside the shelf view only lists matches with their location; it
@@ -144,7 +146,7 @@ struct KallaxView: View {
     private var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
 
     private func forgetCopies() {
-        closingAssignment = nil; assignment = nil; sortCheck = nil
+        closingAssignment = nil; assignment = nil; sortCheck = nil; history = nil
         focusCopy = nil; placement = nil; pendingPlacement = nil; recentUnplace = nil
         pendingDelete = nil; confirmRemoveSold = false
     }
@@ -195,7 +197,23 @@ struct KallaxView: View {
         )
     }
 
+    /// The "Verlauf" on top of the page: its own step, the page's chain of
+    /// modifiers is already as long as the compiler takes in one expression.
     var body: some View {
+        shelfPage
+            .onChange(of: requests.showingHistory) { takeHistoryRequest() }
+            .onAppear { takeHistoryRequest() }
+            // ⌘Y opens it (see `AppShortcuts`).
+            .background {
+                Button("Verlauf") { openHistory() }
+                    .keyboardShortcut(AppShortcuts.shelfHistory)
+                    .hidden().frame(width: 0, height: 0)
+                    .accessibilityHidden(true)
+            }
+            .appPanel(item: $history) { _ in ShelfHistoryView(labels: rangeLabels) }
+    }
+
+    private var shelfPage: some View {
         GeometryReader { geometry in
             // The search's hits, else the compartment the card points to.
             let lit = searchResults.litShelfIDs ?? placement?.spot.map { [$0.shelf.id] }
@@ -290,7 +308,8 @@ struct KallaxView: View {
         // "Platte hinzufügen" for the selected compartment,
         // --preview-place=Artist the placement card of that artist's record,
         // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment,
-        // --preview-sortin "Einsortieren" of the round button.
+        // --preview-sortin "Einsortieren" of the round button,
+        // --preview-history the "Verlauf".
         .task {
             let arguments = ProcessInfo.processInfo.arguments
             try? await Task.sleep(for: .seconds(1))
@@ -302,6 +321,8 @@ struct KallaxView: View {
                 if let copy = allCopies.first(where: { $0.release?.artist == artist }) { startPlacement(copy, opensShelf: true) }
             } else if arguments.contains("--preview-sortin") {
                 startAssignment(nil)
+            } else if arguments.contains("--preview-history") {
+                openHistory()
             } else if arguments.contains("--preview-sortcheck") {
                 let shelves = cabinets.flatMap(\.shelves)
                 if let shelf = shelves.first(where: { !ShelfSortCheck.steps(PositionService.inShelfOrder($0.copies), by: .current).isEmpty }) {
@@ -318,7 +339,7 @@ struct KallaxView: View {
         // the locations: the sheet's list and target shelf may be stale or gone.
         .onObservedChange(of: { changes.shelvesVersion }) { _, _ in
             if assignment != nil { AppLog.info("Regal", "„Platte hinzufügen“ geschlossen: Regale wurden in den Einstellungen geändert") }
-            assignment = nil; showsNameEditor = false; sortCheck = nil
+            assignment = nil; showsNameEditor = false; sortCheck = nil; history = nil
         }
         // "Alles zurücksetzen" deleted every record: nothing here may keep
         // pointing at one – reading a deleted model crashes.
@@ -616,7 +637,7 @@ struct KallaxView: View {
     /// New records go to their alphabetical place in the compartment –
     /// without one (the round button), each to its place in the rack.
     private func startAssignment(_ shelf: Shelf?) {
-        let session = ShelfAssignmentSession(shelf: shelf)
+        let session = ShelfAssignmentSession(shelf: shelf, openShelf: highlight, shownCabinet: shownCabinet?.id)
         closingAssignment = session
         assignment = session
     }
@@ -690,6 +711,19 @@ struct KallaxView: View {
         if let copy = allCopies.first(where: { $0.id == id }) { startPlacement(copy, opensShelf: true) }
     }
 
+    private func takeHistoryRequest() {
+        guard requests.showingHistory else { return }
+        requests.showingHistory = false
+        openHistory()
+    }
+
+    /// One panel at a time: the history replaces whatever else is open.
+    private func openHistory() {
+        assignment = nil; sortCheck = nil
+        if placement != nil || pendingPlacement != nil { cancelPlacement() }
+        history = ShelfHistoryRequest()
+    }
+
     private func takeSortingInRequest() {
         guard requests.sortingIn else { return }
         requests.sortingIn = false
@@ -704,7 +738,7 @@ struct KallaxView: View {
     /// stands in another cabinet, where the mark couldn't be seen.
     private func startPlacement(_ copy: RecordCopy, opensShelf: Bool = false) {
         searchQuery = ""; focusCopy = nil; showsNameEditor = false
-        var new = Placement(copy: copy, shelves: shelves)
+        var new = Placement(copy: copy, shelves: shelves, openShelf: highlight, cabinet: shownCabinet?.id)
         new.excluded = exclusions.contains { $0.copyID == copy.id }
         new.missing = missingIDs.contains(copy.id)
         let target = new.spot?.shelf
@@ -771,7 +805,7 @@ struct KallaxView: View {
         guard let current = placement else { return }
         let copy = current.copy
         guard !copy.isDeleted, copy.modelContext != nil, (copy.shelf != nil) == current.found else { placement = nil; return }
-        var updated = Placement(copy: copy, shelves: shelves)
+        var updated = Placement(copy: copy, shelves: shelves, openShelf: highlight, cabinet: shownCabinet?.id)
         updated.excluded = current.excluded
         updated.missing = missingIDs.contains(copy.id)
         if let shelfID = current.spot?.shelf.id, let index = updated.spots.firstIndex(where: { $0.shelf.id == shelfID }) {
@@ -811,11 +845,10 @@ struct KallaxView: View {
 
     private func unplace(_ copy: RecordCopy) {
         guard let shelf = copy.shelf else { return }
-        let entry = UnplacedCopy(copy: copy, shelf: shelf, position: copy.positionInShelf)
         if focusCopy?.id == copy.id { focusCopy = nil }
         do {
-            try PositionService(context: context).unplace(copy)
-            withAnimation(AppStyle.standardAnimation) { recentUnplace = entry }
+            guard let entry = try PositionService(context: context).unplace(copy) else { return }
+            withAnimation(AppStyle.standardAnimation) { recentUnplace = UnplacedCopy(copy: copy, shelf: shelf, entry: entry) }
         } catch { self.error = error.reportedMessage() }
     }
 
@@ -826,6 +859,7 @@ struct KallaxView: View {
             && !entry.shelf.isDeleted && entry.shelf.modelContext != nil
             && entry.copy.shelf == nil && !entry.shelf.isReserved
             && !exclusions.contains { $0.copyID == entry.copy.id }
+            && !entry.entry.isDeleted && entry.entry.modelContext != nil && entry.entry.undoneAt == nil
     }
 
     private func undoUnplace() {
@@ -833,8 +867,7 @@ struct KallaxView: View {
         withAnimation(AppStyle.standardAnimation) { recentUnplace = nil }
         // Someone may have re-placed the copy meanwhile; don't yank it back.
         guard canUndo(entry) else { return }
-        let position = min(max(entry.position, 1), entry.shelf.copies.count + 1)
-        do { try PositionService(context: context).move(entry.copy, to: entry.shelf, position: position) }
+        do { try PositionService(context: context).undo(entry.entry) }
         catch { self.error = error.reportedMessage() }
     }
 

@@ -16,7 +16,10 @@ struct Placement {
     /// on this page, so there is no spot to show.
     let putAwayIn: String?
 
-    init(copy: RecordCopy, shelves: [Shelf]) {
+    /// `openShelf` and `cabinet`: where the page stands; at a shelf boundary
+    /// they pick which of the two fitting shelves comes first (see
+    /// `AlphabeticalPlacement.preferredIndex`).
+    init(copy: RecordCopy, shelves: [Shelf], openShelf: UUID? = nil, cabinet: UUID? = nil) {
         self.copy = copy
         found = copy.shelf != nil
         if let shelf = copy.shelf, !shelf.isInUse {
@@ -28,6 +31,7 @@ struct Placement {
         spots = found
             ? AlphabeticalPlacement.current(for: copy, in: shelves).map { [$0] } ?? []
             : AlphabeticalPlacement.spots(for: copy, in: shelves)
+        chosen = AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf, cabinet: cabinet)
     }
     var spot: AlphabeticalPlacement.Spot? { spots.indices.contains(chosen) ? spots[chosen] : nil }
 }
@@ -143,5 +147,6 @@ struct UnplacedCopy {
     let id = UUID()
     let copy: RecordCopy
     let shelf: Shelf
-    let position: Int
+    /// Undone through the history, so the entry is marked and no new one is written.
+    let entry: ShelfHistoryEntry
 }

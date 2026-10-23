@@ -5,7 +5,8 @@ import SwiftData
 /// wantlist a click fans the page's actions out around it on a quarter
 /// circle – grid or list, sync, settings – and closes them again; so does
 /// Esc, a click beside them or choosing one. On the shelf page it opens
-/// "Einsortieren" right away: the records without a shelf and where they go.
+/// "Einsortieren" right away: the records without a shelf and where they go;
+/// above it one of the same size opens the "Verlauf".
 struct FloatingControls: View {
     let selection: PageSelection<Destination>
     let shelfRequests: ShelfRequests
@@ -31,7 +32,14 @@ struct FloatingControls: View {
             if page.hasActions {
                 controls(page: page).transition(.scale(scale: 0.6).combined(with: .opacity))
             } else if page == .shelf {
-                sortInButton.transition(.scale(scale: 0.6).combined(with: .opacity))
+                VStack(spacing: AppStyle.rowSpacing) {
+                    shelfButton("clock.arrow.circlepath", help: AppShortcuts.help(String(localized: "Verlauf – zuletzt einsortiert, verschoben, herausgenommen"), keys: "⌘Y"),
+                                label: String(localized: "Verlauf")) { shelfRequests.showingHistory = true }
+                    shelfButton("plus", help: String(localized: "Einsortieren – noch nicht einsortierte Platten und wohin sie gehören"),
+                                label: String(localized: "Einsortieren")) { shelfRequests.sortingIn = true }
+                }
+                .padding(AppStyle.floatingMargin)
+                .transition(.scale(scale: 0.6).combined(with: .opacity))
             }
         }
         .animation(AppStyle.quickAnimation, value: page.hasActions)
@@ -90,10 +98,11 @@ struct FloatingControls: View {
         .accessibilityValue(expanded ? String(localized: "geöffnet") : "")
     }
 
-    /// The shelf page's button: one click, no fan.
-    private var sortInButton: some View {
-        Button { shelfRequests.sortingIn = true } label: {
-            Image(systemName: "plus")
+    /// The shelf page's two buttons, one above the other, both the size of
+    /// the main button: one click each, no fan.
+    private func shelfButton(_ systemImage: String, help: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.toolbarSelection) : AnyShapeStyle(.primary))
                 .frame(width: AppStyle.floatingButtonSize, height: AppStyle.floatingButtonSize)
@@ -101,9 +110,8 @@ struct FloatingControls: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .help("Einsortieren – noch nicht einsortierte Platten und wohin sie gehören")
-        .accessibilityLabel(String(localized: "Einsortieren"))
-        .padding(AppStyle.floatingMargin)
+        .help(help)
+        .accessibilityLabel(label)
     }
 
     /// On a quarter circle from straight left to straight up of the button.

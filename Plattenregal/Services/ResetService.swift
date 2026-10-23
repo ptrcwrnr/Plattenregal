@@ -35,6 +35,7 @@ struct ResetService {
             for shelf in try context.fetch(FetchDescriptor<Shelf>()) { shelf.isReserved = false; shelf.name = "" }
             for row in try context.fetch(FetchDescriptor<OptimizationExclusion>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<MissingCopyMark>()) { context.delete(row) }
+            try ShelfHistory.clear(in: context)
         }
         LibraryChanges.shared.libraryDidChange()
         LibraryChanges.shared.shelvesDidChange()
@@ -132,6 +133,7 @@ struct ResetService {
             for row in try context.fetch(FetchDescriptor<MissingCopyMark>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<SaleCopyMark>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<ReleaseVideoList>()) { context.delete(row) }
+            try ShelfHistory.clear(in: context)
             for row in try context.fetch(FetchDescriptor<CollectionValueSnapshot>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<DiscogsFolder>()) { context.delete(row) }
             for row in try context.fetch(FetchDescriptor<DiscogsAccount>()) { context.delete(row) }

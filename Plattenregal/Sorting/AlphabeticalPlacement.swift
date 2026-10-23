@@ -65,6 +65,35 @@ enum AlphabeticalPlacement {
         )]
     }
 
+    /// Which of `spots(for:in:)` to take when nobody chose. Two spots only at
+    /// a shelf boundary, where the end of one shelf and the start of the next
+    /// fit equally; they may stand in two cabinets (KALLAX ends with „V“,
+    /// EKET starts with „Y“). Then, in this order: the side where the same
+    /// artist already stands next to it, the compartment that is open, a
+    /// compartment of the cabinet shown, else the first – before, every
+    /// boundary went to the earlier shelf, even with the other cabinet open.
+    static func preferredIndex(_ spots: [Spot], for copy: RecordCopy, openShelf: UUID? = nil, cabinet: UUID? = nil) -> Int {
+        guard spots.count > 1 else { return 0 }
+        // `[end of the earlier shelf, start of the later one]`; both name the
+        // same two records: `before` ends the earlier shelf, `after` starts the later.
+        let artist = artistKey(copy)
+        func sameArtist(_ neighbour: RecordCopy?) -> Bool {
+            neighbour.map { artistKey($0).localizedStandardCompare(artist) == .orderedSame } ?? false
+        }
+        let besideBefore = sameArtist(spots[0].before), besideAfter = sameArtist(spots[0].after)
+        if besideAfter && !besideBefore { return 1 }
+        if besideBefore && !besideAfter { return 0 }
+        if let openShelf, let index = spots.firstIndex(where: { $0.shelf.id == openShelf }) { return index }
+        if let cabinet, let index = spots.firstIndex(where: { $0.shelf.cabinet?.id == cabinet }) { return index }
+        return 0
+    }
+
+    /// The artist part of the sort key (see `SortingService.sortKey`).
+    private static func artistKey(_ copy: RecordCopy) -> Substring {
+        let key = key(copy)
+        return key.prefix { $0 != "\t" }
+    }
+
     /// The shelves each of `copies` (without a shelf) fits alphabetically,
     /// by copy ID – the shelves of `spots`, for many records in one go.
     static func fittingShelves(for copies: [RecordCopy], in shelves: [Shelf]) -> [UUID: [Shelf]] {

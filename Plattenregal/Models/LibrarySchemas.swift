@@ -217,8 +217,62 @@ enum LibrarySchemaV17: VersionedSchema {
     }
 }
 
-// The current schema is V17 (see `LibraryStorage`); its models are those of
-// V15 plus `SaleCopyMark` and `ReleaseVideoList`.
+// V18 adds the shelf page's history ("Verlauf"): every record sorted in,
+// moved or taken out, so it can be undone later – a model of its own, so
+// V15–V17 are carried over unchanged.
+enum LibrarySchemaV18: VersionedSchema {
+    static let versionIdentifier = Schema.Version(18, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        LibrarySchemaV17.models + [ShelfHistoryEntry.self]
+    }
+
+    /// One change of a record's place: from a compartment (or none) to a
+    /// compartment (or none). Names and titles are kept as they were, so the
+    /// entry still reads right once the record or compartment is gone.
+    @Model final class ShelfHistoryEntry {
+        @Attribute(.unique) var id: UUID
+        var date: Date
+        var copyID: UUID
+        var artist: String
+        var title: String
+        /// `nil`: the record had no compartment before (sorted in).
+        var fromShelfID: UUID?
+        var fromPosition: Int
+        /// „KALLAX · Fach 4“ at the time.
+        var fromName: String
+        /// `nil`: the record left the shelves (taken out).
+        var toShelfID: UUID?
+        var toPosition: Int
+        var toName: String
+        /// Sorting in lifted „Gesucht“ / „Ohne Regalplatz“; undoing restores them.
+        var clearedMissing: Bool
+        var clearedExclusion: Bool
+        /// Set once it was undone; the entry stays, marked as such.
+        var undoneAt: Date?
+
+        init(copyID: UUID, artist: String, title: String,
+             fromShelfID: UUID?, fromPosition: Int, fromName: String,
+             toShelfID: UUID?, toPosition: Int, toName: String,
+             clearedMissing: Bool = false, clearedExclusion: Bool = false, date: Date = .now) {
+            id = UUID()
+            self.date = date
+            self.copyID = copyID
+            self.artist = artist
+            self.title = title
+            self.fromShelfID = fromShelfID
+            self.fromPosition = fromPosition
+            self.fromName = fromName
+            self.toShelfID = toShelfID
+            self.toPosition = toPosition
+            self.toName = toName
+            self.clearedMissing = clearedMissing
+            self.clearedExclusion = clearedExclusion
+        }
+    }
+}
+
+// The current schema is V18 (see `LibraryStorage`); its models are those of
+// V15 plus `SaleCopyMark`, `ReleaseVideoList` and `ShelfHistoryEntry`.
 typealias Release = LibrarySchemaV15.Release
 typealias RecordCopy = LibrarySchemaV15.RecordCopy
 typealias Shelf = LibrarySchemaV15.Shelf
@@ -231,11 +285,15 @@ typealias OptimizationExclusion = LibrarySchemaV15.OptimizationExclusion
 typealias MissingCopyMark = LibrarySchemaV15.MissingCopyMark
 typealias SaleCopyMark = LibrarySchemaV16.SaleCopyMark
 typealias ReleaseVideoList = LibrarySchemaV17.ReleaseVideoList
+typealias ShelfHistoryEntry = LibrarySchemaV18.ShelfHistoryEntry
 
 enum LibraryMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [LibrarySchemaV15.self, LibrarySchemaV16.self, LibrarySchemaV17.self] }
+    static var schemas: [any VersionedSchema.Type] {
+        [LibrarySchemaV15.self, LibrarySchemaV16.self, LibrarySchemaV17.self, LibrarySchemaV18.self]
+    }
     static var stages: [MigrationStage] {
         [.lightweight(fromVersion: LibrarySchemaV15.self, toVersion: LibrarySchemaV16.self),
-         .lightweight(fromVersion: LibrarySchemaV16.self, toVersion: LibrarySchemaV17.self)]
+         .lightweight(fromVersion: LibrarySchemaV16.self, toVersion: LibrarySchemaV17.self),
+         .lightweight(fromVersion: LibrarySchemaV17.self, toVersion: LibrarySchemaV18.self)]
     }
 }

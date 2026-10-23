@@ -8,8 +8,11 @@ enum LibraryError: LocalizedError {
     case missingMarkNotSaved(found: Bool, any Error)
     /// "Reihenfolge übernehmen" (Sortierung prüfen) couldn't be saved.
     case orderNotSaved(any Error)
+    /// A history entry that can't be undone (any more), see `ShelfHistory.Blocker`.
+    case undoNotPossible(ShelfHistory.Blocker)
     var errorDescription: String? {
         switch self {
+        case .undoNotPossible(let blocker): blocker.message
         case .orderNotSaved:
             String(localized: "Die neue Reihenfolge konnte nicht gespeichert werden – das Fach ist unverändert. Bitte versuche es noch einmal. Klappt es weiterhin nicht, starte Plattenregal neu.")
         case .missingMarkNotSaved(let found, _):
@@ -87,38 +90,55 @@ struct PositionService {
     #endif
     /// `found`: the record was just taken in hand and put there (sorting in),
     /// so a "Gesucht" mark goes in the same transaction. Plain
-    /// moves (quick editor, undo) keep the mark.
+    /// moves (quick editor) keep the mark. Every move goes into the history
+    /// ("Verlauf", see `ShelfHistory`), in the same transaction.
     func move(_ copy: RecordCopy, to shelf: Shelf, position: Int, found: Bool = false) throws {
         try validate(shelf: shelf, position: position, excluding: copy.id)
         let from = copy.shelf.map { "\(Self.name($0)), Position \(copy.positionInShelf)" } ?? "ohne Fach"
         var foundAgain = false
         try save {
-            let oldShelf = copy.shelf
+            let oldShelf = copy.shelf, oldPosition = copy.positionInShelf
             var destination = ordered(shelf, excluding: copy.id)
             copy.shelf = shelf
             destination.insert(copy, at: position - 1)
             if let oldShelf, oldShelf.id != shelf.id { renumber(ordered(oldShelf, excluding: copy.id)) }
             renumber(destination)
-            try markExcluded([copy.id], false)
+            let wasExcluded = try markExcluded([copy.id], false)
             if found { foundAgain = try markMissing([copy.id], false) }
+            // Put down where it stood: nothing happened.
+            if oldShelf?.id != shelf.id || oldPosition != position {
+                record(copy, from: oldShelf, position: oldPosition, to: shelf, position: position,
+                       clearedMissing: foundAgain, clearedExclusion: wasExcluded)
+            }
         }
         AppLog.info("Regal", "\(Self.name(copy)): \(from) → \(Self.name(shelf)), Position \(position)\(foundAgain ? " · nicht mehr auf der Suchliste" : "")")
     }
-    func unplace(_ copy: RecordCopy) throws {
+    /// The history entry it wrote, for the "Aus Fach entfernt" toast.
+    @discardableResult func unplace(_ copy: RecordCopy) throws -> ShelfHistoryEntry? {
         let from = copy.shelf.map(Self.name) ?? "ohne Fach"
+        var entry: ShelfHistoryEntry?
         try save {
-            let oldShelf = copy.shelf
+            let oldShelf = copy.shelf, oldPosition = copy.positionInShelf
             copy.shelf = nil; copy.positionInShelf = 0
-            if let oldShelf { renumber(ordered(oldShelf, excluding: copy.id)) }
+            if let oldShelf {
+                renumber(ordered(oldShelf, excluding: copy.id))
+                entry = record(copy, from: oldShelf, position: oldPosition, to: nil, position: 0)
+            }
         }
         AppLog.info("Regal", "\(Self.name(copy)) aus \(from) genommen")
+        return entry
     }
     /// Takes several copies out of their shelves in one transaction: either all
     /// of them leave and every affected shelf closes its gaps, or none does.
     func unplace(_ copies: [RecordCopy]) throws {
         // The confirmation may come after the last one left by other means.
         guard !copies.isEmpty else { return }
-        try save { takeOut(copies) }
+        try save {
+            for copy in copies {
+                if let shelf = copy.shelf { record(copy, from: shelf, position: copy.positionInShelf, to: nil, position: 0) }
+            }
+            takeOut(copies)
+        }
         AppLog.info("Regal", "\(copies.count) Platte(n) gesammelt aus dem Regal genommen: \(copies.map(Self.name).joined(separator: ", "))")
     }
     /// Takes copies out of the shelf allocation entirely ("Ohne Regalplatz") or
@@ -135,14 +155,18 @@ struct PositionService {
         }
         AppLog.info("Regal", "\(excluded ? "Ohne Regalplatz" : "Wieder fürs Regal vorgesehen"): \(copies.map(Self.name).joined(separator: ", "))")
     }
-    private func markExcluded(_ ids: Set<UUID>, _ excluded: Bool) throws {
+    /// Whether any mark changed (a move into a shelf lifts "Ohne Regalplatz";
+    /// the history keeps that, so undoing puts it back).
+    @discardableResult private func markExcluded(_ ids: Set<UUID>, _ excluded: Bool) throws -> Bool {
         let existing = try context.fetch(FetchDescriptor<OptimizationExclusion>())
         if excluded {
-            let present = Set(existing.map(\.copyID))
-            for id in ids.subtracting(present) { context.insert(OptimizationExclusion(copyID: id)) }
-        } else {
-            for row in existing where ids.contains(row.copyID) { context.delete(row) }
+            let added = ids.subtracting(existing.map(\.copyID))
+            for id in added { context.insert(OptimizationExclusion(copyID: id)) }
+            return !added.isEmpty
         }
+        let cleared = existing.filter { ids.contains($0.copyID) }
+        for row in cleared { context.delete(row) }
+        return !cleared.isEmpty
     }
     /// Marks copies as "Gesucht" (they should stand in their shelf
     /// but weren't found there) or as found again. Only a note for the shelf
@@ -232,6 +256,52 @@ struct PositionService {
             shelf.isReserved = isReserved
         }
         AppLog.info("Regal", "\(Self.name(shelf)): \(isReserved ? "gesperrt" : "nicht gesperrt")\(shelf.name.isEmpty ? "" : ", Name „\(shelf.name)“")")
+    }
+
+    // MARK: History ("Verlauf")
+
+    /// Notes a change of place in the history; runs inside a `save`.
+    @discardableResult private func record(_ copy: RecordCopy, from: Shelf?, position fromPosition: Int, to: Shelf?, position toPosition: Int,
+                                           clearedMissing: Bool = false, clearedExclusion: Bool = false) -> ShelfHistoryEntry {
+        let entry = ShelfHistoryEntry(
+            copyID: copy.id, artist: copy.release?.displayArtist ?? "", title: copy.release?.displayTitle ?? "",
+            fromShelfID: from?.id, fromPosition: from == nil ? 0 : fromPosition, fromName: from.map(Self.name) ?? "",
+            toShelfID: to?.id, toPosition: to == nil ? 0 : toPosition, toName: to.map(Self.name) ?? "",
+            clearedMissing: clearedMissing, clearedExclusion: clearedExclusion)
+        context.insert(entry)
+        return entry
+    }
+
+    /// Takes a change back: the record returns to where it stood before –
+    /// its old compartment and position (or out of the shelves again, with
+    /// "Gesucht" or "Ohne Regalplatz" as before). Only while the record still
+    /// stands where the change put it, and only the newest change of a
+    /// record; the entry stays in the history, marked as undone. One transaction.
+    func undo(_ entry: ShelfHistoryEntry) throws {
+        let check = try ShelfHistory.check(entry, in: context)
+        if let blocker = check.blocker { throw LibraryError.undoNotPossible(blocker) }
+        guard let copy = check.copy else { throw LibraryError.undoNotPossible(.recordGone) }
+        let back = check.fromShelf
+        var position = 0
+        try save {
+            let current = copy.shelf
+            if let back {
+                var destination = ordered(back, excluding: copy.id)
+                position = min(max(entry.fromPosition, 1), destination.count + 1)
+                copy.shelf = back
+                destination.insert(copy, at: position - 1)
+                if let current, current.id != back.id { renumber(ordered(current, excluding: copy.id)) }
+                renumber(destination)
+            } else {
+                copy.shelf = nil; copy.positionInShelf = 0
+                if let current { renumber(ordered(current, excluding: copy.id)) }
+            }
+            if entry.clearedMissing { try markMissing([copy.id], true) }
+            if entry.clearedExclusion { try markExcluded([copy.id], true) }
+            entry.undoneAt = .now
+        }
+        let to = back.map { "\(Self.name($0)), Position \(position)" } ?? "ohne Fach"
+        AppLog.info("Regal", "Rückgängig: \(Self.name(copy)) wieder \(to)\(entry.clearedMissing ? " · wieder auf der Suchliste" : "")\(entry.clearedExclusion ? " · wieder „Ohne Regalplatz“" : "")")
     }
 
     /// For the protocol: which record, which compartment.

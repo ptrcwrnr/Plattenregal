@@ -136,6 +136,8 @@ struct ShelfBackupService {
             let cleared = try context.fetch(FetchDescriptor<MissingCopyMark>()).filter { excluded.contains($0.copyID) }
             for row in cleared { context.delete(row) }
             if !cleared.isEmpty { AppLog.info("Sicherung", "Suchliste: \(cleared.count) Platte(n) entfernt – laut Sicherung „Ohne Regalplatz“") }
+            // Every place is the backup's now; the history's no longer hold.
+            try ShelfHistory.clear(in: context)
         }
     }
 }

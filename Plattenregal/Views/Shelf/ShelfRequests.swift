@@ -9,6 +9,8 @@ import SwiftUI
     var placing: UUID?
     /// The round button: every record without a shelf, each to its place.
     var sortingIn = false
+    /// The small button beside it (and ⌘Y): the "Verlauf".
+    var showingHistory = false
 }
 
 /// What is typed into the search field in the toolbar while the shelf page is

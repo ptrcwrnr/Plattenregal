@@ -115,7 +115,7 @@ extension AllTests.LibraryTests {
             try context.save()
             return (placed.id, missing.id)
         }
-        let schema = Schema(versionedSchema: LibrarySchemaV17.self)
+        let schema = Schema(versionedSchema: LibrarySchemaV18.self)
         let container = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self,
                                            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
         let context = container.mainContext
@@ -193,7 +193,7 @@ extension AllTests.LibraryTests {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
-        let schema = Schema(versionedSchema: LibrarySchemaV17.self)
+        let schema = Schema(versionedSchema: LibrarySchemaV18.self)
         let config = ModelConfiguration(schema: schema, url: directory.appendingPathComponent("Test.store"), cloudKitDatabase: .none)
         let id: UUID = try autoreleasepool {
             let first = try ModelContainer(for: schema, migrationPlan: LibraryMigrationPlan.self, configurations: config)
