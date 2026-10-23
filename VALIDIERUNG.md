@@ -1,3 +1,22 @@
+# Aktueller Stand · 23.10.2026 (Einheitliche Maße, Verlauf, Demo, Ranglisten)
+
+Projektversion **1.1.2 (102026)**, Schema **V18**. Prüfung nach den Änderungen vom 23.10. abends: einheitliche Höhen, Linien, Schriftrollen und Bausteine; Verlauf wie „Platte hinzufügen“; Demo mit Beispiel für jeden Zustand; Ranglisten der Statistik bis Platz 20. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** `AppStyle` (Höhen, Linien, Schriftrollen, Symbole), alle Design-Bausteine mit festen Höhen, `SymbolTile`, `StepNumber`, `SmallRoundButton`, Statistik-Kacheln und Kurven, `ShelfHistoryView`, `AssignmentCard`, `DemoData`, `ArtistPodium`, `LabelBoard`, `StatisticsLayout`.
+- **Befunde (behoben):** Rubriken-Leiste 30 pt, Suchfeld 34 pt; `controlHeight` stand veraltet auf 26. Auswahlränder 1/1,5/2 pt gemischt. Sparkline und Wertverlauf verschieden gezeichnet. Symbol-Plättchen, kleine runde Knöpfe und Schrittnummern je zwei- bis dreimal leicht anders nachgebaut. Der ganze Verlauf (seit 22.10.) war im Englischen unübersetzt (28 Texte), dazu die zwei neuen Texte von heute.
+- **Fehlermeldungen:** keine neuen. Die Gründe im Verlauf („Seitdem bewegt“ usw.) sind unverändert, stehen jetzt als Marke statt als grauer Text.
+- **macOS-Absturzberichte:** keine Berichte `Plattenregal-*.ips` vorhanden.
+- **App-Protokoll** 23.10.: kein `ERROR`. 36 Warnungen „vorige Sitzung nicht normal beendet“, alle zwischen 17:46 und 18:05 (33 Demo, 3 echte App) aus früheren, abgebrochenen Läufen; die Demo-Läufe ab 22:11 für die Bildschirmfotos endeten alle normal („Beendet“).
+- **Lokalisierung:** 912 Einträge, alle mit Englisch, Platzhalter passen. Acht Einträge sind als veraltet markiert und stammen von vor heute („ und “, „Cover“, „Die Spalten füllen …“, „In: “, „Speichern“, „von %lld“, „Weiter“, „Zurück“); nicht entfernt.
+- **Nicht geprüft:** Modern am Bildschirm (`--snapshot` zeichnet kein Glas), „Rückgängig“ in der laufenden App angeklickt, die aufgeklappte Rangliste (lässt sich per Startargument nicht öffnen), Willkommensseite und „Sortierung prüfen“ mit den neuen Schrittnummern.
+
+## Verifikation
+
+- Debug-Build ohne Fehler, alle 233 Tests bestanden (der Demo-Test prüft jetzt jeden Zustand der Beispielsammlung).
+- Per `--snapshot` angesehen: Collection, Regal, Statistik, Verlauf und „Platte hinzufügen“ in Klassisch hell; Collection hell und Verlauf dunkel in Modern.
+
 # Aktueller Stand · 20.10.2026 (Übergänge, Toolbar, Reihenfolge der Designs)
 
 Projektversion **1.1.2 (102026)**, Schema **V16**. Prüfung nach den Änderungen vom 20.10. (Auswahl in den Umschaltern, Seiten-, Tab- und Regalwechsel, Toolbar im Takt der Seite, Klassisch oben in Darstellung, zwei Debug-Startargumente). Ein erfolgreicher Testlauf beweist keine allgemeine Absturz- oder Datenverlustfreiheit.

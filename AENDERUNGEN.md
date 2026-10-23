@@ -1,3 +1,11 @@
+# Statistik: Ranglisten bis Platz 20, Englisch für den Verlauf · 23.10.2026
+
+- **Top-Künstler und Labels:** Unter den Kacheln ließ sich die Liste bisher bis zum letzten Eintrag aufklappen („Alle 555 anzeigen“, bei Labels „Alle N Labels“) – zu lang, und ab da ruckelig, weil jede Zeile beim Erscheinen ihren Balken wachsen lässt. Jetzt endet beides bei Platz 20 (`StatisticsLayout.rankingCount`): Künstler 5 (bzw. 3) auf dem Podest, darunter aufklappbar bis Platz 20; Labels 10 (bzw. 6) als Kacheln, darunter bis Platz 20. Der Knopf heißt in beiden „Rangliste bis Platz 20“ / „Rangliste ausblenden“.
+- **Englisch:** Der Verlauf hatte keine englischen Texte (28 Einträge, seit 22.10.), dazu fehlten die zwei neuen vom Umbau heute. Alle ergänzt; die nicht mehr benutzten „Alle %lld Labels“ und „Weitere Labels ausblenden“ entfernt.
+- STATISTIK.md (Ranglisten, Sparkline), README („+“ am Fach), VALIDIERUNG.md (Stand 23.10.).
+- Geprüft: Debug-Build, alle 233 Tests bestanden; Lokalisierung vollständig; Protokoll ohne `ERROR`, keine Absturzberichte. Die aufgeklappte Rangliste nicht im Bild gesehen (lässt sich per Startargument nicht öffnen).
+- Korrektur zu einer Aussage im Gespräch: Die Discogs-Künstler-IDs sind gespeichert (in `basicInformation` jeder Platte; die Statistik gruppiert schon danach). Künstlerbilder bräuchten also keine neue Datenbank-Version – sie bleiben trotzdem weg.
+
 # Regal: Verlauf groß wie „Platte hinzufügen“, Demo mit jedem Zustand · 23.10.2026
 
 - **Verlauf neu gestaltet:** Bisher kleine Zeilen (38-pt-Cover, Text klein rechts, „Rückgängig“ als Link). Jetzt aufgebaut wie „Platte hinzufügen“: oben eine Karte (`AssignmentCard`, jetzt mit wählbarem Symbol) mit Uhr-Symbol, „Verlauf“ und einem Satz, wozu er da ist; rechts erscheint wie dort „N rückgängig gemacht“. Darunter je Änderung eine große Zeile: Cover in Fachgröße (132 pt, jetzt `AssignmentRowMetrics.largeCoverSize`, von beiden Fenstern genutzt) als Plattenhülle, die Beschriftung wie im Fach (`RecordCaption`), darunter groß (`sectionTitle`) was passiert ist – in der Akzentfarbe, solange es sich zurücknehmen lässt, sonst gedämpft –, Uhrzeit und Position, und der Knopf „Rückgängig“ (`SecondaryButton`). Geht es nicht, steht an seiner Stelle eine Marke mit dem Grund. Tagesüberschriften und Ränder wie im Hinzufügen-Fenster.

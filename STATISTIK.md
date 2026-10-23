@@ -19,11 +19,11 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 
 | Abschnitt | Inhalt |
 |---|---|
-| Deine Sammlung | Sammlungswert (Median) mit kleiner Kurve; Anzahl Schallplatten, Releases, Künstler, Styles und Labels |
+| Deine Sammlung | Sammlungswert (Median) mit kleiner Kurve (gezeichnet wie der Wertverlauf: gleiche Linie, Fläche und Glättung); Anzahl Schallplatten, Releases, Künstler, Styles und Labels |
 | Auf einen Blick | Häufigster Künstler, Style, Jahrzehnt und Jahr, Neuzugänge im laufenden Jahr |
 | Sammlungswert im Verlauf | Median, Niedrig und Hoch über 1 Monat bis „Alles“ |
 | Klangbild | Genres, Styles und Formate |
-| Top-Künstler, Labels | Die häufigsten, ausklappbar |
+| Top-Künstler, Labels | Die häufigsten: Künstler mit Cover in einer Reihe (je nach Breite 3 oder 5), Labels als Kacheln in zwei Reihen; darunter ausklappbar die Rangliste bis Platz 20 (`StatisticsLayout.rankingCount`) – nicht mehr alle Einträge, die lange Liste war unübersichtlich und ruckelte, weil jede Zeile ihren Balken wachsen ließ |
 | Zufallsfund | Eine zufällige Platte mit Weg ins Regal |
 | Zeitreise | Veröffentlichungen nach Jahrzehnten oder Jahren |
 | Neuzugänge | Zugänge pro Monat oder Jahr, lückenlos vom ersten bis zum letzten Zeitraum (leere eingeschlossen) |

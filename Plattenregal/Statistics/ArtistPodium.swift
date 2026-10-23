@@ -2,7 +2,8 @@ import SwiftUI
 
 // MARK: - Artist podium
 
-/// The top artists as a row of covers with their rank, the rest as a list on demand.
+/// The top artists as a row of covers with their rank, the rest of the top
+/// twenty as a list on demand.
 struct ArtistPodium: View {
     let groups: [StatisticGroup]
     let total: Int
@@ -19,15 +20,16 @@ struct ArtistPodium: View {
                     ArtistTile(rank: index + 1, group: group, total: total, cover: cover(for: group), select: select)
                 }
             }
-            if groups.count > podiumCount {
+            let ranking = Array(groups.prefix(StatisticsLayout.rankingCount).dropFirst(podiumCount))
+            if !ranking.isEmpty {
                 Button {
                     withAnimation(AppStyle.standardAnimation) { showsList.toggle() }
                 } label: {
-                    Label(showsList ? "Rangliste ausblenden" : "Rangliste ab Platz \(podiumCount + 1)", systemImage: showsList ? "chevron.up" : "chevron.down")
+                    Label(showsList ? "Rangliste ausblenden" : "Rangliste bis Platz \(podiumCount + ranking.count)", systemImage: showsList ? "chevron.up" : "chevron.down")
                 }
                 .appLinkButton().font(.caption)
                 if showsList {
-                    GroupStatisticsList(groups: Array(groups.dropFirst(podiumCount)), total: total, columnCount: 2, select: select)
+                    GroupStatisticsList(groups: ranking, total: total, columnCount: 2, initialLimit: ranking.count, select: select)
                         .transition(AppStyle.funnelTransition())
                 }
             }

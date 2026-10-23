@@ -36,6 +36,10 @@ enum StatisticsLayout {
     static let tilePadding: CGFloat = AppStyle.rowSpacing
     static let titleSpacing: CGFloat = AppStyle.cardPadding
     static let maxWidth: CGFloat = 1200
+    /// Top artists and labels: tiles first, the rest of the ranking on
+    /// demand – never more than this many places in all. The full list of
+    /// hundreds was too long and stuttered, every row growing its bar.
+    static let rankingCount = 20
     /// Columns for a card whose content (inside its padding) is `width` wide.
     static func columnCount(contentWidth width: CGFloat) -> Int { width >= 860 ? 5 : 3 }
     static func columns(_ count: Int) -> [GridItem] {

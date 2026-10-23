@@ -2,7 +2,8 @@ import SwiftUI
 
 // MARK: - Labels
 
-/// The top labels as two rows of tiles on the page grid, the rest as a list on demand.
+/// The top labels as two rows of tiles on the page grid, the rest of the top
+/// twenty as a list on demand (like the artists).
 struct LabelBoard: View {
     let groups: [StatisticGroup]
     let total: Int
@@ -21,15 +22,16 @@ struct LabelBoard: View {
                     LabelTile(rank: index + 1, group: group, total: total, ratio: CGFloat(group.count) / maximum, select: select)
                 }
             }
-            if groups.count > boardCount {
+            let ranking = Array(groups.prefix(StatisticsLayout.rankingCount).dropFirst(boardCount))
+            if !ranking.isEmpty {
                 Button {
                     withAnimation(AppStyle.standardAnimation) { showsList.toggle() }
                 } label: {
-                    Label(showsList ? "Weitere Labels ausblenden" : "Alle \(groups.count) Labels", systemImage: showsList ? "chevron.up" : "chevron.down")
+                    Label(showsList ? "Rangliste ausblenden" : "Rangliste bis Platz \(boardCount + ranking.count)", systemImage: showsList ? "chevron.up" : "chevron.down")
                 }
                 .appLinkButton().font(.caption)
                 if showsList {
-                    GroupStatisticsList(groups: Array(groups.dropFirst(boardCount)), total: total, columnCount: 2, select: select)
+                    GroupStatisticsList(groups: ranking, total: total, columnCount: 2, initialLimit: ranking.count, select: select)
                         .transition(AppStyle.funnelTransition())
                 }
             }

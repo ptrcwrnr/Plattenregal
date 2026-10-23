@@ -226,6 +226,16 @@
         }
       }
     },
+    "„Rückgängig“ stellt eine Platte wieder dorthin, wo sie vorher stand" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Undo” puts a record back where it stood before"
+          }
+        }
+      }
+    },
     "„Wieder gefunden“" : {
       "localizations" : {
         "en" : {
@@ -964,6 +974,16 @@
         }
       }
     },
+    "%lld rückgängig gemacht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld undone"
+          }
+        }
+      }
+    },
     "%lld Sekunden" : {
       "localizations" : {
         "en" : {
@@ -1388,16 +1408,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show All %lld"
-          }
-        }
-      }
-    },
-    "Alle %lld Labels" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All %lld Labels"
           }
         }
       }
@@ -2590,10 +2600,24 @@
       }
     },
     "Das Fach, in dem die Platte vorher stand, gibt es nicht mehr – etwa weil ein Regal verkleinert wurde." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The compartment the record stood in before no longer exists – for example because a shelf was made smaller."
+          }
+        }
+      }
     },
     "Das Fach, in dem die Platte vorher stand, ist inzwischen gesperrt. Entsperre es per Rechtsklick, dann geht es." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The compartment the record stood in before is now locked. Unlock it with a right-click, then it works."
+          }
+        }
+      }
     },
     "Das gemeinsame Protokoll der App – in der Demo lässt es sich nicht leeren." : {
       "localizations" : {
@@ -3276,7 +3300,14 @@
       }
     },
     "Die Platte ist nicht mehr in der Sammlung." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record is no longer in the collection."
+          }
+        }
+      }
     },
     "Die Platte oder das Fach gibt es nicht mehr – vielleicht wurde gerade etwas geändert. Bitte versuche es noch einmal." : {
       "localizations" : {
@@ -3289,10 +3320,24 @@
       }
     },
     "Die Platte steht inzwischen auf „Ohne Regalplatz“ und kommt deshalb nicht zurück ins Fach." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record is now “Kept off shelf” and therefore doesn’t go back into the compartment."
+          }
+        }
+      }
     },
     "Die Platte wurde seitdem noch einmal bewegt. Mache zuerst die neuere Änderung rückgängig." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record has been moved again since. Undo the newer change first."
+          }
+        }
+      }
     },
     "Die Platten behalten ihre Plätze, sind aber auf der Regalseite ausgeblendet und werden beim Einsortieren übersprungen." : {
       "localizations" : {
@@ -3456,7 +3501,14 @@
       }
     },
     "Diese Änderung ist schon rückgängig gemacht." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This change has already been undone."
+          }
+        }
+      }
     },
     "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter …“ oder automatisch erstellt hat." : {
       "localizations" : {
@@ -3889,10 +3941,14 @@
       }
     },
     "Einsortiert in „%@“" : {
-
-    },
-    "Einsortiert, verschoben, herausgenommen – „Rückgängig“ stellt die Platte wieder dorthin, wo sie vorher stand." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Placed in “%@”"
+          }
+        }
+      }
     },
     "Einstellungen" : {
       "localizations" : {
@@ -4263,10 +4319,24 @@
       }
     },
     "Fach gesperrt" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartment locked"
+          }
+        }
+      }
     },
     "Fach gibt es nicht mehr" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartment no longer exists"
+          }
+        }
+      }
     },
     "Fach sperren" : {
       "localizations" : {
@@ -4619,7 +4689,14 @@
       }
     },
     "Gestern" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
+          }
+        }
+      }
     },
     "Gesucht" : {
       "localizations" : {
@@ -4793,7 +4870,14 @@
       }
     },
     "Herausgenommen aus „%@“" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taken out of “%@”"
+          }
+        }
+      }
     },
     "Herausnehmen rückgängig machen" : {
       "localizations" : {
@@ -4806,7 +4890,14 @@
       }
     },
     "Heute" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        }
+      }
     },
     "Heute aus deiner Sammlung" : {
       "localizations" : {
@@ -6102,7 +6193,14 @@
       }
     },
     "Nicht mehr in der Sammlung" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No longer in the collection"
+          }
+        }
+      }
     },
     "Nicht mehr verkaufen" : {
       "localizations" : {
@@ -6135,7 +6233,14 @@
       }
     },
     "Nimmt die Platte wieder aus dem Fach – sie steht dann wieder unter „Noch nicht einsortiert“." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takes the record out of the compartment again – it is then listed under “Not placed yet” again."
+          }
+        }
+      }
     },
     "Noch einmal" : {
       "localizations" : {
@@ -6348,7 +6453,14 @@
       }
     },
     "Noch nichts im Verlauf" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing in the History Yet"
+          }
+        }
+      }
     },
     "Notiz" : {
       "localizations" : {
@@ -6930,10 +7042,10 @@
     },
     "Position %lld → %lld" : {
       "localizations" : {
-        "de" : {
+        "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Position %1$lld → %2$lld"
+            "state" : "translated",
+            "value" : "Position %lld → %lld"
           }
         }
       }
@@ -7018,22 +7130,22 @@
         }
       }
     },
-    "Rangliste ab Platz %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ranking from #%lld"
-          }
-        }
-      }
-    },
     "Rangliste ausblenden" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hide Ranking"
+          }
+        }
+      }
+    },
+    "Rangliste bis Platz %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ranking to #%lld"
           }
         }
       }
@@ -7349,7 +7461,14 @@
       }
     },
     "Rückgängig gemacht" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undone"
+          }
+        }
+      }
     },
     "Rund 50 Platten in zwei Regalen, Wantlist und Wertverlauf. Alles lässt sich ändern, nichts wird gespeichert, deine Sammlung bleibt unberührt. Plattenregal startet dafür neu." : {
       "localizations" : {
@@ -7522,7 +7641,14 @@
       }
     },
     "Seitdem bewegt" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moved since"
+          }
+        }
+      }
     },
     "Seite %lld" : {
       "localizations" : {
@@ -7605,7 +7731,14 @@
       }
     },
     "Sobald du Platten einsortierst, verschiebst oder aus einem Fach nimmst, stehen sie hier – und lassen sich rückgängig machen." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As soon as you place, move or take records out of a compartment, they appear here – and can be undone."
+          }
+        }
+      }
     },
     "Sortierung prüfen" : {
       "localizations" : {
@@ -7755,7 +7888,14 @@
       }
     },
     "Stand an Position %lld" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was at position %lld"
+          }
+        }
+      }
     },
     "Standard" : {
       "localizations" : {
@@ -7908,7 +8048,14 @@
       }
     },
     "Stellt die Platte wieder an ihren vorigen Platz." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puts the record back in its previous place."
+          }
+        }
+      }
     },
     "Stile" : {
       "localizations" : {
@@ -8351,7 +8498,14 @@
       }
     },
     "Umgestellt in „%@“" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rearranged in “%@”"
+          }
+        }
+      }
     },
     "Unbekannt" : {
       "localizations" : {
@@ -8464,10 +8618,24 @@
       }
     },
     "Verlauf" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        }
+      }
     },
     "Verlauf – zuletzt einsortiert, verschoben, herausgenommen" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History – recently placed, moved, taken out"
+          }
+        }
+      }
     },
     "Verlauf des Sammlungswerts" : {
       "localizations" : {
@@ -8480,7 +8648,14 @@
       }
     },
     "Verlauf: Einsortiertes und Verschobenes rückgängig machen" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History: undo placing and moving"
+          }
+        }
+      }
     },
     "Verringern" : {
       "localizations" : {
@@ -8530,10 +8705,10 @@
     },
     "Von „%@“ nach „%@“" : {
       "localizations" : {
-        "de" : {
+        "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Von „%1$@“ nach „%2$@“"
+            "state" : "translated",
+            "value" : "From “%@” to “%@”"
           }
         }
       }
@@ -8772,16 +8947,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More %@ (%lld)"
-          }
-        }
-      }
-    },
-    "Weitere Labels ausblenden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hide Other Labels"
           }
         }
       }
