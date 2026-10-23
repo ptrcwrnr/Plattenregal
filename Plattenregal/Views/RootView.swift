@@ -126,6 +126,22 @@ struct RootView: View {
                 try? await Task.sleep(for: .seconds(3))
                 destination.current = page
             }
+            // Recording full screen: --preview-fullscreen enters it after
+            // launch (a window restored in full screen stays there). macOS
+            // ignores the request while another app is in front, so it
+            // activates first and tries again for up to 12 s – each time
+            // after the transition (well under 3 s) has run.
+            .task {
+                guard ProcessInfo.processInfo.arguments.contains("--preview-fullscreen") else { return }
+                for _ in 0..<4 {
+                    try? await Task.sleep(for: .seconds(3))
+                    guard let window = NSApp.windows.first(where: { $0.isVisible && $0.toolbar != nil }) else { continue }
+                    if window.styleMask.contains(.fullScreen) { return }
+                    NSApp.activate()
+                    window.makeKeyAndOrderFront(nil)
+                    window.toggleFullScreen(nil)
+                }
+            }
             #endif
     }
 
