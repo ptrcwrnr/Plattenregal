@@ -6,6 +6,7 @@
   - **Doppelte Suche:** Nach geänderten Plattendaten lief eine offene Regalsuche zweimal neu, weil `libraryVersion` schon im Änderungsschlüssel der Seite steckt und zusätzlich eigens beobachtet wurde. Die zweite Beobachtung ist entfernt.
 - README: Seiten (verborgene Regalseite).
 - Geprüft: Build ohne Warnungen, alle 234 Tests bestanden (`cabinetsCanBeReorderedAndRenamed` prüft jetzt die ganze Reihenfolge von `Shelf.inUse`, Regal für Regal in Lesereihenfolge). Gemessen mit einem vorübergehenden Test (36 Fächer, 720 Platten). In der App nicht angesehen: Seitenwechsel mit im Verborgenen geänderten Daten noch von Hand prüfen.
+- DMG 1.1.2 (Build 102026) neu ausgegeben, auf Wunsch mit unveränderter Versionsnummer: Prüfsumme gültig, App arm64, Signatur in Ordnung, Handbuch und Handbook enthalten (noch ohne den Verlauf), gebaut aus diesem Stand. Achtung: Sie enthält Datenbank V18 (Verlauf) – eine damit geöffnete Sammlung öffnet die frühere DMG 1.1.2 (V17) nicht mehr, obwohl beide 1.1.2 heißen.
 
 # Regal: Suche hebt nur das gemeinte Fach hervor · 23.10.2026
 
