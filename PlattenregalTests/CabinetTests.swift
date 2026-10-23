@@ -72,6 +72,8 @@ extension AllTests {
             // The compartments follow the cabinets' order (shelf page, export, sorting in).
             let inUse = Shelf.inUse(try container.mainContext.fetch(FetchDescriptor<Shelf>()))
             #expect(Array(inUse.map(\.number).suffix(2)) == [14, 13])
+            // Cabinet by cabinet, each in its reading order.
+            #expect(inUse.map(\.id) == (try cabinets.cabinets()).flatMap { $0.orderedShelves.map(\.id) })
 
             try cabinets.rename(flur, to: "  Diele ")
             #expect(flur.name == "Diele")

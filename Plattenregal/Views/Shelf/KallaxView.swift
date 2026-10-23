@@ -95,6 +95,17 @@ struct KallaxView: View {
     /// Per-shelf results behind `shelfStats` and `rangeLabels`; only shelves
     /// whose records changed are computed again.
     @State private var shelfContent = ShelfContentCache()
+    /// Whether the page is shown (see `PageActivity`).
+    @State private var activity = PageActivity()
+    /// Counts, labels and the sold count were computed at least once – at
+    /// the page's first build, shown or not, so the first visit is instant.
+    @State private var contentLoaded = false
+    /// Records, places or the account changed while the page was hidden
+    /// (a sync, edits on the collection page): `refreshContent` runs once it
+    /// shows again, not after every change nobody sees.
+    @State private var contentPending = false
+    /// The same for a running search and new tracklists (see `applySearchWhenShown`).
+    @State private var searchPending = false
     @State private var settingsTab: AppSettingsView.Tab?
     /// The side the next cabinet slides in from (see `show(_:)`).
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
@@ -104,11 +115,26 @@ struct KallaxView: View {
     private var shelves: [Shelf] { Shelf.inUse(allShelves) }
     private var activeCabinets: [Cabinet] { cabinets.filter(\.isActive) }
     /// The cabinet drawn at the top: the one holding the selected compartment.
-    private var shownCabinet: Cabinet? {
-        committedShelf?.cabinet.flatMap { cabinet in activeCabinets.first { $0.id == cabinet.id } } ?? activeCabinets.first
-    }
+    private var shownCabinet: Cabinet? { shown.cabinet }
     private var committedShelf: Shelf? { shelves.first { $0.id == highlight } }
-    private var detailShelf: Shelf? { committedShelf }
+    /// What one render of the page draws, read once: `shelves` filters and
+    /// sorts every compartment, and the rack, its tabs and the contents below
+    /// each asked for it again (about ten times per click in the table).
+    private struct Shown {
+        let shelves: [Shelf]
+        let cabinets: [Cabinet]
+        /// The selected compartment (`committedShelf`).
+        let shelf: Shelf?
+        /// The cabinet holding it (`shownCabinet`).
+        let cabinet: Cabinet?
+    }
+    private var shown: Shown {
+        let shelves = shelves
+        let cabinets = activeCabinets
+        let shelf = shelves.first { $0.id == highlight }
+        let cabinet = shelf?.cabinet.flatMap { cabinet in cabinets.first { $0.id == cabinet.id } } ?? cabinets.first
+        return Shown(shelves: shelves, cabinets: cabinets, shelf: shelf, cabinet: cabinet)
+    }
 
     /// Evaluated on every render of this page (a click in the table, too), so
     /// it must not walk the records. Every write reports itself in
@@ -169,6 +195,7 @@ struct KallaxView: View {
     /// `body`: plain substring checks against the prebuilt index instead of
     /// Unicode-comparing every record's text, tracks included.
     private func applySearch() {
+        searchPending = false
         let words = SearchIndex<UUID>.words(searchQuery)
         guard !words.isEmpty else { searchResults = ShelfSearchResults(); return }
         if searchIndexStale {
@@ -197,6 +224,34 @@ struct KallaxView: View {
         )
     }
 
+    /// A running search follows new tracklists or another account now if
+    /// the page is shown, else once it is. Not for changed records: the hits
+    /// may hold one that was deleted, and the hidden page still draws them.
+    private func applySearchWhenShown() {
+        searchIndexStale = true
+        guard !searchQuery.isEmpty else { return }
+        if activity.isActive { applySearch() } else { searchPending = true }
+    }
+
+    /// Statistics and range labels of the compartments and the sold count.
+    /// Reads every placed record's release after a sync (~40 ms for 720
+    /// records, more from disk).
+    private func refreshContent() {
+        contentLoaded = true
+        contentPending = false
+        shelfContent.refresh(allShelves, version: changes.libraryVersion)
+        shelfStats = Dictionary(uniqueKeysWithValues: shelves.map { ($0.id, shelfContent.stats(for: $0)) })
+        rangeLabels = ShelfRangeLabels.compute(for: allShelves, style: labelStyle, ends: shelfContent.ends)
+        soldCount = soldInShelves.count
+    }
+
+    /// `refreshContent` now if the page is shown or was never computed, else once it is shown.
+    /// Holds no records, so nothing stale can point at a deleted one meanwhile.
+    private func refreshContentWhenShown() {
+        guard activity.isActive || !contentLoaded else { contentPending = true; return }
+        refreshContent()
+    }
+
     /// The "Verlauf" on top of the page: its own step, the page's chain of
     /// modifiers is already as long as the compiler takes in one expression.
     var body: some View {
@@ -211,10 +266,18 @@ struct KallaxView: View {
                     .accessibilityHidden(true)
             }
             .appPanel(item: $history) { _ in ShelfHistoryView(labels: rangeLabels) }
+            // Catches up on what changed while another page was in front.
+            .trackPageActivity(activity) { active in
+                guard active else { return }
+                if contentPending { refreshContent() }
+                if searchPending { applySearch() }
+            }
     }
 
     private var shelfPage: some View {
         GeometryReader { geometry in
+            let page = self.shown
+            let cabinet = page.cabinet
             // The search's hits, else the compartment the card points to.
             let lit = searchResults.litShelfIDs ?? placement?.spot.map { [$0.shelf.id] }
             VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
@@ -229,16 +292,16 @@ struct KallaxView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     header
                     VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
-                        if activeCabinets.count > 1 { cabinetSwitcher }
+                        if page.cabinets.count > 1 { cabinetSwitcher(page) }
                         // One slot: the old cabinet fades out where the new one settles in.
                         ZStack {
                             ShelfFurniture(
-                                shelves: shownCabinet.map { cabinet in shelves.filter { $0.cabinet?.id == cabinet.id } } ?? shelves,
-                                rows: shownCabinet?.rows ?? ShelfGeometry.rows,
-                                columns: shownCabinet?.columns ?? ShelfGeometry.columns,
+                                shelves: cabinet.map { cabinet in page.shelves.filter { $0.cabinet?.id == cabinet.id } } ?? page.shelves,
+                                rows: cabinet?.rows ?? ShelfGeometry.rows,
+                                columns: cabinet?.columns ?? ShelfGeometry.columns,
                                 stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
                                 rangeLabel: { rangeLabels[$0.id] },
-                                selectedID: detailShelf?.id,
+                                selectedID: page.shelf?.id,
                                 litIDs: lit,
                                 lockPreview: lockPreview,
                                 select: selectShelf,
@@ -248,12 +311,12 @@ struct KallaxView: View {
                             // A compact overview with roughly KALLAX-like proportions, so the
                             // compartment area below (strip + table) gets most of the height.
                             // Always the full width, flush with the compartment area below.
-                            .frame(height: ShelfFurnitureMetrics.height(rows: shownCabinet?.rows ?? ShelfGeometry.rows))
+                            .frame(height: ShelfFurnitureMetrics.height(rows: cabinet?.rows ?? ShelfGeometry.rows))
                             // Another cabinet fades and settles in like a page.
-                            .id(shownCabinet?.id)
+                            .id(cabinet?.id)
                             .transition(AppStyle.pageTransition)
                         }
-                        shelfDetail
+                        shelfDetail(page.shelf)
                             .frame(maxHeight: .infinity, alignment: .top)
                     }
                 }
@@ -269,10 +332,9 @@ struct KallaxView: View {
             .overlay(alignment: .topTrailing) { searchResultsPanel }
         }
         .observedTask(id: { statsSignature }) {
-            shelfContent.refresh(allShelves, version: changes.libraryVersion)
-            shelfStats = Dictionary(uniqueKeysWithValues: shelves.map { ($0.id, shelfContent.stats(for: $0)) })
-            rangeLabels = ShelfRangeLabels.compute(for: allShelves, style: labelStyle, ends: shelfContent.ends)
-            soldCount = soldInShelves.count
+            refreshContentWhenShown()
+            // Shown or not: selection, card and hits must never keep a
+            // compartment or record that is gone (the hidden page still draws).
             ensureShelfSelected()
             refreshPlacement()
             searchIndexStale = true
@@ -296,12 +358,12 @@ struct KallaxView: View {
         .settingsOpener($settingsTab)
         // Another account synced: other records count as in the collection.
         .onChange(of: owner) {
-            soldCount = soldInShelves.count
-            searchIndexStale = true; if !searchQuery.isEmpty { applySearch() }
+            if activity.isActive { soldCount = soldInShelves.count } else { contentPending = true }
+            applySearchWhenShown()
         }
-        // Metadata and tracklist updates don't show up in `statsSignature`.
-        .onObservedChange(of: { changes.libraryVersion }) { _, _ in searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
-        .onObservedChange(of: { changes.tracksVersion }) { _, _ in searchIndexStale = true; if !searchQuery.isEmpty { applySearch() } }
+        // Tracklists don't show up in `statsSignature`; metadata does
+        // (`libraryVersion`), so the task above covers it.
+        .onObservedChange(of: { changes.tracksVersion }) { _, _ in applySearchWhenShown() }
         .onAppear { takePlacingRequest(); takeSortingInRequest() }
         #if DEBUG
         // Screenshots without clicking: --preview-add opens
@@ -391,17 +453,17 @@ struct KallaxView: View {
     }
 
     /// One tab per active cabinet; ⌘← / ⌘→ step through them.
-    private var cabinetSwitcher: some View {
+    private func cabinetSwitcher(_ shown: Shown) -> some View {
         HStack(spacing: AppStyle.itemSpacing) {
             GlassSegmentedPicker(
-                selection: Binding(get: { shownCabinet?.id }, set: { id in
+                selection: Binding(get: { shown.cabinet?.id }, set: { id in
                     if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
                 }),
-                options: activeCabinets.map { Optional($0.id) },
+                options: shown.cabinets.map { Optional($0.id) },
                 separators: true,
                 secondaryClick: { id, point in if let id { cabinetMenu = (id, point) } }
             ) { id in
-                cabinetTab(activeCabinets.first { $0.id == id })
+                cabinetTab(shown.cabinets.first { $0.id == id })
             }
             .accessibilityLabel("Regal")
             Spacer()
@@ -491,8 +553,9 @@ struct KallaxView: View {
         }
     }
 
-    @ViewBuilder private var shelfDetail: some View {
-        if let shown = detailShelf {
+    /// `selected`: `committedShelf`, read once for the render (see `Shown`).
+    @ViewBuilder private func shelfDetail(_ selected: Shelf?) -> some View {
+        if let shown = selected {
             // The placement card sits above the contents. While it comes, goes
             // or changes height, they move by an offset and keep their size:
             // resizing the grid or table on every frame of the animation made

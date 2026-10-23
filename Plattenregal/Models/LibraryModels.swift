@@ -25,8 +25,17 @@ extension Shelf {
     var numberText: String { String(localized: "Fach \(sortOrder)") }
 
     /// Every shelf in use, cabinet by cabinet, each in reading order.
+    /// Each shelf's cabinet is read once, not in every comparison of the
+    /// sort: the shelf page builds this list on every render.
     static func inUse(_ shelves: [Shelf]) -> [Shelf] {
-        shelves.filter(\.isInUse).sorted(by: physicalOrder)
+        shelves.compactMap { shelf -> (key: (Int, Int, Int), shelf: Shelf)? in
+            let cabinet = shelf.cabinet
+            // Same rule as `isInUse` and order as `physicalOrder`.
+            guard cabinet?.isActive ?? true else { return nil }
+            return ((cabinet?.sortOrder ?? 0, shelf.sortOrder, shelf.number), shelf)
+        }
+        .sorted { $0.key < $1.key }
+        .map(\.shelf)
     }
     /// A new compartment in `cabinet`. The cabinet is linked only after the
     /// insert: SwiftData mishandles relationships set on a model it doesn't know yet.
