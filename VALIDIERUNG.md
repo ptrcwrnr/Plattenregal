@@ -16,6 +16,7 @@ Projektversion **1.1.2 (102026)**, Schema **V18**. Prüfung nach den Änderungen
 
 - Debug-Build ohne Fehler, alle 233 Tests bestanden (der Demo-Test prüft jetzt jeden Zustand der Beispielsammlung).
 - Per `--snapshot` angesehen: Collection, Regal, Statistik, Verlauf und „Platte hinzufügen“ in Klassisch hell; Collection hell und Verlauf dunkel in Modern.
+- DMG 1.1.2 (Build 102026) neu ausgegeben: Prüfsumme gültig, arm64, Signatur in Ordnung, Mindestsystem 27.0, beide Handbücher, neue Texte (Deutsch und Englisch) enthalten, keine Debug-Schalter.
 
 # Aktueller Stand · 20.10.2026 (Übergänge, Toolbar, Reihenfolge der Designs)
 

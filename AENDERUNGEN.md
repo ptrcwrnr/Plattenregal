@@ -1,3 +1,9 @@
+# DMG 1.1.2 mit den Änderungen vom Abend neu ausgegeben · 23.10.2026
+
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (Release, Build 102026, Versionsnummer wie zuletzt unverändert). Enthält: einheitliche Höhen, Linien und Bausteine, den Verlauf im Aufbau von „Platte hinzufügen“, die Demo mit Beispiel für jeden Zustand, die Ranglisten bis Platz 20 und die englischen Texte des Verlaufs.
+- Geprüft: Prüfsumme gültig, App arm64, Signatur in Ordnung, Mindestsystem 27.0, Handbuch und Handbook enthalten (unverändert), die neue Ranglisten-Beschriftung im Programm, die englischen Verlaufstexte im Paket, die Debug-Schalter nicht. Die Release-App selbst nicht gestartet; der Code ist derselbe wie im geprüften Debug-Build.
+- Die Design-Ideen (Hi-Fi, Plattenkiste, Chamäleon, Nordisch, Nacht) sind nur als Skizzen im Gespräch entstanden und nicht in der App.
+
 # Statistik: Ranglisten bis Platz 20, Englisch für den Verlauf · 23.10.2026
 
 - **Top-Künstler und Labels:** Unter den Kacheln ließ sich die Liste bisher bis zum letzten Eintrag aufklappen („Alle 555 anzeigen“, bei Labels „Alle N Labels“) – zu lang, und ab da ruckelig, weil jede Zeile beim Erscheinen ihren Balken wachsen lässt. Jetzt endet beides bei Platz 20 (`StatisticsLayout.rankingCount`): Künstler 5 (bzw. 3) auf dem Podest, darunter aufklappbar bis Platz 20; Labels 10 (bzw. 6) als Kacheln, darunter bis Platz 20. Der Knopf heißt in beiden „Rangliste bis Platz 20“ / „Rangliste ausblenden“.
