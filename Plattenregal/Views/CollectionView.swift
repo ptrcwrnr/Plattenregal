@@ -273,7 +273,6 @@ struct CollectionView: View {
                                                                ? nil : copy.release?.track(matching: appliedQuery))
                                             }
                                             .buttonStyle(.plain)
-                                            .help("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")) · \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: " · \(group.copies.count) Exemplare") : "")")
                                             .accessibilityLabel("\(copy.release?.displayArtist ?? String(localized: "Unbekannt")), \(copy.release?.displayTitle ?? "—")\(group.copies.count > 1 ? String(localized: ", \(group.copies.count) Exemplare") : "")")
                                             .id(copy.id)
                                             .popover(isPresented: quickLookBinding(for: copy.id), arrowEdge: .trailing) {
@@ -308,11 +307,11 @@ struct CollectionView: View {
                             TableColumn("") { copy in CoverView(url: copy.release?.coverURL, size: 20) }.width(24)
                             TableColumn("Interpret") { copy in
                                 let artist = copy.release?.displayArtist ?? "—"
-                                Text(artist).lineLimit(1).help(artist)
+                                Text(artist).lineLimit(1)
                             }.width(min: 130, ideal: 190)
                             TableColumn("Titel") { copy in
                                 let title = copy.release?.displayTitle ?? "—"
-                                Text(title).lineLimit(1).help(title)
+                                Text(title).lineLimit(1)
                             }.width(min: 150, ideal: 230)
                             TableColumn("Jahr") { copy in
                                 Text(copy.release?.year.map(String.init) ?? "–").monospacedDigit().foregroundStyle(.secondary)

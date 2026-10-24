@@ -95,6 +95,5 @@ struct MatchedTrackLine: View {
         .font(.caption)
         .foregroundStyle(.tint)
         .lineLimit(1)
-        .help("Gefunden über den Track „\(track.title)“")
     }
 }

@@ -34,16 +34,6 @@
         }
       }
     },
-    " · %lld Exemplare" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " · %lld copies"
-          }
-        }
-      }
-    },
     " · inaktiv" : {
       "localizations" : {
         "en" : {
@@ -2483,16 +2473,6 @@
         }
       }
     },
-    "Cover konnte nicht geladen werden. Prüfe die Verbindung." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cover could not be loaded. Check the connection."
-          }
-        }
-      }
-    },
     "Cover werden bei Bedarf neu von Discogs geladen." : {
       "localizations" : {
         "en" : {
@@ -4538,16 +4518,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Found"
-          }
-        }
-      }
-    },
-    "Gefunden über den Track „%@“" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Found via the track “%@”"
           }
         }
       }

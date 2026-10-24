@@ -194,6 +194,7 @@ final class PageStackView<Page: Hashable>: NSView {
         host.autoresizingMask = [.width, .height]
         host.wantsLayer = true
         host.alphaValue = 0
+        host.isHidden = true
         addSubview(host)
         return host
     }
@@ -237,6 +238,18 @@ final class PageStackView<Page: Hashable>: NSView {
             host.layer?.removeAnimation(forKey: Self.fadeKey)
             host.layer?.removeAnimation(forKey: Self.shiftKey)
             host.alphaValue = key == page ? 1 : 0
+            if key == page { host.isHidden = false }
+        }
+        // Hidden once faded out: AppKit then hands it no pointer at all.
+        // SwiftUI shows help texts (`.help`) through tracking areas it adds
+        // whenever it likes, owned by its own tooltip manager – past `hitTest`
+        // and the overrides of `PageHostingView` –, so a page with zero
+        // opacity showed its help texts over the page shown.
+        if let outgoing {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.fadeOut) { [weak outgoing] in
+                guard let outgoing, !outgoing.isShown else { return }
+                outgoing.isHidden = true
+            }
         }
         guard let outgoing, let incomingLayer = incoming.layer, let outgoingLayer = outgoing.layer else { return }
         // The pages' layers count downwards (seen in the window): a negative
@@ -282,10 +295,10 @@ protocol PageHosting: NSView {
     var isShown: Bool { get set }
 }
 
-/// Pages that aren't shown stay in the window at zero opacity instead of
-/// `isHidden`: hiding and showing a hosting view makes AppKit walk the whole
-/// page (focus, cursor rects) and SwiftUI re-check every text's environment,
-/// tens of milliseconds per switch. So what `isHidden` would do is done here.
+/// Pages that aren't shown stay in the window: at zero opacity, and hidden
+/// (`isHidden`) once faded out – only that keeps SwiftUI's help texts of a
+/// page off the one shown (see `PageStackView.show`). Clicks, shortcuts and
+/// focus are refused here as well, also while a page is still fading out.
 private final class PageHostingView<Root: View>: NSHostingView<Root>, PageHosting {
     var isShown = false
 

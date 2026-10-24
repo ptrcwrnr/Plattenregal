@@ -228,7 +228,6 @@ struct WantlistView: View {
                                          matchedTrack: appliedQuery.isEmpty ? nil : entry.release?.track(matching: appliedQuery))
                         }
                         .buttonStyle(.plain)
-                        .help([entry.release?.displayArtist, entry.release?.displayTitle, entry.notes].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " – "))
                         .id(item.id)
                         .popover(isPresented: quickLookBinding(item.id), arrowEdge: .trailing) {
                             RecordPopover(release: entry.release, discogsURL: sourceURL(entry))
@@ -267,13 +266,13 @@ struct WantlistView: View {
             TableColumn("Interpret") { item in
                 let entry = item.entry
                 let artist = entry.release?.displayArtist ?? String(localized: "Unbekannter Interpret")
-                Text(artist).lineLimit(1).help(artist)
+                Text(artist).lineLimit(1)
             }
             .width(min: 120, ideal: 200)
             TableColumn("Titel") { item in
                 let entry = item.entry
                 let title = entry.release?.displayTitle ?? String(localized: "Release #\(String(entry.releaseID))")
-                Text(title).lineLimit(1).help(title)
+                Text(title).lineLimit(1)
             }
             .width(min: 140, ideal: 260)
             TableColumn("Jahr") { item in
@@ -283,7 +282,7 @@ struct WantlistView: View {
             .width(min: 40, ideal: 48, max: 60)
             TableColumn("Notiz") { item in
                 let entry = item.entry
-                Text(entry.notes ?? "").lineLimit(1).foregroundStyle(.secondary).help(entry.notes ?? "")
+                Text(entry.notes ?? "").lineLimit(1).foregroundStyle(.secondary)
             }
             .width(min: 80, ideal: 180)
             TableColumn("Hinzugefügt") { item in

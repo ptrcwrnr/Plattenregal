@@ -1,3 +1,21 @@
+# Aktueller Stand · 24.10.2026 (Tooltips in Collection und Wantlist)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Prüfung nach dem Verstecken verborgener Seiten im `PageStack` und dem Entfernen der Tooltips in Collection und Wantlist. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** `PageStack` (verborgene Seiten `isHidden` nach dem Ausblenden), `CollectionView`, `WantlistView`, `RecordCard` (`MatchedTrackLine`), `CoverView`, `Localizable.xcstrings`.
+- **Gelesen, unverändert:** `ShelfContentsView`, `StatisticsFacts`, `StatisticsMovableArea` (Herkunft der durchscheinenden Tooltips), `SecondaryClicks`.
+- **Befund (behoben):** Tooltips verborgener Seiten (Regalfach, Statistik) erschienen über Collection und Wantlist.
+- **Fehlermeldungen:** keine neuen.
+- **Lokalisierung:** 904 Einträge, alle mit Englisch; drei verwaiste gelöscht, keine neuen Texte.
+- **Nicht geprüft:** Maustest mit der endgültigen Fassung; die echte App mit der eigenen Sammlung.
+
+## Verifikation
+
+- Debug-Build ohne Warnungen, alle Tests bestanden.
+- Demo: Maustest (64 Punkte) vorher 17 Treffer auf der Collection; Zwischenstände siehe AENDERUNGEN. Seitenwechsel-Zeit gemessen, ohne spürbaren Unterschied.
+
 # Aktueller Stand · 24.10.2026 (Rechtsklick im Cover-Raster)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Prüfung nach der Korrektur von `GridSecondaryClicks`. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
