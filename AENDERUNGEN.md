@@ -1,3 +1,8 @@
+# DMG 1.0.0 mit der Rechtsklick-Korrektur neu ausgegeben · 24.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release, Build 102026, Versionsnummer unverändert). Enthält die Korrektur, dass der Rechtsklick auf Cover nach einem Neuaufbau des Rasters (z. B. nach einem Sync) nicht mehr verloren geht. Das alte DMG war noch eingehängt und wurde dafür ausgeworfen; die Handbuch-PDFs blieben unverändert.
+- Geprüft: `hdiutil verify` in Ordnung, Version 1.0.0 (102026), arm64, Signatur gültig, Mindestsystem 27.0, Handbuch und Handbook enthalten; `GridSecondaryClickCell` im Programm, kein Prüfcode aus der Fehlersuche (`EXPERIMENT`, `--sim-sync`, `--sim-pull`). Die Release-App selbst nicht gestartet; der Code ist derselbe wie im geprüften Debug-Build.
+
 # Rechtsklick auf Cover ging nach einer Aktualisierung verloren · 24.10.2026
 
 - **Fehler:** Nach einem Discogs-Sync (gezogen, mit neuen Covern) öffnete ein Rechtsklick auf ein Cover in der Collection kein Menü mehr; der Linksklick (Popover mit Tracklist) ging weiter, ein Neustart der App half. Ursache in `GridSecondaryClicks` (`Design/SecondaryClicks.swift`): Jede Zelle meldet ihren Rahmen unter dem Schlüssel ihrer Platte und trägt ihn beim Verschwinden wieder aus. Wird das Raster in einem Rutsch neu aufgebaut, meldet sich die neue Zelle einer Platte, bevor die alte verschwindet – die alte löschte dann den frischen Eintrag. Danach kannte der Rechtsklick keine einzige Zelle mehr, bis sie neu gemeldet wurden.

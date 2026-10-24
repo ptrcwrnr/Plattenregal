@@ -17,6 +17,7 @@ Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Prüfung nach 
 
 - Debug-Build ohne Warnungen, alle 236 Tests bestanden.
 - Demo mit vorübergehendem Prüfcode: Rechtsklick nach Neuaufbau des Rasters, nach Scrollen und nach Überziehen oben jeweils mit Menü auf der richtigen Platte.
+- DMG 1.0.0 (Build 102026) mit dieser Korrektur: Prüfsumme gültig, arm64, Signatur in Ordnung, Mindestsystem 27.0, Handbücher enthalten, kein Prüfcode im Programm.
 
 # Aktueller Stand · 24.10.2026 (Version 1.0.0, Altlasten)
 
