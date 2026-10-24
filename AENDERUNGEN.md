@@ -1,3 +1,9 @@
+# DMG 1.0.0 mit dem neuen Collection-Hinweis im Regal neu ausgegeben · 24.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release, Build 102026, Versionsnummer unverändert). Enthält den Hinweis „nicht mehr in der Collection“ als Banner; Handbuch-PDFs unverändert.
+- String-Katalog vom Release-Build abgeglichen: verwaiste Einträge „·“ und „%@ · %@%@“ entfernt, neu erkannt „%@ mit %@ anzeigen“ (Tooltip in der Statistik) – dazu die fehlende englische Übersetzung „Show %1$@ with %2$@“ ergänzt und die DMG damit ein zweites Mal gebaut.
+- Geprüft: `hdiutil verify` in Ordnung, Version 1.0.0 (102026), arm64, Signatur gültig, Mindestsystem 27.0, Handbuch und Handbook enthalten; neuer Hinweistext im Programm, englische Texte in `en.lproj`, kein Prüfcode (`--snapshot=`). Die Release-App selbst nicht gestartet.
+
 # Hinweis „nicht mehr in der Collection“ als Banner wie die übrigen Hinweise · 24.10.2026
 
 - **Vorher:** Stand eine Platte im Regal, die nicht mehr in der Discogs-Collection ist, zeigte die Regalseite rechts oben zwei lose Texte („1 nicht in der Collection · Aus Regal nehmen“) – ein eigener Nachbau (`ShelfStatusControl`), der nicht zum Rest der Seite passte.

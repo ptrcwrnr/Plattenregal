@@ -121,9 +121,6 @@
         }
       }
     },
-    "·" : {
-      "shouldTranslate" : false
-    },
     "„%@ – %@“" : {
       "localizations" : {
         "de" : {
@@ -339,17 +336,6 @@
         }
       }
     },
-    "%@ · %@%@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@%3$@"
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
     "%@ · Gefundene, noch nicht einsortierte Platten stehen wieder unter „Einsortieren“." : {
       "localizations" : {
         "en" : {
@@ -465,6 +451,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ could not be saved – the record is unchanged. Please try again. If it keeps failing, restart Plattenregal."
+          }
+        }
+      }
+    },
+    "%@ mit %@ anzeigen" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ mit %2$@ anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show %1$@ with %2$@"
           }
         }
       }
@@ -719,6 +721,7 @@
       }
     },
     "%lld nicht in der Collection" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -726,8 +729,7 @@
             "value" : "%lld not in the collection"
           }
         }
-      },
-      "extractionState" : "stale"
+      }
     },
     "%lld ohne Jahr" : {
       "localizations" : {
@@ -795,6 +797,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld Platten im Regal sind nicht mehr in deiner Discogs-Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld records on the shelf are no longer in your Discogs collection."
           }
         }
       }
@@ -2003,6 +2015,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove from Shelf"
+          }
+        }
+      }
+    },
+    "Aus Regal nehmen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Shelf…"
           }
         }
       }
@@ -3841,6 +3863,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A shelf has 1 to 6 rows and columns."
+          }
+        }
+      }
+    },
+    "Eine Platte im Regal ist nicht mehr in deiner Discogs-Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One record on the shelf is no longer in your Discogs collection."
           }
         }
       }
@@ -6108,6 +6140,7 @@
       }
     },
     "Nicht (mehr) in deiner Discogs-Collection – verkauft, verschenkt oder aus einem anderen Konto –, aber noch im Regal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6115,8 +6148,7 @@
             "value" : "Not (or no longer) in your Discogs collection – sold, given away or from another account – but still on the shelf"
           }
         }
-      },
-      "extractionState" : "stale"
+      }
     },
     "Nicht in der Collection" : {
       "localizations" : {
@@ -9412,36 +9444,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Switch between shelves: ⌘← / ⌘→"
-          }
-        }
-      }
-    },
-    "Eine Platte im Regal ist nicht mehr in deiner Discogs-Collection." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One record on the shelf is no longer in your Discogs collection."
-          }
-        }
-      }
-    },
-    "%lld Platten im Regal sind nicht mehr in deiner Discogs-Collection." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld records on the shelf are no longer in your Discogs collection."
-          }
-        }
-      }
-    },
-    "Aus Regal nehmen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove from Shelf…"
           }
         }
       }
