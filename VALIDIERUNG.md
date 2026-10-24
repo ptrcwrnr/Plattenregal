@@ -1,3 +1,23 @@
+# Aktueller Stand · 24.10.2026 (Rechtsklick im Cover-Raster)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Prüfung nach der Korrektur von `GridSecondaryClicks`. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** `SecondaryClicks.swift` (`GridSecondaryClicks`, neu `GridSecondaryClickCell`), `UtilityTests`.
+- **Gelesen, unverändert:** `CollectionView`, `PullToRefresh`, `PageStack` (verborgene Seiten nehmen keine Klicks an), `FloatingControls` (Klick-Beobachter gibt jedes Ereignis weiter), `DiscogsSyncView`, `DiscogsSyncService` samt Merge, `LibraryRecords`.
+- **Befund (behoben):** Beim Neuaufbau eines Cover-Rasters in einem Rutsch löschte das späte Verschwinden der alten Zellen die Einträge der neuen; der Rechtsklick fand danach keine Zelle mehr (in der Demo nachgestellt: 0 von 18).
+- **Fehlermeldungen:** keine neuen.
+- **macOS-Absturzberichte:** keine.
+- **App-Protokoll** 24.10.: kein `ERROR` (Zeilen „EXPERIMENT“ stammen von den Demo-Prüfläufen).
+- **Lokalisierung:** 907 Einträge, alle mit Englisch; keine neuen Texte.
+- **Nicht geprüft:** der auslösende Sync in der echten App.
+
+## Verifikation
+
+- Debug-Build ohne Warnungen, alle 236 Tests bestanden.
+- Demo mit vorübergehendem Prüfcode: Rechtsklick nach Neuaufbau des Rasters, nach Scrollen und nach Überziehen oben jeweils mit Menü auf der richtigen Platte.
+
 # Aktueller Stand · 24.10.2026 (Version 1.0.0, Altlasten)
 
 Projektversion **1.0.0 (102026)**, Schema **V18**. Prüfung nach Umstellung der Fenster-Kennung, `LegacyDefaults`, Aufräumen des Demo-Ordners, festen Test-Einstellungsnamen und der Versionsnummer. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.

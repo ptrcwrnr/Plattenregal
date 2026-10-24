@@ -78,3 +78,31 @@ extension AllTests {
         }
     }
 }
+
+extension AllTests {
+    struct GridSecondaryClickTests {
+        /// The grid built anew in one go: the new cell reports before the old
+        /// one of the same record disappears. The record stays right-clickable.
+        @Test func lateDisappearKeepsNewerCell() {
+            let clicks = GridSecondaryClicks<Int>()
+            let frame = CGRect(x: 0, y: 0, width: 100, height: 120)
+            let old = UUID(), new = UUID()
+            clicks.report(1, frame: frame, owner: old)
+            clicks.report(1, frame: frame, owner: new)
+            clicks.remove(1, owner: old)
+            #expect(clicks.cell(at: CGPoint(x: 50, y: 60))?.id == 1)
+            clicks.remove(1, owner: new)
+            #expect(clicks.cell(at: CGPoint(x: 50, y: 60)) == nil)
+        }
+
+        @Test func findsTheCellUnderThePoint() {
+            let clicks = GridSecondaryClicks<Int>()
+            clicks.report(1, frame: CGRect(x: 0, y: 0, width: 100, height: 120), owner: UUID())
+            clicks.report(2, frame: CGRect(x: 110, y: 0, width: 100, height: 120), owner: UUID())
+            clicks.report(3, frame: .zero, owner: UUID())
+            #expect(clicks.cell(at: CGPoint(x: 150, y: 10))?.id == 2)
+            #expect(clicks.cell(at: CGPoint(x: 105, y: 10)) == nil)
+            #expect(clicks.cell(at: .zero)?.id != 3)
+        }
+    }
+}

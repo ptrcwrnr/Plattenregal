@@ -21,20 +21,52 @@ extension View {
 /// own space (which scrolling doesn't change) and where the grid stands.
 /// Plain storage, not state: nothing re-renders when it changes.
 final class GridSecondaryClicks<ID: Hashable> {
-    fileprivate var cells: [ID: CGRect] = [:]
+    /// Each entry belongs to one cell view (`owner`). When the grid is built
+    /// anew in one go (e.g. after a Discogs sync), the new cell of a record
+    /// reports its frame before the old one of the same record has
+    /// disappeared; the old one must then not take the new entry along –
+    /// that left the grid without a single cell, and no right-click worked
+    /// until the app was restarted.
+    private var cells: [ID: (owner: UUID, frame: CGRect)] = [:]
     fileprivate var gridOrigin: CGPoint = .zero
     fileprivate let gridSpace = UUID()
     fileprivate let scrollSpace = UUID()
+
+    /// The cell view `owner` shows `id` at `frame` (in the grid's space).
+    func report(_ id: ID, frame: CGRect, owner: UUID) { cells[id] = (owner, frame) }
+    /// The cell view `owner` is gone; a newer cell of the same `id` stays.
+    func remove(_ id: ID, owner: UUID) {
+        if cells[id]?.owner == owner { cells[id] = nil }
+    }
+    /// The cell at `point` in the grid's space, and its frame.
+    func cell(at point: CGPoint) -> (id: ID, frame: CGRect)? {
+        guard let (id, cell) = cells.first(where: { $0.value.frame.contains(point) }),
+              cell.frame.width > 0, cell.frame.height > 0 else { return nil }
+        return (id, cell.frame)
+    }
+}
+
+/// See `gridSecondaryClickCell`: one owner per cell view, for its whole life.
+private struct GridSecondaryClickCell<ID: Hashable>: ViewModifier {
+    let id: ID
+    let clicks: GridSecondaryClicks<ID>
+    @State private var owner = UUID()
+
+    func body(content: Content) -> some View {
+        // The space's name alone goes into the geometry closure, which runs
+        // off the main actor and must not take `clicks` (or `ID`) along.
+        let space = clicks.gridSpace
+        let (id, clicks, owner) = (id, clicks, owner)
+        return content
+            .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .named(space)) }) { clicks.report(id, frame: $0, owner: owner) }
+            .onDisappear { clicks.remove(id, owner: owner) }
+    }
 }
 
 extension View {
     /// On each cell of the grid.
     func gridSecondaryClickCell<ID: Hashable>(_ id: ID, in clicks: GridSecondaryClicks<ID>) -> some View {
-        // The space's name alone goes into the geometry closure, which runs
-        // off the main actor and must not take `clicks` (or `ID`) along.
-        let space = clicks.gridSpace
-        return onGeometryChange(for: CGRect.self, of: { $0.frame(in: .named(space)) }) { clicks.cells[id] = $0 }
-            .onDisappear { clicks.cells[id] = nil }
+        modifier(GridSecondaryClickCell(id: id, clicks: clicks))
     }
 
     /// On the lazy grid inside the scroll view.
@@ -50,8 +82,7 @@ extension View {
         coordinateSpace(.named(clicks.scrollSpace))
             .overlay(SecondaryClickCatcher { point, _ in
                 let p = CGPoint(x: point.x - clicks.gridOrigin.x, y: point.y - clicks.gridOrigin.y)
-                guard let (id, frame) = clicks.cells.first(where: { $0.value.contains(p) }),
-                      frame.width > 0, frame.height > 0 else { return }
+                guard let (id, frame) = clicks.cell(at: p) else { return }
                 action(id, UnitPoint(x: (p.x - frame.minX) / frame.width, y: (p.y - frame.minY) / frame.height))
             })
     }
