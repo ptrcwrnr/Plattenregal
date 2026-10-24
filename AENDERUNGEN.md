@@ -1,3 +1,10 @@
+# Hinweis „nicht mehr in der Collection“ als Banner wie die übrigen Hinweise · 24.10.2026
+
+- **Vorher:** Stand eine Platte im Regal, die nicht mehr in der Discogs-Collection ist, zeigte die Regalseite rechts oben zwei lose Texte („1 nicht in der Collection · Aus Regal nehmen“) – ein eigener Nachbau (`ShelfStatusControl`), der nicht zum Rest der Seite passte.
+- **Jetzt:** Ein `AppBanner` (Warnung) in derselben Reihe wie der Demo-Hinweis und „Noch keine Platte steht in einem Fach“: Symbol, ganzer Satz („Eine Platte im Regal ist nicht mehr in deiner Discogs-Collection.“ bzw. „N Platten …“) und rechts „Aus Regal nehmen …“, das wie bisher erst nachfragt. Der eigene Kopfbereich über dem Regal und `ShelfStatusControl` entfallen; der alte Text und sein Tooltip sind im Katalog als veraltet markiert, die neuen Texte englisch übersetzt.
+- Die Funktion selbst bleibt: Der Sync lässt verkaufte oder verschenkte Platten bewusst im Fach, der Hinweis ist der einzige Weg, sie zu bemerken. Die Demo zeigt ihn weiter (Fleetwood Mac). README: Funktion beschrieben, Demo-Beschreibung angepasst.
+- Geprüft: Debug-Build, alle 236 Tests bestanden. Demo auf der Regalseite in Modern und Klassisch per Fensterschnappschuss angesehen: Hinweis unter dem Demo-Hinweis, gleiche Form, Abstände und Schrift, Warnsymbol in Ocker bzw. Orange, Knopf rechts bündig.
+
 # DMG 1.0.0 ohne Tooltips beim Stöbern neu ausgegeben · 24.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release, Build 102026, Versionsnummer unverändert). Enthält das Verstecken verborgener Seiten und die entfernten Tooltips in Collection und Wantlist; Handbuch-PDFs unverändert.

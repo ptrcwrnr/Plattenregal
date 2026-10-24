@@ -287,39 +287,33 @@ struct KallaxView: View {
                     AppBanner(message: String(localized: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her."),
                               kind: .info, actionTitle: String(localized: "Belegung wiederherstellen …"), action: { settingsTab = .backup })
                 }
-                // The header brings its own spacing below, so a collapsed
-                // header leaves no gap (see `header`).
-                VStack(alignment: .leading, spacing: 0) {
-                    header
-                    VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
-                        if page.cabinets.count > 1 { cabinetSwitcher(page) }
-                        // One slot: the old cabinet fades out where the new one settles in.
-                        ZStack {
-                            ShelfFurniture(
-                                shelves: cabinet.map { cabinet in page.shelves.filter { $0.cabinet?.id == cabinet.id } } ?? page.shelves,
-                                rows: cabinet?.rows ?? ShelfGeometry.rows,
-                                columns: cabinet?.columns ?? ShelfGeometry.columns,
-                                stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
-                                rangeLabel: { rangeLabels[$0.id] },
-                                selectedID: page.shelf?.id,
-                                litIDs: lit,
-                                lockPreview: lockPreview,
-                                select: selectShelf,
-                                add: { shelf in selectShelf(shelf); startAssignment(shelf) },
-                                menu: shelfMenu(for:)
-                            )
-                            // A compact overview with roughly KALLAX-like proportions, so the
-                            // compartment area below (strip + table) gets most of the height.
-                            // Always the full width, flush with the compartment area below.
-                            .frame(height: ShelfFurnitureMetrics.height(rows: cabinet?.rows ?? ShelfGeometry.rows))
-                            // Another cabinet fades and settles in like a page.
-                            .id(cabinet?.id)
-                            .transition(AppStyle.pageTransition)
-                        }
-                        shelfDetail(page.shelf)
-                            .frame(maxHeight: .infinity, alignment: .top)
-                    }
+                if soldCount > 0 { soldBanner(soldCount) }
+                if page.cabinets.count > 1 { cabinetSwitcher(page) }
+                // One slot: the old cabinet fades out where the new one settles in.
+                ZStack {
+                    ShelfFurniture(
+                        shelves: cabinet.map { cabinet in page.shelves.filter { $0.cabinet?.id == cabinet.id } } ?? page.shelves,
+                        rows: cabinet?.rows ?? ShelfGeometry.rows,
+                        columns: cabinet?.columns ?? ShelfGeometry.columns,
+                        stats: { shelfStats[$0.id] ?? ShelfStatistics(shelf: $0) },
+                        rangeLabel: { rangeLabels[$0.id] },
+                        selectedID: page.shelf?.id,
+                        litIDs: lit,
+                        lockPreview: lockPreview,
+                        select: selectShelf,
+                        add: { shelf in selectShelf(shelf); startAssignment(shelf) },
+                        menu: shelfMenu(for:)
+                    )
+                    // A compact overview with roughly KALLAX-like proportions, so the
+                    // compartment area below (strip + table) gets most of the height.
+                    // Always the full width, flush with the compartment area below.
+                    .frame(height: ShelfFurnitureMetrics.height(rows: cabinet?.rows ?? ShelfGeometry.rows))
+                    // Another cabinet fades and settles in like a page.
+                    .id(cabinet?.id)
+                    .transition(AppStyle.pageTransition)
                 }
+                shelfDetail(page.shelf)
+                    .frame(maxHeight: .infinity, alignment: .top)
             }
             .padding(.horizontal, AppStyle.pageMargin)
             .padding(.top, AppStyle.pagePadding)
@@ -519,16 +513,15 @@ struct KallaxView: View {
         withAnimation(AppStyle.layoutAnimation ?? AppStyle.fadeAnimation) { selectShelf(shelf) }
     }
 
-    /// The status controls (sold records still in the rack), right-aligned
-    /// above the rack; absent when there are none, so the rack moves up.
-    @ViewBuilder private var header: some View {
-        let sold = soldCount
-        if sold > 0 {
-            ShelfStatusControl(soldInShelves: sold, removeSold: { soldToRemove = sold; confirmRemoveSold = true })
-                .frame(height: AppStyle.controlHeight)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.bottom, AppStyle.blockSpacing)
-        }
+    /// Records no longer in the collection but still in a compartment: a
+    /// banner like the page's other notes, absent when there are none.
+    private func soldBanner(_ sold: Int) -> some View {
+        AppBanner(message: sold == 1
+                    ? String(localized: "Eine Platte im Regal ist nicht mehr in deiner Discogs-Collection.")
+                    : String(localized: "\(sold) Platten im Regal sind nicht mehr in deiner Discogs-Collection."),
+                  kind: .warning,
+                  actionTitle: String(localized: "Aus Regal nehmen …"),
+                  action: { soldToRemove = sold; confirmRemoveSold = true })
     }
 
     /// Only while the committed query has words, so a field of spaces lists nothing.

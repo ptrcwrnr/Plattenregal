@@ -726,7 +726,8 @@
             "value" : "%lld not in the collection"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "%lld ohne Jahr" : {
       "localizations" : {
@@ -6114,7 +6115,8 @@
             "value" : "Not (or no longer) in your Discogs collection – sold, given away or from another account – but still on the shelf"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "Nicht in der Collection" : {
       "localizations" : {
@@ -9410,6 +9412,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Switch between shelves: ⌘← / ⌘→"
+          }
+        }
+      }
+    },
+    "Eine Platte im Regal ist nicht mehr in deiner Discogs-Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One record on the shelf is no longer in your Discogs collection."
+          }
+        }
+      }
+    },
+    "%lld Platten im Regal sind nicht mehr in deiner Discogs-Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld records on the shelf are no longer in your Discogs collection."
+          }
+        }
+      }
+    },
+    "Aus Regal nehmen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Shelf…"
           }
         }
       }

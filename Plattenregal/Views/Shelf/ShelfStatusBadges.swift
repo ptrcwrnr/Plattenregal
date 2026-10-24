@@ -1,21 +1,5 @@
 import SwiftUI
 
-struct ShelfStatusControl: View {
-    let soldInShelves: Int
-    let removeSold: () -> Void
-
-    var body: some View {
-        HStack(spacing: AppStyle.tightSpacing) {
-            Text("\(soldInShelves) nicht in der Collection").monospacedDigit().foregroundStyle(AppStyle.warningColor)
-                .help("Nicht (mehr) in deiner Discogs-Collection – verkauft, verschenkt oder aus einem anderen Konto –, aber noch im Regal")
-            Text("·").foregroundStyle(.tertiary)
-            Button("Aus Regal nehmen", action: removeSold)
-                .appLinkButton()
-        }
-        .font(.callout)
-    }
-}
-
 /// Small colored tag beside a record's title ("Gesucht", "Nicht in der
 /// Collection", "Als Nächstes"), the same everywhere on the shelf page.
 struct StatusTag: View {
