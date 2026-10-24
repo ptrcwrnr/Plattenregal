@@ -1,3 +1,8 @@
+# DMG 1.0.0 ohne Tooltips beim Stöbern neu ausgegeben · 24.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release, Build 102026, Versionsnummer unverändert). Enthält das Verstecken verborgener Seiten und die entfernten Tooltips in Collection und Wantlist; Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` in Ordnung, Version 1.0.0 (102026), arm64, Signatur gültig, Mindestsystem 27.0, Handbuch und Handbook enthalten; der entfernte Cover-Tooltip-Text fehlt im Programm, kein Mess- oder Prüfcode. Die Release-App selbst nicht gestartet.
+
 # Keine Tooltips mehr beim Stöbern in Collection und Wantlist · 24.10.2026
 
 - **Fehler:** Blieb die Maus in Collection oder Wantlist kurz stehen – auf einem Cover oder im Zwischenraum –, erschienen Tooltips, die gar nicht zu dieser Seite gehörten: „Position 4 · … · Klick: Exemplar bearbeiten“ aus einem Regalfach, „108 Platten mit 2000 anzeigen“ oder „Am Titel ziehen, um den Bereich anzuordnen“ aus der Statistik. Ursache: Die übrigen Seiten bleiben im `PageStack` unsichtbar (Deckkraft 0) im Fenster. SwiftUI meldet Tooltips über eigene Tracking-Bereiche an, die AppKit am `hitTest` und an den bisherigen Sperren für verborgene Seiten vorbei bedient – und legt sie jederzeit neu an, etwa wenn eine verborgene Seite Daten nachlädt.
