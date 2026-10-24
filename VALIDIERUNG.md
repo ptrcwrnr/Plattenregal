@@ -17,6 +17,7 @@ Projektversion **1.0.0 (102026)**, Schema **V18**. Prüfung nach Umstellung der 
 
 - Sauberer Debug-Build ohne Warnungen, alle 234 Tests bestanden.
 - Demo-Fenster verändert und neu gestartet: eigene Größe unter `demo`, `main` unverändert. Probe-Einträge in den echten Einstellungen beim Start entfernt. Demo-Ordner beim normalen Start entfernt.
+- DMG 1.0.0 (Build 102026): Prüfsumme gültig, arm64, Signatur in Ordnung, Mindestsystem 27.0, Handbücher mit 1.0.0, keine Debug-Schalter.
 
 # Aktueller Stand · 24.10.2026 (Top 10 in der Statistik, erstes Vollbild)
 

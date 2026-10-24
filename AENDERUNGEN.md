@@ -1,3 +1,9 @@
+# DMG 1.0.0 ausgegeben · 24.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` (Release, Build 102026). Enthält die getrennte Fenstergröße der Demo, `LegacyDefaults`, das Aufräumen des Demo-Ordners und alles vom Vormittag (Top 10, Vollbild). Die Handbuch-PDFs hat das Skript mit „1.0.0“ neu erzeugt (`Plattenregal/Handbuch.pdf`, `Handbook.pdf`).
+- Die alten Dateien `Plattenregal-1.1.2.dmg`, `Handbuch-1.1.2.pdf` und `Handbook-1.1.2.pdf` aus `dist/` liegen im Papierkorb (die PDFs stammten noch aus der Zeit, als das Skript sie neben das DMG legte).
+- Geprüft: `hdiutil verify` in Ordnung, Version 1.0.0 (102026), arm64, Signatur gültig, Mindestsystem 27.0; beide Handbücher enthalten „1.0.0“ und nicht mehr „1.1.2“; `LegacyDefaults` und `RankingBoard` im Programm, keine Debug-Schalter. Die Release-App selbst nicht gestartet.
+
 # Version 1.0.0; Fenstergröße der Demo getrennt; Altlasten aufgeräumt und künftig vermieden · 24.10.2026
 
 - **Fenstergröße:** Die Demo speicherte ihre Fenstergröße unter demselben Namen wie die echte App (`NSWindow Frame main`). Ein Test am Demo-Fenster hatte so die Größe der echten App überschrieben. Jetzt hängt die Fenster-Kennung am Demo-Schalter (`DemoMode.mainWindowID`: `main` bzw. `demo`), auch für „Hilfe → Erste Schritte“. `guide-screenshots.swift` stellt die Größe des Demo-Fensters ein; `marketing-shots.sh` fotografiert die echte Sammlung und sichert weiter `main`. Die Größe der echten App wurde auf Wunsch auf die des Demo-Fensters gesetzt (1111 × 777 pt).
