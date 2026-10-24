@@ -32,9 +32,27 @@ struct AmbientGlow: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
+        // The toolbar's height is read outside: inside, `ignoresSafeArea`
+        // reports no safe area at all.
+        GeometryReader { outer in
+            glow(toolbarHeight: outer.safeAreaInsets.top)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func glow(toolbarHeight: CGFloat) -> some View {
         GeometryReader { geometry in
             if preferences.signatureDesign == .atelier {
+                // Petrol under the toolbar too, as high as the toolbar takes
+                // from the top. In the window it lies hidden beneath the
+                // petrol bar. On first entering full screen macOS shows the
+                // bar's own window only about half a second after the
+                // transition; until then this band shows instead of cream.
                 AtelierPalette.paper
+                    .overlay(alignment: .top) {
+                        AtelierPalette.petrol.frame(height: toolbarHeight)
+                    }
             } else if let color = preferences.ambient.color {
                 // Modern's counterpart to the paper: the whole window faintly
                 // in the ambient color, brightest at the top, with a second
@@ -54,8 +72,6 @@ struct AmbientGlow: View {
         }
         .ignoresSafeArea()
         .animation(AppStyle.fadeAnimation, value: preferences.ambient)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
 }
 

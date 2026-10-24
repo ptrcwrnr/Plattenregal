@@ -1,3 +1,23 @@
+# Aktueller Stand · 24.10.2026 (Top 10 in der Statistik, erstes Vollbild)
+
+Projektversion **1.1.2 (102026)**, Schema **V18** (unverändert). Prüfung nach den Änderungen vom 24.10. morgens: Top-Künstler und Labels als gemeinsamer Baustein mit genau 10 Kacheln; Petrol-Streifen unter der Toolbar gegen den hellen Streifen beim ersten Vollbild. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** `RankingBoard` (vorher `LabelBoard`), `StatisticsLayout`, `StatisticsView`, `StatisticsCharts` (`GroupStatisticsList` entfernt), `ArtistPodium` (entfernt), `AmbientGlow`, Projektdatei, `Localizable.xcstrings`.
+- **Befund (behoben):** Der helle Streifen beim ersten Vollbild war keine Systemfläche, sondern die fehlende Toolbar: macOS zeigt ihr Vollbild-Fenster beim ersten Mal erst rund 0,5 s nach dem Übergang. Ein erster Versuch mit dem Streifen wirkte nicht, weil die Höhe innerhalb von `ignoresSafeArea` als 0 gemeldet wird; per Protokollausgabe gefunden und behoben (52 pt).
+- **Fehlermeldungen:** keine neuen.
+- **macOS-Absturzberichte:** keine Berichte `Plattenregal-*.ips` vorhanden.
+- **App-Protokoll** 24.10.: kein `ERROR`. 7 Warnungen „vorige Sitzung nicht normal beendet“, alle Demo, 07:26–07:30 – von meinen Prüfläufen, die ich mit `kill` beendet habe.
+- **Lokalisierung:** 907 Einträge (5 ungenutzte entfernt), alle mit Englisch, Platzhalter passen (im Englischen teils nummeriert). 8 als veraltet markierte Einträge wie am 23.10., nicht angefasst.
+- **Nicht geprüft:** Vollbild in Klassisch dunkel und in Modern als Video, die Anordnung 5 × 2 bei 3 Spalten (kommt im Hauptfenster nicht vor), ein zweiter Bildschirm.
+
+## Verifikation
+
+- Sauberer Debug-Build ohne Warnungen, alle 233 Tests in 15 Suites bestanden.
+- Bildschirmvideo des Wechsels ins Vollbild (Demo, Klassisch hell) vor und nach der Korrektur, Bild für Bild: vorher 0,5 s Creme unter der fehlenden Toolbar, nachher Petrol von Anfang an.
+- Per `--snapshot`: Statistik mit Top-Künstlern und Labels oben (Klassisch hell, Modern dunkel), Collection in Klassisch dunkel und Modern hell; Fenster bei 1050 pt Breite.
+
 # Aktueller Stand · 23.10.2026 (Einheitliche Maße, Verlauf, Demo, Ranglisten)
 
 Projektversion **1.1.2 (102026)**, Schema **V18**. Prüfung nach den Änderungen vom 23.10. abends: einheitliche Höhen, Linien, Schriftrollen und Bausteine; Verlauf wie „Platte hinzufügen“; Demo mit Beispiel für jeden Zustand; Ranglisten der Statistik bis Platz 20. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.

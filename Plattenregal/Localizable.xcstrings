@@ -479,22 +479,6 @@
         }
       }
     },
-    "%@ mit %@ anzeigen" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ mit %2$@ anzeigen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show %@ with %@"
-          }
-        }
-      }
-    },
     "%@ ohne Angabe%@" : {
       "localizations" : {
         "de" : {
@@ -1398,16 +1382,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accent color"
-          }
-        }
-      }
-    },
-    "Alle %lld anzeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show All %lld"
           }
         }
       }
@@ -7130,26 +7104,6 @@
         }
       }
     },
-    "Rangliste ausblenden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hide Ranking"
-          }
-        }
-      }
-    },
-    "Rangliste bis Platz %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ranking to #%lld"
-          }
-        }
-      }
-    },
     "Raster" : {
       "localizations" : {
         "en" : {
@@ -8947,16 +8901,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More %@ (%lld)"
-          }
-        }
-      }
-    },
-    "Weniger anzeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Less"
           }
         }
       }

@@ -1,44 +1,29 @@
 import SwiftUI
 
-// MARK: - Labels
+// MARK: - Top artists and labels
 
-/// The top labels as two rows of tiles on the page grid, the rest of the top
-/// twenty as a list on demand (like the artists).
-struct LabelBoard: View {
+/// The top ten artists or labels as tiles with rank, count and a bar – one
+/// building block for both cards, so they look and behave the same. No
+/// covers and no further ranking: ten places, and that's it.
+struct RankingBoard: View {
     let groups: [StatisticGroup]
     let total: Int
     let select: (StatisticGroup) -> Void
-    @Environment(\.statisticsColumns) private var columns
-    @State private var showsList = false
-
-    private var boardCount: Int { columns * 2 }
+    @Environment(\.statisticsColumns) private var pageColumns
 
     var body: some View {
         VStack(alignment: .leading, spacing: StatisticsLayout.titleSpacing) {
             if groups.isEmpty { Text("Keine Angaben vorhanden").font(.callout).foregroundStyle(.secondary) }
             let maximum = CGFloat(max(1, groups.first?.count ?? 1))
-            LazyVGrid(columns: StatisticsLayout.columns(columns), alignment: .leading, spacing: StatisticsLayout.gutter) {
-                ForEach(Array(groups.prefix(boardCount).enumerated()), id: \.element.id) { index, group in
-                    LabelTile(rank: index + 1, group: group, total: total, ratio: CGFloat(group.count) / maximum, select: select)
-                }
-            }
-            let ranking = Array(groups.prefix(StatisticsLayout.rankingCount).dropFirst(boardCount))
-            if !ranking.isEmpty {
-                Button {
-                    withAnimation(AppStyle.standardAnimation) { showsList.toggle() }
-                } label: {
-                    Label(showsList ? "Rangliste ausblenden" : "Rangliste bis Platz \(boardCount + ranking.count)", systemImage: showsList ? "chevron.up" : "chevron.down")
-                }
-                .appLinkButton().font(.caption)
-                if showsList {
-                    GroupStatisticsList(groups: ranking, total: total, columnCount: 2, initialLimit: ranking.count, select: select)
-                        .transition(AppStyle.funnelTransition())
+            LazyVGrid(columns: StatisticsLayout.columns(StatisticsLayout.rankingColumns(page: pageColumns)), alignment: .leading, spacing: StatisticsLayout.gutter) {
+                ForEach(Array(groups.prefix(StatisticsLayout.rankingCount).enumerated()), id: \.element.id) { index, group in
+                    RankingTile(rank: index + 1, group: group, total: total, ratio: CGFloat(group.count) / maximum, select: select)
                 }
             }
         }
     }
 
-    private struct LabelTile: View {
+    private struct RankingTile: View {
         let rank: Int
         let group: StatisticGroup
         let total: Int

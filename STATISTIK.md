@@ -23,7 +23,7 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 | Auf einen Blick | Häufigster Künstler, Style, Jahrzehnt und Jahr, Neuzugänge im laufenden Jahr |
 | Sammlungswert im Verlauf | Median, Niedrig und Hoch über 1 Monat bis „Alles“ |
 | Klangbild | Genres, Styles und Formate |
-| Top-Künstler, Labels | Die häufigsten: Künstler mit Cover in einer Reihe (je nach Breite 3 oder 5), Labels als Kacheln in zwei Reihen; darunter ausklappbar die Rangliste bis Platz 20 (`StatisticsLayout.rankingCount`) – nicht mehr alle Einträge, die lange Liste war unübersichtlich und ruckelte, weil jede Zeile ihren Balken wachsen ließ |
+| Top-Künstler, Labels | Je die 10 häufigsten (`StatisticsLayout.rankingCount`) als gleiche Kacheln ohne Cover: Rang, Name, Anzahl mit Anteil und ein Balken im Verhältnis zu Platz 1 (`RankingBoard`). Zwei Reihen à 5, auf einer schmalen Seite mit 3 Spalten fünf Reihen à 2 (kommt im Hauptfenster bei dessen Mindestbreite von 1050 pt nicht vor). Nichts zum Aufklappen – die frühere Rangliste bis Platz 20 und davor bis zum letzten Eintrag entfällt |
 | Zufallsfund | Eine zufällige Platte mit Weg ins Regal |
 | Zeitreise | Veröffentlichungen nach Jahrzehnten oder Jahren |
 | Neuzugänge | Zugänge pro Monat oder Jahr, lückenlos vom ersten bis zum letzten Zeitraum (leere eingeschlossen) |
@@ -65,7 +65,7 @@ Nach **Alles zurücksetzen** sind die gezeigten Platten gelöscht; die Statistik
 | `Statistics/StatisticsViewModel.swift` | Laden, Hintergrundberechnung, Zustand der Seite |
 | `Statistics/StatisticsView.swift` | Seite, Abschnitte, Drill-down |
 | `Statistics/StatisticsLayout.swift`, `Statistics/StatisticsMovableArea.swift` | Abschnitte, Spalten, Farben, rollende Zahlen; Kartenrahmen zum Verschieben |
-| `Statistics/StatisticsHero.swift`, `StatisticsFacts.swift`, `SoundDonut.swift`, `ArtistPodium.swift`, `RandomRecordCard.swift`, `LabelBoard.swift` | Karten der Seite, je Karte eine Datei: Überblick, Kennzahlen, Klangbild, Interpreten, Zufallsplatte, Labels |
+| `Statistics/StatisticsHero.swift`, `StatisticsFacts.swift`, `SoundDonut.swift`, `RankingBoard.swift`, `RandomRecordCard.swift` | Karten der Seite, je Karte eine Datei: Überblick, Kennzahlen, Klangbild, Top-Künstler und Labels (ein gemeinsamer Baustein), Zufallsplatte |
 | `Statistics/StatisticsCharts.swift` | Balken, Zeitreise, Zugänge, zuletzt hinzugefügt, gemeinsame Bausteine |
 | `Statistics/ValueHistoryDashboard.swift` | Wertverlauf mit Swift Charts |
 | `PlattenregalTests/StatisticsTests.swift` | Parsing, Aggregation, Verlaufsregeln, Verhalten beim Zurücksetzen, welche Speichervorgänge neu rechnen lassen und welche nur den Verlauf nachladen, Sammlungswert während eines Syncs, gezeigte Platten aus dem Hauptfenster (28 Tests; die Menge prüft `tenThousandRecords` in ScenarioTests) |

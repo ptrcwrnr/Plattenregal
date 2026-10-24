@@ -116,9 +116,8 @@
 		3C59271DFE0D5E689D89D8E7 /* Plattenregal/Views/Settings/CabinetEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00868FA85C75E226E9423A9 /* Plattenregal/Views/Settings/CabinetEditor.swift */; };
 		CAD6D564AB268384FC6709F2 /* Plattenregal/Statistics/StatisticsFacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93F2B8AD4CC6C8AF603E00D /* Plattenregal/Statistics/StatisticsFacts.swift */; };
 		06285347D5AB0D8325DDA729 /* Plattenregal/Statistics/SoundDonut.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9B68B295F787107E87E8C9 /* Plattenregal/Statistics/SoundDonut.swift */; };
-		1D8C6391188283053764F91D /* Plattenregal/Statistics/ArtistPodium.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BAA2AA77A4A90DB1AE9C746 /* Plattenregal/Statistics/ArtistPodium.swift */; };
 		2F29A54866D13787D993B72D /* Plattenregal/Statistics/RandomRecordCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A21B2CE8EA255026ADAC12 /* Plattenregal/Statistics/RandomRecordCard.swift */; };
-		15C679B8854F823B53509CE3 /* Plattenregal/Statistics/LabelBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349EB7FF9184042041955AC4 /* Plattenregal/Statistics/LabelBoard.swift */; };
+		15C679B8854F823B53509CE3 /* Plattenregal/Statistics/RankingBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349EB7FF9184042041955AC4 /* Plattenregal/Statistics/RankingBoard.swift */; };
 		C0FF6A1CB124F6E140B7DA3F /* Plattenregal/Statistics/StatisticsLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F06DEA11D06EEC53969E88 /* Plattenregal/Statistics/StatisticsLayout.swift */; };
 		AD994820F34325DAE3B08E04 /* Plattenregal/Statistics/StatisticsMovableArea.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20688FCE460D8DECC9A0C2E /* Plattenregal/Statistics/StatisticsMovableArea.swift */; };
 		AC96D412F4D3C42CA25166B5 /* Plattenregal/Services/ShelfBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739C2688F0C8A7BE2B3DE98C /* Plattenregal/Services/ShelfBackup.swift */; };
@@ -279,9 +278,8 @@
 		C00868FA85C75E226E9423A9 /* Plattenregal/Views/Settings/CabinetEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/CabinetEditor.swift; sourceTree = "<group>"; };
 		C93F2B8AD4CC6C8AF603E00D /* Plattenregal/Statistics/StatisticsFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/StatisticsFacts.swift; sourceTree = "<group>"; };
 		BF9B68B295F787107E87E8C9 /* Plattenregal/Statistics/SoundDonut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/SoundDonut.swift; sourceTree = "<group>"; };
-		5BAA2AA77A4A90DB1AE9C746 /* Plattenregal/Statistics/ArtistPodium.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/ArtistPodium.swift; sourceTree = "<group>"; };
 		D0A21B2CE8EA255026ADAC12 /* Plattenregal/Statistics/RandomRecordCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/RandomRecordCard.swift; sourceTree = "<group>"; };
-		349EB7FF9184042041955AC4 /* Plattenregal/Statistics/LabelBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/LabelBoard.swift; sourceTree = "<group>"; };
+		349EB7FF9184042041955AC4 /* Plattenregal/Statistics/RankingBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/RankingBoard.swift; sourceTree = "<group>"; };
 		07F06DEA11D06EEC53969E88 /* Plattenregal/Statistics/StatisticsLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/StatisticsLayout.swift; sourceTree = "<group>"; };
 		E20688FCE460D8DECC9A0C2E /* Plattenregal/Statistics/StatisticsMovableArea.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Statistics/StatisticsMovableArea.swift; sourceTree = "<group>"; };
 		739C2688F0C8A7BE2B3DE98C /* Plattenregal/Services/ShelfBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/ShelfBackup.swift; sourceTree = "<group>"; };
@@ -538,9 +536,8 @@
 				5C0FF87FB8B623B08B35F8F6 /* Plattenregal/Statistics/StatisticsView.swift */,
 				E20688FCE460D8DECC9A0C2E /* Plattenregal/Statistics/StatisticsMovableArea.swift */,
 				07F06DEA11D06EEC53969E88 /* Plattenregal/Statistics/StatisticsLayout.swift */,
-				349EB7FF9184042041955AC4 /* Plattenregal/Statistics/LabelBoard.swift */,
+				349EB7FF9184042041955AC4 /* Plattenregal/Statistics/RankingBoard.swift */,
 				D0A21B2CE8EA255026ADAC12 /* Plattenregal/Statistics/RandomRecordCard.swift */,
-				5BAA2AA77A4A90DB1AE9C746 /* Plattenregal/Statistics/ArtistPodium.swift */,
 				BF9B68B295F787107E87E8C9 /* Plattenregal/Statistics/SoundDonut.swift */,
 				C93F2B8AD4CC6C8AF603E00D /* Plattenregal/Statistics/StatisticsFacts.swift */,
 				36775B9791321A8293E1291C /* Plattenregal/Statistics/StatisticsModels.swift */,
@@ -754,9 +751,8 @@
 				6B090CAE3C3F70EDFF41E871 /* Plattenregal/Statistics/StatisticsView.swift in Sources */,
 				AD994820F34325DAE3B08E04 /* Plattenregal/Statistics/StatisticsMovableArea.swift in Sources */,
 				C0FF6A1CB124F6E140B7DA3F /* Plattenregal/Statistics/StatisticsLayout.swift in Sources */,
-				15C679B8854F823B53509CE3 /* Plattenregal/Statistics/LabelBoard.swift in Sources */,
+				15C679B8854F823B53509CE3 /* Plattenregal/Statistics/RankingBoard.swift in Sources */,
 				2F29A54866D13787D993B72D /* Plattenregal/Statistics/RandomRecordCard.swift in Sources */,
-				1D8C6391188283053764F91D /* Plattenregal/Statistics/ArtistPodium.swift in Sources */,
 				06285347D5AB0D8325DDA729 /* Plattenregal/Statistics/SoundDonut.swift in Sources */,
 				CAD6D564AB268384FC6709F2 /* Plattenregal/Statistics/StatisticsFacts.swift in Sources */,
 				749196C8A2262AE9CE3F90BA /* Plattenregal/Statistics/StatisticsModels.swift in Sources */,
