@@ -17,6 +17,7 @@ Projektversion **1.1.2 (102026)**, Schema **V18** (unverändert). Prüfung nach 
 - Sauberer Debug-Build ohne Warnungen, alle 233 Tests in 15 Suites bestanden.
 - Bildschirmvideo des Wechsels ins Vollbild (Demo, Klassisch hell) vor und nach der Korrektur, Bild für Bild: vorher 0,5 s Creme unter der fehlenden Toolbar, nachher Petrol von Anfang an.
 - Per `--snapshot`: Statistik mit Top-Künstlern und Labels oben (Klassisch hell, Modern dunkel), Collection in Klassisch dunkel und Modern hell; Fenster bei 1050 pt Breite.
+- DMG 1.1.2 (Build 102026) neu ausgegeben: Prüfsumme gültig, arm64, Signatur in Ordnung, Mindestsystem 27.0, beide Handbücher, neue Bausteine enthalten, keine Debug-Schalter.
 
 # Aktueller Stand · 23.10.2026 (Einheitliche Maße, Verlauf, Demo, Ranglisten)
 

@@ -1,3 +1,8 @@
+# DMG 1.1.2 mit Top 10 und Vollbild-Korrektur neu ausgegeben · 24.10.2026
+
+- `dist/Plattenregal-1.1.2.dmg` neu gebaut (Release, Build 102026, Versionsnummer wie zuletzt unverändert). Enthält die Top-Künstler und Labels als je 10 gleiche Kacheln ohne Cover und den Petrol-Streifen unter der Toolbar beim ersten Vollbild.
+- Geprüft: `hdiutil verify` in Ordnung, App arm64, Signatur gültig, Mindestsystem 27.0, Handbuch und Handbook enthalten (unverändert), Deutsch und Englisch enthalten. Im Programm steckt `RankingBoard`, nicht mehr `ArtistPodium`, `GroupStatisticsList` oder der Text „Rangliste bis Platz“; der Debug-Schalter `--preview-fullscreen` fehlt wie vorgesehen. Die Release-App selbst nicht gestartet; der Code ist derselbe wie im geprüften Debug-Build.
+
 # Statistik: Top 10 ohne Cover; Vollbild ohne hellen Streifen · 24.10.2026
 
 - **Top-Künstler und Labels vereinheitlicht:** Beide Karten nutzen jetzt denselben Baustein `RankingBoard` (aus `LabelBoard` hervorgegangen) und zeigen genau die 10 häufigsten als Kacheln ohne Cover – Rang, Name, Anzahl mit Anteil, Balken im Verhältnis zu Platz 1. Zwei Reihen à 5; auf einer Seite mit nur 3 Spalten fünf Reihen à 2, damit der zehnte nicht allein steht (`StatisticsLayout.rankingColumns`). Die Rangliste zum Aufklappen (bis Platz 20) entfällt. `ArtistPodium.swift` mit den Cover-Kacheln und die dafür genutzte Liste `GroupStatisticsList` sind entfernt, `rankingCount` steht auf 10. Fünf nicht mehr benutzte Texte aus der Lokalisierung gelöscht („Rangliste ausblenden“, „Rangliste bis Platz %lld“, „Weniger anzeigen“, „Alle %lld anzeigen“, „%@ mit %@ anzeigen“).
