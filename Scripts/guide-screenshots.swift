@@ -7,9 +7,10 @@
 //
 //   swift Scripts/guide-screenshots.swift [de|en]   (both without argument)
 //
-// The main window remembers its frame in the app's real settings; the script
+// The demo's window remembers its frame under its own name ("NSWindow Frame
+// demo", see `DemoMode.mainWindowID`), apart from the real app's; the script
 // sets it to 1223 × 793 pt for the pictures (the crops below rely on that)
-// and puts the previous frame back afterwards.
+// and puts the demo's previous frame back afterwards.
 import AppKit
 
 let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
@@ -17,7 +18,7 @@ let languages = CommandLine.arguments.count > 1 ? Array(CommandLine.arguments.dr
 let home = FileManager.default.homeDirectoryForCurrentUser
 let container = home.appendingPathComponent("Library/Containers/de.private.Plattenregal/Data")
 let preferences = container.appendingPathComponent("Library/Preferences/de.private.Plattenregal").path
-let frameKey = "NSWindow Frame main"
+let frameKey = "NSWindow Frame demo"
 let windowSize = CGSize(width: 1223, height: 793)
 
 func fail(_ message: String) -> Never {
@@ -135,7 +136,7 @@ guard let products = settings.split(separator: "\n").first(where: { $0.contains(
     .components(separatedBy: " = ").last else { fail("BUILT_PRODUCTS_DIR nicht gefunden") }
 let binary = "\(products)/Plattenregal.app/Contents/MacOS/Plattenregal"
 
-// The window size for the pictures, the user's own afterwards.
+// The window size for the pictures, the demo's own afterwards.
 let previousFrame = run("/usr/bin/defaults", ["read", preferences, frameKey])
 let screen = NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1512, height: 949)
 // Mostly beside the screen, on the side away from the pointer: under a

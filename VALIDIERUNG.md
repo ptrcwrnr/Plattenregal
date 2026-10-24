@@ -1,3 +1,23 @@
+# Aktueller Stand · 24.10.2026 (Version 1.0.0, Altlasten)
+
+Projektversion **1.0.0 (102026)**, Schema **V18**. Prüfung nach Umstellung der Fenster-Kennung, `LegacyDefaults`, Aufräumen des Demo-Ordners, festen Test-Einstellungsnamen und der Versionsnummer. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** `PlattenregalApp`, `DemoMode`, `WelcomeView`, neu `LegacyDefaults`, `SettingsTests`, `guide-screenshots.swift`, Projektdatei, Handbuch-HTML, Webseite.
+- **Gelesen, unverändert (räumen selbst auf):** `AppLog` (Rollen), `CoverCache.prune` (Alter und Größe), `ShelfAutoBackup` (Anzahl und Tage), `ScheduledExport` (ersetzt dieselbe Datei), `AppleTVLink` (Geräteliste).
+- **Befunde (behoben):** Demo und echte App teilten die Fenstergröße. Hunderte veraltete Einstellungen früherer Versionen, 459 leere Einstellungsdateien aus Tests, Debug-Schnappschüsse und alte Test-Datenbanken im temporären Ordner, verwaiste Build-Ordner.
+- **Fehlermeldungen:** keine neuen. Neue Protokollzeile „N veraltete Einträge früherer Versionen entfernt“ (nur wenn N > 0; in Testläufen schweigt das Protokoll, daher nicht im Protokoll gesehen).
+- **macOS-Absturzberichte:** keine.
+- **App-Protokoll** 24.10.: kein `ERROR`.
+- **Lokalisierung:** 907 Einträge, alle mit Englisch; keine neuen Texte.
+- **Nicht geprüft:** die echte App mit der echten Sammlung gestartet, `marketing-shots.sh` und `guide-screenshots.swift` ausgeführt.
+
+## Verifikation
+
+- Sauberer Debug-Build ohne Warnungen, alle 234 Tests bestanden.
+- Demo-Fenster verändert und neu gestartet: eigene Größe unter `demo`, `main` unverändert. Probe-Einträge in den echten Einstellungen beim Start entfernt. Demo-Ordner beim normalen Start entfernt.
+
 # Aktueller Stand · 24.10.2026 (Top 10 in der Statistik, erstes Vollbild)
 
 Projektversion **1.1.2 (102026)**, Schema **V18** (unverändert). Prüfung nach den Änderungen vom 24.10. morgens: Top-Künstler und Labels als gemeinsamer Baustein mit genau 10 Kacheln; Petrol-Streifen unter der Toolbar gegen den hellen Streifen beim ersten Vollbild. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.

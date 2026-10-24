@@ -59,7 +59,7 @@ struct HelpCommands: View {
         Button("Handbuch") { Handbook.open() }
         Button("Erste Schritte") {
             // The main window may be closed (the app keeps running without it).
-            openWindow(id: "main")
+            openWindow(id: DemoMode.mainWindowID)
             AppWelcome.shared.show()
         }
         if !DemoMode.isActive {

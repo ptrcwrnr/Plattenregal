@@ -4,9 +4,15 @@ import Testing
 
 extension AllTests {
     @MainActor struct SettingsTests {
-        private func withSignatureDefaults(_ check: (UserDefaults) throws -> Void) throws {
-            let suite = "SignatureDesignTests-\(UUID().uuidString)"
+        /// Own settings per test under a fixed name, emptied before and after.
+        /// macOS keeps an empty `<suite>.plist` even after
+        /// `removePersistentDomain` (and writes it again if deleted right
+        /// away); with a new random name per run they had piled up to
+        /// hundreds in the app's container. A fixed name leaves one per test.
+        private func withSignatureDefaults(test: String = #function, _ check: (UserDefaults) throws -> Void) throws {
+            let suite = "SignatureDesignTests-\(test.prefix { $0 != "(" })"
             let defaults = try #require(UserDefaults(suiteName: suite))
+            defaults.removePersistentDomain(forName: suite)
             defer { defaults.removePersistentDomain(forName: suite) }
             try check(defaults)
         }
@@ -92,9 +98,32 @@ extension AllTests {
             #expect(OverviewOrder.recent.apply([5, 1, 4, 3, 2], scope: "collection", alphabetical: alphabetical, key: { $0 }, added: date) == [3, 2, 1, 4, 5])
         }
 
+        @Test func obsoleteSettingsOfEarlierVersionsAreRemovedAndCurrentOnesKept() throws {
+            let suite = "LegacyDefaultsTest"
+            let defaults = try #require(UserDefaults(suiteName: suite))
+            defaults.removePersistentDomain(forName: suite)
+            defer { defaults.removePersistentDomain(forName: suite) }
+            let obsolete = [
+                "NSWindow Frame SwiftUI.WindowGroup<SwiftUI._ConditionalContent<Plattenregal.RootView>>-1-AppWindow-1",
+                "NSSplitView Subview Frames SwiftUI.WindowGroup<SwiftUI.ModifiedContent<Plattenregal.RootView>>-1-AppWindow-1, SidebarNavigationSplitView",
+                "LibraryStorage.legacyShelfNameMigratedV5",
+                "LibraryStorage.legacyShelfNameMigratedV5:file:///tmp/x.store",
+                "missingColumnCollapsed",
+            ]
+            let current = ["NSWindow Frame main", "NSWindow Frame demo", "NSWindow Frame com_apple_SwiftUI_Settings_window",
+                           AppPreferences.Key.signatureDesign, ShelfAutoBackup.keptCountKey, "windowBackgroundStyle"]
+            for key in obsolete + current { defaults.set("x", forKey: key) }
+            #expect(LegacyDefaults.removeObsolete(from: defaults, domain: suite) == obsolete.count)
+            let left = try #require(defaults.persistentDomain(forName: suite))
+            #expect(Set(left.keys) == Set(current))
+            // A second launch finds nothing more.
+            #expect(LegacyDefaults.removeObsolete(from: defaults, domain: suite) == 0)
+        }
+
         @Test func inputSourceBubbleIsStoredOffForTheApp() throws {
             let suite = "InputSourceIndicatorTest"
             let defaults = try #require(UserDefaults(suiteName: suite))
+            defaults.removePersistentDomain(forName: suite)
             defer { defaults.removePersistentDomain(forName: suite) }
             // Only when macOS itself leaves it open.
             let global = UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)

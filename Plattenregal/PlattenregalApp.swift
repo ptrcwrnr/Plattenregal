@@ -21,6 +21,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                 + (AppPreferences.shared.signatureDesign == .atelier ? " · Design Klassisch" : ""),
                             version: "\(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         FocusRings.disableGlobally()
+        // Settings only older versions wrote (window sizes of every former
+        // build, dropped options); hundreds had piled up.
+        let obsolete = LegacyDefaults.removeObsolete()
+        if obsolete > 0 { AppLog.info("Einstellungen", "\(obsolete) veraltete Einträge früherer Versionen entfernt") }
         #if DEBUG
         DebugSnapshot.scheduleIfRequested()
         #endif
@@ -84,7 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // One main window: a second one (⌘N) would load and compute every
         // page again. `Window` drops "Neues Fenster"; closed, it comes back
         // from the Dock or the Fenster menu.
-        Window("Plattenregal", id: "main") {
+        Window("Plattenregal", id: DemoMode.mainWindowID) {
             if let container, Self.previewsSettings {
                 AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
             } else if let container {

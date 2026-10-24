@@ -13,7 +13,8 @@ import SwiftUI
 /// - the collection lives in memory only and is gone when the demo ends,
 /// - settings go to their own defaults (`AppDefaults`), fresh each time,
 /// - backups and covers go to a temporary folder,
-/// - Discogs is switched off and the keychain is never touched.
+/// - Discogs is switched off and the keychain is never touched,
+/// - the main window keeps its own size and place (`mainWindowID`).
 /// Only the protocol is shared, marked "Demo" at the start of the session.
 nonisolated enum DemoMode {
     static let argument = "--demo"
@@ -21,6 +22,12 @@ nonisolated enum DemoMode {
     /// `--statistics-demo` (Debug) opens the same demo on the statistics page.
     static let isActive: Bool = ProcessInfo.processInfo.arguments.contains { $0 == argument || $0 == "--statistics-demo" }
         || takeLaunchRequest()
+
+    /// The main window's id. macOS saves the window's size and place under
+    /// it ("NSWindow Frame main"), in the real defaults – the demo has its
+    /// own, so trying something out never changes the size of the real
+    /// app's window.
+    static var mainWindowID: String { isActive ? "demo" : "main" }
 
     /// Set right before relaunching into the demo, taken (and removed) by
     /// the next launch. Only valid for a minute: if the relaunch fails, a
@@ -55,13 +62,27 @@ nonisolated enum DemoMode {
         #endif
     }
 
-    /// Backups and covers of the demo; emptied when a demo starts.
+    /// Another Plattenregal of this build besides this one – a demo from
+    /// Xcode, say, whose folder must stay.
+    private static var otherInstanceRunning: Bool {
+        let own = ProcessInfo.processInfo.processIdentifier
+        return NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
+            .contains { $0.processIdentifier != own && !$0.isTerminated }
+    }
+
+    /// Backups and covers of the demo; emptied when a demo starts, removed
+    /// at the next normal launch.
     static let temporaryDirectory = FileManager.default.temporaryDirectory
         .appendingPathComponent("Plattenregal-Demo", isDirectory: true)
 
-    /// Once at launch, before anything reads settings or folders.
+    /// Once at launch, before anything reads settings or folders. A normal
+    /// launch removes what the last demo left in the temporary folder
+    /// (covers, backups) – unless a demo is still running beside it.
     static func prepare() {
-        guard isActive else { return }
+        guard isActive else {
+            if !otherInstanceRunning { try? FileManager.default.removeItem(at: temporaryDirectory) }
+            return
+        }
         try? FileManager.default.removeItem(at: temporaryDirectory)
         try? FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
         AppDefaults.resetDemo()
