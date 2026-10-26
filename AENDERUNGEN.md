@@ -1,3 +1,9 @@
+# Einstellungen (Modern): Karten scheinen nicht mehr durch die Reiterleiste · 26.10.2026
+
+- **Behoben:** In Modern ist die Toolbar der Einstellungen durchsichtig, der Rand des Systems ist dort abgeschaltet. Gescrollte Karten liefen deshalb in voller Stärke hinter die Reiterleiste – „Design“ stand halb unter „Allgemein“ und sah kaputt aus. Mit dem Designwechsel hatte das nichts zu tun; nach einem Neustart stand die Seite nur wieder oben.
+- Jetzt nutzt `SettingsPage` denselben Baustein wie das Hauptfenster (`scrollsUnderToolbar`), mit neuer Variante `showsBehindBar: false`: Hinter der Leiste ist nichts zu sehen, der Inhalt blendet über 20 pt (`AppStyle.scrollEdgeTuck`) kurz vor der Toolbar-Kante in der weichen S-Kurve aus. Die Cover im Hauptfenster scheinen weiter durchs Glas (Standard `showsBehindBar: true`). Wie die Seiten im Hauptfenster beginnt die erste Karte in Modern direkt an der Toolbar-Kante. Klassisch unverändert.
+- Geprüft: Debug-Build ohne Fehler und Warnungen, 244 Tests bestanden. In der Demo (Modern dunkel) Einstellungen → Darstellung in Ruhe und gescrollt aufgenommen, vorher der Fehler nachgestellt (Wechsel Klassisch → Modern per Klick, dann gescrollt). **Nicht angesehen:** die übrigen Reiter (gleicher Baustein `SettingsPage`), Modern hell.
+
 # Modern: Auswahlkapsel wieder ohne Akzentrand · 26.10.2026
 
 - **Zurückgenommen (auf Wunsch):** der blaue Rand um die gewählte Option der Umschalter aus der vorigen Änderung. Die Glaslinse ist wieder randlos wie zuvor; die Beschriftung bleibt halbfett in Textfarbe.

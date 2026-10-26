@@ -91,8 +91,11 @@ extension View {
     /// instead of being cut off there. Klassisch keeps its petrol band,
     /// unchanged. `contentPadding` is the scroll content's own top padding;
     /// in Modern the content moves up by it (see `AppStyle.pageTopPadding`).
-    func scrollsUnderToolbar(contentPadding: CGFloat) -> some View {
-        modifier(ScrollsUnderToolbar(contentPadding: contentPadding))
+    /// `showsBehindBar`: covers may shimmer through the glass (the main
+    /// window's pages); text would read as overlapping the bar, so pages of
+    /// text (settings) fade out fully just before the toolbar's edge.
+    func scrollsUnderToolbar(contentPadding: CGFloat, showsBehindBar: Bool = true) -> some View {
+        modifier(ScrollsUnderToolbar(contentPadding: contentPadding, showsBehindBar: showsBehindBar))
     }
 
     /// The bar in the middle of a window's toolbar around the page switch:
@@ -210,6 +213,7 @@ extension View {
 /// titlebar), so the edges are drawn here (`ScrollEdgeFadeMask`).
 private struct ScrollsUnderToolbar: ViewModifier {
     let contentPadding: CGFloat
+    let showsBehindBar: Bool
     func body(content: Content) -> some View {
         if AppStyle.isAtelier {
             content
@@ -221,7 +225,8 @@ private struct ScrollsUnderToolbar: ViewModifier {
                     .contentMargins(.top, margin, for: .automatic)
                     .scrollEdgeEffectHidden(true, for: .top)
                     .mask {
-                        ScrollEdgeFadeMask(top: margin, bottom: proxy.safeAreaInsets.bottom)
+                        ScrollEdgeFadeMask(top: showsBehindBar ? margin : proxy.safeAreaInsets.top,
+                                           showsBehindBar: showsBehindBar, bottom: proxy.safeAreaInsets.bottom)
                     }
                     .ignoresSafeArea(.container, edges: .top)
             }
@@ -232,17 +237,28 @@ private struct ScrollsUnderToolbar: ViewModifier {
 /// The page's content fading out towards the top and bottom edge, no blur
 /// (a blur strip drew a milky veil over the covers). Each fade follows a
 /// smooth S-curve that starts and ends flat, so no line shows where it
-/// begins. At the top only above the first row at rest – from
+/// begins. With `showsBehindBar` off nothing shows behind the bar: the
+/// content fades in over `scrollEdgeTuck` just above the toolbar's edge.
+/// Otherwise at the top only above the first row at rest – from
 /// `scrollEdgeTopOpacity` at the window's edge to full where the content
 /// starts –, so resting content is never touched; at the bottom over
 /// `scrollEdgeFade` down to `scrollEdgeBottomOpacity` at the window's edge.
 private struct ScrollEdgeFadeMask: View {
     let top: CGFloat
+    let showsBehindBar: Bool
     let bottom: CGFloat
     var body: some View {
         VStack(spacing: 0) {
-            Self.fade(from: AppStyle.scrollEdgeTopOpacity, to: 1)
-                .frame(height: top)
+            if showsBehindBar {
+                Self.fade(from: AppStyle.scrollEdgeTopOpacity, to: 1)
+                    .frame(height: top)
+            } else {
+                // Nothing behind the bar, then in over the last stretch
+                // above the toolbar's edge.
+                Color.clear.frame(height: max(0, top - AppStyle.scrollEdgeTuck))
+                Self.fade(from: 0, to: 1)
+                    .frame(height: min(top, AppStyle.scrollEdgeTuck))
+            }
             Color.black
             Self.fade(from: 1, to: AppStyle.scrollEdgeBottomOpacity)
                 .frame(height: AppStyle.scrollEdgeFade)

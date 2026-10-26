@@ -19,6 +19,11 @@ struct SettingsPage<Content: View>: View {
         }
         // The edge effect draws a line under the toolbar when hovered.
         .scrollEdgeEffectHidden(true, for: .top)
+        // In Modern the toolbar is see-through: scrolled cards ran on behind
+        // the tab switch at full strength and looked broken. Now they fade
+        // out just before it; the page starts at the toolbar's edge like the
+        // main window's pages.
+        .scrollsUnderToolbar(contentPadding: AppStyle.pagePadding, showsBehindBar: false)
     }
 }
 

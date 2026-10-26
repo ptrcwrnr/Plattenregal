@@ -26,6 +26,9 @@ enum AppStyle {
     /// page (Modern, see `scrollsUnderToolbar`). Long, so its start can't be
     /// made out. At the top the fade lies behind the toolbar only.
     static let scrollEdgeFade: CGFloat = 2 * blockSpacing
+    /// Pages of text (settings): how far above the toolbar's edge their
+    /// content has faded out completely, so nothing reads through the bar.
+    static let scrollEdgeTuck: CGFloat = sectionSpacing
     /// How much of the content still shows at the window's top edge, under
     /// the toolbar's glass.
     static let scrollEdgeTopOpacity: Double = 0.35
