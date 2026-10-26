@@ -1,8 +1,15 @@
+# Zentrale Öffnen-Animation: auch der Fächer des runden Knopfs federt · 26.10.2026
+
+- **Neu:** `AppStyle.openAnimation` und `closeAnimation` ersetzen `searchOpenAnimation`/`searchCloseAnimation`. Regel: Federn darf nur, was man selbst aus einem Knopf öffnet. Das sind die Suche in der Toolbar und der Fächer des runden Knopfs (Raster/Liste, Synchronisieren, Einstellungen): Die drei springen nacheinander heraus (30 ms Versatz wie bisher) und federn leicht über ihren Platz hinaus; das Zuklappen ist gemeinsam und ruhig. Mit „Bewegung reduzieren“ blendet der Fächer wie bisher nur ein und aus. Seitenwechsel, Auswahlkapsel, wandernde Platten, Panels und Statistik bleiben ruhig.
+- **Geklärt:** Das „shog“ im Suchfeld beim Start aus der DMG (voriger Eintrag) hatte der Nutzer nebenbei getippt; kein Fehler.
+- **Doku:** README (Suche, runder Knopf, Regel fürs Federn).
+- **Geprüft:** Debug-Build, 240 Tests bestanden. In der Demo (Klassisch) den runden Knopf über die Bedienungshilfen gedrückt (ohne Mauszeiger) und in Einzelbildern aufgenommen: Die Aktionen schießen nacheinander leicht über und pendeln sich ein. Nicht geprüft: Modern, Zuklappen in Einzelbildern.
+
 # DMG 1.0.0 mit der neuen Toolbar-Leiste neu ausgegeben · 26.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält die Toolbar als eine Leiste mit federnd aufklappender Suche und die neuen Handbuch-PDFs. Vorher hing noch die alte DMG von der Prüfung am Vormittag unter `/Volumes/Plattenregal`; ausgeworfen (nichts darauf geöffnet).
 - Geprüft: `hdiutil verify` gültig; 1.0.0 (102026), nur arm64, ab macOS 27.0, Ad-hoc-Signatur gültig; Berechtigungen unverändert (Sandbox, Dateien nach Wahl, Netzwerk ein- und ausgehend, `get-task-allow` wie zuvor); beide Handbuch-PDFs enthalten und identisch mit den neuen; kein Prüfcode (`--snapshot=`); neue Bausteine im Programm (`ControlSeparator`), alte Feldfarben nicht mehr. Release-App aus der eingehängten DMG gestartet: echte Sammlung (852 Exemplare), Leiste mit Rubriken und Suche zu sehen, sauber beendet, Protokoll ohne Fehler; Fenstergröße danach zurückgeschrieben.
-- **Offen:** In der Aufnahme stand im aufgeklappten Suchfeld „shog“ mit Cursor. Der Code füllt das Feld nirgends (der Vorgabetext gibt es nur in Debug), und geschlossen startet die Leiste ohne Fokus (Demo-Aufnahmen). Wahrscheinlich kam die Eingabe von außen, während das Fenster rund 7 Sekunden vorn war; nicht abschließend geklärt.
+- **Geklärt (später):** In der Aufnahme stand im aufgeklappten Suchfeld „shog“ mit Cursor – vom Nutzer nebenbei getippt. Der Code füllt das Feld nirgends (der Vorgabetext gibt es nur in Debug), und geschlossen startet die Leiste ohne Fokus (Demo-Aufnahmen). Wahrscheinlich kam die Eingabe von außen, während das Fenster rund 7 Sekunden vorn war; nicht abschließend geklärt.
 
 # Handbuch-Bilder und -PDFs mit der neuen Toolbar · 26.10.2026
 

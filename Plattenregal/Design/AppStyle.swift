@@ -227,12 +227,15 @@ enum AppStyle {
     /// position, columns reflowing, a search bar sliding in. `nil` (= instant)
     /// with reduce motion.
     static var layoutAnimation: Animation? { reduceMotion ? nil : moveAnimation }
-    /// The search in the toolbar opening from its magnifying glass: the
-    /// field springs open a little past its width and back, the glass
-    /// bounces once. Closing is calm, without the spring. `nil` (= instant)
-    /// with reduce motion.
-    static var searchOpenAnimation: Animation? { reduceMotion ? nil : .bouncy(duration: 0.45, extraBounce: 0.12) }
-    static var searchCloseAnimation: Animation? { layoutAnimation }
+    /// Something opened from a button springs out of it, a little past its
+    /// end and back: the search from its magnifying glass (which bounces
+    /// once), the actions fanned out of the round button. Only these – page
+    /// switches, the selection pill, moving records and panels stay calm.
+    /// `nil` (= instant) with reduce motion; callers that should still fade
+    /// then choose their own fallback.
+    static var openAnimation: Animation? { reduceMotion ? nil : .bouncy(duration: 0.45, extraBounce: 0.12) }
+    /// Closing it again: calm, without the spring.
+    static var closeAnimation: Animation? { layoutAnimation }
     /// The curve of `layoutAnimation`, for things that also animate with
     /// reduce motion on (they choose their own fallback).
     static let moveAnimation = Animation.smooth(duration: 0.3)

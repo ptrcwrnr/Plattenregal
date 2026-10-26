@@ -5,8 +5,8 @@ import SwiftUI
 /// a magnifying glass that opens into a text field with its own placeholder,
 /// clear button and Esc. Closed it is only the glass, as wide as an option
 /// of the switch beside it; open it is `toolbarSearchWidth` wide. The caller
-/// opens and closes it in `AppStyle.searchOpenAnimation` and
-/// `searchCloseAnimation`, so the bar around it follows in the same spring;
+/// opens and closes it in `AppStyle.openAnimation` and
+/// `closeAnimation`, so the bar around it follows in the same spring;
 /// the glass bounces once on opening.
 struct AppSearchField: View {
     let placeholder: String

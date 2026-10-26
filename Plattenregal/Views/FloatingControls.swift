@@ -3,7 +3,8 @@ import SwiftData
 
 /// The round button at the bottom right of the window. On collection and
 /// wantlist a click fans the page's actions out around it on a quarter
-/// circle – grid or list, sync, settings – and closes them again; so does
+/// circle – grid or list, sync, settings – springing out one after the
+/// other (`AppStyle.openAnimation`), and closes them again calmly; so does
 /// Esc, a click beside them or choosing one. On the shelf page it opens
 /// "Einsortieren" right away: the records without a shelf and where they go;
 /// above it one of the same size opens the "Verlauf".
@@ -57,8 +58,8 @@ struct FloatingControls: View {
                     .opacity(expanded ? 1 : 0)
                     .allowsHitTesting(expanded)
                     .accessibilityHidden(!expanded)
-                    .animation(AppStyle.reduceMotion ? .default : AppStyle.moveAnimation
-                        .delay(expanded ? Double(index) * 0.03 : 0), value: expanded)
+                    // Spring out one after the other, back in together and calm.
+                    .animation(expanded ? Self.openAnimation.delay(Double(index) * 0.03) : Self.closeAnimation, value: expanded)
             }
             mainButton
         }
@@ -82,7 +83,7 @@ struct FloatingControls: View {
 
     private var mainButton: some View {
         Button {
-            withAnimation(AppStyle.reduceMotion ? .default : AppStyle.moveAnimation) { expanded.toggle() }
+            withAnimation(expanded ? Self.closeAnimation : Self.openAnimation) { expanded.toggle() }
         } label: {
             Image(systemName: "ellipsis")
                 .font(AppStyle.floatingSymbol)
@@ -170,8 +171,13 @@ struct FloatingControls: View {
 
     private func collapse() {
         guard expanded else { return }
-        withAnimation(AppStyle.reduceMotion ? .default : AppStyle.moveAnimation) { expanded = false }
+        withAnimation(Self.closeAnimation) { expanded = false }
     }
+
+    /// The app's opening spring (`AppStyle.openAnimation`) and calm closing;
+    /// with reduce motion the fan still fades in and out.
+    private static var openAnimation: Animation { AppStyle.openAnimation ?? .default }
+    private static var closeAnimation: Animation { AppStyle.closeAnimation ?? .default }
 }
 
 /// Watches the window's clicks while the actions are fanned out and reports

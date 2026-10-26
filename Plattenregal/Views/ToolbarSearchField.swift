@@ -45,7 +45,7 @@ struct ToolbarSearchField: View {
         }
         .onChange(of: focused) { _, new in
             requests.fieldFocused = new
-            if !new && opened { withAnimation(AppStyle.searchCloseAnimation) { opened = false } }
+            if !new && opened { withAnimation(AppStyle.closeAnimation) { opened = false } }
         }
         .onChange(of: page, initial: true) {
             if page.hasSearch { fieldPage = page } else { focused = false }
@@ -56,7 +56,7 @@ struct ToolbarSearchField: View {
     /// follows. The text field only exists once open, so the focus follows
     /// in the next update.
     private func openField() {
-        if !opened { withAnimation(AppStyle.searchOpenAnimation) { opened = true } }
+        if !opened { withAnimation(AppStyle.openAnimation) { opened = true } }
         Task { @MainActor in focused = true }
     }
 
