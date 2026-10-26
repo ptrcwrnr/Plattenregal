@@ -1,3 +1,9 @@
+# Handbuch-Bilder und -PDFs mit der neuen Toolbar · 26.10.2026
+
+- Alle 14 Bilder (`Handbuch/Bilder/de|en`) mit `Scripts/guide-screenshots.swift` neu aufgenommen (Demo, Klassisch): Collection, Regal und Statistik zeigen jetzt Rubriken und Lupe als eine Leiste. Die übrigen Bilder sind inhaltlich gleich und nur neu gerechnet.
+- `Plattenregal/Handbuch.pdf` und `Handbook.pdf` mit `Scripts/make-guide.swift` neu erzeugt (Version 1.0.0, je 10 Seiten).
+- Geprüft: alle Bilder angesehen; im deutschen PDF Seite 5 (Rundgang: Bild, Bildunterschrift „Oben die Rubriken mit der Suche“, Abschnitt „Suchen“) als Bild gerendert und angesehen. Nicht neu gebaut: die DMG in `dist/` (enthält noch die alte Toolbar).
+
 # Toolbar als eine Leiste: Rubriken und aufklappende Suche · 26.10.2026
 
 - **Neu:** Rubriken und Suche sind eine Leiste mitten in der Toolbar (Variante „eine Kapsel, Suche als Symbol“). Hinter „Statistik“ folgen ein feiner Strich (`ControlSeparator`, jetzt auch für die Trennstriche der Regal-Reiter) und eine Lupe. Klick auf die Lupe oder ⌘F klappt das Suchfeld in der Leiste auf (240 pt, `toolbarSearchWidth`) – die Leiste federt dabei leicht über und zurück, die Lupe hüpft einmal (`AppStyle.searchOpenAnimation`); verliert das Feld leer den Fokus, klappt es ruhig wieder zu (`searchCloseAnimation`). Mit Suchtext bleibt es offen, auch beim Rubrikwechsel. In der Statistik klappen Strich und Lupe im Takt des Seitenwechsels weg. Bisher stand das Suchfeld getrennt rechts in der Toolbar.

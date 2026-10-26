@@ -6,7 +6,8 @@ Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
 - **Verifikation:** Debug-Build, 240 Tests bestanden; Demo in Klassisch und Modern angesehen, Öffnen per ⌘F und Schließen per Esc in Einzelbildern geprüft.
 - **Lokalisierung:** kein neuer Text; „Suchen“ ist übersetzt, der Tooltip „Suchen (⌘F)“ wird daraus gebaut.
 - **App-Protokoll** 26.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
-- **Nicht geprüft:** Dunkelmodus in Modern, Vollbild, Klick auf die Lupe mit der Maus; Handbuch-Bilder noch alt.
+- **Handbuch:** Bilder (de/en) und beide PDFs neu erzeugt, mit der neuen Leiste.
+- **Nicht geprüft:** Dunkelmodus in Modern, Vollbild, Klick auf die Lupe mit der Maus. Die DMG in `dist/` ist noch nicht neu gebaut.
 
 # Aktueller Stand · 26.10.2026 (öffentliches Repository)
 
