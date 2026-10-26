@@ -1,23 +1,60 @@
 import SwiftUI
 
-/// One search field for the whole app: icon, text field, clear button in a
-/// Liquid Glass capsule (same look as the search on the shelf page).
+/// One search field for the whole app, inside the bar of the page switch
+/// in the toolbar (see `ToolbarSearchField`) instead of a capsule of its own:
+/// a magnifying glass that opens into a text field with its own placeholder,
+/// clear button and Esc. Closed it is only the glass, as wide as an option
+/// of the switch beside it; open it is `toolbarSearchWidth` wide. The caller
+/// opens and closes it in `AppStyle.searchOpenAnimation` and
+/// `searchCloseAnimation`, so the bar around it follows in the same spring;
+/// the glass bounces once on opening.
 struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
-    /// Focus of the text field, for the search field in the toolbar (⌘F).
+    /// Focus of the text field (⌘F).
     let focus: FocusState<Bool>.Binding
-    /// Sits on the window's toolbar (see `searchBarChrome(onToolbar:)`).
-    var onToolbar = false
+    /// Open: the text field beside the glass; closed only the glass.
+    let open: Bool
+    /// A click on the glass: opens the field, or focuses it when open.
+    let onOpen: () -> Void
+    /// Counts the openings, for the bounce of the glass (not on closing).
+    @State private var openings = 0
+
     var body: some View {
+        HStack(spacing: 0) {
+            Button(action: onOpen) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(AppStyle.toolbarLabel)
+                    .symbolEffect(.bounce, options: .nonRepeating, value: openings)
+                    .padding(.leading, AppStyle.rowSpacing)
+                    .padding(.trailing, open ? AppStyle.itemSpacing : AppStyle.rowSpacing)
+                    .frame(height: AppStyle.controlHeight)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(AppShortcuts.help(String(localized: "Suchen"), keys: "⌘F"))
+            .accessibilityLabel(String(localized: "Suchen"))
+            if open {
+                field
+                    .padding(.trailing, AppStyle.rowSpacing)
+                    .transition(.opacity)
+            }
+        }
+        .frame(width: open ? AppStyle.toolbarSearchWidth : nil, alignment: .leading)
+        .clipped()
+        .onChange(of: open) { _, new in
+            if new && !AppStyle.reduceMotion { openings += 1 }
+        }
+    }
+
+    private var field: some View {
         HStack(spacing: AppStyle.itemSpacing) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
             TextField(placeholder, text: $text, prompt: Text(verbatim: ""))
                 .textFieldStyle(.plain).noTextAutoFill()
                 // Its own placeholder instead of the field's: the field swaps
                 // its prompt at once, this one fades to a new text in the beat
-                // of a page switch (toolbar: "Collection durchsuchen" →
-                // "Regal durchsuchen"). Gone at once on the first key.
+                // of a page switch ("Collection durchsuchen" → "Regal
+                // durchsuchen"). Gone at once on the first key.
                 .background(alignment: .leading) {
                     ZStack(alignment: .leading) {
                         Text(placeholder)
@@ -46,7 +83,6 @@ struct AppSearchField: View {
                 .accessibilityLabel(String(localized: "Suche löschen"))
             }
         }
-        .searchBarChrome(onToolbar: onToolbar)
     }
 }
 

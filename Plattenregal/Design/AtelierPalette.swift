@@ -16,11 +16,6 @@ enum AtelierPalette {
     static let goldForeground = Color(nsColor: rgb(0x293C39))
     static let toolbarSelection = Color(nsColor: rgb(0xF4EFE5))
     static let toolbarInk = Color(nsColor: rgb(0x233A3E))
-    /// The search field on the petrol toolbar: `surface` and `border` of the
-    /// dark paper, fixed – not resolved from the toolbar's color scheme,
-    /// which now and then reached the field as light (a white field).
-    static let toolbarField = Color(nsColor: rgb(0x213940))
-    static let toolbarFieldBorder = Color(nsColor: rgb(0x3E5155))
     static let shadow = adaptive(0x1D3C42, 0x000000).opacity(0.08)
     /// Signal colors (see `AppStyle.successColor` …): moss, ochre, brick.
     static let success = adaptive(0x3E7A55, 0x8FC4A0)

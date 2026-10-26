@@ -95,6 +95,10 @@ extension View {
                     RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(Color.black.opacity(0.16))
                         .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(Color.white.opacity(0.08), lineWidth: AppStyle.borderWidth))
                 }
+                // Always dark on the petrol, set here instead of taken from
+                // the toolbar's scheme, which now and then reached the bar as
+                // light (dark text, a dark separator in the search field).
+                .environment(\.colorScheme, .dark)
         } else {
             padding(.horizontal, AppStyle.controlInset).glassEffect(.regular, in: .capsule)
         }
@@ -147,26 +151,19 @@ extension View {
         }
     }
 
-    /// The Liquid Glass capsule every search bar sits in. `onToolbar`: in
-    /// Klassisch always dark on the petrol bar, with fixed colors and scheme
-    /// instead of following the toolbar's (see `AtelierPalette.toolbarField`).
-    @ViewBuilder func searchBarChrome(onToolbar: Bool = false) -> some View {
-        let field = padding(.horizontal, AppStyle.rowSpacing)
+    /// The Liquid Glass capsule a text field sits in (paper in Klassisch).
+    func searchBarChrome() -> some View {
+        padding(.horizontal, AppStyle.rowSpacing)
             .frame(height: AppStyle.controlHeight)
             .background {
                 if AppStyle.isAtelier {
                     RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius)
-                        .fill(onToolbar ? AtelierPalette.toolbarField : AtelierPalette.surface)
+                        .fill(AtelierPalette.surface)
                         .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius)
-                            .strokeBorder(onToolbar ? AtelierPalette.toolbarFieldBorder : AtelierPalette.border, lineWidth: AppStyle.borderWidth))
+                            .strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                 }
             }
             .glassEffect(AppStyle.isAtelier ? .identity : .regular.interactive(), in: .capsule)
-        if onToolbar && AppStyle.isAtelier {
-            field.environment(\.colorScheme, .dark)
-        } else {
-            field
-        }
     }
 
     /// Marks a text field as not an AutoFill target. Without a content type

@@ -35,15 +35,12 @@ enum AppStyle {
     /// How far a selection pill sits inside its bar (all around), so its
     /// corners run parallel to the bar's (`atelierControlRadius - controlInset`).
     static let controlInset: CGFloat = 3
-    /// The search field at the right end of the toolbar (see `ToolbarSearchField`).
-    static let toolbarSearchWidth: CGFloat = 300
-    /// The list of hits that drops from it on the shelf page: a little
-    /// wider, so artist and title fit beside the cover.
-    static let searchResultsWidth: CGFloat = toolbarSearchWidth + 60
-    /// Topped up to the toolbar's own right margin (8, measured), so the
-    /// field ends at the pages' margin (`pageMargin`), flush with the
-    /// covers below it.
-    static let toolbarSearchInset: CGFloat = pageMargin - 8
+    /// The search field opened in the toolbar's bar, glass included (see
+    /// `AppSearchField`).
+    static let toolbarSearchWidth: CGFloat = 240
+    /// The list of hits that drops from the toolbar's bar on the shelf page:
+    /// wide enough for artist and title beside the cover.
+    static let searchResultsWidth: CGFloat = 360
     /// The round button at the bottom right and the actions around it.
     static let floatingButtonSize: CGFloat = 52
     static let floatingItemSize: CGFloat = 40
@@ -189,6 +186,9 @@ enum AppStyle {
     // MARK: Colors
     // All dynamic/system-based so Light and Dark mode stay correct automatically.
     static var isAtelier: Bool { AppPreferences.shared.signatureDesign == .atelier }
+    /// Labels and symbols on the toolbar's bar that aren't chosen: the
+    /// page switch's options, the magnifying glass.
+    static var toolbarLabel: AnyShapeStyle { isAtelier ? AnyShapeStyle(Color.white.opacity(0.8)) : AnyShapeStyle(.secondary) }
     static var hoverBackground: Color { isAtelier ? AtelierPalette.ink.opacity(0.05) : Color.primary.opacity(0.05) }
     /// The accent chosen in the settings (or the system's). Read in `body`,
     /// so views redraw when it changes.
@@ -227,6 +227,12 @@ enum AppStyle {
     /// position, columns reflowing, a search bar sliding in. `nil` (= instant)
     /// with reduce motion.
     static var layoutAnimation: Animation? { reduceMotion ? nil : moveAnimation }
+    /// The search in the toolbar opening from its magnifying glass: the
+    /// field springs open a little past its width and back, the glass
+    /// bounces once. Closing is calm, without the spring. `nil` (= instant)
+    /// with reduce motion.
+    static var searchOpenAnimation: Animation? { reduceMotion ? nil : .bouncy(duration: 0.45, extraBounce: 0.12) }
+    static var searchCloseAnimation: Animation? { layoutAnimation }
     /// The curve of `layoutAnimation`, for things that also animate with
     /// reduce motion on (they choose their own fallback).
     static let moveAnimation = Animation.smooth(duration: 0.3)

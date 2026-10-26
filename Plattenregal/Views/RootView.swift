@@ -90,8 +90,9 @@ struct RootView: View {
             .task { CoverCache.shared.pruneDisk() }
     }
 
-    /// No sidebar: the page switch centered in the toolbar, the search at
-    /// its right end (⌘F), so the pages start right below it. On collection
+    /// No sidebar: one bar centered in the toolbar, the page switch and the
+    /// search behind its magnifying glass (⌘F), so the pages start right
+    /// below it. On collection
     /// and wantlist grid or list, sync and settings fan out of the round
     /// button at the bottom right (see `FloatingControls`). The settings are
     /// also where a Mac app has them: Plattenregal menu and ⌘,.
@@ -104,13 +105,16 @@ struct RootView: View {
             .navigationTitle("Plattenregal")
             .toolbar(removing: .title)
             .toolbar {
-                ToolbarItem(placement: .principal) { PagePicker(selection: destination).toolbarBar() }
-                    // The bar brings its own background (see `toolbarBar`).
-                    .sharedBackgroundVisibility(.hidden)
-                ToolbarItem(placement: .primaryAction) {
-                    ToolbarSearchField(selection: destination, library: search, shelf: shelfSearch, requests: searchRequests)
+                // One bar: the page switch, then the search, which opens
+                // from its magnifying glass (see `ToolbarSearchField`).
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 0) {
+                        PagePicker(selection: destination)
+                        ToolbarSearchField(selection: destination, library: search, shelf: shelfSearch, requests: searchRequests)
+                    }
+                    .toolbarBar()
                 }
-                // Brings its own capsule (see `searchBarChrome`).
+                // The bar brings its own background (see `toolbarBar`).
                 .sharedBackgroundVisibility(.hidden)
             }
             .background { SignatureToolbarAppearance() }

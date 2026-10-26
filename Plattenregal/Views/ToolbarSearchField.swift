@@ -1,9 +1,12 @@
 import SwiftUI
 
-/// The search field at the right end of the toolbar, on the pages that have
-/// one (not on the statistics). It ends flush with the covers below it: the
-/// toolbar's own margin is topped up to the pages' (`toolbarSearchInset`).
-/// ⌘F puts the cursor in it; Esc clears the query, a second Esc leaves it.
+/// The search in the toolbar, at the end of the page switch's bar: a line,
+/// then the magnifying glass, which opens into the field (see
+/// `AppSearchField`). A click on the glass or ⌘F opens it with the cursor in
+/// it; it closes again when it loses the focus with nothing typed (Esc
+/// clears the query, a second Esc leaves it). A query keeps it open, also
+/// across a page switch. On the statistics, which has no search, line and
+/// glass fold away in the beat of the page switch.
 /// Collection and wantlist share one query (`LibrarySearch`), the shelf has
 /// its own (`ShelfSearch`); the pages read them and filter themselves.
 struct ToolbarSearchField: View {
@@ -13,32 +16,48 @@ struct ToolbarSearchField: View {
     let requests: SearchRequests
     @FocusState private var focused: Bool
     /// The page whose search the field shows: on the statistics, which has
-    /// none, it keeps the last one while it fades out.
+    /// none, it keeps the last one while it folds away.
     @State private var fieldPage: Destination = .collection
+    /// Opened by the glass or ⌘F, until the field loses the focus.
+    @State private var opened = false
 
     var body: some View {
         let page = selection.current
         let shown = page.hasSearch ? page : fieldPage
-        // Always in the toolbar, only faded out on the statistics: taken out
-        // and put back, the toolbar was laid out anew and the field jumped
-        // away without its fade. Out and in in the beat of the page below.
-        AppSearchField(placeholder: placeholder(for: shown), text: text(for: shown), focus: $focused, onToolbar: true)
-            .frame(width: AppStyle.toolbarSearchWidth)
-            .padding(.trailing, AppStyle.toolbarSearchInset)
-            .accessibilityLabel(String(localized: "Suchen"))
-            .opacity(page.hasSearch ? 1 : 0)
-            .animation(page.hasSearch ? AppStyle.pageInAnimation : AppStyle.pageOutAnimation, value: page.hasSearch)
-            .allowsHitTesting(page.hasSearch)
-            .disabled(!page.hasSearch)
-            .accessibilityHidden(!page.hasSearch)
-            .onChange(of: requests.count) {
-                guard selection.current.hasSearch else { return }
-                focused = true
-            }
-            .onChange(of: focused) { _, new in requests.fieldFocused = new }
-            .onChange(of: page, initial: true) {
-                if page.hasSearch { fieldPage = page } else { focused = false }
-            }
+        let text = text(for: shown)
+        let open = opened || !text.wrappedValue.isEmpty
+        // Always in the bar, only folded away on the statistics: taken out
+        // and put back, the toolbar was laid out anew and jumped.
+        HStack(spacing: 0) {
+            ControlSeparator()
+            AppSearchField(placeholder: placeholder(for: shown), text: text, focus: $focused, open: open, onOpen: openField)
+        }
+        .frame(width: page.hasSearch ? nil : 0, alignment: .leading)
+        .clipped()
+        .opacity(page.hasSearch ? 1 : 0)
+        .animation(page.hasSearch ? AppStyle.pageInAnimation : AppStyle.pageOutAnimation, value: page.hasSearch)
+        .allowsHitTesting(page.hasSearch)
+        .disabled(!page.hasSearch)
+        .accessibilityHidden(!page.hasSearch)
+        .onChange(of: requests.count) {
+            guard selection.current.hasSearch else { return }
+            openField()
+        }
+        .onChange(of: focused) { _, new in
+            requests.fieldFocused = new
+            if !new && opened { withAnimation(AppStyle.searchCloseAnimation) { opened = false } }
+        }
+        .onChange(of: page, initial: true) {
+            if page.hasSearch { fieldPage = page } else { focused = false }
+        }
+    }
+
+    /// Opens the field and puts the cursor in it, in a spring the whole bar
+    /// follows. The text field only exists once open, so the focus follows
+    /// in the next update.
+    private func openField() {
+        if !opened { withAnimation(AppStyle.searchOpenAnimation) { opened = true } }
+        Task { @MainActor in focused = true }
     }
 
     private func text(for page: Destination) -> Binding<String> {

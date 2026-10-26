@@ -27,9 +27,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                     // Not beside the pill: it marks its own edges, and the
                     // line would touch it.
                     let besidePill = selected || options[index - 1] == selection
-                    Rectangle()
-                        .fill(Color.primary.opacity(0.12))
-                        .frame(width: AppStyle.borderWidth, height: small ? 12 : 14)
+                    ControlSeparator(small: small)
                         .opacity(besidePill ? 0 : 1)
                 }
                 Button { selection = option } label: {
@@ -105,7 +103,18 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     }
 
     private var unselectedStyle: AnyShapeStyle {
-        AppStyle.isAtelier ? AnyShapeStyle(glass ? AtelierPalette.muted : Color.white.opacity(0.8)) : AnyShapeStyle(.secondary)
+        glass ? (AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary)) : AppStyle.toolbarLabel
+    }
+}
+
+/// The faint line between neighbouring parts of a bar: the cabinet tabs,
+/// the page switch and the search in the toolbar.
+struct ControlSeparator: View {
+    var small = false
+    var body: some View {
+        Rectangle()
+            .fill(Color.primary.opacity(0.12))
+            .frame(width: AppStyle.borderWidth, height: small ? 12 : 14)
     }
 }
 
