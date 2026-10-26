@@ -72,6 +72,14 @@ struct AppearanceSettingsView: View {
                     .disabled(!preferences.signatureDesign.usesColorChoices)
                     .opacity(preferences.signatureDesign.usesColorChoices ? 1 : 0.4)
                 }
+                Divider()
+                SettingsRow(title: String(localized: "Gezeichnete Cover"),
+                            hint: DemoMode.isActive
+                                ? String(localized: "In der Demo sind die Cover immer gezeichnet.")
+                                : String(localized: "Statt der Bilder von Discogs bunte Cover mit Interpret und Titel, wie in der Demo.")) {
+                    Toggle("Gezeichnete Cover", isOn: $preferences.drawnCovers).labelsHidden().toggleStyle(.switch)
+                        .disabled(DemoMode.isActive)
+                }
             }
             // Everything about how the two overview pages show their records,
             // in one place: grid or list, order, cover size.

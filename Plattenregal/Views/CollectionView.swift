@@ -198,7 +198,7 @@ struct CollectionView: View {
 
     /// Behind the page: the first few covers of the list.
     private var ambientCovers: [String] {
-        Array(items.lazy.compactMap { $0.release?.coverURL }.prefix(3))
+        Array(items.lazy.compactMap { $0.release?.shownCoverURL }.prefix(3))
     }
 
     var body: some View {
@@ -304,7 +304,7 @@ struct CollectionView: View {
                         }
                     } else {
                         Table(items) {
-                            TableColumn("") { copy in CoverView(url: copy.release?.coverURL, size: 20) }.width(24)
+                            TableColumn("") { copy in CoverView(url: copy.release?.shownCoverURL, size: 20) }.width(24)
                             TableColumn("Interpret") { copy in
                                 let artist = copy.release?.displayArtist ?? "—"
                                 Text(artist).lineLimit(1)

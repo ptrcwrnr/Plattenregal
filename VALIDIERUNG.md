@@ -1,3 +1,21 @@
+# Aktueller Stand · 26.10.2026 (Gezeichnete Cover, Hinweise auf der Regalseite)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert, die Einstellung liegt in den User Defaults). Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen und geändert:** `AppPreferences`, `CoverView` (`Release.shownCoverURL`), `AppearanceSettingsView`, `KallaxView` (Hinweise als ein Block), alle Ansichten mit `CoverView` bzw. Ambient-Covern, `SettingsTests`, `Localizable.xcstrings`.
+- **Gelesen, unverändert:** `CoverCache` (zeichnet `plattenregal-demo://`-Adressen ohne Download), `DemoData`/`DemoCover`, `TVLink`/`AppleTVLink` (übertragen keine Cover).
+- **Fehlermeldungen:** keine neuen.
+- **Lokalisierung:** 909 Einträge, alle mit Englisch, drei neu.
+- **App-Protokoll** 26.10.: kein `ERROR`; eine Warnung „nicht normal beendet“ stammt von einem Prüflauf, der hart beendet wurde. **macOS-Absturzberichte:** keine.
+- **Nicht geprüft:** der Schalter in den Einstellungen im Bild und das Umschalten zur Laufzeit.
+
+## Verifikation
+
+- Debug-Build, 238 Tests bestanden.
+- Demo-Regalseite und echte Collection mit gezeichneten Covern im Bild geprüft.
+
 # Aktueller Stand · 24.10.2026 (Tooltips in Collection und Wantlist)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Prüfung nach dem Verstecken verborgener Seiten im `PageStack` und dem Entfernen der Tooltips in Collection und Wantlist. Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.

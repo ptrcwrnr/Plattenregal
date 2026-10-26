@@ -200,7 +200,7 @@ private struct SortStepRow: View {
         Button(action: toggle) {
             HStack(spacing: AppStyle.rowSpacing) {
                 StepNumber(number: number, done: done)
-                CoverView(url: release?.coverURL, size: 40)
+                CoverView(url: release?.shownCoverURL, size: 40)
                 VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text("\(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
                         .font(AppStyle.rowTitle).lineLimit(1).truncationMode(.middle)
@@ -210,7 +210,7 @@ private struct SortStepRow: View {
                         Text("Platz \(step.position)").monospacedDigit().foregroundStyle(.secondary)
                         Image(systemName: "arrow.right").font(AppStyle.indicatorSymbol).foregroundStyle(.secondary)
                         if let neighbour = step.before ?? step.after {
-                            CoverView(url: neighbour.release?.coverURL, size: 16)
+                            CoverView(url: neighbour.release?.shownCoverURL, size: 16)
                             Text(target(neighbour)).lineLimit(1).truncationMode(.middle)
                         }
                     }

@@ -1,3 +1,9 @@
+# Gezeichnete Cover als Option; Collection-Hinweis dicht unter dem Demo-Banner · 26.10.2026
+
+- **Gezeichnete Cover:** Neuer Schalter in Einstellungen → Darstellung → Erscheinungsbild (Standard: aus). Eingeschaltet zeigen alle Ansichten statt der Discogs-Bilder die bunten Cover der Demo mit Interpret und Titel, auch für Platten ohne Discogs-Bild; die Farbe folgt der Discogs-ID und bleibt gleich. Zentral über `Release.shownCoverURL` (`CoverView.swift`), alle 15 Ansichten mit Covern lesen das statt `coverURL`; gespeichert in `AppPreferences.drawnCovers` (Schlüssel `drawnCovers`), „Einstellungen zurücksetzen“ schaltet es wieder aus. In der Demo ist der Schalter ausgegraut (dort sind die Cover immer gezeichnet). Texte de/en.
+- **Hinweis „nicht mehr in der Collection“:** Auf der Regalseite stehen Demo-Banner, dieser Hinweis und „Noch keine Platte steht in einem Fach“ jetzt als ein Block ganz oben mit 12 pt Abstand (`AppStyle.rowSpacing`) statt je 28 pt. In der Demo sitzt der Hinweis dicht unter dem Demo-Banner, sonst an dessen Stelle.
+- Geprüft: Debug-Build, alle 238 Tests (neu: `drawnCoversAreOffByDefaultAndPersist`, `drawnCoversReplaceTheDiscogsImageStably`); Demo-Regalseite im Bild (Banner dicht beieinander); echte Sammlung mit `-drawnCovers YES --snapshot=…` im Bild (Collection mit gezeichneten Covern, nichts gespeichert, Fenstergröße unverändert). Nicht im Bild: der Schalter selbst (liegt unterhalb des sichtbaren Bereichs der Einstellungen).
+
 # DMG 1.0.0 mit dem neuen Collection-Hinweis im Regal neu ausgegeben · 24.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release, Build 102026, Versionsnummer unverändert). Enthält den Hinweis „nicht mehr in der Collection“ als Banner; Handbuch-PDFs unverändert.

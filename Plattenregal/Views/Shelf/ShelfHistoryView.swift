@@ -157,7 +157,7 @@ private struct ShelfHistoryRow: View {
     var body: some View {
         let release = copy.flatMap { $0.isDeleted || $0.modelContext == nil ? nil : $0.release }
         HStack(alignment: .center, spacing: AppStyle.sectionSpacing) {
-            CoverView(url: release?.coverURL, size: AssignmentRowMetrics.largeCoverSize)
+            CoverView(url: release?.shownCoverURL, size: AssignmentRowMetrics.largeCoverSize)
                 .atelierRecordSleeve()
             VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                 // The same caption as in the compartment, Collection and Wantlist.

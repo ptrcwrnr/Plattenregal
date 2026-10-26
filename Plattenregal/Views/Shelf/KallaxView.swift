@@ -281,13 +281,20 @@ struct KallaxView: View {
             // The search's hits, else the compartment the card points to.
             let lit = searchResults.litShelfIDs ?? placement?.spot.map { [$0.shelf.id] }
             VStack(alignment: .leading, spacing: AppStyle.blockSpacing) {
-                if DemoMode.showsBanner { DemoBanner() }
-                if nothingPlaced {
-                    // Typically right after a new install and the first sync.
-                    AppBanner(message: String(localized: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her."),
-                              kind: .info, actionTitle: String(localized: "Belegung wiederherstellen …"), action: { settingsTab = .backup })
+                // The page's notes as one block at the very top: the sold
+                // records right below the demo banner (or in its place),
+                // close together instead of a whole block apart.
+                if DemoMode.showsBanner || soldCount > 0 || nothingPlaced {
+                    VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                        if DemoMode.showsBanner { DemoBanner() }
+                        if soldCount > 0 { soldBanner(soldCount) }
+                        if nothingPlaced {
+                            // Typically right after a new install and the first sync.
+                            AppBanner(message: String(localized: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her."),
+                                      kind: .info, actionTitle: String(localized: "Belegung wiederherstellen …"), action: { settingsTab = .backup })
+                        }
+                    }
                 }
-                if soldCount > 0 { soldBanner(soldCount) }
                 if page.cabinets.count > 1 { cabinetSwitcher(page) }
                 // One slot: the old cabinet fades out where the new one settles in.
                 ZStack {

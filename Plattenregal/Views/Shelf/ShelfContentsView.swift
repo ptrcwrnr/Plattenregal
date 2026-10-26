@@ -405,7 +405,7 @@ struct ShelfContentsView: View, Equatable {
     private func tile(_ item: ShelfCopyItem) -> some View {
         let selected = focusCopy?.id == item.id
         return VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
-            CoverView(url: item.copy.release?.coverURL, size: nil)
+            CoverView(url: item.copy.release?.shownCoverURL, size: nil)
                 .atelierRecordSleeve()
                 .overlay {
                     RoundedRectangle(cornerRadius: AtelierCoverFrame.usesMat ? AppStyle.cardRadius : 2)
@@ -442,7 +442,7 @@ struct ShelfContentsView: View, Equatable {
                 Text(String(item.position)).monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 34, ideal: 40, max: 52)
-            TableColumn("") { item in CoverView(url: item.copy.release?.coverURL, size: 20) }
+            TableColumn("") { item in CoverView(url: item.copy.release?.shownCoverURL, size: 20) }
                 .width(24)
             TableColumn("Interpret", value: \.artist) { item in
                 Text(item.artist).lineLimit(1).help(item.artist)

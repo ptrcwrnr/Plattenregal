@@ -111,7 +111,7 @@ struct WantlistView: View {
             .overlay(alignment: .top) { DiscogsSyncPill() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.entry.release?.coverURL }.prefix(3))) }
+        .background { AmbientBackdrop(covers: Array(visibleEntries.lazy.compactMap { $0.entry.release?.shownCoverURL }.prefix(3))) }
         .settingsOpener($settingsTab)
         .onChange(of: order) { _, _ in scroll.id = nil; rebuildWhenShown() }
         .task(id: sync.tokenRevision) { hasToken = KeychainStore.hasToken }
@@ -260,7 +260,7 @@ struct WantlistView: View {
         Table(rows) {
             TableColumn("") { item in
                 let entry = item.entry
-                CoverView(url: entry.release?.coverURL, size: 20)
+                CoverView(url: entry.release?.shownCoverURL, size: 20)
             }
             .width(24)
             TableColumn("Interpret") { item in
@@ -392,7 +392,7 @@ private struct WantlistCard: View {
         // The cover's address may come with a sync (see `RecordCaption`).
         let _ = LibraryChanges.shared.libraryVersion
         VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
-            CoverView(url: entry.release?.coverURL, size: nil)
+            CoverView(url: entry.release?.shownCoverURL, size: nil)
                 .atelierRecordSleeve()
             RecordCaption(
                 release: entry.release,

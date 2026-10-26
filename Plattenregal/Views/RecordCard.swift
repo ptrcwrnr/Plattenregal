@@ -17,7 +17,7 @@ struct RecordCard: View {
     }
 
     private var cover: some View {
-        CoverView(url: copy.release?.coverURL, size: nil)
+        CoverView(url: copy.release?.shownCoverURL, size: nil)
             .atelierRecordSleeve()
             .overlay(alignment: .bottomTrailing) {
                 if copyCount > 1 {

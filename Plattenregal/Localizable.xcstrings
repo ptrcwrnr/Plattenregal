@@ -121,6 +121,36 @@
         }
       }
     },
+    "Gezeichnete Cover" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drawn covers"
+          }
+        }
+      }
+    },
+    "In der Demo sind die Cover immer gezeichnet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the demo, covers are always drawn."
+          }
+        }
+      }
+    },
+    "Statt der Bilder von Discogs bunte Cover mit Interpret und Titel, wie in der Demo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colorful covers with artist and title instead of the Discogs images, as in the demo."
+          }
+        }
+      }
+    },
     "„%@ – %@“" : {
       "localizations" : {
         "de" : {

@@ -32,6 +32,33 @@ extension AllTests {
             }
         }
 
+        @Test func drawnCoversAreOffByDefaultAndPersist() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(!preferences.drawnCovers)
+                preferences.drawnCovers = true
+                #expect(AppPreferences(defaults: defaults).drawnCovers)
+                preferences.reset()
+                #expect(!AppPreferences(defaults: defaults).drawnCovers)
+            }
+        }
+
+        @Test func drawnCoversReplaceTheDiscogsImageStably() {
+            let release = Release(discogsID: 4711, artist: "Air (2)", title: "Moon Safari")
+            release.coverURL = "https://i.discogs.com/cover.jpg"
+            #expect(release.shownCoverURL(drawn: false) == "https://i.discogs.com/cover.jpg")
+            let drawn = release.shownCoverURL(drawn: true)
+            #expect(drawn == release.shownCoverURL(drawn: true))
+            let url = drawn.flatMap(URL.init(string:))
+            #expect(url?.scheme == DemoCover.scheme)
+            // Shown names, without Discogs' "(2)".
+            #expect(drawn?.contains("artist=Air&") == true)
+            #expect(url.flatMap { DemoCover.render($0, pixelSize: 64) } != nil)
+            // A record without a Discogs image gets one too.
+            release.coverURL = nil
+            #expect(release.shownCoverURL(drawn: true) == drawn)
+        }
+
         @Test func signatureDesignPersistsAndReloadsInItsOwnSettingsStore() throws {
             try withSignatureDefaults { defaults in
                 let preferences = AppPreferences(defaults: defaults)

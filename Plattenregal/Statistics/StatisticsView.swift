@@ -142,7 +142,7 @@ struct StatisticsView: View {
 
     /// Behind the page: the covers of the latest additions.
     private var ambientCovers: [String] {
-        Array(model.statistics.recentlyAdded.lazy.compactMap { model.copiesByID[$0]?.release?.coverURL }.prefix(3))
+        Array(model.statistics.recentlyAdded.lazy.compactMap { model.copiesByID[$0]?.release?.shownCoverURL }.prefix(3))
     }
 
     /// What a save touched of what the page shows: the collection it counts

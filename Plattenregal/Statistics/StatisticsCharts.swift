@@ -207,7 +207,7 @@ private struct CoverTile: View {
         let artist = copy.release?.displayArtist ?? String(localized: "Unbekannt")
         let title = copy.release?.displayTitle ?? String(localized: "Unbekannte Veröffentlichung")
         VStack(alignment: .leading, spacing: CoverGrid.captionSpacing) {
-            CoverView(url: copy.release?.coverURL, size: nil)
+            CoverView(url: copy.release?.shownCoverURL, size: nil)
                 .shadow(color: .black.opacity(hovering ? 0.25 : 0.1), radius: hovering ? 10 : 4, y: hovering ? 6 : 2)
                 .scaleEffect(hovering ? 1.04 : 1)
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {

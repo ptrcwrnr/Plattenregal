@@ -105,7 +105,7 @@ private struct SearchResultRow: View {
 
     var body: some View {
         HStack(spacing: AppStyle.rowSpacing) {
-            CoverView(url: copy.release?.coverURL, size: AssignmentCard<EmptyView>.coverSize)
+            CoverView(url: copy.release?.shownCoverURL, size: AssignmentCard<EmptyView>.coverSize)
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                 Text(copy.release?.displayArtist ?? "—")
                     .font(AppStyle.rowTitle)

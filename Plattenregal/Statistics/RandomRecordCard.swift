@@ -50,7 +50,7 @@ struct RandomRecordCard: View {
                 let coverWidth = StatisticsLayout.span(coverSpan, of: columns, in: width)
                 HStack(alignment: .top, spacing: StatisticsLayout.gutter) {
                     Button { open(pick) } label: {
-                        CoverView(url: release.coverURL, size: nil)
+                        CoverView(url: release.shownCoverURL, size: nil)
                             .atelierRecordSleeve()
                             .frame(width: min(coverWidth, 380))
                             .shadow(color: .black.opacity(AppStyle.isAtelier ? 0 : 0.25), radius: 18, y: 8)

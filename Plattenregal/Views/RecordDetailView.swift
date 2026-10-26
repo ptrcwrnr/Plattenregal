@@ -83,7 +83,7 @@ struct ReleaseHeaderView: View {
         // Same language as the "Zufallsfund" on the statistics page: small
         // captions over their values, styles as badges.
         HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
-            CoverView(url: release.coverURL, size: 220)
+            CoverView(url: release.shownCoverURL, size: 220)
                 .shadow(color: .black.opacity(0.2), radius: 14, y: 6)
             VStack(alignment: .leading, spacing: AppStyle.cardPadding) {
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
@@ -163,7 +163,7 @@ struct RecordPopover: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
-                CoverView(url: release?.coverURL, size: 128)
+                CoverView(url: release?.shownCoverURL, size: 128)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text(release?.displayArtist ?? String(localized: "Unbekannt"))
                         .font(.callout).foregroundStyle(.secondary).lineLimit(2)

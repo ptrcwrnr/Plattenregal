@@ -219,7 +219,7 @@ private struct ShelfAssignmentRow: View {
         let title = copy.release?.displayTitle ?? "—"
         Button(action: add) {
             HStack(alignment: .center, spacing: AppStyle.sectionSpacing) {
-                CoverView(url: copy.release?.coverURL, size: AssignmentRowMetrics.largeCoverSize)
+                CoverView(url: copy.release?.shownCoverURL, size: AssignmentRowMetrics.largeCoverSize)
                     .atelierRecordSleeve()
                 VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                     VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {

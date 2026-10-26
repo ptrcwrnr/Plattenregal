@@ -85,3 +85,18 @@ struct CoverView: View {
 extension EnvironmentValues {
     @Entry var coverCornerRadius: CGFloat = 6
 }
+
+extension Release {
+    /// The cover every view shows: the Discogs image or, with „Gezeichnete
+    /// Cover“ in the settings, one drawn like in the demo. The demo's own
+    /// covers are drawn already. Reads `AppPreferences`, so every cover
+    /// redraws when the setting changes.
+    @MainActor var shownCoverURL: String? { shownCoverURL(drawn: AppPreferences.shared.drawnCovers) }
+
+    /// The same for a given setting. The colour follows the Discogs ID, so a
+    /// record keeps its cover from launch to launch.
+    func shownCoverURL(drawn: Bool) -> String? {
+        guard drawn, !DemoMode.isActive else { return coverURL }
+        return DemoCover.url(artist: displayArtist, title: displayTitle, seed: discogsID)
+    }
+}

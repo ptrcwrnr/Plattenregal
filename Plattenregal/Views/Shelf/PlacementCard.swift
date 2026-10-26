@@ -53,7 +53,7 @@ struct PlacementCard: View {
         // Cover and text from the top; the buttons centered beside them.
         HStack(spacing: AppStyle.rowSpacing) {
             HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
-                CoverView(url: release?.coverURL, size: 52)
+                CoverView(url: release?.shownCoverURL, size: 52)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text("\(placement.found ? String(localized: "Hier steht") : String(localized: "Einsortieren")): \(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
                         .font(.headline)

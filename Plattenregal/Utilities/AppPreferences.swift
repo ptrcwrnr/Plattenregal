@@ -13,6 +13,7 @@ import SwiftUI
         static let accent = "accentChoice"
         static let ambient = "ambientChoice"
         static let signatureDesign = "signatureDesign"
+        static let drawnCovers = "drawnCovers"
     }
 
     private let defaults: UserDefaults
@@ -25,6 +26,9 @@ import SwiftUI
     var ambient: AmbientChoice { didSet { store(ambient.rawValue, Key.ambient) } }
     var signatureDesign: SignatureDesign { didSet { store(signatureDesign.rawValue, Key.signatureDesign) } }
     var language: AppLanguage { didSet { AppLanguage.store(language) } }
+    /// Drawn covers as in the demo (colour, artist, title) instead of the
+    /// Discogs images. Off by default.
+    var drawnCovers: Bool { didSet { defaults.set(drawnCovers, forKey: Key.drawnCovers) } }
     /// Whether the chosen language shows differently from this launch – a
     /// restart is only worth it then: on a German Mac, "System" and
     /// "Deutsch" look the same.
@@ -42,6 +46,7 @@ import SwiftUI
         accent = defaults.string(forKey: Key.accent).flatMap(AccentChoice.init) ?? .system
         ambient = defaults.string(forKey: Key.ambient).flatMap(AmbientChoice.init) ?? .blue
         signatureDesign = defaults.string(forKey: Key.signatureDesign).flatMap(SignatureDesign.init) ?? .liquidGlass
+        drawnCovers = defaults.bool(forKey: Key.drawnCovers)
         language = languageAtLaunch
     }
 
@@ -57,6 +62,7 @@ import SwiftUI
         accent = .system
         ambient = .blue
         signatureDesign = .liquidGlass
+        drawnCovers = false
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }
     }

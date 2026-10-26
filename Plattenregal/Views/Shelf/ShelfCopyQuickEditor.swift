@@ -21,7 +21,7 @@ struct ShelfCopyQuickEditor: View {
         let maxPosition = currentMaxPosition
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             HStack(spacing: AppStyle.rowSpacing) {
-                CoverView(url: copy.release?.coverURL, size: 44)
+                CoverView(url: copy.release?.shownCoverURL, size: 44)
                     .atelierRecordSleeve()
                 VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text(copy.release?.displayArtist ?? "—")
