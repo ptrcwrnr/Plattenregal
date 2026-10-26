@@ -1,3 +1,8 @@
+# Leiste wird beim Wechsel zur Statistik fließend schmaler · 26.10.2026
+
+- **Behoben – Leiste sprang beim Wechsel Regal ↔ Statistik:** Strich und Lupe wurden nur innerhalb ihres eigenen Teils animiert (`.animation(_:value:)`). Die Kapsel der Leiste und ihre Mitte in der Toolbar bekamen die neue Breite sofort: Die ganze Leiste sprang in einem Bild um rund 35 pt schmaler und zur Seite, die Lupe hing kurz außerhalb der Kapsel und verblasste erst danach; zurück sprang die Leiste breit, mit leerem Platz am Ende. Jetzt folgt die Breite einem eigenen Zustand (`ToolbarSearchField.searchShown`), der in `withAnimation(AppStyle.layoutAnimation)` wechselt – wie beim Aufklappen des Suchfelds nimmt das die ganze Leiste mit. Die Leiste wird in 0,3 s ruhig schmaler bzw. breiter und bleibt dabei mittig; Strich und Lupe blenden weiter im Takt des Seitenwechsels aus und ein, jetzt innerhalb der Kapsel. Mit „Bewegung reduzieren“ ändert sich die Breite ohne Bewegung.
+- Geprüft: Debug-Build ohne Fehler und Warnungen, 244 Tests bestanden. In der Demo Regal → Statistik → Regal per ⌘4/⌘3 als Video der Toolbar aufgenommen und Bild für Bild verglichen, vorher und nachher, in Modern hell und Klassisch hell: vorher Sprung in einem Bild, jetzt gleichmäßige Breitenänderung in beide Richtungen. Nicht geprüft: Wechsel mit offenem Suchfeld (Suchtext steht), dunkle Modi, „Bewegung reduzieren“.
+
 # DMG 1.0.0 mit den umschaltenden Knöpfen der Regalseite neu ausgegeben · 26.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält die umschaltenden runden Knöpfe der Regalseite und den einen Fenster-Zustand (`ShelfPanel`). Handbuch-PDFs unverändert, Übersetzungskatalog vom Release-Build unverändert.

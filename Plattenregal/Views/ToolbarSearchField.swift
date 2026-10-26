@@ -8,8 +8,10 @@ import SwiftUI
 /// the query, a second Esc leaves it). A query keeps it open, also across a
 /// page switch; opened or closed by a query alone (another page, the shelf
 /// clearing its query after a match was picked, the clear button) it moves
-/// calmly, without spring or bounce. On the statistics, which has no search, line and
-/// glass fold away in the beat of the page switch.
+/// calmly, without spring or bounce. On the statistics, which has no search,
+/// line and glass fade out in the beat of the page switch while the whole bar
+/// narrows calmly (`AppStyle.layoutAnimation`) and stays centered; back on a
+/// page with search it widens again and they fade in.
 /// Collection and wantlist share one query (`LibrarySearch`), the shelf has
 /// its own (`ShelfSearch`); the pages read them and filter themselves.
 struct ToolbarSearchField: View {
@@ -28,6 +30,11 @@ struct ToolbarSearchField: View {
     @State private var shownOpen = false
     /// Bounces the glass, on opening by the glass or ⌘F only.
     @State private var bounces = 0
+    /// Whether line and glass take room in the bar. Follows the page in a
+    /// transaction of its own (see `body`), so the whole bar – its
+    /// background and its place in the middle of the toolbar – changes its
+    /// width smoothly instead of only this part of it.
+    @State private var searchShown = true
 
     var body: some View {
         let page = selection.current
@@ -40,10 +47,12 @@ struct ToolbarSearchField: View {
             ControlSeparator()
             AppSearchField(placeholder: placeholder(for: shown), text: text, focus: $focused, open: shownOpen, onOpen: openField, bounce: bounces)
         }
-        .frame(width: page.hasSearch ? nil : 0, alignment: .leading)
-        .clipped()
+        // The fade in the beat of the page switch, only for the opacity …
         .opacity(page.hasSearch ? 1 : 0)
         .animation(page.hasSearch ? AppStyle.pageInAnimation : AppStyle.pageOutAnimation, value: page.hasSearch)
+        // … the width calmly with the whole bar (see `searchShown`).
+        .frame(width: searchShown ? nil : 0, alignment: .leading)
+        .clipped()
         .allowsHitTesting(page.hasSearch)
         .disabled(!page.hasSearch)
         .accessibilityHidden(!page.hasSearch)
@@ -56,6 +65,9 @@ struct ToolbarSearchField: View {
             if !new { opened = false }
         }
         .onChange(of: open, initial: true) { old, new in follow(new, animated: old != new) }
+        .onChange(of: page.hasSearch, initial: true) { old, new in
+            if old == new { searchShown = new } else { withAnimation(AppStyle.layoutAnimation) { searchShown = new } }
+        }
         .onChange(of: page, initial: true) {
             if page.hasSearch { fieldPage = page } else { focused = false }
         }
