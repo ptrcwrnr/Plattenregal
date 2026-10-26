@@ -1,3 +1,10 @@
+# DMG 1.0.0 mit Modern unter der Leiste neu ausgegeben · 26.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält die fließend schmaler werdende Leiste, Modern unter der Leiste mit weichem Ausblenden, die halbfette Auswahl ohne Rand und die Korrektur der Einstellungen. Handbuch-PDFs unverändert.
+- **Lokalisierung:** zehn verwaiste Einträge aus `Localizable.xcstrings` entfernt („Speichern“, „Weiter“, „Zurück“, „Cover“, „von %lld“ u. a.; keiner kommt mehr in der Oberfläche vor), Reihenfolge der übrigen unverändert. Danach die DMG ein zweites Mal gebaut.
+- Vor dem zweiten Bau war die erste DMG als „/Volumes/Plattenregal“ eingehängt (nichts lief daraus) und wurde ausgeworfen.
+- Geprüft: `hdiutil verify` gültig; 1.0.0 (102026), nur arm64, ab macOS 27.0, Signatur gültig; Berechtigungen unverändert; beide Handbücher identisch mit denen im Repository; kein Prüfcode (`--snapshot=`); neuer Stand im Programm (`ScrollEdgeFadeMask`). Release-App aus der ersten DMG mit der echten Sammlung gestartet (852 Exemplare, Klassisch), mit ⌘Q sauber beendet, Protokoll ohne Fehler, keine Absturzberichte, Fenstergröße zurückgeschrieben. Die zweite DMG unterscheidet sich nur im Katalog und wurde nicht erneut gestartet.
+
 # Einstellungen (Modern): Karten scheinen nicht mehr durch die Reiterleiste · 26.10.2026
 
 - **Behoben:** In Modern ist die Toolbar der Einstellungen durchsichtig, der Rand des Systems ist dort abgeschaltet. Gescrollte Karten liefen deshalb in voller Stärke hinter die Reiterleiste – „Design“ stand halb unter „Allgemein“ und sah kaputt aus. Mit dem Designwechsel hatte das nichts zu tun; nach einem Neustart stand die Seite nur wieder oben.

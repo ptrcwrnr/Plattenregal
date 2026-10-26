@@ -1,3 +1,14 @@
+# Aktueller Stand · 26.10.2026 (Modern unter der Leiste, DMG)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
+
+- **Geändert seit der letzten DMG:** Leiste wird beim Wechsel zur Statistik fließend schmaler; Modern: Collection, Wantlist und Statistik laufen unter die Leiste und blenden weich aus, Seiten beginnen an der Toolbar-Kante; gewählte Option halbfett in Textfarbe, ohne Rand; Einstellungen in Modern ohne durchscheinende Karten (siehe AENDERUNGEN).
+- **Verifikation:** Debug-Build ohne Warnung, 244 Tests bestanden. In der Demo Bild für Bild bzw. per Aufnahme geprüft (Modern hell und dunkel, Klassisch hell).
+- **Lokalisierung:** 901 Einträge, alle mit Englisch; zehn verwaiste Einträge entfernt (keiner mehr in der Oberfläche).
+- **App-Protokoll** 26.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
+- **DMG:** neu gebaut und geprüft (Abbild gültig, 1.0.0 (102026), nur arm64, ab macOS 27.0, Signatur gültig, Berechtigungen unverändert, beide Handbücher identisch, kein Prüfcode, neue Bausteine im Programm). Release-App aus der DMG mit der echten Sammlung gestartet (852 Exemplare, Klassisch), sauber beendet, Fenstergröße zurückgeschrieben. Danach nur noch der Katalog bereinigt und die DMG damit ein zweites Mal gebaut.
+- **Nicht geprüft:** Herunterziehen zum Aktualisieren, Vollbild, Modern mit der echten Sammlung.
+
 # Aktueller Stand · 26.10.2026 (runde Knöpfe der Regalseite schalten um)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).

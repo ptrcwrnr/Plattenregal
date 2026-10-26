@@ -100,17 +100,6 @@
         }
       }
     },
-    " und " : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " and "
-          }
-        }
-      }
-    },
     ", %lld Exemplare" : {
       "localizations" : {
         "en" : {
@@ -746,17 +735,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld more than in the same period last year"
-          }
-        }
-      }
-    },
-    "%lld nicht in der Collection" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld not in the collection"
           }
         }
       }
@@ -2465,17 +2443,6 @@
         }
       }
     },
-    "Cover" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Covers"
-          }
-        }
-      }
-    },
     "Cover größer" : {
       "localizations" : {
         "en" : {
@@ -3412,17 +3379,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The page the main window starts with."
-          }
-        }
-      }
-    },
-    "Die Spalten füllen die Fensterbreite immer ganz aus." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The columns always fill the full window width."
           }
         }
       }
@@ -5206,17 +5162,6 @@
         }
       }
     },
-    "In: " : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In: "
-          }
-        }
-      }
-    },
     "inaktiv" : {
       "localizations" : {
         "en" : {
@@ -6175,17 +6120,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No longer in your Discogs collection – right-click to remove it from the compartment"
-          }
-        }
-      }
-    },
-    "Nicht (mehr) in deiner Discogs-Collection – verkauft, verschenkt oder aus einem anderen Konto –, aber noch im Regal" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not (or no longer) in your Discogs collection – sold, given away or from another account – but still on the shelf"
           }
         }
       }
@@ -7804,17 +7738,6 @@
         }
       }
     },
-    "Speichern" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        }
-      }
-    },
     "Speichern & testen" : {
       "localizations" : {
         "en" : {
@@ -8721,17 +8644,6 @@
         }
       }
     },
-    "von %lld" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "of %lld"
-          }
-        }
-      }
-    },
     "Von der Verkaufsliste nehmen" : {
       "localizations" : {
         "en" : {
@@ -8918,17 +8830,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What happened?"
-          }
-        }
-      }
-    },
-    "Weiter" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
           }
         }
       }
@@ -9411,17 +9312,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mark for sale"
-          }
-        }
-      }
-    },
-    "Zurück" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
           }
         }
       }
