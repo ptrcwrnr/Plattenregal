@@ -1,3 +1,8 @@
+# DMG 1.0.0 nach der Code-Prüfung neu ausgegeben · 26.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release, Build 102026). Enthält die Suchleiste mit den Korrekturen der Code-Prüfung und den federnden Fächer.
+- Geprüft: `hdiutil verify` gültig; 1.0.0 (102026), nur arm64, ab macOS 27.0, Signatur gültig, Berechtigungen unverändert; beide Handbuch-PDFs aktuell; kein Prüfcode (`--snapshot=`), neuer Stand im Programm (`shownOpen`). Release-App aus der DMG mit der echten Sammlung gestartet (852 Exemplare): Leiste geschlossen mit Lupe (Modern hell), sauber beendet, kein Fehler im Protokoll, keine Absturzberichte, Fenstergröße zurückgeschrieben. Die Warnung „vorige Sitzung nicht normal beendet“ beim Start stammt von der per `pkill` beendeten Demo der Randfall-Tests.
+
 # Code-Prüfung der neuen Suchleiste und des Fächers · 26.10.2026
 
 - **Gelesen:** alle Änderungen seit der DMG vom Vormittag (`ToolbarSearchField`, `AppSearchField`, `AppPickers`, `AppSurfaces`, `AppStyle`, `FloatingControls`, `RootView`, `KallaxView`), dazu alle Stellen, die Suchtexte setzen oder leeren.

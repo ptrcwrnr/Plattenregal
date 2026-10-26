@@ -10,7 +10,7 @@ Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
 - **DMG:** neu gebaut und geprüft (Abbild, Version, arm64, Signatur, Berechtigungen, PDFs, Start aus der DMG mit der echten Sammlung).
 - **Nicht geprüft:** Dunkelmodus in Modern, Vollbild, Klick auf die Lupe mit der Maus. Das „shog“ im Suchfeld beim Start aus der DMG war eine Eingabe des Nutzers.
 - **Code-Prüfung danach:** Suchleiste sprang bei Änderungen ohne Klick, Lupe hüpfte bei Rubrikwechseln – behoben; zwölf Randfälle in der Demo durchgespielt (siehe AENDERUNGEN).
-- **Danach:** zentrale Öffnen-Animation (`openAnimation`), auch der Fächer des runden Knopfs federt; Debug-Build und 240 Tests bestanden, in der Demo geprüft. Die DMG in `dist/` enthält das Federn des Fächers noch nicht.
+- **Danach:** zentrale Öffnen-Animation (`openAnimation`), auch der Fächer des runden Knopfs federt; Debug-Build und 240 Tests bestanden, in der Demo geprüft. Die DMG in `dist/` ist danach neu gebaut und geprüft (Stand nach der Code-Prüfung).
 
 # Aktueller Stand · 26.10.2026 (öffentliches Repository)
 
