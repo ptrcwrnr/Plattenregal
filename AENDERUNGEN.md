@@ -1,3 +1,9 @@
+# DMG 1.0.0 mit der neuen Toolbar-Leiste neu ausgegeben · 26.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält die Toolbar als eine Leiste mit federnd aufklappender Suche und die neuen Handbuch-PDFs. Vorher hing noch die alte DMG von der Prüfung am Vormittag unter `/Volumes/Plattenregal`; ausgeworfen (nichts darauf geöffnet).
+- Geprüft: `hdiutil verify` gültig; 1.0.0 (102026), nur arm64, ab macOS 27.0, Ad-hoc-Signatur gültig; Berechtigungen unverändert (Sandbox, Dateien nach Wahl, Netzwerk ein- und ausgehend, `get-task-allow` wie zuvor); beide Handbuch-PDFs enthalten und identisch mit den neuen; kein Prüfcode (`--snapshot=`); neue Bausteine im Programm (`ControlSeparator`), alte Feldfarben nicht mehr. Release-App aus der eingehängten DMG gestartet: echte Sammlung (852 Exemplare), Leiste mit Rubriken und Suche zu sehen, sauber beendet, Protokoll ohne Fehler; Fenstergröße danach zurückgeschrieben.
+- **Offen:** In der Aufnahme stand im aufgeklappten Suchfeld „shog“ mit Cursor. Der Code füllt das Feld nirgends (der Vorgabetext gibt es nur in Debug), und geschlossen startet die Leiste ohne Fokus (Demo-Aufnahmen). Wahrscheinlich kam die Eingabe von außen, während das Fenster rund 7 Sekunden vorn war; nicht abschließend geklärt.
+
 # Handbuch-Bilder und -PDFs mit der neuen Toolbar · 26.10.2026
 
 - Alle 14 Bilder (`Handbuch/Bilder/de|en`) mit `Scripts/guide-screenshots.swift` neu aufgenommen (Demo, Klassisch): Collection, Regal und Statistik zeigen jetzt Rubriken und Lupe als eine Leiste. Die übrigen Bilder sind inhaltlich gleich und nur neu gerechnet.

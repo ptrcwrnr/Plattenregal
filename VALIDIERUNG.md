@@ -7,7 +7,8 @@ Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
 - **Lokalisierung:** kein neuer Text; „Suchen“ ist übersetzt, der Tooltip „Suchen (⌘F)“ wird daraus gebaut.
 - **App-Protokoll** 26.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
 - **Handbuch:** Bilder (de/en) und beide PDFs neu erzeugt, mit der neuen Leiste.
-- **Nicht geprüft:** Dunkelmodus in Modern, Vollbild, Klick auf die Lupe mit der Maus. Die DMG in `dist/` ist noch nicht neu gebaut.
+- **DMG:** neu gebaut und geprüft (Abbild, Version, arm64, Signatur, Berechtigungen, PDFs, Start aus der DMG mit der echten Sammlung).
+- **Nicht geprüft:** Dunkelmodus in Modern, Vollbild, Klick auf die Lupe mit der Maus. Ungeklärt: „shog“ im Suchfeld beim Start aus der DMG (siehe AENDERUNGEN).
 
 # Aktueller Stand · 26.10.2026 (öffentliches Repository)
 
