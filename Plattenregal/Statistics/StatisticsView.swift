@@ -57,6 +57,7 @@ struct StatisticsView: View {
                 .animation(AppStyle.standardAnimation, value: model.error)
             }
             .pullToRefresh(disabled: { refreshBlocked }, action: refresh)
+            .scrollsUnderToolbar(contentPadding: AppStyle.pagePadding)
             // A view of its own: read here, `busy` and `calculating` re-ran this
             // whole page (every card) as each reload started and ended.
             .overlay(alignment: .top) { StatisticsActivityPill(model: model) }

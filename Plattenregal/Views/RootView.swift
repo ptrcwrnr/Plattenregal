@@ -177,6 +177,11 @@ struct RootView: View {
                 .safeAreaPadding(.bottom, $0.hasActions ? AppStyle.floatingClearance : 0)
                 .appPageEnvironment(context)
         }
+        // The stack reaches up to the window's top edge, so each page's own
+        // hosting view knows the toolbar as its safe area: pages still start
+        // below the bar, but a scroll view can run on beneath it
+        // (`scrollsUnderToolbar`, Modern).
+        .ignoresSafeArea(.container, edges: .top)
     }
 
     @ViewBuilder private func pageContent(_ page: Destination) -> some View {

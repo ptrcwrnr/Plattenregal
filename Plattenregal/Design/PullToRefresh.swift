@@ -26,6 +26,10 @@ private struct PullToRefresh: ViewModifier {
     /// just like a pull: it must neither fill the ring nor fire.
     @State private var pulling = false
     @State private var bouncing = false
+    /// The scroll view's top inset: the toolbar's height where the page
+    /// scrolls on under it (`scrollsUnderToolbar`), so the ring stays below
+    /// the bar.
+    @State private var topInset: CGFloat = 0
 
     func body(content: Content) -> some View {
         content
@@ -56,6 +60,7 @@ private struct PullToRefresh: ViewModifier {
                     action()
                 }
             }
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentInsets.top } action: { _, inset in topInset = inset }
             .simultaneousGesture(mouseDrag)
             .overlay(alignment: .top) { indicator }
             .refreshShortcut(disabled: disabled, action: action)
@@ -94,7 +99,7 @@ private struct PullToRefresh: ViewModifier {
             .frame(width: 26, height: 26)
             .opacity(progress)
             // A little room to the page's top edge, then it follows the pull.
-            .padding(.top, 8 + max(0, travel / 2 - 13))
+            .padding(.top, topInset + 8 + max(0, travel / 2 - 13))
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         }

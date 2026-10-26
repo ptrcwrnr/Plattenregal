@@ -85,6 +85,16 @@ extension View {
         .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: AppStyle.featureRadius))
     }
 
+    /// A page's scroll view in Modern runs on up under the toolbar: the
+    /// content starts at the bar's lower edge but scrolls on beneath the
+    /// glass, which then has something to refract, and fades out softly
+    /// instead of being cut off there. Klassisch keeps its petrol band,
+    /// unchanged. `contentPadding` is the scroll content's own top padding;
+    /// in Modern the content moves up by it (see `AppStyle.pageTopPadding`).
+    func scrollsUnderToolbar(contentPadding: CGFloat) -> some View {
+        modifier(ScrollsUnderToolbar(contentPadding: contentPadding))
+    }
+
     /// The bar in the middle of a window's toolbar around the page switch:
     /// Liquid Glass in Modern, a darker band on the petrol in Klassisch. Its
     /// controls bring no background of their own.
@@ -189,5 +199,65 @@ extension View {
     /// know keeps it out; typing, spelling and the rest are unaffected.
     func noTextAutoFill() -> some View {
         textContentType(NSTextContentType(rawValue: "de.private.Plattenregal.noAutoFill"))
+    }
+}
+
+/// See `scrollsUnderToolbar`. The toolbar's height is read where the scroll
+/// view sits (its safe area) and handed to the content as a top margin,
+/// less the content's own padding, so the first row starts right at the
+/// bar's lower edge. The system's own soft edge needs the toolbar
+/// background, which Modern hides (it would come back as an opaque white
+/// titlebar), so the edges are drawn here (`ScrollEdgeFadeMask`).
+private struct ScrollsUnderToolbar: ViewModifier {
+    let contentPadding: CGFloat
+    func body(content: Content) -> some View {
+        if AppStyle.isAtelier {
+            content
+        } else {
+            GeometryReader { proxy in
+                // Above the first row at rest: the fade lies only there.
+                let margin = max(0, proxy.safeAreaInsets.top - contentPadding)
+                content
+                    .contentMargins(.top, margin, for: .automatic)
+                    .scrollEdgeEffectHidden(true, for: .top)
+                    .mask {
+                        ScrollEdgeFadeMask(top: margin, bottom: proxy.safeAreaInsets.bottom)
+                    }
+                    .ignoresSafeArea(.container, edges: .top)
+            }
+        }
+    }
+}
+
+/// The page's content fading out towards the top and bottom edge, no blur
+/// (a blur strip drew a milky veil over the covers). Each fade follows a
+/// smooth S-curve that starts and ends flat, so no line shows where it
+/// begins. At the top only above the first row at rest – from
+/// `scrollEdgeTopOpacity` at the window's edge to full where the content
+/// starts –, so resting content is never touched; at the bottom over
+/// `scrollEdgeFade` down to `scrollEdgeBottomOpacity` at the window's edge.
+private struct ScrollEdgeFadeMask: View {
+    let top: CGFloat
+    let bottom: CGFloat
+    var body: some View {
+        VStack(spacing: 0) {
+            Self.fade(from: AppStyle.scrollEdgeTopOpacity, to: 1)
+                .frame(height: top)
+            Color.black
+            Self.fade(from: 1, to: AppStyle.scrollEdgeBottomOpacity)
+                .frame(height: AppStyle.scrollEdgeFade)
+        }
+        .padding(.bottom, -bottom)
+    }
+
+    /// Top to bottom, eased (smoothstep) in a few stops.
+    private static func fade(from start: Double, to end: Double) -> LinearGradient {
+        let steps = 12
+        let stops = (0...steps).map { step -> Gradient.Stop in
+            let t = Double(step) / Double(steps)
+            let eased = t * t * (3 - 2 * t)
+            return .init(color: .black.opacity(start + (end - start) * eased), location: t)
+        }
+        return LinearGradient(stops: stops, startPoint: .top, endPoint: .bottom)
     }
 }

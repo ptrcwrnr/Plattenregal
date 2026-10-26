@@ -253,6 +253,7 @@ struct WantlistView: View {
                 }
             }
             .pullToRefresh(disabled: { sync.busy }, action: syncWantlist)
+            .scrollsUnderToolbar(contentPadding: CoverGrid.spacing)
         }
     }
 

@@ -301,6 +301,7 @@ struct CollectionView: View {
                             .pullToRefresh(disabled: { sync.busy }) {
                                 sync.start(.collection, container: context.container)
                             }
+                            .scrollsUnderToolbar(contentPadding: CoverGrid.spacing)
                         }
                     } else {
                         Table(items) {

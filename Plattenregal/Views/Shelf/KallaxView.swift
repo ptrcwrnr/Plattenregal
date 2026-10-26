@@ -329,7 +329,7 @@ struct KallaxView: View {
                     .frame(maxHeight: .infinity, alignment: .top)
             }
             .padding(.horizontal, AppStyle.pageMargin)
-            .padding(.top, AppStyle.pagePadding)
+            .padding(.top, AppStyle.pageTopPadding(AppStyle.pagePadding))
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .background(Color.clear.contentShape(Rectangle()).onTapGesture { deselect() })
             .onExitCommand { if placement != nil || pendingPlacement != nil { cancelPlacement() } else { deselect() } }

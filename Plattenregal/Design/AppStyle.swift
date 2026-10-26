@@ -22,6 +22,21 @@ enum AppStyle {
     static let pageMargin: CGFloat = 28
     /// Between the big blocks of a page: banners, header, rack, compartment.
     static let blockSpacing: CGFloat = pageMargin
+    /// How far the soft fade at a scroll view's bottom edge runs into the
+    /// page (Modern, see `scrollsUnderToolbar`). Long, so its start can't be
+    /// made out. At the top the fade lies behind the toolbar only.
+    static let scrollEdgeFade: CGFloat = 2 * blockSpacing
+    /// How much of the content still shows at the window's top edge, under
+    /// the toolbar's glass.
+    static let scrollEdgeTopOpacity: Double = 0.35
+    /// How much still shows at the window's bottom edge: only a hint of the
+    /// fade, so the covers there don't look washed out.
+    static let scrollEdgeBottomOpacity: Double = 0.6
+    /// A page's padding above its first content, under the toolbar: in
+    /// Modern every page starts right at the toolbar's lower edge (scrolling
+    /// pages via `scrollsUnderToolbar`), in Klassisch `padding` below the
+    /// petrol band.
+    static func pageTopPadding(_ padding: CGFloat) -> CGFloat { isAtelier ? padding : 0 }
     /// Corners of a panel over the page (see `AppPanelModifier`).
     static let panelRadius: CGFloat = 20
     // MARK: Control sizes
