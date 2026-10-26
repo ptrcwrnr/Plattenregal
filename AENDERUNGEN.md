@@ -3,7 +3,7 @@
 - **Geändert (nur Modern):** In allen Umschaltern (`GlassSegmentedPicker`: Rubriken in der Toolbar, Median/Niedrig/Hoch und Zeiträume der Statistik, Regal-Reiter, Einstellungen) steht die gewählte Option jetzt halbfett in Textfarbe auf der Glaslinse statt in Akzentblau; der Akzent liegt nur noch im feinen Rand der Linse (`selectedBorder`, `selectionLineWidth`). Blaue Schrift auf bläulichem Glas war in Modern dunkel schlecht lesbar, seit die Cover unter die Leiste laufen auch in hell über bunten Covern. Neue Schriftrolle `AppStyle.selectedOptionWeight`.
 - Die Breite jeder Option gibt weiter die normale Beschriftung vor; nur die Kopie auf der Linse ist halbfett und passt in deren Innenabstand. Die Nachbarn verrutschen also nicht, die Blende im Takt des Seitenwechsels bleibt gleich. Klassisch unverändert (Creme-Papier, Tinte, nicht halbfett).
 - Geprüft: Debug-Build ohne Fehler und Warnungen, 244 Tests bestanden. In der Demo angesehen: Toolbar mit Covern darunter in Modern hell und dunkel, Statistik mit „Median“ und „Alles“ in hell und dunkel. **Nicht angesehen:** Regal-Reiter und Umschalter der Einstellungen, Klassisch (dort greift die Änderung nicht).
-- **Hinweis:** Modern und Klassisch unterscheiden sich damit in der Schriftstärke der Auswahl, nicht nur in Flächen und Farben. Auf Wunsch kann Klassisch ebenfalls halbfett werden.
+- **Bewusste Ausnahme:** Modern und Klassisch unterscheiden sich damit in der Schriftstärke der Auswahl, nicht nur in Flächen und Farben. Entschieden: Klassisch bleibt ohne Halbfett.
 
 # Modern: Inhalt läuft unter die Leiste, Seiten beginnen höher · 26.10.2026
 
