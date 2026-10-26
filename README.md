@@ -2,6 +2,10 @@
 
 Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eigenen **Discogs-Collection**, Plattenregal weiß zusätzlich, **wo jede Platte im Regal steht**. Swift 6, SwiftUI, SwiftData und Swift Charts, ohne externe Abhängigkeiten. Deployment Target macOS 27.0. Aktueller Projektstand: **1.0.0 (102026)**; Dokumentation geprüft am **26. Oktober 2026**.
 
+## Lizenz
+
+MIT – siehe [`LICENSE`](LICENSE). Plattenregal nutzt die [Discogs-API](https://www.discogs.com/developers), ist aber kein Produkt von Discogs; jede:r braucht einen eigenen persönlichen Discogs-Token. Plattencover und Daten stammen aus Discogs und gehören den jeweiligen Rechteinhabern – das Repository enthält keine.
+
 ## In Xcode starten
 
 1. `Plattenregal.xcodeproj` öffnen.
@@ -187,12 +191,12 @@ Die Seite zur App ist `Webseite/index.html`, veröffentlicht als privates Artifa
 
 ### Produktbilder
 
-Bilder für App Store und Social Media liegen in `Marketing/Bilder/`: sechs im Mac-App-Store-Format 2880 × 1800 (`appstore-1` bis `appstore-6`: Collection, Regal, Plattenkarte, Sortierung prüfen, Statistik, Designs), drei Beiträge 1080 × 1350 (4:5) und eine Story 1080 × 1920. Sie zeigen die **echte Sammlung**, nicht die Demo, im Design Klassisch wie Webseite und Handbuch. Erneuern in zwei Schritten:
+Bilder für App Store und Social Media liegen nur lokal in `Marketing/Bilder/` – der Ordner ist **nicht im Repository** (`.gitignore`), weil die Bilder echte Plattencover (urheberrechtlich geschützt) und den Sammlungswert zeigen: sechs im Mac-App-Store-Format 2880 × 1800 (`appstore-1` bis `appstore-6`: Collection, Regal, Plattenkarte, Sortierung prüfen, Statistik, Designs), drei Beiträge 1080 × 1350 (4:5) und eine Story 1080 × 1920. Sie zeigen die **echte Sammlung**, nicht die Demo, im Design Klassisch wie Webseite und Handbuch. Erneuern in zwei Schritten:
 
-1. `zsh Scripts/marketing-shots.sh` baut Debug, startet die App je Ansicht einmal mit den Debug-Schaltern (`--preview-page`, `--preview-sortcheck`, `--preview-detail` …), holt sie nach vorn und fotografiert das Fenster (1280 × 800 pt) mit `screencapture`; dazu 72 zufällige Cover aus dem Cover-Cache. Braucht die Bildschirmaufnahme-Freigabe und einen entsperrten Bildschirm, Plattenregal darf nicht laufen, der Mauszeiger sollte rechts neben dem Fenster ruhen. Die eigene Fenstergröße wird danach zurückgesetzt. Ergebnis in `Marketing/Aufnahmen/` (nicht im Repository). Die Collection ist zufällig gemischt, jeder Lauf zeigt andere Platten.
+1. `zsh Scripts/marketing-shots.sh` baut Debug, startet die App je Ansicht einmal mit den Debug-Schaltern (`--preview-page`, `--preview-sortcheck`, `--preview-detail` …), holt sie nach vorn und fotografiert das Fenster (1280 × 800 pt) mit `screencapture`; dazu 72 zufällige Cover aus dem Cover-Cache. Braucht die Bildschirmaufnahme-Freigabe und einen entsperrten Bildschirm, Plattenregal darf nicht laufen, der Mauszeiger sollte rechts neben dem Fenster ruhen. Die eigene Fenstergröße wird danach zurückgesetzt. Ergebnis in `Marketing/Aufnahmen/`. Die Collection ist zufällig gemischt, jeder Lauf zeigt andere Platten.
 2. `swift Scripts/make-marketing.swift [id …]` rendert jede `<section class="frame">` aus `Marketing/Produktbilder.html` mit WebKit in doppelter Größe als JPEG ohne Alphakanal. Farben, Schriftstufen, Abstände und Schatten stehen zentral in `:root`; die Nahaufnahmen von Plattenkarte und „Sortierung prüfen“ schneiden mit `data-crop` (Pixel im Foto) aus. Die Datei lässt sich auch im Browser öffnen und zeigt alle Bilder untereinander.
 
-Die Bilder enthalten Cover-Abbildungen und den Sammlungswert der eigenen Sammlung.
+Die Bilder enthalten Cover-Abbildungen und den Sammlungswert der eigenen Sammlung. Bilder im Repository (Handbuch, Webseite) zeigen nur die Demo mit gezeichneten Covern.
 
 ## Neues App-Symbol vom 5. Oktober 2026
 

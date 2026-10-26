@@ -6,6 +6,8 @@ xcuserdata/
 *.xcresult
 *.app/
 dist/
-Marketing/Aufnahmen/
+# Produktbilder zeigen echte Cover (urheberrechtlich geschützt) und den
+# Sammlungswert: nur lokal, nicht im öffentlichen Repository.
+Marketing/
 # Persönliche Claude-Code-Einstellungen (lokale Pfade)
 .claude/settings.local.json

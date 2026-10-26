@@ -1,3 +1,9 @@
+# Öffentliches Repository vorbereitet: MIT-Lizenz, Produktbilder nur lokal · 26.10.2026
+
+- **Lizenz:** MIT (`LICENSE`, © 2026 Patrice Werner). README mit Abschnitt „Lizenz“: Hinweis, dass Plattenregal die Discogs-API nutzt, aber kein Discogs-Produkt ist, jede:r einen eigenen Token braucht und das Repository keine Cover enthält.
+- **Produktbilder:** `Marketing/` ist nicht mehr versioniert und steht in `.gitignore` – die sechs App-Store-Bilder zeigen echte Plattencover (urheberrechtlich geschützt) und den Sammlungswert. Die Dateien bleiben lokal in `Marketing/Bilder/` (zusätzlich kopiert nach `~/Desktop/Plattenregal-Marketing-Sicherung/`). README „Produktbilder“ entsprechend.
+- Geprüft: alle 106 Bildversionen aus Handbuch, Anleitung und Einführungs-Tour in der Historie per Übersichtsbogen angesehen – nur Demo-Daten mit gezeichneten Covern. Echte Cover nur in `Marketing/` und `outputs/` (siehe nächster Eintrag: Historie).
+
 # Code-Prüfung der ganzen App und GitHub-Vorbereitung · 26.10.2026
 
 - **Geprüft (gelesen):** Discogs-Client und Abgleich samt Zusammenführen, Datenmodell und Migrationen, Datenbank-Öffnung mit Instanz-Sperre, Schlüsselbund, Sicherung/Wiederherstellung, automatische Sicherung, Export (CSV/PDF) und automatischer Export, Ordnerzugriff, Positions-Service, Apple-TV-Verbindung (beide Seiten), Absturz-Handler im Protokoll. Gezielt im ganzen Code gesucht: `try!`, erzwungenes Entpacken, `fatalError`, Bereiche mit variablen Grenzen, Divisionen und Modulo mit möglichem Teiler 0 – alle Fundstellen abgesichert oder unkritisch (feste Adressen, Vorschaudaten).
