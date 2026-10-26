@@ -60,8 +60,7 @@ actor CoverCache {
         if let payload = memory.withLock({ $0.lookup(key, now: .now) }) { return payload }
         // Demo covers are drawn, never downloaded or written to disk.
         if url.scheme == DemoCover.scheme {
-            guard let image = DemoCover.render(url, pixelSize: maximumPixelSize) else { throw DiscogsError.invalidResponse }
-            let payload = ImagePayload(image)
+            guard let payload = await Self.drawn(url, maximumPixelSize: maximumPixelSize) else { throw DiscogsError.invalidResponse }
             storeInMemory(payload, for: key)
             return payload
         }
@@ -116,6 +115,12 @@ actor CoverCache {
             try? FileManager.default.setAttributes([.modificationDate: Date.now], ofItemAtPath: fileURL.path)
         }
         return payload
+    }
+
+    /// Drawn beside the actor like decoding: with "Gezeichnete Cover" a
+    /// whole grid of them comes into view at once.
+    @concurrent nonisolated private static func drawn(_ url: URL, maximumPixelSize: Int) async -> ImagePayload? {
+        DemoCover.render(url, pixelSize: maximumPixelSize).map(ImagePayload.init)
     }
 
     @concurrent nonisolated private static func decoded(_ data: Data, maximumPixelSize: Int) async -> ImagePayload? {

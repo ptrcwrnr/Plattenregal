@@ -249,6 +249,11 @@ nonisolated enum DemoCover {
         return components.string ?? "\(scheme)://cover"
     }
 
+    /// 0..<360, the same as `seed * 47 % 360` for the demo's small seeds.
+    static func hueDegrees(_ seed: Int) -> Int {
+        ((seed % 360) * 47 % 360 + 360) % 360
+    }
+
     static func render(_ url: URL, pixelSize: Int) -> CGImage? {
         guard url.scheme == scheme else { return nil }
         let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -260,7 +265,9 @@ nonisolated enum DemoCover {
                                       bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
         let side = CGFloat(size)
         // Two neighbouring hues per record, spread around the colour wheel.
-        let hue = CGFloat((seed * 47) % 360) / 360
+        // Reduced first: any Discogs ID (or a stray huge or negative number)
+        // gives a hue in 0..<1 instead of overflowing.
+        let hue = CGFloat(hueDegrees(seed)) / 360
         let top = NSColor(hue: hue, saturation: 0.55, brightness: 0.78, alpha: 1).cgColor
         let bottom = NSColor(hue: (hue + 0.08).truncatingRemainder(dividingBy: 1), saturation: 0.7, brightness: 0.42, alpha: 1).cgColor
         if let gradient = CGGradient(colorsSpace: nil, colors: [top, bottom] as CFArray, locations: [0, 1]) {

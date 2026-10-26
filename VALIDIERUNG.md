@@ -9,12 +9,13 @@ Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert, die Einstellung
 - **Fehlermeldungen:** keine neuen.
 - **Lokalisierung:** 909 Einträge, alle mit Englisch, drei neu.
 - **App-Protokoll** 26.10.: kein `ERROR`; eine Warnung „nicht normal beendet“ stammt von einem Prüflauf, der hart beendet wurde. **macOS-Absturzberichte:** keine.
-- **Nicht geprüft:** der Schalter in den Einstellungen im Bild und das Umschalten zur Laufzeit.
+- **Befunde (behoben, Nachprüfung):** Farbton gezeichneter Cover lief bei sehr großen IDs über (`DemoCover.hueDegrees`); gezeichnete Cover entstanden nacheinander im Actor statt parallel.
+- **Nicht geprüft:** der Schalter in den Einstellungen im Bild; die Cover der Statistik beim Umschalten.
 
 ## Verifikation
 
-- Debug-Build, 238 Tests bestanden.
-- Demo-Regalseite und echte Collection mit gezeichneten Covern im Bild geprüft.
+- Debug-Build, 239 Tests bestanden.
+- Demo-Regalseite und echte Collection mit gezeichneten Covern im Bild geprüft; Umschalten zur Laufzeit in Collection (Raster, Liste), Fach (Raster, Tabelle) und Wantlist in beide Richtungen.
 
 # Aktueller Stand · 24.10.2026 (Tooltips in Collection und Wantlist)
 

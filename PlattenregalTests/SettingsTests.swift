@@ -59,6 +59,23 @@ extension AllTests {
             #expect(release.shownCoverURL(drawn: true) == drawn)
         }
 
+        @Test func drawnCoverHueStaysInRangeForAnyID() {
+            // The demo's seeds keep their colours.
+            for seed in [0, 1, 49, 100, 247] { #expect(DemoCover.hueDegrees(seed) == seed * 47 % 360) }
+            // Real Discogs IDs and stray values neither overflow nor go negative.
+            for seed in [Int.max, Int.min, -1, -359, 36_000_000_123] {
+                #expect((0..<360).contains(DemoCover.hueDegrees(seed)))
+            }
+            let release = Release(discogsID: Int.max, artist: "", title: "")
+            let url = release.shownCoverURL(drawn: true).flatMap(URL.init(string:))
+            #expect(url.flatMap { DemoCover.render($0, pixelSize: 64) } != nil)
+            // Names that need escaping come back unchanged.
+            let tricky = Release(discogsID: 7, artist: "Simon & Garfunkel", title: "A=B + C #1 ?/%")
+            let items = tricky.shownCoverURL(drawn: true).flatMap(URLComponents.init(string:))?.queryItems ?? []
+            #expect(items.first { $0.name == "artist" }?.value == "Simon & Garfunkel")
+            #expect(items.first { $0.name == "title" }?.value == "A=B + C #1 ?/%")
+        }
+
         @Test func signatureDesignPersistsAndReloadsInItsOwnSettingsStore() throws {
             try withSignatureDefaults { defaults in
                 let preferences = AppPreferences(defaults: defaults)
