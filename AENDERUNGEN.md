@@ -1,3 +1,8 @@
+# Modern: Auswahlkapsel wieder ohne Akzentrand · 26.10.2026
+
+- **Zurückgenommen (auf Wunsch):** der blaue Rand um die gewählte Option der Umschalter aus der vorigen Änderung. Die Glaslinse ist wieder randlos wie zuvor; die Beschriftung bleibt halbfett in Textfarbe.
+- Geprüft: Debug-Build ohne Fehler und Warnungen; Toolbar in der Demo (Modern hell) angesehen: Linse ohne Rand, „Collection“ halbfett. Keine Logik geändert, Tests nicht erneut ausgeführt.
+
 # Modern: gewählte Option halbfett statt blau · 26.10.2026
 
 - **Geändert (nur Modern):** In allen Umschaltern (`GlassSegmentedPicker`: Rubriken in der Toolbar, Median/Niedrig/Hoch und Zeiträume der Statistik, Regal-Reiter, Einstellungen) steht die gewählte Option jetzt halbfett in Textfarbe auf der Glaslinse statt in Akzentblau; der Akzent liegt nur noch im feinen Rand der Linse (`selectedBorder`, `selectionLineWidth`). Blaue Schrift auf bläulichem Glas war in Modern dunkel schlecht lesbar, seit die Cover unter die Leiste laufen auch in hell über bunten Covern. Neue Schriftrolle `AppStyle.selectedOptionWeight`.

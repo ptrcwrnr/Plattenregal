@@ -5,8 +5,8 @@ import SwiftUI
 /// little above, in the beat of a page switch (`AppStyle.pageOutAnimation`,
 /// `pageInAnimation`, `pillSettleDistance`),
 /// the same in both designs: in Modern a Liquid Glass lens
-/// (never a gray or blue fill) with a fine accent rim and the label
-/// semibold in the text color, in Klassisch cream paper. In the toolbar the toolbar's bar is the background
+/// (never a gray or blue fill, no rim) with the label semibold in the text
+/// color, in Klassisch cream paper. In the toolbar the toolbar's bar is the background
 /// (`glass: false`, see `toolbarBar`); anywhere else it brings its own capsule.
 struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     @Binding var selection: Value
@@ -54,7 +54,6 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                                     } else {
                                         Capsule().fill(.clear)
                                             .glassEffect(.regular, in: .capsule)
-                                            .overlay(Capsule().strokeBorder(AppStyle.selectedBorder, lineWidth: AppStyle.selectionLineWidth))
                                     }
                                 }
                                 .padding(.vertical, AppStyle.controlInset)
