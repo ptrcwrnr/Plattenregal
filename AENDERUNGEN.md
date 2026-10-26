@@ -1,3 +1,12 @@
+# DMG 1.0.0 mit den umschaltenden Knöpfen der Regalseite neu ausgegeben · 26.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält die umschaltenden runden Knöpfe der Regalseite und den einen Fenster-Zustand (`ShelfPanel`). Handbuch-PDFs unverändert, Übersetzungskatalog vom Release-Build unverändert.
+- Vorher noch eingehängt: die alte DMG von 22:23 als „/Volumes/Plattenregal 1“ (nichts darauf geöffnet), ausgeworfen.
+- Geprüft: `hdiutil verify` gültig; 1.0.0 (102026), nur arm64, ab macOS 27.0, Signatur gültig; Berechtigungen unverändert (Sandbox, Dateien nach Wahl, Netzwerk ein- und ausgehend, `get-task-allow` wie zuvor); beide Handbuch-PDFs identisch mit denen im Repository; kein Prüfcode (`--snapshot=`); neuer Stand im Programm (`ShelfPanel`, `ShelfButton`, „Verlauf schließen“, „Einsortieren schließen“, englisch in `en.lproj`).
+- Release-App aus der eingehängten DMG im **Demo-Modus** gestartet (Klassisch), weil die echte App lief: Regal per ⌘3, Knöpfe über die Bedienungshilfen gedrückt: Verlauf auf → zu → Einsortieren → Verlauf (Wechsel) → Einsortieren (Wechsel), Goldrand am aktiven Knopf im Bild. Mit ⌘Q sauber beendet, DMG ausgeworfen. Protokoll ohne `ERROR`, keine Absturzberichte. Die Warnungen „vorige Sitzung nicht normal beendet“ der Demo stammen von den per `kill` beendeten Debug-Demos der vorigen Prüfung.
+- **Aufgefallen:** Der Testlauf der vorigen Änderung (22:41) hat die laufende echte App regulär beendet; `xcodebuild test` startet den Test-Host mit derselben Bundle-ID. Kein Datenverlust; die App ist wieder geöffnet (852 Exemplare, ohne Warnung).
+- **Nicht geprüft:** die Release-App mit der echten Sammlung.
+
 # Runde Knöpfe der Regalseite schalten um · 26.10.2026
 
 - **Neu:** Ein zweiter Klick auf „Einsortieren“ bzw. „Verlauf“ (auch ⌘Y) schließt das geöffnete Fenster wieder. Ein Klick auf den anderen Knopf wechselt direkt zu dessen Fenster, auch von „Platte hinzufügen“ oder „Sortierung prüfen“ aus. Klick daneben und Esc schließen weiterhin.

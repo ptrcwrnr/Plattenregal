@@ -6,7 +6,7 @@ Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
 - **Verifikation:** Debug-Build ohne Warnung, 244 Tests bestanden (neu: `ShelfPanelTests`). Demo in Klassisch und Modern über die Bedienungshilfen geprüft, Zustand und Bild nach jedem Schritt.
 - **Lokalisierung:** 911 Einträge, alle mit Englisch, zwei neu.
 - **App-Protokoll** 26.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
-- **DMG:** nicht neu gebaut; `dist/` enthält noch den Stand vor dieser Änderung.
+- **DMG:** neu gebaut und geprüft (Abbild, Version, arm64, Signatur, Berechtigungen, PDFs, neuer Stand im Programm, Start aus der DMG im Demo-Modus mit den Umschalt-Fällen). Nicht mit der echten Sammlung gestartet, weil die echte App lief.
 - **Nicht geprüft:** echte Mausklicks, Dunkelmodus.
 
 # Aktueller Stand · 26.10.2026 (Toolbar als eine Leiste)
