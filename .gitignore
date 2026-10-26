@@ -7,3 +7,5 @@ xcuserdata/
 *.app/
 dist/
 Marketing/Aufnahmen/
+# Persönliche Claude-Code-Einstellungen (lokale Pfade)
+.claude/settings.local.json

@@ -187,6 +187,8 @@ import Observation
 
     nonisolated static let tracklistRefreshAge: TimeInterval = 180 * 86400
     nonisolated static let tracklistRefreshesPerRun = 100
+    /// Refused or unreadable answers in a row after which the download stops.
+    nonisolated static let tracklistRefusalLimit = 5
 
     /// `fromSync`: part of a sync — shown right away, "abgeschlossen" at the
     /// end, problems reported. Otherwise (app launch) it stays invisible from
@@ -294,6 +296,11 @@ import Observation
             tracklistProgress = (0, pending.count)
         }
         var loaded = 0
+        /// Releases in a row that Discogs refused (403) or answered with
+        /// something unreadable. One is about that release; several in a row
+        /// mean the token or a Discogs outage – then every further request
+        /// fails the same way, for minutes, without a word.
+        var refusedInARow = 0
         /// A failed batch is rolled back; its releases stay without tracklist
         /// and are simply loaded again next time — but say so after a sync.
         func save() {
@@ -324,9 +331,23 @@ import Observation
             } catch DiscogsError.http(let code) where (400...499).contains(code) {
                 // Same: specific to this release.
                 if !release.isDeleted { release.detailsFetchedAt = .now; try? ReleaseVideoList.store([], for: id, in: context) }
-            } catch DiscogsError.forbidden, DiscogsError.invalidResponse {
+            } catch let error as DiscogsError where error.isRefusal {
                 // Possibly this release only – or the token or a Discogs outage,
-                // which would hit every release: skip without stamping.
+                // which would hit every release: skip without stamping, and
+                // stop once it keeps happening (resumed next time).
+                refusedInARow += 1
+                if refusedInARow >= Self.tracklistRefusalLimit {
+                    save()
+                    AppLog.warning("Sync", "Tracklisten angehalten: \(refusedInARow) Releases nacheinander abgelehnt oder unlesbar (\(error))")
+                    if !quiet {
+                        let missing = pending.count - index
+                        self.error = String(localized: "Noch nicht alle Tracklisten geladen – \(missing) fehlen und werden später automatisch nachgeholt. ")
+                            + error.reportedMessage()
+                    }
+                    return true
+                }
+                if !quiet { tracklistProgress = (index + 1, pending.count) }
+                continue
             } catch {
                 save()
                 // Cancelled by the "x" or a new sync: resume next time, no message.
@@ -340,6 +361,7 @@ import Observation
                 }
                 return true
             }
+            refusedInARow = 0
             if !quiet { tracklistProgress = (index + 1, pending.count) }
         }
         save()

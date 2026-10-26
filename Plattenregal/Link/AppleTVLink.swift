@@ -136,6 +136,13 @@ import SystemConfiguration
                     throw TVLinkError.invalid
                 }
             } catch {
+                // Cancelled in the settings while the code was being checked:
+                // closing the connection lands here, but the pairing is
+                // already over (or a new one is waiting) – no error to show.
+                guard pairing == .checking(device: pending.deviceName) else {
+                    AppLog.info("Apple TV", "Kopplung während der Prüfung beendet: \(pending.deviceName)")
+                    return
+                }
                 closePending()
                 pairing = .failed(String(localized: "Die Verbindung zum Apple TV ist abgebrochen. Starte die Kopplung auf beiden Seiten neu."))
                 AppLog.warning("Apple TV", "Kopplung abgebrochen: \(error)")

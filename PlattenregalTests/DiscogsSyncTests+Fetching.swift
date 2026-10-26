@@ -94,6 +94,30 @@ extension AllTests.DiscogsSyncTests {
         #expect(lists[404] == [])
         #expect(lists[403] == nil)
     }
+    /// A refused release (403) may be about that release – but several in a
+    /// row mean the token or an outage: the download stops instead of asking
+    /// every remaining release, and leaves them for next time.
+    @Test func tracklistsStopAfterRefusalsInARow() async throws {
+        let refused = (1...8).map { entry($0, release: $0) }
+        let c = try LibraryStorage.makeContainer(inMemory: true)
+        try merge(c, collection: refused)
+        RefusingReleasesProtocol.releaseRequests.withLock { $0 = 0 }
+        let sync = DiscogsSyncService(api: .stubbed(RefusingReleasesProtocol.self))
+        #expect(await sync.loadTracklists(container: c, quiet: false))
+        #expect(RefusingReleasesProtocol.releaseRequests.withLock { $0 } == DiscogsSyncService.tracklistRefusalLimit)
+        #expect(sync.error?.contains("später automatisch nachgeholt") == true)
+        #expect(try ModelContext(c).fetch(FetchDescriptor<Release>()).allSatisfy { $0.detailsFetchedAt == nil })
+
+        // Fewer refusals than the limit, between good answers: every release is asked.
+        let mixed = try LibraryStorage.makeContainer(inMemory: true)
+        try merge(mixed, collection: (1...4).map { entry($0, release: $0) } + [entry(5, release: 1005)])
+        RefusingReleasesProtocol.releaseRequests.withLock { $0 = 0 }
+        let quiet = DiscogsSyncService(api: .stubbed(RefusingReleasesProtocol.self))
+        #expect(await quiet.loadTracklists(container: mixed, quiet: false))
+        #expect(RefusingReleasesProtocol.releaseRequests.withLock { $0 } == 5)
+        #expect(quiet.error == nil)
+    }
+
     /// The popover fetches the videos of a release loaded before videos were
     /// stored. Gone from Discogs: an empty list, so it isn't asked at every
     /// opening; a 403 may be the token: left for later.

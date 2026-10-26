@@ -78,3 +78,22 @@ nonisolated final class CancelDuringValueProtocol: URLProtocol, @unchecked Senda
     }
     override func stopLoading() {}
 }
+
+/// Release requests: IDs below 1000 are refused (403), the others answered
+/// with an empty tracklist. Counts the release requests.
+nonisolated final class RefusingReleasesProtocol: URLProtocol, @unchecked Sendable {
+    static let releaseRequests = Mutex(0)
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        guard let url = request.url else { return }
+        Self.releaseRequests.withLock { $0 += 1 }
+        let id = Int(url.lastPathComponent) ?? 0
+        let status = id < 1000 ? 403 : 200
+        let body = status == 200 ? #"{"id":\#(id),"tracklist":[]}"# : "{}"
+        let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: nil)!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data(body.utf8)); client?.urlProtocolDidFinishLoading(self)
+    }
+    override func stopLoading() {}
+}

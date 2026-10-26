@@ -22,6 +22,17 @@ nonisolated enum DiscogsError: LocalizedError {
         }
     }
 }
+extension DiscogsError {
+    /// Discogs turned the request down (403) or answered with something
+    /// unreadable – maybe about one release, maybe about every request.
+    var isRefusal: Bool {
+        switch self {
+        case .forbidden, .invalidResponse: true
+        default: false
+        }
+    }
+}
+
 actor DiscogsAPIClient {
     static let shared = DiscogsAPIClient()
     private let session: URLSession

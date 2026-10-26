@@ -1,3 +1,22 @@
+# Aktueller Stand · 26.10.2026 (Prüfung der ganzen App, GitHub-Bereitschaft)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
+
+## Umfang und Befunde
+
+- **Gelesen:** `DiscogsAPIClient`, `DiscogsSyncService` (+`Merge`), `LibrarySchemas`, `LibraryStorage`, `KeychainStore`, `ShelfBackup`, `ShelfBackupService`, `ShelfAutoBackup`, `ExportWriters`, `ScheduledExportService`, `FolderAccess`, `PositionService` (Verschieben, Herausnehmen, Markierungen), `CabinetService.resize`, `TVLink`, `AppleTVLink`, Absturz-Handler in `AppLog`. Ansichten nur per Mustersuche (Absturzmuster, Divisionen, Bereiche).
+- **Befunde (behoben):** Tracklisten-Download lief bei dauerhaft abgelehnten oder unlesbaren Antworten durch alle Releases; Abbruch der Kopplung während der Code-Prüfung meldete einen Fehler und ließ den Dienst an.
+- **Befund (offen, beschrieben):** Kopplung Mac ↔ Apple TV ohne PAKE (siehe README „Apple TV“).
+- **Fehlermeldungen:** eine neue Meldung nutzt den vorhandenen, übersetzten Text „Noch nicht alle Tracklisten geladen …“.
+- **Lokalisierung:** kein neuer Text, Katalog vom Release-Build unverändert.
+- **App-Protokoll** 26.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
+- **Nicht geprüft:** Ansichten Zeile für Zeile; die Kopplung mit einem echten Apple TV nach der Korrektur.
+
+## Verifikation
+
+- Debug- und Release-Neubau ohne Warnung, 240 Tests bestanden, Thread Sanitizer ohne Befund.
+- Frischer Klon des Repos baut und besteht die Tests.
+
 # Aktueller Stand · 26.10.2026 (Gezeichnete Cover, Hinweise auf der Regalseite)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert, die Einstellung liegt in den User Defaults). Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
