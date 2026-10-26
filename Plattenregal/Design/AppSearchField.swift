@@ -5,9 +5,9 @@ import SwiftUI
 /// a magnifying glass that opens into a text field with its own placeholder,
 /// clear button and Esc. Closed it is only the glass, as wide as an option
 /// of the switch beside it; open it is `toolbarSearchWidth` wide. The caller
-/// opens and closes it in `AppStyle.openAnimation` and
-/// `closeAnimation`, so the bar around it follows in the same spring;
-/// the glass bounces once on opening.
+/// opens and closes it in an animation (`AppStyle.openAnimation` when opened
+/// from the glass or ⌘F, else `closeAnimation`), so the bar around it
+/// follows, and bumps `bounce` when the glass should bounce.
 struct AppSearchField: View {
     let placeholder: String
     @Binding var text: String
@@ -17,15 +17,15 @@ struct AppSearchField: View {
     let open: Bool
     /// A click on the glass: opens the field, or focuses it when open.
     let onOpen: () -> Void
-    /// Counts the openings, for the bounce of the glass (not on closing).
-    @State private var openings = 0
+    /// Each new value bounces the glass once.
+    var bounce = 0
 
     var body: some View {
         HStack(spacing: 0) {
             Button(action: onOpen) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(AppStyle.toolbarLabel)
-                    .symbolEffect(.bounce, options: .nonRepeating, value: openings)
+                    .symbolEffect(.bounce, options: .nonRepeating, value: bounce)
                     .padding(.leading, AppStyle.rowSpacing)
                     .padding(.trailing, open ? AppStyle.itemSpacing : AppStyle.rowSpacing)
                     .frame(height: AppStyle.controlHeight)
@@ -42,9 +42,6 @@ struct AppSearchField: View {
         }
         .frame(width: open ? AppStyle.toolbarSearchWidth : nil, alignment: .leading)
         .clipped()
-        .onChange(of: open) { _, new in
-            if new && !AppStyle.reduceMotion { openings += 1 }
-        }
     }
 
     private var field: some View {

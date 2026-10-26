@@ -1,3 +1,13 @@
+# Code-Prüfung der neuen Suchleiste und des Fächers · 26.10.2026
+
+- **Gelesen:** alle Änderungen seit der DMG vom Vormittag (`ToolbarSearchField`, `AppSearchField`, `AppPickers`, `AppSurfaces`, `AppStyle`, `FloatingControls`, `RootView`, `KallaxView`), dazu alle Stellen, die Suchtexte setzen oder leeren.
+- **Behoben – Leiste sprang:** Das Feld ist offen, solange ein Suchtext steht. Änderte sich der Text ohne Klick (Rubrikwechsel zu einer Seite mit anderem Suchtext, ✕ ohne Cursor im Feld, Regalseite leert die Suche nach der Wahl eines Treffers), klappte die Leiste ohne Animation um und sprang in der Breite. Jetzt zeigt die Leiste einen eigenen Zustand (`shownOpen`), der immer mit Animation folgt: federnd beim Öffnen per Lupe oder ⌘F, sonst ruhig (`closeAnimation`).
+- **Behoben – Lupe hüpfte ohne Klick:** Sie hüpfte bei jedem Öffnen, auch durch einen Rubrikwechsel. Jetzt nur beim Öffnen per Lupe oder ⌘F (`AppSearchField.bounce` statt eigenem Zähler).
+- **Geprüft, ohne Befund:** Fächer (Öffnen federnd mit Versatz, Schließen ruhig, „Bewegung reduzieren“ blendet), Auswahlfarben im Umschalter unverändert, Treffer-Panel der Regalseite mittig, Esc-Reihenfolge (erst leeren, dann verlassen), ⌘F in der Statistik wirkungslos.
+- **Randfälle in der Demo** (Klassisch, Tasten per Skript, Lupe und ✕ über die Bedienungshilfen, ohne Mauszeiger), alle wie erwartet: Start geschlossen; Lupe → offen mit Cursor; Tippen filtert; Esc leert und bleibt offen; zweites Esc klappt zu; mit Cursor zu „Regal“ → bleibt offen, leer, „Regal durchsuchen“; Esc klappt zu; zurück zur Collection → offen mit „air“, ohne Cursor; Statistik → keine Lupe, ⌘F wirkungslos; zurück → wieder offen; ✕ ohne Cursor → klappt zu.
+- **Nicht geprüft:** das Leeren der Regalsuche nach der Wahl eines Treffers (nur gelesen), Modern im Dunkelmodus, Vollbild, echte Mausklicks.
+- Debug-Build, 240 Tests bestanden.
+
 # Zentrale Öffnen-Animation: auch der Fächer des runden Knopfs federt · 26.10.2026
 
 - **Neu:** `AppStyle.openAnimation` und `closeAnimation` ersetzen `searchOpenAnimation`/`searchCloseAnimation`. Regel: Federn darf nur, was man selbst aus einem Knopf öffnet. Das sind die Suche in der Toolbar und der Fächer des runden Knopfs (Raster/Liste, Synchronisieren, Einstellungen): Die drei springen nacheinander heraus (30 ms Versatz wie bisher) und federn leicht über ihren Platz hinaus; das Zuklappen ist gemeinsam und ruhig. Mit „Bewegung reduzieren“ blendet der Fächer wie bisher nur ein und aus. Seitenwechsel, Auswahlkapsel, wandernde Platten, Panels und Statistik bleiben ruhig.

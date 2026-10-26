@@ -96,8 +96,10 @@ extension View {
                         .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(Color.white.opacity(0.08), lineWidth: AppStyle.borderWidth))
                 }
                 // Always dark on the petrol, set here instead of taken from
-                // the toolbar's scheme, which now and then reached the bar as
-                // light (dark text, a dark separator in the search field).
+                // the toolbar's scheme, which doesn't reliably reach views
+                // hosted in the toolbar (the old search field came out white
+                // now and then). The search's text, placeholder and separator
+                // follow it.
                 .environment(\.colorScheme, .dark)
         } else {
             padding(.horizontal, AppStyle.controlInset).glassEffect(.regular, in: .capsule)

@@ -3,9 +3,12 @@ import SwiftUI
 /// The search in the toolbar, at the end of the page switch's bar: a line,
 /// then the magnifying glass, which opens into the field (see
 /// `AppSearchField`). A click on the glass or ⌘F opens it with the cursor in
-/// it; it closes again when it loses the focus with nothing typed (Esc
-/// clears the query, a second Esc leaves it). A query keeps it open, also
-/// across a page switch. On the statistics, which has no search, line and
+/// it, springing open (`AppStyle.openAnimation`, the glass bounces once);
+/// it closes calmly when it loses the focus with nothing typed (Esc clears
+/// the query, a second Esc leaves it). A query keeps it open, also across a
+/// page switch; opened or closed by a query alone (another page, the shelf
+/// clearing its query after a match was picked, the clear button) it moves
+/// calmly, without spring or bounce. On the statistics, which has no search, line and
 /// glass fold away in the beat of the page switch.
 /// Collection and wantlist share one query (`LibrarySearch`), the shelf has
 /// its own (`ShelfSearch`); the pages read them and filter themselves.
@@ -20,6 +23,11 @@ struct ToolbarSearchField: View {
     @State private var fieldPage: Destination = .collection
     /// Opened by the glass or ⌘F, until the field loses the focus.
     @State private var opened = false
+    /// What the bar shows. Follows `opened` and the query in an animation
+    /// (see `follow`), so the bar never changes its width in a jump.
+    @State private var shownOpen = false
+    /// Bounces the glass, on opening by the glass or ⌘F only.
+    @State private var bounces = 0
 
     var body: some View {
         let page = selection.current
@@ -30,7 +38,7 @@ struct ToolbarSearchField: View {
         // and put back, the toolbar was laid out anew and jumped.
         HStack(spacing: 0) {
             ControlSeparator()
-            AppSearchField(placeholder: placeholder(for: shown), text: text, focus: $focused, open: open, onOpen: openField)
+            AppSearchField(placeholder: placeholder(for: shown), text: text, focus: $focused, open: shownOpen, onOpen: openField, bounce: bounces)
         }
         .frame(width: page.hasSearch ? nil : 0, alignment: .leading)
         .clipped()
@@ -45,8 +53,9 @@ struct ToolbarSearchField: View {
         }
         .onChange(of: focused) { _, new in
             requests.fieldFocused = new
-            if !new && opened { withAnimation(AppStyle.closeAnimation) { opened = false } }
+            if !new { opened = false }
         }
+        .onChange(of: open, initial: true) { old, new in follow(new, animated: old != new) }
         .onChange(of: page, initial: true) {
             if page.hasSearch { fieldPage = page } else { focused = false }
         }
@@ -56,8 +65,23 @@ struct ToolbarSearchField: View {
     /// follows. The text field only exists once open, so the focus follows
     /// in the next update.
     private func openField() {
-        if !opened { withAnimation(AppStyle.openAnimation) { opened = true } }
+        opened = true
+        if !shownOpen {
+            if !AppStyle.reduceMotion { bounces += 1 }
+            withAnimation(AppStyle.openAnimation) { shownOpen = true }
+        }
         Task { @MainActor in focused = true }
+    }
+
+    /// Every other change: calm. Already shown as it should be after
+    /// `openField`, so that one keeps its spring.
+    private func follow(_ open: Bool, animated: Bool) {
+        guard shownOpen != open else { return }
+        if animated {
+            withAnimation(AppStyle.closeAnimation) { shownOpen = open }
+        } else {
+            shownOpen = open
+        }
     }
 
     private func text(for page: Destination) -> Binding<String> {
