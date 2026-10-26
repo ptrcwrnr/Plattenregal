@@ -1,3 +1,14 @@
+# Aktueller Stand · 26.10.2026 (runde Knöpfe der Regalseite schalten um)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
+
+- **Geändert:** Regalseite mit einem einzigen Fenster-Zustand (`ShelfPanel`); runde Knöpfe öffnen, schließen und wechseln, mit Auswahlrand solange offen; `appPanel.onDismiss` auch beim Ersetzen (siehe AENDERUNGEN).
+- **Verifikation:** Debug-Build ohne Warnung, 244 Tests bestanden (neu: `ShelfPanelTests`). Demo in Klassisch und Modern über die Bedienungshilfen geprüft, Zustand und Bild nach jedem Schritt.
+- **Lokalisierung:** 911 Einträge, alle mit Englisch, zwei neu.
+- **App-Protokoll** 26.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
+- **DMG:** nicht neu gebaut; `dist/` enthält noch den Stand vor dieser Änderung.
+- **Nicht geprüft:** echte Mausklicks, Dunkelmodus.
+
 # Aktueller Stand · 26.10.2026 (Toolbar als eine Leiste)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).

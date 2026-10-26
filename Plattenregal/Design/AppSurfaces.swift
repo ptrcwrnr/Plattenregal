@@ -108,8 +108,21 @@ extension View {
 
     /// The round floating button and the actions around it (see
     /// `FloatingControls`): Liquid Glass in Modern; in Klassisch the main
-    /// button petrol, the actions cream sleeves with a fine rim.
-    @ViewBuilder func floatingCircle(prominent: Bool) -> some View {
+    /// button petrol, the actions cream sleeves with a fine rim. `selected`
+    /// (a button whose panel is open) adds the selection rim – gold in
+    /// Klassisch, the accent in Modern – fading in and out.
+    func floatingCircle(prominent: Bool, selected: Bool = false) -> some View {
+        floatingCircleSurface(prominent: prominent)
+            .overlay {
+                Circle()
+                    .strokeBorder(AppStyle.selectedBorder, lineWidth: AppStyle.selectionLineWidth)
+                    .opacity(selected ? 1 : 0)
+                    .animation(AppStyle.quickAnimation, value: selected)
+                    .allowsHitTesting(false)
+            }
+    }
+
+    @ViewBuilder private func floatingCircleSurface(prominent: Bool) -> some View {
         if AppStyle.isAtelier {
             background {
                 Circle().fill(prominent ? AtelierPalette.petrol : AtelierPalette.surface)

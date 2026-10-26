@@ -19,8 +19,9 @@ struct KallaxView: View {
     /// The compartment selected in the rack.
     @State private var highlight: UUID?
     /// "Im Regal anzeigen" / "Platz im Regal finden" from other pages; taken
-    /// over into `placement` right away.
-    let requests: ShelfRequests
+    /// over into `placement` right away. Also the round buttons' clicks and
+    /// the panel over the page (see `ShelfRequests`).
+    @Bindable var requests: ShelfRequests
     /// The text of the search field in the toolbar.
     let search: ShelfSearch
     @Environment(\.searchRequests) private var searchRequests
@@ -44,11 +45,6 @@ struct KallaxView: View {
     /// Cabinet tab whose name popover is open ("Regal umbenennen …").
     @State private var renamingCabinet: UUID?
     @State private var lockPreview = ShelfLockPreview()
-    /// The open "Platte hinzufügen" sheet. A new session per opening, so a
-    /// reopened sheet always starts from fresh data.
-    @State private var assignment: ShelfAssignmentSession?
-    /// Kept past the sheet's dismissal to pick up its last addition.
-    @State private var closingAssignment: ShelfAssignmentSession?
     // Last copy taken out of a shelf via the trash button, kept briefly so the
     // removal can be undone (toast button or ⌘Z) instead of confirmed up front.
     @State private var recentUnplace: UnplacedCopy?
@@ -60,10 +56,6 @@ struct KallaxView: View {
     /// `soldInShelves.count`, taken whenever records, places or the account
     /// change – not on every click in the table.
     @State private var soldCount = 0
-    /// The open "Sortierung prüfen".
-    @State private var sortCheck: ShelfSortCheckRequest?
-    /// The open "Verlauf".
-    @State private var history: ShelfHistoryRequest?
     @State private var error: String?
 
     // Search inside the shelf view only lists matches with their location; it
@@ -172,7 +164,7 @@ struct KallaxView: View {
     private var missingIDs: Set<UUID> { missingEnabled ? Set(missingMarks.map(\.copyID)) : [] }
 
     private func forgetCopies() {
-        closingAssignment = nil; assignment = nil; sortCheck = nil; history = nil
+        requests.panel = nil
         focusCopy = nil; placement = nil; pendingPlacement = nil; recentUnplace = nil
         pendingDelete = nil; confirmRemoveSold = false
     }
@@ -252,20 +244,34 @@ struct KallaxView: View {
         refreshContent()
     }
 
-    /// The "Verlauf" on top of the page: its own step, the page's chain of
-    /// modifiers is already as long as the compiler takes in one expression.
+    /// The panel on top of the page and the round buttons' clicks: their own
+    /// step, the page's chain of modifiers is already as long as the
+    /// compiler takes in one expression.
     var body: some View {
         shelfPage
-            .onChange(of: requests.showingHistory) { takeHistoryRequest() }
-            .onAppear { takeHistoryRequest() }
-            // ⌘Y opens it (see `AppShortcuts`).
+            .onChange(of: requests.pressed) { takeButtonRequest() }
+            .onAppear { takeButtonRequest() }
+            // ⌘Y opens the "Verlauf" and closes it again, like its round
+            // button (see `AppShortcuts`).
             .background {
-                Button("Verlauf") { openHistory() }
+                Button("Verlauf") { press(.history) }
                     .keyboardShortcut(AppShortcuts.shelfHistory)
                     .hidden().frame(width: 0, height: 0)
                     .accessibilityHidden(true)
             }
-            .appPanel(item: $history) { _ in ShelfHistoryView(labels: rangeLabels) }
+            .appPanel(item: $requests.panel, onDismiss: panelLeft) { panel in
+                switch panel {
+                case .assignment(let session):
+                    ShelfAssignmentView(session: session, owner: owner, rangeLabel: session.shelf.flatMap { rangeLabels[$0.id] }, labels: rangeLabels,
+                                        missingIDs: missingIDs,
+                                        missingEnabled: missingEnabled,
+                                        openMissing: { settingsTab = .lists })
+                case .sortCheck(let request):
+                    ShelfSortCheckView(shelf: request.shelf, rangeLabel: rangeLabels[request.shelf.id], close: { close(panel) })
+                case .history:
+                    ShelfHistoryView(labels: rangeLabels)
+                }
+            }
             // Catches up on what changed while another page was in front.
             .trackPageActivity(activity) { active in
                 guard active else { return }
@@ -365,7 +371,7 @@ struct KallaxView: View {
         // Tracklists don't show up in `statsSignature`; metadata does
         // (`libraryVersion`), so the task above covers it.
         .onObservedChange(of: { changes.tracksVersion }) { _, _ in applySearchWhenShown() }
-        .onAppear { takePlacingRequest(); takeSortingInRequest() }
+        .onAppear { takePlacingRequest() }
         #if DEBUG
         // Screenshots without clicking: --preview-add opens
         // "Platte hinzufügen" for the selected compartment,
@@ -389,38 +395,23 @@ struct KallaxView: View {
             } else if arguments.contains("--preview-sortcheck") {
                 let shelves = cabinets.flatMap(\.shelves)
                 if let shelf = shelves.first(where: { !ShelfSortCheck.steps(PositionService.inShelfOrder($0.copies), by: .current).isEmpty }) {
-                    sortCheck = ShelfSortCheckRequest(shelf: shelf)
+                    requests.panel = .sortCheck(ShelfSortCheckRequest(shelf: shelf))
                 }
             }
         }
         #endif
         .onChange(of: requests.placing) { takePlacingRequest() }
-        .onChange(of: requests.sortingIn) { takeSortingInRequest() }
         // Marks change without touching `statsSignature` (menu, table, sheet).
         .onChange(of: missingIDs) { refreshPlacement() }
         // Settings (other window) rebuilt cabinets, restored a backup or reset
         // the locations: the sheet's list and target shelf may be stale or gone.
         .onObservedChange(of: { changes.shelvesVersion }) { _, _ in
-            if assignment != nil { AppLog.info("Regal", "„Platte hinzufügen“ geschlossen: Regale wurden in den Einstellungen geändert") }
-            assignment = nil; showsNameEditor = false; sortCheck = nil; history = nil
+            if case .assignment = requests.panel { AppLog.info("Regal", "„Platte hinzufügen“ geschlossen: Regale wurden in den Einstellungen geändert") }
+            requests.panel = nil; showsNameEditor = false
         }
         // "Alles zurücksetzen" deleted every record: nothing here may keep
         // pointing at one – reading a deleted model crashes.
         .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in forgetCopies() }
-        .appPanel(item: $assignment, onDismiss: {
-            // The shelf behind the sheet follows the additions only now, so
-            // nothing rebuilds the sheet while records are being added.
-            if let copy = closingAssignment?.lastAdded, !copy.isDeleted, copy.modelContext != nil { showPlaced(copy) }
-            closingAssignment = nil
-        }) { session in
-            ShelfAssignmentView(session: session, owner: owner, rangeLabel: session.shelf.flatMap { rangeLabels[$0.id] }, labels: rangeLabels,
-                                missingIDs: missingIDs,
-                                missingEnabled: missingEnabled,
-                                openMissing: { settingsTab = .lists })
-        }
-        .appPanel(item: $sortCheck) { request in
-            ShelfSortCheckView(shelf: request.shelf, rangeLabel: rangeLabels[request.shelf.id], close: { sortCheck = nil })
-        }
         .confirmationDialog(
             soldToRemove == 1 ? "Platte ohne Collection aus dem Regal nehmen?" : "\(soldToRemove) Platten ohne Collection aus dem Regal nehmen?",
             isPresented: $confirmRemoveSold
@@ -667,7 +658,7 @@ struct KallaxView: View {
         let locked = lockPreview.isLocked(shelf)
         Button("Platte hinzufügen") { selectShelf(shelf); startAssignment(shelf) }
             .disabled(locked)
-        Button("Sortierung prüfen") { selectShelf(shelf); sortCheck = ShelfSortCheckRequest(shelf: shelf) }
+        Button("Sortierung prüfen") { selectShelf(shelf); requests.panel = .sortCheck(ShelfSortCheckRequest(shelf: shelf)) }
             .disabled(locked || shelf.copies.count < 2)
         if locked {
             Button("Namen ändern …") { selectShelf(shelf); showsNameEditor = true }
@@ -698,10 +689,9 @@ struct KallaxView: View {
 
     /// New records go to their alphabetical place in the compartment –
     /// without one (the round button), each to its place in the rack.
+    /// A new session per opening, so a reopened panel always starts from fresh data.
     private func startAssignment(_ shelf: Shelf?) {
-        let session = ShelfAssignmentSession(shelf: shelf, openShelf: highlight, shownCabinet: shownCabinet?.id)
-        closingAssignment = session
-        assignment = session
+        requests.panel = .assignment(ShelfAssignmentSession(shelf: shelf, openShelf: highlight, shownCabinet: shownCabinet?.id))
     }
 
     private func selectShelf(_ shelf: Shelf) {
@@ -773,24 +763,48 @@ struct KallaxView: View {
         if let copy = allCopies.first(where: { $0.id == id }) { startPlacement(copy, opensShelf: true) }
     }
 
-    private func takeHistoryRequest() {
-        guard requests.showingHistory else { return }
-        requests.showingHistory = false
-        openHistory()
+    // MARK: Panels
+
+    private func takeButtonRequest() {
+        guard let button = requests.pressed else { return }
+        requests.pressed = nil
+        press(button)
     }
 
-    /// One panel at a time: the history replaces whatever else is open.
+    /// A round button or ⌘Y: its panel closes if it is the one open, else it
+    /// opens – in place of any other panel (there is only one, see `ShelfPanel`).
+    private func press(_ button: ShelfButton) {
+        if let panel = requests.panel, panel.button == button { close(panel); return }
+        switch button {
+        case .history: openHistory()
+        case .sortingIn: openSortingIn()
+        }
+    }
+
     private func openHistory() {
-        assignment = nil; sortCheck = nil
         if placement != nil || pendingPlacement != nil { cancelPlacement() }
-        history = ShelfHistoryRequest()
+        requests.panel = .history(ShelfHistoryRequest())
     }
 
-    private func takeSortingInRequest() {
-        guard requests.sortingIn else { return }
-        requests.sortingIn = false
+    /// Every record without a shelf, each to its place in the rack.
+    private func openSortingIn() {
         placement = nil; pendingPlacement = nil
         startAssignment(nil)
+    }
+
+    /// Closes this panel – only if it is still the one shown, so a late close
+    /// from a panel that was already replaced can't close its successor.
+    private func close(_ panel: ShelfPanel) {
+        if requests.panel?.id == panel.id { requests.panel = nil }
+    }
+
+    /// A panel closed or was replaced. After "Platte hinzufügen" the shelf
+    /// follows the last addition only now, so nothing rebuilds the panel
+    /// while records are being added.
+    private func panelLeft(_ panel: ShelfPanel) {
+        guard case .assignment(let session) = panel,
+              let copy = session.lastAdded, !copy.isDeleted, copy.modelContext != nil else { return }
+        showPlaced(copy)
     }
 
     /// Shows the card for the record. The open compartment stays as it is

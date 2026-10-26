@@ -1,3 +1,16 @@
+# Runde Knöpfe der Regalseite schalten um · 26.10.2026
+
+- **Neu:** Ein zweiter Klick auf „Einsortieren“ bzw. „Verlauf“ (auch ⌘Y) schließt das geöffnete Fenster wieder. Ein Klick auf den anderen Knopf wechselt direkt zu dessen Fenster, auch von „Platte hinzufügen“ oder „Sortierung prüfen“ aus. Klick daneben und Esc schließen weiterhin.
+- **Neu:** Solange sein Fenster offen ist, trägt der Knopf den Auswahlrand der App (Gold in Klassisch, Akzent in Modern). Er sitzt zentral im Baustein `floatingCircle(selected:)` und blendet mit `AppStyle.quickAnimation` ein und aus. Tooltip und VoiceOver sagen „… schließen“ bzw. „geöffnet“.
+- **Behoben:** Bei offenem Verlauf öffnete „Einsortieren“ sein Fenster *unter* dem Verlauf, beide lagen übereinander.
+- **Umbau statt Ergänzung:** Die Regalseite führte drei getrennte Fenster-Zustände (Einsortieren/Hinzufügen, Sortierung prüfen, Verlauf) und hielt sie von Hand auseinander. Jetzt ist es ein einziger Wert `ShelfPanel` in `ShelfRequests`: Es kann nur ein Fenster offen sein, ein neues ersetzt das alte. Die Knöpfe lesen denselben Wert, nichts wird doppelt geführt. Ein Klick meldet nur `pressed`, die Seite entscheidet (`press`): Schließen, wenn das eigene Fenster offen ist, sonst Öffnen.
+- **`appPanel`:** `onDismiss` läuft jetzt für jedes Fenster, das geht, ob geschlossen oder ersetzt, und bekommt es übergeben. Damit entfällt `closingAssignment`, und das Regal springt auch dann zur zuletzt einsortierten Platte, wenn man von „Platte hinzufügen“ direkt zum Verlauf wechselt (vorher ging das beim Wechsel innerhalb von „Einsortieren“ verloren). Das Fenster merkt sich sein Element nur, wenn es ein `onDismiss` gibt.
+- **Neu getestet:** `ShelfPanelTests` (welches Fenster zu welchem Knopf gehört, jede Öffnung ist ein neues Fenster).
+- **Lokalisierung:** „Verlauf schließen“ (Close History) und „Einsortieren schließen“ (Close Placing) neu.
+- **Doku:** README (runde Knöpfe, Fenster über der Seite, Tests). Handbuch unverändert, es beschreibt das Schließen nicht.
+- **Geprüft:** Debug-Build ohne Warnung, 244 Tests bestanden. Demo in Klassisch, Knöpfe über die Bedienungshilfen gedrückt (ohne Mauszeiger), nach jedem Schritt Zustand ausgelesen und Fenster fotografiert: Verlauf auf → zu; Einsortieren auf → Verlauf wechselt → Einsortieren wechselt → zu; ⌘Y auf und zu; Esc schließt und der Rand geht weg; „Platte hinzufügen“ eines Fachs ohne Rand, „Einsortieren“ wechselt von dort. Modern: Akzentrand auf dem Glas. Kein Fehler im Protokoll, keine Absturzberichte.
+- **Nicht geprüft:** echte Mausklicks, Dunkelmodus, Wechsel zum Verlauf nach einer Platte, die in „Platte hinzufügen“ gerade eingefügt wurde (nur gelesen und als Logik getestet).
+
 # DMG 1.0.0 nach der Code-Prüfung neu ausgegeben · 26.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release, Build 102026). Enthält die Suchleiste mit den Korrekturen der Code-Prüfung und den federnden Fächer.

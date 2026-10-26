@@ -7,7 +7,8 @@ import SwiftData
 /// other (`AppStyle.openAnimation`), and closes them again calmly; so does
 /// Esc, a click beside them or choosing one. On the shelf page it opens
 /// "Einsortieren" right away: the records without a shelf and where they go;
-/// above it one of the same size opens the "Verlauf".
+/// above it one of the same size opens the "Verlauf". Clicked again, either
+/// closes its panel; the other one switches straight to its own.
 struct FloatingControls: View {
     let selection: PageSelection<Destination>
     let shelfRequests: ShelfRequests
@@ -34,10 +35,8 @@ struct FloatingControls: View {
                 controls(page: page).transition(.scale(scale: 0.6).combined(with: .opacity))
             } else if page == .shelf {
                 VStack(spacing: AppStyle.rowSpacing) {
-                    shelfButton("clock.arrow.circlepath", help: AppShortcuts.help(String(localized: "Verlauf – zuletzt einsortiert, verschoben, herausgenommen"), keys: "⌘Y"),
-                                label: String(localized: "Verlauf")) { shelfRequests.showingHistory = true }
-                    shelfButton("plus", help: String(localized: "Einsortieren – noch nicht einsortierte Platten und wohin sie gehören"),
-                                label: String(localized: "Einsortieren")) { shelfRequests.sortingIn = true }
+                    shelfButton(.history)
+                    shelfButton(.sortingIn)
                 }
                 .padding(AppStyle.floatingMargin)
                 .transition(.scale(scale: 0.6).combined(with: .opacity))
@@ -100,19 +99,25 @@ struct FloatingControls: View {
     }
 
     /// The shelf page's two buttons, one above the other, both the size of
-    /// the main button: one click each, no fan.
-    private func shelfButton(_ systemImage: String, help: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
+    /// the main button: one click each, no fan. The page opens the panel –
+    /// or closes it, if it is this button's – and the button wears the
+    /// selection rim while its panel is open.
+    private func shelfButton(_ button: ShelfButton) -> some View {
+        let isOpen = shelfRequests.panel?.button == button
+        return Button {
+            shelfRequests.pressed = button
+        } label: {
+            Image(systemName: button.systemImage)
                 .font(AppStyle.floatingSymbol)
                 .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.toolbarSelection) : AnyShapeStyle(.primary))
                 .frame(width: AppStyle.floatingButtonSize, height: AppStyle.floatingButtonSize)
-                .floatingCircle(prominent: true)
+                .floatingCircle(prominent: true, selected: isOpen)
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .help(help)
-        .accessibilityLabel(label)
+        .help(button.help(isOpen: isOpen))
+        .accessibilityLabel(button.title)
+        .accessibilityValue(isOpen ? String(localized: "geöffnet") : "")
     }
 
     /// On a quarter circle from straight left to straight up of the button.
@@ -220,6 +225,34 @@ private struct OutsideClickWatcher: NSViewRepresentable {
         func stop() {
             if let monitor { NSEvent.removeMonitor(monitor) }
             monitor = nil
+        }
+    }
+}
+
+/// How the shelf page's round buttons look and what their tooltips say.
+private extension ShelfButton {
+    var systemImage: String {
+        switch self {
+        case .history: "clock.arrow.circlepath"
+        case .sortingIn: "plus"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .history: String(localized: "Verlauf")
+        case .sortingIn: String(localized: "Einsortieren")
+        }
+    }
+
+    func help(isOpen: Bool) -> String {
+        switch self {
+        case .history:
+            AppShortcuts.help(isOpen ? String(localized: "Verlauf schließen")
+                                     : String(localized: "Verlauf – zuletzt einsortiert, verschoben, herausgenommen"), keys: "⌘Y")
+        case .sortingIn:
+            isOpen ? String(localized: "Einsortieren schließen")
+                   : String(localized: "Einsortieren – noch nicht einsortierte Platten und wohin sie gehören")
         }
     }
 }

@@ -3947,6 +3947,16 @@
         }
       }
     },
+    "Einsortieren schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Placing"
+          }
+        }
+      }
+    },
     "Einsortieren – noch nicht einsortierte Platten und wohin sie gehören" : {
       "localizations" : {
         "en" : {
@@ -8611,6 +8621,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "History"
+          }
+        }
+      }
+    },
+    "Verlauf schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close History"
           }
         }
       }

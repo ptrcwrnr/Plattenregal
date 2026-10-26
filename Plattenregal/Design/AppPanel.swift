@@ -5,12 +5,17 @@ import AppKit
 /// beside it or Esc closes it.
 struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
     @Binding var item: Item?
-    var onDismiss: (() -> Void)?
+    /// Gets the panel that left: closed, or replaced by another one.
+    var onDismiss: ((Item) -> Void)?
     /// `.top` by default: a panel that grows (another list, a column folding
     /// out) extends downwards, and nothing moves under the pointer. One of a
     /// fixed size, like the welcome, may sit in the middle.
     var alignment: Alignment = .top
     @ViewBuilder let panel: (Item) -> Panel
+    /// The item on screen, kept to hand to `onDismiss` once it is gone –
+    /// only with an `onDismiss`, so no other panel holds on to its item
+    /// (a record may be deleted meanwhile).
+    @State private var onScreen: Item?
 
     func body(content: Content) -> some View {
         content
@@ -49,8 +54,10 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                 }
                 .animation(AppStyle.standardAnimation, value: item?.id)
             }
-            .onChange(of: item?.id) { old, new in
-                if old != nil && new == nil { onDismiss?() }
+            .onChange(of: item?.id, initial: true) { _, new in
+                let left = onScreen
+                onScreen = onDismiss == nil ? nil : item
+                if let left, left.id != new { onDismiss?(left) }
             }
     }
 }
@@ -115,11 +122,12 @@ private struct PanelEscapeMonitor: NSViewRepresentable {
 }
 
 extension View {
-    /// See `AppPanelModifier`. `onDismiss` runs whenever the panel closes.
+    /// See `AppPanelModifier`. `onDismiss` runs whenever a panel leaves –
+    /// closed, or replaced by another – and gets the one that left.
     func appPanel<Item: Identifiable, Panel: View>(
         item: Binding<Item?>,
         alignment: Alignment = .top,
-        onDismiss: (() -> Void)? = nil,
+        onDismiss: ((Item) -> Void)? = nil,
         @ViewBuilder content: @escaping (Item) -> Panel
     ) -> some View {
         modifier(AppPanelModifier(item: item, onDismiss: onDismiss, alignment: alignment, panel: content))

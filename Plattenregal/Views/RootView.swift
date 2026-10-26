@@ -78,7 +78,7 @@ struct RootView: View {
     var body: some View {
         library
             // Over all pages, in the middle of the window; marked as seen however it closes.
-            .appPanel(item: $welcome.request, alignment: .center, onDismiss: { AppWelcome.shared.markSeen() }) { _ in
+            .appPanel(item: $welcome.request, alignment: .center, onDismiss: { _ in AppWelcome.shared.markSeen() }) { _ in
                 WelcomeView { AppWelcome.shared.request = nil }
             }
             .onAppear { AppWelcome.shared.showOnFirstLaunch() }
