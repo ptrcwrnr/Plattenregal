@@ -1,3 +1,10 @@
+# Historie für die Veröffentlichung bereinigt · 26.10.2026
+
+- **Entfernt aus allen Commits von `main`:** `outputs/` (Zwischenbilder mit echten Covern aus der eigenen Sammlung), `Marketing/` (Produktbilder mit echten Covern und Sammlungswert, Vorlage) und `.claude/settings.local.json` (lokale Pfade). Mit `git filter-branch --index-filter … --prune-empty`; ein Commit, der nur Marketing-Bilder enthielt, fiel weg (342 statt 343 Commits). Autor, Datum und Nachricht jedes Commits blieben, alle Commit-Kennungen sind neu.
+- **Vorher gesichert:** vollständiges Bundle aller Refs unter `~/Desktop/Plattenregal-Git-Sicherung-2026-10-26.bundle` (geprüft mit `git bundle verify`); wiederherstellbar mit `git clone ~/Desktop/Plattenregal-Git-Sicherung-2026-10-26.bundle`. Danach lokal `refs/original`, Reflog und unerreichbare Objekte entfernt.
+- **Größe:** Ein Push von `main` umfasst 12,7 MB (vorher ~78 MB `.git`). Lokal bleiben die Refs `refs/codex/turn-diffs/…` eines anderen Werkzeugs unverändert; ein normaler Push schickt sie nicht mit.
+- Geprüft an einem frischen Klon: keine der drei Pfade in der Historie; keine lokalen Pfade (`/Users/…`) und keine Token-Muster in irgendeiner Dateiversion (Suche mit Gegenprobe); Bilder der Historie nur Demo-Daten; Build und 240 Tests bestanden; inhaltlich identisch mit dem Stand vor der Bereinigung. Commit-Adresse bleibt wie gewünscht.
+
 # Öffentliches Repository vorbereitet: MIT-Lizenz, Produktbilder nur lokal · 26.10.2026
 
 - **Lizenz:** MIT (`LICENSE`, © 2026 Patrice Werner). README mit Abschnitt „Lizenz“: Hinweis, dass Plattenregal die Discogs-API nutzt, aber kein Discogs-Produkt ist, jede:r einen eigenen Token braucht und das Repository keine Cover enthält.

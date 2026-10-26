@@ -1,3 +1,12 @@
+# Aktueller Stand · 26.10.2026 (öffentliches Repository)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Kein App-Code geändert.
+
+- **Lizenz:** MIT (`LICENSE`).
+- **Historie:** `outputs/`, `Marketing/` und `.claude/settings.local.json` aus allen Commits von `main` entfernt; Sicherung als Bundle auf dem Schreibtisch.
+- **Geprüft am frischen Klon:** keine lokalen Pfade, keine Token-Muster, nur Demo-Bilder, Build und 240 Tests bestanden.
+- **Nicht geprüft:** das Hochladen zu GitHub selbst (noch kein Remote eingerichtet).
+
 # Aktueller Stand · 26.10.2026 (Prüfung der ganzen App, GitHub-Bereitschaft)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert). Ein erfolgreicher Testlauf beweist keine allgemeine Absturzfreiheit.
