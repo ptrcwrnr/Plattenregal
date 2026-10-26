@@ -1,3 +1,9 @@
+# DMG 1.0.0 neu ausgegeben (gezeichnete Cover, Hinweise der Regalseite, Prüfkorrekturen) · 26.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält die Option „Gezeichnete Cover“, die Hinweise der Regalseite als Block oben, die Tracklisten-Grenze und die Korrektur der Apple-TV-Kopplung. Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; 1.0.0 (102026), nur arm64, ab macOS 27.0, Ad-hoc-Signatur gültig; Berechtigungen App-Sandbox, Dateien nach Wahl, Netzwerk ein- und ausgehend; Handbuch und Handbook enthalten; kein Prüfcode (`--snapshot=`). Release-App aus der eingehängten DMG gestartet: öffnet die echte Sammlung im Container (852 Exemplare), Fenster mit Covern, sauber beendet, Protokoll ohne Fehler; Fenstergröße danach zurückgeschrieben.
+- **Verworfen:** Die Release-App trägt `get-task-allow` (Xcode setzt es bei Ad-hoc-Signierung). Ein Versuch, es mit `CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO` zu entfernen, nahm auch die Sandbox-Berechtigungen mit – die App lief dann außerhalb der Sandbox mit einer leeren Datenbank unter `~/Library/Application Support/Plattenregal` (Ordner bestand schon vorher; die echte Sammlung im Container blieb unberührt). Zurückgenommen. Ohne Hardened Runtime hat `get-task-allow` keine praktische Wirkung; entfernen ließe es sich nur mit einer eigenen `.entitlements`-Datei.
+
 # Historie für die Veröffentlichung bereinigt · 26.10.2026
 
 - **Entfernt aus allen Commits von `main`:** `outputs/` (Zwischenbilder mit echten Covern aus der eigenen Sammlung), `Marketing/` (Produktbilder mit echten Covern und Sammlungswert, Vorlage) und `.claude/settings.local.json` (lokale Pfade). Mit `git filter-branch --index-filter … --prune-empty`; ein Commit, der nur Marketing-Bilder enthielt, fiel weg (342 statt 343 Commits). Autor, Datum und Nachricht jedes Commits blieben, alle Commit-Kennungen sind neu.
