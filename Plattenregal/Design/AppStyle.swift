@@ -161,6 +161,10 @@ enum AppStyle {
     // Weighted variants have a role of their own and live here.
     /// The name in a list row: artist, label, record, option.
     static let rowTitle = Font.callout.weight(.medium)
+    /// The chosen option of a switch in Modern, in the size of the switch
+    /// (`GlassSegmentedPicker`): heavier instead of in the accent color, so it
+    /// reads on any background – also with covers passing under the toolbar.
+    static let selectedOptionWeight: Font.Weight = .semibold
     /// A short value that stands out: a chip's name, a hovered readout.
     static let strongCallout = Font.callout.weight(.semibold)
     /// Small numbers and marks with weight: positions on covers, a kicker

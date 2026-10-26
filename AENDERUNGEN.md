@@ -1,3 +1,10 @@
+# Modern: gewählte Option halbfett statt blau · 26.10.2026
+
+- **Geändert (nur Modern):** In allen Umschaltern (`GlassSegmentedPicker`: Rubriken in der Toolbar, Median/Niedrig/Hoch und Zeiträume der Statistik, Regal-Reiter, Einstellungen) steht die gewählte Option jetzt halbfett in Textfarbe auf der Glaslinse statt in Akzentblau; der Akzent liegt nur noch im feinen Rand der Linse (`selectedBorder`, `selectionLineWidth`). Blaue Schrift auf bläulichem Glas war in Modern dunkel schlecht lesbar, seit die Cover unter die Leiste laufen auch in hell über bunten Covern. Neue Schriftrolle `AppStyle.selectedOptionWeight`.
+- Die Breite jeder Option gibt weiter die normale Beschriftung vor; nur die Kopie auf der Linse ist halbfett und passt in deren Innenabstand. Die Nachbarn verrutschen also nicht, die Blende im Takt des Seitenwechsels bleibt gleich. Klassisch unverändert (Creme-Papier, Tinte, nicht halbfett).
+- Geprüft: Debug-Build ohne Fehler und Warnungen, 244 Tests bestanden. In der Demo angesehen: Toolbar mit Covern darunter in Modern hell und dunkel, Statistik mit „Median“ und „Alles“ in hell und dunkel. **Nicht angesehen:** Regal-Reiter und Umschalter der Einstellungen, Klassisch (dort greift die Änderung nicht).
+- **Hinweis:** Modern und Klassisch unterscheiden sich damit in der Schriftstärke der Auswahl, nicht nur in Flächen und Farben. Auf Wunsch kann Klassisch ebenfalls halbfett werden.
+
 # Modern: Inhalt läuft unter die Leiste, Seiten beginnen höher · 26.10.2026
 
 - **Neu (nur Modern):** Collection und Wantlist im Raster sowie die Statistik laufen beim Scrollen unter die Toolbar. Bisher wurden die Cover an der Unterkante der Toolbar hart abgeschnitten, und die Glasleiste lag auf leerem Grund. Jetzt bricht das Glas die Cover darunter. Ein zentraler Baustein `scrollsUnderToolbar(contentPadding:)` (`AppSurfaces.swift`) macht das; dafür reicht der Seitenstapel in `RootView` bis an die Fensterkante, sodass jede Seite die Toolbar als Sicherheitsbereich kennt. Klassisch ist unverändert.

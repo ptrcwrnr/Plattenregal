@@ -5,8 +5,8 @@ import SwiftUI
 /// little above, in the beat of a page switch (`AppStyle.pageOutAnimation`,
 /// `pageInAnimation`, `pillSettleDistance`),
 /// the same in both designs: in Modern a Liquid Glass lens
-/// (never a gray or blue fill) with the label in the accent, in Klassisch
-/// cream paper. In the toolbar the toolbar's bar is the background
+/// (never a gray or blue fill) with a fine accent rim and the label
+/// semibold in the text color, in Klassisch cream paper. In the toolbar the toolbar's bar is the background
 /// (`glass: false`, see `toolbarBar`); anywhere else it brings its own capsule.
 struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     @Binding var selection: Value
@@ -54,6 +54,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                                     } else {
                                         Capsule().fill(.clear)
                                             .glassEffect(.regular, in: .capsule)
+                                            .overlay(Capsule().strokeBorder(AppStyle.selectedBorder, lineWidth: AppStyle.selectionLineWidth))
                                     }
                                 }
                                 .padding(.vertical, AppStyle.controlInset)
@@ -61,9 +62,13 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
                                 .offset(y: selected || AppStyle.reduceMotion ? 0 : -AppStyle.pillSettleDistance)
                                 // Only fades, it doesn't settle with the pill:
                                 // text moved by a point or two snaps from pixel
-                                // to pixel. Color only: a heavier weight would
-                                // widen the label and shift its neighbours.
+                                // to pixel. Semibold in Modern: only this copy
+                                // on the pill – the regular label beneath sets
+                                // the width, so the neighbours never shift and
+                                // the few points more fit in the pill's inset.
                                 label(option)
+                                    .fontWeight(AppStyle.isAtelier ? nil : AppStyle.selectedOptionWeight)
+                                    .fixedSize()
                                     .foregroundStyle(selectedStyle)
                                     .accessibilityHidden(true)
                             }
@@ -99,7 +104,7 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     }
 
     private var selectedStyle: AnyShapeStyle {
-        AppStyle.isAtelier ? AnyShapeStyle(glass ? AtelierPalette.ink : AtelierPalette.toolbarInk) : AnyShapeStyle(AppStyle.accent)
+        AppStyle.isAtelier ? AnyShapeStyle(glass ? AtelierPalette.ink : AtelierPalette.toolbarInk) : AnyShapeStyle(.primary)
     }
 
     private var unselectedStyle: AnyShapeStyle {
