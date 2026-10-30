@@ -75,8 +75,16 @@ struct RootView: View {
     // recomputing everything from scratch on every visit.
     @State private var statisticsModel = StatisticsViewModel()
     @State private var welcome = AppWelcome.shared
+    /// The search in the menu bar: a record picked there opens here.
+    @State private var quickSearch = ShelfQuickSearch.shared
+    @Environment(\.openWindow) private var openWindow
     var body: some View {
         library
+            .onAppear {
+                quickSearch.openMainWindow = { [openWindow] in openWindow(id: DemoMode.mainWindowID) }
+                takeQuickSearchRequest()
+            }
+            .onChange(of: quickSearch.pendingCopy) { takeQuickSearchRequest() }
             // Over all pages, in the middle of the window; marked as seen however it closes.
             .appPanel(item: $welcome.request, alignment: .center, onDismiss: { _ in AppWelcome.shared.markSeen() }) { _ in
                 WelcomeView { AppWelcome.shared.request = nil }
@@ -191,6 +199,13 @@ struct RootView: View {
         case .statistics: StatisticsView(model: statisticsModel, showShelf: showShelf)
         case .shelf: KallaxView(requests: shelfRequests, search: shelfSearch)
         }
+    }
+    /// A record picked in the menu bar: the shelf page with its card.
+    private func takeQuickSearchRequest() {
+        guard let id = quickSearch.pendingCopy else { return }
+        quickSearch.pendingCopy = nil
+        shelfRequests.placing = id
+        destination.current = .shelf
     }
     /// Opens the shelf page with the card for this record: where it stands
     /// and between which records, or — without a shelf — where it belongs.

@@ -1,0 +1,599 @@
+import AppKit
+import SwiftData
+import SwiftUI
+
+// MARK: - Search
+
+/// The search behind the record in the menu bar: the same matches as the
+/// shelf page's search (`KallaxView.applySearch`), fewer of them, and the
+/// one under the arrow keys or the pointer with its place in the rack.
+@Observable final class ShelfQuickSearchModel {
+    /// Fewer than on the shelf page: the panel also shows the rack.
+    static let placedLimit = 6
+    static let unplacedLimit = 3
+
+    var text = "" { didSet { if text != oldValue { search() } } }
+    private(set) var results = ShelfSearchResults()
+    private(set) var labels = ShelfLabels()
+    /// The match the rack below the list shows.
+    var highlighted: UUID?
+    /// Bumped once the panel is on screen: the field takes the cursor then
+    /// (a focus set while the panel is hidden doesn't stick).
+    private(set) var focusRequests = 0
+
+    @ObservationIgnored private let context: ModelContext
+    @ObservationIgnored private var index = SearchIndex<UUID>()
+    /// Library and tracklists the index was built from, and how many records.
+    @ObservationIgnored private var indexState: (library: Int, tracks: Int, count: Int)?
+    @ObservationIgnored private let labelsCache = ShelfLabelsCache()
+    /// The data state and label style `labels` were made for; they are only
+    /// made again when one changes, not on every keystroke.
+    @ObservationIgnored private var labelsState: [Int]?
+    /// The place last worked out, for this record in this data state: the
+    /// view asks on every redraw (the pointer moving over the list), and
+    /// for a record without a shelf it walks every placed record.
+    @ObservationIgnored private var placeCache: (key: [AnyHashable], place: QuickSearchPlace?)?
+
+    init(context: ModelContext) { self.context = context }
+
+    private var records: LibraryRecords { .of(context) }
+
+    /// The matches still in the store. A sync or a reset can delete one
+    /// while the panel shows it, and the view may draw before `refresh`
+    /// runs – reading a deleted record crashes (same check as the shelf page).
+    var placed: [RecordCopy] { results.placed.filter(Self.exists) }
+    var unplaced: [RecordCopy] { results.unplaced.filter(Self.exists) }
+    private static func exists(_ copy: RecordCopy) -> Bool { !copy.isDeleted && copy.modelContext != nil }
+
+    /// Placed matches first, then those without a shelf: the order of the
+    /// list and of the arrow keys.
+    var matches: [RecordCopy] { placed + unplaced }
+    var highlightedCopy: RecordCopy? { matches.first { $0.id == highlighted } ?? matches.first }
+
+    func requestFocus() { focusRequests += 1 }
+
+    /// A fresh start each time the panel opens.
+    func reset() {
+        text = ""
+        results = ShelfSearchResults()
+        highlighted = nil
+    }
+
+    /// Up or down the list, stopping at both ends.
+    func move(_ offset: Int) {
+        let matches = matches
+        guard !matches.isEmpty else { return }
+        let current = matches.firstIndex { $0.id == highlightedCopy?.id } ?? 0
+        highlighted = matches[min(max(current + offset, 0), matches.count - 1)].id
+    }
+
+    /// The records changed while the panel is open (a sync, a record
+    /// sorted in or deleted): the matches are found again, so none points
+    /// at a deleted record – reading one crashes. The index keeps itself
+    /// up to date (`indexState`); places aren't part of it.
+    func refresh() {
+        search()
+    }
+
+    /// Changes with every write that can add, move or rename records,
+    /// compartments or cabinets.
+    var dataState: [Int] {
+        let changes = LibraryChanges.shared
+        return [changes.libraryVersion, changes.placementsVersion, changes.shelvesVersion, records.copies.count]
+    }
+
+    private func search() {
+        let words = SearchIndex<UUID>.words(text)
+        guard !words.isEmpty else { results = ShelfSearchResults(); highlighted = nil; return }
+        let records = records
+        let copies = records.copies
+        let changes = LibraryChanges.shared
+        let state = (changes.libraryVersion, changes.tracksVersion, copies.count)
+        if indexState.map({ $0 != state }) ?? true {
+            index = SearchIndex(copies, id: \.id, text: SortingService.searchText)
+            indexState = state
+        }
+        let excluded = Set(records.exclusions.map(\.copyID))
+        let owner = DiscogsAccount.current(in: records.accounts)?.username
+        var placed: [RecordCopy] = [], unplaced: [RecordCopy] = []
+        for copy in copies where !copy.isDeleted && index.matches(copy.id, words) {
+            // Same rules as the shelf page: put-away cabinets stay out, and
+            // only records that may be sorted in are offered for it.
+            if let shelf = copy.shelf { if shelf.isInUse { placed.append(copy) } }
+            else if ShelfAssignmentPresentation.isCandidate(copy, owner: owner, excluding: excluded) { unplaced.append(copy) }
+        }
+        let shownPlaced = SortingService.first(Self.placedLimit, of: placed)
+        let shownUnplaced = SortingService.first(Self.unplacedLimit, of: unplaced)
+        results = ShelfSearchResults(
+            placed: shownPlaced,
+            unplaced: shownUnplaced,
+            hidden: placed.count - shownPlaced.count + unplaced.count - shownUnplaced.count
+        )
+        let style = ShelfRangeLabels.currentStyle
+        let labelsFor = dataState + [style == .range ? 0 : 1]
+        if !matches.isEmpty && labelsState != labelsFor {
+            labels = labelsCache.labels(for: records.shelves, style: style)
+            labelsState = labelsFor
+        }
+        if !matches.contains(where: { $0.id == highlighted }) { highlighted = matches.first?.id }
+    }
+
+    /// Where the highlighted match stands – or, without a shelf, where it
+    /// belongs alphabetically.
+    func place(of copy: RecordCopy) -> QuickSearchPlace? {
+        guard Self.exists(copy) else { return nil }
+        let key: [AnyHashable] = [copy.id, ShelfSecondaryOrder.current.rawValue] + dataState.map(AnyHashable.init)
+        if let placeCache, placeCache.key == key { return placeCache.place }
+        let place = findPlace(of: copy)
+        placeCache = (key, place)
+        return place
+    }
+
+    private func findPlace(of copy: RecordCopy) -> QuickSearchPlace? {
+        if let shelf = copy.shelf {
+            guard shelf.isInUse, let cabinet = shelf.cabinet else { return nil }
+            return QuickSearchPlace(cabinet: cabinet, shelf: shelf, position: copy.positionInShelf, placed: true)
+        }
+        let placement = Placement(copy: copy, shelves: Shelf.inUse(records.shelves))
+        guard let spot = placement.spot, let cabinet = spot.shelf.cabinet else { return nil }
+        return QuickSearchPlace(cabinet: cabinet, shelf: spot.shelf, position: spot.position, placed: false)
+    }
+
+    var cabinetCount: Int { records.cabinets.filter(\.isActive).count }
+}
+
+struct QuickSearchPlace {
+    let cabinet: Cabinet
+    let shelf: Shelf
+    let position: Int
+    /// Standing there (`true`) or belonging there.
+    let placed: Bool
+}
+
+// MARK: - Menu bar and panel
+
+/// The record in the menu bar and the panel it opens, also from anywhere
+/// with ⌥ Leertaste. AppKit here because SwiftUI's `MenuBarExtra` can't be
+/// opened from code (the shortcut) and its window would bring the app with
+/// its main window to the front: the panel takes the keyboard without
+/// activating Plattenregal, like Spotlight.
+@Observable final class ShelfQuickSearch: NSObject, NSWindowDelegate {
+    static let shared = ShelfQuickSearch()
+    /// Identifies the panel (`DebugSnapshot`).
+    static let windowID = "quickSearch"
+
+    /// macOS refused ⌥ Leertaste. It does not refuse a combination another
+    /// app (or a second Plattenregal) holds too – both register, and only
+    /// the one that registered first receives it (tried 30.10.2026).
+    private(set) var hotKeyRefused = false
+    /// A record picked in the panel, for the main window: it opens the shelf
+    /// page with the card for it (see `RootView`).
+    var pendingCopy: UUID?
+    /// Opens the main window when it was closed; set by `RootView`.
+    @ObservationIgnored var openMainWindow: (() -> Void)?
+
+    /// The store to search; set at launch (see `PlattenregalApp`). Without
+    /// one (the database couldn't be opened) the search stays off.
+    @ObservationIgnored var container: ModelContainer?
+    @ObservationIgnored private var model: ShelfQuickSearchModel?
+    @ObservationIgnored private var statusItem: NSStatusItem?
+    @ObservationIgnored private var panel: QuickSearchPanel?
+    @ObservationIgnored private var hotKey: GlobalHotKey?
+    /// When the panel last closed because something else was clicked: a
+    /// click on the record closes it that way first and must not reopen it.
+    @ObservationIgnored private var closedAt = Date.distantPast
+    /// The screen the panel opened on; it stays there while its height
+    /// changes, wherever the pointer goes meanwhile.
+    @ObservationIgnored private var openScreen: NSScreen?
+
+    /// Called once the app has finished launching (see `AppDelegate`).
+    func start() {
+        guard let container else { return }
+        model = ShelfQuickSearchModel(context: container.mainContext)
+        applySettings()
+        #if DEBUG
+        if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-quicksearch=") }) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [self] in
+                open()
+                model?.text = String(raw.dropFirst("--preview-quicksearch=".count))
+                pressPreviewKeys()
+            }
+        }
+        #endif
+    }
+
+    /// Shows or hides the record and registers or frees the shortcut, as set
+    /// under Einstellungen → Allgemein.
+    func applySettings() {
+        guard container != nil else { return }
+        let preferences = AppPreferences.shared
+        if preferences.menuBarSearch, statusItem == nil {
+            let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+            // Keeps the place the user ⌘-dragged it to. macOS stores it in
+            // the standard defaults, which the demo shares with the real app:
+            // a name of its own, like the main window (`DemoMode.mainWindowID`).
+            item.autosaveName = "Plattenregal.quickSearch." + DemoMode.mainWindowID
+            item.button?.image = RecordGlyph.menuBarImage
+            item.button?.target = self
+            item.button?.action = #selector(statusItemClicked)
+            statusItem = item
+        } else if !preferences.menuBarSearch, let item = statusItem {
+            NSStatusBar.system.removeStatusItem(item)
+            statusItem = nil
+        }
+        if preferences.quickSearchHotKey && Self.mayRegisterHotKey {
+            if hotKey == nil {
+                let key = GlobalHotKey.quickSearch
+                hotKey = GlobalHotKey(keyCode: key.keyCode, modifiers: key.modifiers) { [weak self] in self?.toggle() }
+            }
+            let registered = hotKey?.register() ?? false
+            if !registered && !hotKeyRefused { AppLog.info("Menüleiste", "macOS hat ⌥ Leertaste nicht angenommen, Kürzel aus") }
+            hotKeyRefused = !registered
+        } else {
+            hotKey?.unregister()
+            hotKey = nil
+            hotKeyRefused = false
+        }
+        // Names the shortcut only while it works.
+        let title = String(localized: "Im Regal suchen")
+        statusItem?.button?.toolTip = hotKey?.isRegistered == true ? AppShortcuts.help(title, keys: GlobalHotKey.quickSearch.title) : title
+    }
+
+    /// Screenshot runs (`--snapshot`) leave the shortcut to a running app.
+    private static var mayRegisterHotKey: Bool {
+        #if DEBUG
+        !ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--snapshot=") }
+        #else
+        true
+        #endif
+    }
+
+    @objc private func statusItemClicked() {
+        guard Date.now.timeIntervalSince(closedAt) > 0.3 else { return }
+        toggle()
+    }
+
+    #if DEBUG
+    /// --preview-quicksearch-keys=down,up,return: presses these keys in the
+    /// panel, through the window like real ones (no accessibility permission
+    /// needed inside the app), half a second apart. Also `escape`, `toggle`
+    /// (as the record or ⌥ Leertaste would), `type:abc` (types letters),
+    /// `closemain` / `minimizemain` (the main window closed or in the Dock),
+    /// `menubar` / `hotkey` (switch the settings) and `dumpwindows` (writes
+    /// the state and every window to the protocol, category „Prüfung“).
+    private func pressPreviewKeys() {
+        guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-quicksearch-keys=") }) else { return }
+        let keys = raw.dropFirst("--preview-quicksearch-keys=".count).split(separator: ",")
+        for (index, key) in keys.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 * Double(index + 1)) { [weak self] in
+                guard let self else { return }
+                if key == "toggle" { toggle(); return }
+                // Switches the setting as Einstellungen → Allgemein would.
+                if key == "menubar" { AppPreferences.shared.menuBarSearch.toggle(); return }
+                if key == "hotkey" { AppPreferences.shared.quickSearchHotKey.toggle(); return }
+                if key == "dumpwindows" {
+                    AppLog.info("Prüfung", "Prozess \(ProcessInfo.processInfo.processIdentifier) Symbol \(statusItem != nil), Kürzel registriert \(hotKey?.isRegistered == true), abgelehnt \(hotKeyRefused), Tooltip „\(statusItem?.button?.toolTip ?? "–")“")
+                    for window in NSApp.windows {
+                        AppLog.info("Prüfung", "Prozess \(ProcessInfo.processInfo.processIdentifier) Fenster \(window.identifier?.rawValue ?? "–") \(type(of: window)) sichtbar \(window.isVisible) im Dock \(window.isMiniaturized) main \(window.canBecomeMain)")
+                    }
+                    return
+                }
+                // The main window closed or in the Dock, for "Im Regal zeigen" from there.
+                if key == "closemain" || key == "minimizemain" {
+                    let main = NSApp.windows.first { $0.identifier?.rawValue == DemoMode.mainWindowID && $0.isVisible }
+                    if key == "closemain" { main?.performClose(nil) } else { main?.miniaturize(nil) }
+                    return
+                }
+                guard let panel, panel.isVisible else { return }
+                let (code, characters): (UInt16, String) = switch key {
+                case "down": (125, String(Character(UnicodeScalar(NSDownArrowFunctionKey)!)))
+                case "up": (126, String(Character(UnicodeScalar(NSUpArrowFunctionKey)!)))
+                case "escape": (53, "\u{1B}")
+                case "return": (36, "\r")
+                case let typed where typed.hasPrefix("type:"): (0, String(typed.dropFirst("type:".count)))
+                default: (0, "")
+                }
+                guard !characters.isEmpty else { return }
+                for type in [NSEvent.EventType.keyDown, .keyUp] {
+                    if let event = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                                    windowNumber: panel.windowNumber, context: nil, characters: characters,
+                                                    charactersIgnoringModifiers: characters, isARepeat: false, keyCode: code) {
+                        panel.sendEvent(event)
+                    }
+                }
+            }
+        }
+    }
+    #endif
+
+    func toggle() {
+        if panel?.isVisible == true { close() } else { open() }
+    }
+
+    func open() {
+        guard let container, let model else { return }
+        model.reset()
+        let panel = panel ?? makePanel(container: container, model: model)
+        self.panel = panel
+        openScreen = statusItem?.button?.window?.screen
+            ?? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
+        position(panel, height: panel.frame.height)
+        panel.makeKeyAndOrderFront(nil)
+        statusItem?.button?.highlight(true)
+        DispatchQueue.main.async { model.requestFocus() }
+    }
+
+    func close() {
+        panel?.orderOut(nil)
+        statusItem?.button?.highlight(false)
+    }
+
+    /// Closes the panel and shows the record in the main window, on the
+    /// shelf page with the card "Hier steht …" or "Einsortieren …".
+    func showInShelf(_ copy: RecordCopy) {
+        close()
+        pendingCopy = copy.id
+        NSApp.activate()
+        // Only a window on screen or in the Dock: a closed one may linger in
+        // the list without its content, `openWindow` builds it anew. Not by
+        // `canBecomeMain` – a window in the Dock answers false there, and
+        // `openWindow` leaves it in the Dock.
+        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == DemoMode.mainWindowID && ($0.isVisible || $0.isMiniaturized) }) {
+            if window.isMiniaturized { window.deminiaturize(nil) }
+            window.makeKeyAndOrderFront(nil)
+        } else if let openMainWindow {
+            AppLog.info("Menüleiste", "Hauptfenster für „Im Regal zeigen“ neu geöffnet")
+            openMainWindow()
+        } else {
+            AppLog.error("Menüleiste", "Hauptfenster ließ sich nicht öffnen")
+        }
+    }
+
+    private func makePanel(container: ModelContainer, model: ShelfQuickSearchModel) -> QuickSearchPanel {
+        let panel = QuickSearchPanel()
+        panel.identifier = NSUserInterfaceItemIdentifier(Self.windowID)
+        panel.delegate = self
+        let view = ShelfQuickSearchView(model: model, close: { [weak self] in self?.close() },
+                                        show: { [weak self] in self?.showInShelf($0) },
+                                        resize: { [weak self, weak panel] height in
+                                            guard let self, let panel else { return }
+                                            position(panel, height: height)
+                                        })
+            .appPageEnvironment(container.mainContext)
+        let hosting = NSHostingView(rootView: view)
+        hosting.sizingOptions = []
+        panel.contentView = hosting
+        return panel
+    }
+
+    /// Under the record in the menu bar, its top edge fixed while the list
+    /// grows; without the record (switched off), at the top of the screen
+    /// with the pointer.
+    private func position(_ panel: NSPanel, height: CGFloat) {
+        let room = QuickSearchPanel.shadowRoom
+        let width = AppStyle.searchResultsWidth + 2 * room
+        let anchor = statusItem?.button?.window?.frame
+        guard let visible = (openScreen ?? NSScreen.main)?.visibleFrame else { return }
+        // The surface sits a little below the bar; the shadow room around it is transparent.
+        let top = (anchor.map { $0.minY - AppStyle.tightSpacing } ?? visible.maxY - AppStyle.itemSpacing) + room
+        var x = anchor.map { $0.midX - width / 2 } ?? visible.midX - width / 2
+        x = min(max(x, visible.minX + AppStyle.itemSpacing - room), visible.maxX - width - AppStyle.itemSpacing + room)
+        panel.setFrame(NSRect(x: x, y: top - height, width: width, height: height), display: true)
+    }
+
+    // A click anywhere else closes it, like a menu.
+    func windowDidResignKey(_ notification: Notification) {
+        guard panel?.isVisible == true else { return }
+        closedAt = .now
+        close()
+    }
+}
+
+/// Takes the keyboard without activating the app, floats above other
+/// windows and on every space; the SwiftUI content draws its surface.
+final class QuickSearchPanel: NSPanel {
+    /// Transparent room around the surface for its shadow.
+    static let shadowRoom = AppStyle.sectionSpacing
+
+    init() {
+        // Placed and sized on opening (`ShelfQuickSearch.position`), then follows its content.
+        super.init(contentRect: .zero,
+                   styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = false
+        level = .popUpMenu
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient, .ignoresCycle]
+        isMovable = false
+        hidesOnDeactivate = false
+        isReleasedWhenClosed = false
+    }
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
+// MARK: - Panel content
+
+/// Search field, the matches, and the rack with the place of the
+/// highlighted one. ↑ ↓ pick, ↩ shows it in the main window, Esc clears the
+/// field and then closes.
+struct ShelfQuickSearchView: View {
+    @Bindable var model: ShelfQuickSearchModel
+    let close: () -> Void
+    let show: (RecordCopy) -> Void
+    /// The panel follows the content's height.
+    let resize: (CGFloat) -> Void
+    @FocusState private var focused: Bool
+    @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
+    @Environment(\.modelContext) private var context
+
+    /// Records marked "Gesucht"; none while that list is switched off.
+    private var missing: Set<UUID> {
+        missingEnabled ? Set(LibraryRecords.of(context).missingMarks.map(\.copyID)) : []
+    }
+
+    var body: some View {
+        // Once per redraw, not per row.
+        let highlighted = model.highlightedCopy
+        VStack(alignment: .leading, spacing: 0) {
+            field
+            if !SearchIndex<UUID>.words(model.text).isEmpty {
+                Divider()
+                results(highlighted: highlighted?.id)
+                if let copy = highlighted, let place = model.place(of: copy) {
+                    Divider()
+                    QuickSearchRack(place: place, labels: model.labels, showsCabinet: model.cabinetCount > 1)
+                        .padding(AppStyle.cardPadding)
+                }
+            }
+        }
+        .frame(width: AppStyle.searchResultsWidth)
+        .searchPanelSurface()
+        .padding(QuickSearchPanel.shadowRoom)
+        // Its own height, whatever the panel's is; the panel follows it.
+        .fixedSize()
+        .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { resize($0) }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onAppear { focused = true }
+        .onChange(of: model.focusRequests) { focused = true }
+        .onChange(of: model.dataState) { model.refresh() }
+        .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in model.reset() }
+    }
+
+    private var field: some View {
+        HStack(spacing: AppStyle.itemSpacing) {
+            Image(systemName: "magnifyingglass").foregroundStyle(SearchPanelInk.muted)
+            TextField("Im Regal suchen", text: $model.text, prompt: Text("Im Regal suchen"))
+                .textFieldStyle(.plain).noTextAutoFill()
+                .font(AppStyle.searchFieldFont)
+                .focused($focused)
+                .onKeyPress(.downArrow) { model.move(1); return .handled }
+                .onKeyPress(.upArrow) { model.move(-1); return .handled }
+                .onSubmit { if let copy = model.highlightedCopy { show(copy) } }
+                .onKeyPress(.escape) {
+                    if model.text.isEmpty { close() } else { model.text = "" }
+                    return .handled
+                }
+            if !model.text.isEmpty {
+                Button { model.text = "" } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(SearchPanelInk.muted)
+                }
+                .buttonStyle(.plain)
+                .help(String(localized: "Suche löschen"))
+                .accessibilityLabel(String(localized: "Suche löschen"))
+            }
+        }
+        .padding(.horizontal, AppStyle.cardPadding)
+        .padding(.vertical, AppStyle.rowSpacing)
+    }
+
+    @ViewBuilder private func results(highlighted: UUID?) -> some View {
+        let placed = model.placed, unplaced = model.unplaced
+        let missing = missing
+        if placed.isEmpty && unplaced.isEmpty {
+            Text("Keine Treffer im Regal.")
+                .font(.callout)
+                .foregroundStyle(SearchPanelInk.muted)
+                .padding(.horizontal, AppStyle.cardPadding)
+                .padding(.vertical, AppStyle.rowSpacing)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(placed) { row($0, placeable: false, missing: missing, highlighted: highlighted) }
+                if !unplaced.isEmpty {
+                    ShelfSearchUnplacedTitle(first: placed.isEmpty)
+                    ForEach(unplaced) { row($0, placeable: true, missing: missing, highlighted: highlighted) }
+                }
+                if model.results.hidden > 0 { ShelfSearchMoreNote(hidden: model.results.hidden) }
+            }
+            .padding(AppStyle.itemSpacing)
+        }
+    }
+
+    private func row(_ copy: RecordCopy, placeable: Bool, missing: Set<UUID>, highlighted: UUID?) -> some View {
+        Button { show(copy) } label: {
+            SearchResultRow(copy: copy, labels: model.labels, missing: missing.contains(copy.id),
+                            placeable: placeable, highlighted: highlighted == copy.id)
+        }
+        .buttonStyle(.plain)
+        // The pointer picks the match the rack shows, like the arrow keys.
+        .onHover { if $0 { model.highlighted = copy.id } }
+        .help(placeable ? String(localized: "Im Regal zeigen, wo die Platte hingehört") : String(localized: "Im Regal zeigen"))
+    }
+}
+
+/// The cabinet of the highlighted match in small: its compartments with
+/// their labels, the one it stands in (or belongs in) marked like the
+/// selected compartment on the shelf page. Above it, in words, where.
+struct QuickSearchRack: View {
+    let place: QuickSearchPlace
+    let labels: ShelfLabels
+    /// The cabinet's name only matters with more than one.
+    let showsCabinet: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+            HStack(alignment: .firstTextBaseline, spacing: AppStyle.itemSpacing) {
+                Text(place.placed ? String(localized: "Steht in") : String(localized: "Gehört in"))
+                    .font(AppStyle.captionLabel).foregroundStyle(SearchPanelInk.muted)
+                Text(location).font(AppStyle.captionMark).foregroundStyle(SearchPanelInk.ink)
+                    .lineLimit(1).truncationMode(.middle)
+                Spacer(minLength: 0)
+            }
+            grid
+            // What ↩ does, right under what it opens.
+            Text("↩ Im Regal zeigen").font(AppStyle.captionLabel).foregroundStyle(SearchPanelInk.muted)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+    }
+
+    private var shelfName: String {
+        place.shelf.isReserved ? place.shelf.title : labels[place.shelf.id] ?? place.shelf.numberText
+    }
+
+    private var location: String {
+        let shelf = String(localized: "Fach „\(shelfName)“ · Position \(place.position)")
+        return showsCabinet ? "\(place.cabinet.name) · \(shelf)" : shelf
+    }
+
+    private var grid: some View {
+        let cabinet = place.cabinet
+        let shelves = Dictionary(cabinet.shelves.map { ("\($0.row)-\($0.column)", $0) }) { a, _ in a }
+        return Grid(horizontalSpacing: AppStyle.tightSpacing, verticalSpacing: AppStyle.tightSpacing) {
+            ForEach(1...max(cabinet.rows, 1), id: \.self) { row in
+                GridRow {
+                    ForEach(1...max(cabinet.columns, 1), id: \.self) { column in
+                        cell(shelves["\(row)-\(column)"])
+                    }
+                }
+            }
+        }
+        .padding(AppStyle.tightSpacing)
+        .background(SearchPanelRack.body, in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(location)
+    }
+
+    private func cell(_ shelf: Shelf?) -> some View {
+        let marked = shelf?.id == place.shelf.id
+        let locked = shelf?.isReserved == true
+        let shape = RoundedRectangle(cornerRadius: AppStyle.menuRowRadius)
+        // A locked compartment by its name ("Deko"), as on the shelf page.
+        return Text(shelf.map { $0.isReserved ? $0.name : labels[$0.id] ?? "" } ?? "")
+            .font(AppStyle.badge)
+            .foregroundStyle(marked ? SearchPanelInk.ink : SearchPanelInk.muted)
+            .lineLimit(1).minimumScaleFactor(0.7)
+            .padding(.horizontal, AppStyle.hairSpacing)
+            .frame(maxWidth: .infinity, minHeight: AppStyle.smallControlHeight)
+            // A locked compartment stays an empty well in the body's tone.
+            .background(marked ? AppStyle.selectedBackground : locked ? SearchPanelRack.body : SearchPanelRack.cell, in: shape)
+            .overlay(shape.strokeBorder(marked ? AppStyle.selectedBorder : .clear, lineWidth: AppStyle.selectionLineWidth))
+    }
+}
+
+/// Surfaces of the small rack, like `ShelfFurniture` keeps its own: the
+/// body slightly darker than the panel, the compartments lighter.
+private enum SearchPanelRack {
+    static var body: Color { AppStyle.isAtelier ? AtelierPalette.ink.opacity(0.06) : Color.primary.opacity(0.06) }
+    static var cell: Color { AppStyle.isAtelier ? AtelierPalette.surface : Color.primary.opacity(0.05) }
+}

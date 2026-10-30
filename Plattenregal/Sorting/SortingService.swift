@@ -41,6 +41,33 @@ enum SortingService {
         }
         .map(\.copy)
     }
+    /// The first `count` records of `sorted(_:)`, without sorting them all:
+    /// one pass that keeps the few smallest. For the search in the menu bar,
+    /// which shows six of what can be thousands of matches on every keystroke.
+    /// Keys come from `ShelfSortKeys`, so a release is read once per state
+    /// of the library, not per keystroke.
+    static func first(_ count: Int, of copies: [RecordCopy]) -> [RecordCopy] {
+        guard count > 0 else { return [] }
+        let order = ShelfSecondaryOrder.current
+        typealias Item = (copy: RecordCopy, key: String)
+        // The same order as `sorted(_:)`. The ID only decides a tie, so it
+        // is read only then: reading it costs more than the key lookup.
+        func precedes(_ a: Item, _ b: Item) -> Bool {
+            let comparison = a.key.localizedStandardCompare(b.key)
+            if comparison != .orderedSame { return comparison == .orderedAscending }
+            return a.copy.id.uuidString < b.copy.id.uuidString
+        }
+        var kept: [Item] = []
+        kept.reserveCapacity(count + 1)
+        for copy in copies {
+            let item: Item = (copy, ShelfSortKeys.key(copy, by: order))
+            // Most records come after the last one kept: a single comparison.
+            if kept.count == count, let last = kept.last, !precedes(item, last) { continue }
+            kept.insert(item, at: kept.firstIndex { precedes(item, $0) } ?? kept.endIndex)
+            if kept.count > count { kept.removeLast() }
+        }
+        return kept.map(\.copy)
+    }
     /// Sorted by artist like `sorted(_:)`, but grouped by the
     /// alphabet sections ("#" first, then A–Z), so every record sits under
     /// its letter — also names the collation puts

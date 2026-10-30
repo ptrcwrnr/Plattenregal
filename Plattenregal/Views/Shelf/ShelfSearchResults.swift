@@ -43,12 +43,7 @@ struct ShelfSearchResultsPanel: View {
                     .help("Zeigt, zwischen welchen Platten sie steht")
                 }
                 if !unplaced.isEmpty {
-                    Text("Noch nicht einsortiert")
-                        .font(AppStyle.captionMark)
-                        .foregroundStyle(SearchPanelInk.muted)
-                        .padding(.horizontal, AppStyle.itemSpacing)
-                        .padding(.top, matches.isEmpty ? AppStyle.tightSpacing : AppStyle.rowSpacing)
-                        .padding(.bottom, AppStyle.tightSpacing)
+                    ShelfSearchUnplacedTitle(first: matches.isEmpty)
                     ForEach(unplaced) { copy in
                         Button { place(copy) } label: {
                             SearchResultRow(copy: copy, labels: labels, missing: missing.contains(copy.id), placeable: true)
@@ -57,28 +52,48 @@ struct ShelfSearchResultsPanel: View {
                         .help("Zeigt, wo die Platte alphabetisch hingehört")
                     }
                 }
-                if hidden > 0 {
-                    // In the accent like the sync capsule's second line (Klassisch: petrol).
-                    Text("\(hidden) weitere Treffer – Suche genauer eingrenzen")
-                        .font(AppStyle.captionLabel)
-                        .foregroundStyle(AppStyle.accent)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, AppStyle.itemSpacing)
-                        .padding(.bottom, AppStyle.tightSpacing)
-                }
+                if hidden > 0 { ShelfSearchMoreNote(hidden: hidden) }
             }
             .padding(AppStyle.itemSpacing)
         }
     }
 }
 
+/// "Noch nicht einsortiert" above the records without a shelf.
+struct ShelfSearchUnplacedTitle: View {
+    /// Nothing placed above it: less room on top.
+    let first: Bool
+    var body: some View {
+        Text("Noch nicht einsortiert")
+            .font(AppStyle.captionMark)
+            .foregroundStyle(SearchPanelInk.muted)
+            .padding(.horizontal, AppStyle.itemSpacing)
+            .padding(.top, first ? AppStyle.tightSpacing : AppStyle.rowSpacing)
+            .padding(.bottom, AppStyle.tightSpacing)
+    }
+}
+
+/// Matches beyond the listed ones.
+struct ShelfSearchMoreNote: View {
+    let hidden: Int
+    var body: some View {
+        // In the accent like the sync capsule's second line (Klassisch: petrol).
+        Text("\(hidden) weitere Treffer – Suche genauer eingrenzen")
+            .font(AppStyle.captionLabel)
+            .foregroundStyle(AppStyle.accent)
+            .frame(maxWidth: .infinity)
+            .padding(.top, AppStyle.itemSpacing)
+            .padding(.bottom, AppStyle.tightSpacing)
+    }
+}
+
 /// Text colors of the panel: the design's ink in Klassisch, the system's in Modern.
-private enum SearchPanelInk {
+enum SearchPanelInk {
     static var ink: AnyShapeStyle { AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.ink) : AnyShapeStyle(.primary) }
     static var muted: AnyShapeStyle { AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.muted) : AnyShapeStyle(.secondary) }
 }
 
-private extension View {
+extension View {
     /// Klassisch: paper card like the popovers. Modern: glass tinted toward
     /// the window color like the popovers and the sync capsule, so the rack
     /// underneath doesn't run through the text.
@@ -96,11 +111,18 @@ private extension View {
     }
 }
 
-private struct SearchResultRow: View {
+/// One match: cover, artist and title, the place on the right. Also the
+/// rows of the search in the menu bar (`ShelfQuickSearchView`).
+struct SearchResultRow: View {
     let copy: RecordCopy
     let labels: ShelfLabels
     var missing = false
     var placeable = false
+    /// Search in the menu bar: the one match chosen with the arrow keys or
+    /// the pointer, shown instead of the row's own hover – two lit rows at
+    /// once (pointer resting on one, keys on another) read as two choices.
+    /// `nil` on the shelf page: the row lights up under the pointer.
+    var highlighted: Bool? = nil
     @State private var hovering = false
 
     var body: some View {
@@ -125,7 +147,7 @@ private struct SearchResultRow: View {
         .padding(.horizontal, AppStyle.itemSpacing)
         .frame(height: AssignmentRowMetrics.height)
         .contentShape(Rectangle())
-        .appHoverable(hovering, cornerRadius: AppStyle.rowRadius)
+        .appHoverable(highlighted ?? hovering, cornerRadius: AppStyle.rowRadius)
         .onHover { hovering = $0 }
     }
 

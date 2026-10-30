@@ -164,6 +164,9 @@ enum AppStyle {
     // Weighted variants have a role of their own and live here.
     /// The name in a list row: artist, label, record, option.
     static let rowTitle = Font.callout.weight(.medium)
+    /// The text typed into the search in the menu bar: larger, as the panel
+    /// is about this one field (like Spotlight).
+    static let searchFieldFont = Font.title3
     /// The chosen option of a switch in Modern, in the size of the switch
     /// (`GlassSegmentedPicker`): heavier instead of in the accent color, so it
     /// reads on any background – also with covers passing under the toolbar.

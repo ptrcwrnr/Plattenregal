@@ -4,6 +4,7 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
     @State private var preferences = AppPreferences.shared
+    @State private var quickSearch = ShelfQuickSearch.shared
 
     var body: some View {
         @Bindable var preferences = preferences
@@ -28,6 +29,22 @@ struct GeneralSettingsView: View {
                 SettingsRow(title: String(localized: "Beim Öffnen zeigen"), hint: String(localized: "Die Seite, mit der das Hauptfenster startet.")) {
                     GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
                         .accessibilityLabel("Startseite")
+                }
+            }
+            SettingsCard(title: String(localized: "Menüleiste")) {
+                SettingsRow(title: String(localized: "Suche in der Menüleiste"),
+                            hint: String(localized: "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen. ↩ zeigt die Platte im Regal.")) {
+                    Toggle("Suche in der Menüleiste", isOn: $preferences.menuBarSearch).labelsHidden().toggleStyle(.switch)
+                }
+                Divider()
+                SettingsRow(title: String(localized: "Kürzel \(GlobalHotKey.quickSearch.title)"),
+                            // macOS accepts a combination another app holds as well and
+                            // gives it only to the app that registered it first; only
+                            // a refusal can be shown here.
+                            hint: quickSearch.hotKeyRefused
+                                ? String(localized: "macOS hat \(GlobalHotKey.quickSearch.title) nicht angenommen, das Kürzel ist deshalb aus.")
+                                : String(localized: "Öffnet die Suche von überall, auch wenn gerade eine andere App vorn ist. Nutzt eine andere App \(GlobalHotKey.quickSearch.title) ebenfalls, reagiert nur eine von beiden – dann hier ausschalten.")) {
+                    Toggle("Kürzel", isOn: $preferences.quickSearchHotKey).labelsHidden().toggleStyle(.switch)
                 }
             }
             SettingsCard(title: String(localized: "Demo"), subtitle: String(localized: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.")) {

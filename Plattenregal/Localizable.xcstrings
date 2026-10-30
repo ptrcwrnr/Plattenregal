@@ -110,6 +110,66 @@
         }
       }
     },
+    "↩ Im Regal zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "↩ Show on Shelf"
+          }
+        }
+      }
+    },
+    "⌥ Leertaste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Space"
+          }
+        }
+      }
+    },
+    "Auch aus anderen Apps" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From Other Apps Too"
+          }
+        }
+      }
+    },
+    "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen. ↩ zeigt die Platte im Regal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature. ↩ shows the record on the shelf."
+          }
+        }
+      }
+    },
+    "Fach „%@“ · Position %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartment “%1$@” · Position %2$lld"
+          }
+        }
+      }
+    },
+    "Gehört in" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belongs in"
+          }
+        }
+      }
+    },
     "Gezeichnete Cover" : {
       "localizations" : {
         "en" : {
@@ -120,12 +180,92 @@
         }
       }
     },
+    "Im Regal suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search the Shelf"
+          }
+        }
+      }
+    },
+    "Im Regal suchen (Menüleiste)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search the Shelf (Menu Bar)"
+          }
+        }
+      }
+    },
+    "Im Regal zeigen, wo die Platte hingehört" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show on the shelf where the record belongs"
+          }
+        }
+      }
+    },
     "In der Demo sind die Cover immer gezeichnet." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "In the demo, covers are always drawn."
+          }
+        }
+      }
+    },
+    "Kürzel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shortcut"
+          }
+        }
+      }
+    },
+    "Kürzel %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shortcut %@"
+          }
+        }
+      }
+    },
+    "macOS hat %@ nicht angenommen, das Kürzel ist deshalb aus." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS didn't accept %@, so the shortcut is off."
+          }
+        }
+      }
+    },
+    "Menüleiste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu Bar"
+          }
+        }
+      }
+    },
+    "Öffnet die Suche von überall, auch wenn gerade eine andere App vorn ist. Nutzt eine andere App %@ ebenfalls, reagiert nur eine von beiden – dann hier ausschalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the search from anywhere, even while another app is in front. If another app uses %@ as well, only one of them responds – then switch it off here."
           }
         }
       }
@@ -7958,6 +8098,16 @@
         }
       }
     },
+    "Steht in" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In"
+          }
+        }
+      }
+    },
     "steht noch 1 Platte" : {
       "localizations" : {
         "en" : {
@@ -8004,6 +8154,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Styles"
+          }
+        }
+      }
+    },
+    "Suche in der Menüleiste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search in the Menu Bar"
           }
         }
       }

@@ -6,6 +6,13 @@ import SwiftData
 /// download, backups) and the Dock or the Fenster menu brings the window back.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+    /// The record in the menu bar and ⌥ Leertaste (see `ShelfQuickSearch`) –
+    /// not in test runs, whose store is empty and whose app must not take
+    /// the shortcut from a running Plattenregal.
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        ShelfQuickSearch.shared.start()
+    }
 }
 
 @main struct PlattenregalApp: App {
@@ -54,6 +61,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let wants = (try? context.fetchCount(FetchDescriptor<WantlistEntry>())) ?? -1
                 AppLog.info("Datenbank", "Geöffnet: \(copies) Exemplare, \(wants) Wantlist-Einträge")
             }
+            // The search in the menu bar reads this store; it starts once launching is done.
+            ShelfQuickSearch.shared.container = container
             // A first backup for layouts that haven't changed since the feature arrived.
             if let container { ShelfAutoBackup.shared.scheduleBackup(of: container) }
             // Offers the collection to paired Apple TVs – never the demo's, and

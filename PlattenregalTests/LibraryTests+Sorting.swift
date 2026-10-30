@@ -5,6 +5,25 @@ import SwiftData
 @testable import Plattenregal
 
 extension AllTests.LibraryTests {
+    /// The search in the menu bar takes the first few matches without
+    /// sorting them all; they must be exactly the start of `sorted`, ties
+    /// (two copies of one release) included.
+    @Test func firstMatchesAreTheStartOfTheSortedList() throws {
+        let (container, shelves, service) = try fixture(); _ = container
+        let artists = ["Zappa", "abba", "Ärzte", "10cc", " Beatles", "Beatles", "Air", "air", "Can", "Björk", "Bonobo", "Ólafur Arnalds"]
+        var copies = try artists.enumerated().map { index, artist in try add(service, shelves[index % 4], artist, "Album \(index)") }
+        // Two copies of one release: the same key, decided by their ID.
+        let twin = try #require(copies.first { $0.release?.artist == "Can" }?.release)
+        copies.append(try service.insert(release: twin, shelf: shelves[5], position: 1))
+        copies.append(try service.insert(release: twin, shelf: shelves[6], position: 1))
+        let sorted = SortingService.sorted(copies)
+        for count in 0...(copies.count + 2) {
+            #expect(SortingService.first(count, of: copies).map(\.id) == sorted.prefix(count).map(\.id), "count \(count)")
+            // The order handed in doesn't matter.
+            #expect(SortingService.first(count, of: copies.reversed()).map(\.id) == sorted.prefix(count).map(\.id), "reversed, count \(count)")
+        }
+        #expect(SortingService.first(3, of: []).isEmpty)
+    }
     @Test func placementAndShelfSortShareOneKey() throws {
         let (container, shelves, service) = try fixture(); _ = container
         let abba = try add(service, shelves[0], "Abba")

@@ -14,6 +14,8 @@ import SwiftUI
         static let ambient = "ambientChoice"
         static let signatureDesign = "signatureDesign"
         static let drawnCovers = "drawnCovers"
+        static let menuBarSearch = "menuBarSearch"
+        static let quickSearchHotKey = "quickSearchHotKey"
     }
 
     private let defaults: UserDefaults
@@ -29,6 +31,14 @@ import SwiftUI
     /// Drawn covers as in the demo (colour, artist, title) instead of the
     /// Discogs images. Off by default.
     var drawnCovers: Bool { didSet { defaults.set(drawnCovers, forKey: Key.drawnCovers) } }
+    /// The record in the menu bar that opens the search in the shelves. On by default.
+    var menuBarSearch: Bool {
+        didSet { defaults.set(menuBarSearch, forKey: Key.menuBarSearch); ShelfQuickSearch.shared.applySettings() }
+    }
+    /// ⌥ Leertaste opens that search from every app. On by default.
+    var quickSearchHotKey: Bool {
+        didSet { defaults.set(quickSearchHotKey, forKey: Key.quickSearchHotKey); ShelfQuickSearch.shared.applySettings() }
+    }
     /// Whether the chosen language shows differently from this launch – a
     /// restart is only worth it then: on a German Mac, "System" and
     /// "Deutsch" look the same.
@@ -47,6 +57,9 @@ import SwiftUI
         ambient = defaults.string(forKey: Key.ambient).flatMap(AmbientChoice.init) ?? .blue
         signatureDesign = defaults.string(forKey: Key.signatureDesign).flatMap(SignatureDesign.init) ?? .liquidGlass
         drawnCovers = defaults.bool(forKey: Key.drawnCovers)
+        // On unless switched off; `bool(forKey:)` also reads "NO" from a launch argument.
+        menuBarSearch = defaults.object(forKey: Key.menuBarSearch) == nil || defaults.bool(forKey: Key.menuBarSearch)
+        quickSearchHotKey = defaults.object(forKey: Key.quickSearchHotKey) == nil || defaults.bool(forKey: Key.quickSearchHotKey)
         language = languageAtLaunch
     }
 
@@ -63,6 +76,8 @@ import SwiftUI
         ambient = .blue
         signatureDesign = .liquidGlass
         drawnCovers = false
+        menuBarSearch = true
+        quickSearchHotKey = true
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }
     }

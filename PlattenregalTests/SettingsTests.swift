@@ -43,6 +43,28 @@ extension AllTests {
             }
         }
 
+        /// The search in the menu bar and ⌥ Leertaste: on when nothing is
+        /// stored, off when switched off – also from a launch argument
+        /// ("-menuBarSearch NO" arrives as text, not as a Bool).
+        @Test func menuBarSearchAndShortcutAreOnByDefaultAndPersist() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.menuBarSearch)
+                #expect(preferences.quickSearchHotKey)
+                preferences.menuBarSearch = false
+                preferences.quickSearchHotKey = false
+                #expect(!AppPreferences(defaults: defaults).menuBarSearch)
+                #expect(!AppPreferences(defaults: defaults).quickSearchHotKey)
+                preferences.reset()
+                #expect(AppPreferences(defaults: defaults).menuBarSearch)
+                #expect(AppPreferences(defaults: defaults).quickSearchHotKey)
+                defaults.set("NO", forKey: AppPreferences.Key.menuBarSearch)
+                defaults.set("YES", forKey: AppPreferences.Key.quickSearchHotKey)
+                #expect(!AppPreferences(defaults: defaults).menuBarSearch)
+                #expect(AppPreferences(defaults: defaults).quickSearchHotKey)
+            }
+        }
+
         @Test func drawnCoversReplaceTheDiscogsImageStably() {
             let release = Release(discogsID: 4711, artist: "Air (2)", title: "Moon Safari")
             release.coverURL = "https://i.discogs.com/cover.jpg"

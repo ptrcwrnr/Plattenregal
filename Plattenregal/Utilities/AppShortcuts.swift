@@ -30,6 +30,9 @@ enum AppShortcuts {
 
     static var groups: [Group] {
         [
+            Group(title: String(localized: "Auch aus anderen Apps"), entries: [
+                Entry(keys: GlobalHotKey.quickSearch.title, title: String(localized: "Im Regal suchen (Menüleiste)")),
+            ]),
             Group(title: String(localized: "Überall"), entries: [
                 Entry(keys: "⌘1 – ⌘4", title: String(localized: "Collection, Wantlist, Regal, Statistik")),
                 Entry(keys: "⌘F", title: String(localized: "Suchen")),
