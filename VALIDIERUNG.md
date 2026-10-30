@@ -1,3 +1,14 @@
+# Aktueller Stand · 30.10.2026 (Suche in der Menüleiste, DMG)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
+
+- **Geändert seit der letzten DMG:** Regal-Reiter unten links über dem Fachinhalt, bündig mit den Covern; Suche in der Menüleiste (Schallplatte, ⌥ Leertaste, Mini-Regal, ↩ zur Regalseite), abschaltbar unter Allgemein (siehe AENDERUNGEN).
+- **Verifikation:** Debug-Build ohne Warnung, 246 Tests bestanden (neu: `firstMatchesAreTheStartOfTheSortedList`, `menuBarSearchAndShortcutAreOnByDefaultAndPersist`). Demo in Klassisch per Schnappschuss, Modern hell und dunkel per Bildschirmaufnahme; Tasten, Wiederöffnen, Hauptfenster offen/im Dock/geschlossen, echtes ⌥ Leertaste, Ein- und Ausschalten, zwei Instanzen.
+- **Lokalisierung:** 917 Einträge, alle mit Englisch, 16 neu; jeder Text im Code (1187) hat einen Eintrag.
+- **App-Protokoll** 30.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
+- **DMG:** neu gebaut und geprüft (Abbild gültig, Version, arm64, ab macOS 27.0, Signatur, Berechtigungs-Einstellungen unverändert, beide Handbücher identisch, kein Prüfcode, neuer Stand im Programm). Release-App aus der DMG mit der echten Sammlung gestartet, Suche per ⌥ Leertaste ausprobiert, sauber beendet.
+- **Nicht geprüft:** echte Mausklicks auf das Menüleisten-Symbol, mehrere Bildschirme, Vollbild-Apps.
+
 # Aktueller Stand · 26.10.2026 (Modern unter der Leiste, DMG)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
