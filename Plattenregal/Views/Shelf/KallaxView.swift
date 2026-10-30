@@ -101,6 +101,8 @@ struct KallaxView: View {
     @State private var settingsTab: AppSettingsView.Tab?
     /// The side the next cabinet slides in from (see `show(_:)`).
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
+    /// Raster oder Liste der Fachinhalte (the same setting `ShelfContentsView` reads).
+    @AppStorage(ShelfContentsView.layoutKey) private var contentsLayout = OverviewLayout.grid
 
     /// Compartments of the active cabinets, cabinet by cabinet in reading
     /// order. Inactive cabinets keep their records but stay off this page.
@@ -301,7 +303,6 @@ struct KallaxView: View {
                         }
                     }
                 }
-                if page.cabinets.count > 1 { cabinetSwitcher(page) }
                 // One slot: the old cabinet fades out where the new one settles in.
                 ZStack {
                     ShelfFurniture(
@@ -325,8 +326,11 @@ struct KallaxView: View {
                     .id(cabinet?.id)
                     .transition(AppStyle.pageTransition)
                 }
-                shelfDetail(page.shelf)
-                    .frame(maxHeight: .infinity, alignment: .top)
+                VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                    contentsBar(page)
+                    shelfDetail(page.shelf)
+                }
+                .frame(maxHeight: .infinity, alignment: .top)
             }
             .padding(.horizontal, AppStyle.pageMargin)
             .padding(.top, AppStyle.pageTopPadding(AppStyle.pagePadding))
@@ -444,31 +448,53 @@ struct KallaxView: View {
         !DemoMode.isActive && !allCopies.isEmpty && !allCopies.contains { $0.shelf != nil }
     }
 
+    /// The row between rack and contents: the cabinet tabs on the left (with
+    /// more than one cabinet), the grid/list picker on the right (when the
+    /// compartment shows records). Absent when it would be empty.
+    @ViewBuilder private func contentsBar(_ shown: Shown) -> some View {
+        let tabs = shown.cabinets.count > 1
+        let picker = shown.shelf.map { !$0.isReserved && !$0.copies.isEmpty } ?? false
+        if tabs || picker {
+            HStack(spacing: AppStyle.itemSpacing) {
+                if tabs { cabinetSwitcher(shown) }
+                Spacer(minLength: AppStyle.rowSpacing)
+                if picker {
+                    OverviewLayoutPicker(selection: $contentsLayout)
+                        .accessibilityLabel("Ansicht der Fachinhalte")
+                        .transition(.opacity)
+                }
+            }
+            // Flush with the covers below, which stand in by this much
+            // (room for their shadows, see `ShelfContentsView.gridScroll`).
+            .padding(.horizontal, AppStyle.hairSpacing)
+            .animation(AppStyle.fadeAnimation, value: picker)
+        }
+    }
+
     /// One tab per active cabinet; ⌘← / ⌘→ step through them.
     private func cabinetSwitcher(_ shown: Shown) -> some View {
-        HStack(spacing: AppStyle.itemSpacing) {
-            GlassSegmentedPicker(
-                selection: Binding(get: { shown.cabinet?.id }, set: { id in
-                    if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
-                }),
-                options: shown.cabinets.map { Optional($0.id) },
-                separators: true,
-                secondaryClick: { id, point in if let id { cabinetMenu = (id, point) } }
-            ) { id in
-                cabinetTab(shown.cabinets.first { $0.id == id })
-            }
-            .accessibilityLabel("Regal")
-            Spacer()
+        GlassSegmentedPicker(
+            selection: Binding(get: { shown.cabinet?.id }, set: { id in
+                if let cabinet = activeCabinets.first(where: { $0.id == id }) { show(cabinet) }
+            }),
+            options: shown.cabinets.map { Optional($0.id) },
+            separators: true,
+            secondaryClick: { id, point in if let id { cabinetMenu = (id, point) } }
+        ) { id in
+            cabinetTab(shown.cabinets.first { $0.id == id })
+        }
+        .accessibilityLabel("Regal")
+        .help("Zwischen den Regalen wechseln: ⌘← / ⌘→")
+        .background {
             Button("Vorheriges Regal") { stepCabinet(-1) }
                 .keyboardShortcut(.leftArrow, modifiers: .command)
-                .hidden().frame(width: 0)
+                .hidden().frame(width: 0, height: 0)
+                .accessibilityHidden(true)
             Button("Nächstes Regal") { stepCabinet(1) }
                 .keyboardShortcut(.rightArrow, modifiers: .command)
-                .hidden().frame(width: 0)
+                .hidden().frame(width: 0, height: 0)
+                .accessibilityHidden(true)
         }
-        // Tabs and rack belong together: a row's gap instead of a block's.
-        .padding(.bottom, AppStyle.rowSpacing - AppStyle.blockSpacing)
-        .help("Zwischen den Regalen wechseln: ⌘← / ⌘→")
     }
 
     /// A tab's name, carrying its right-click menu and the name popover –

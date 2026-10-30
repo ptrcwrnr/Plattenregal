@@ -32,7 +32,14 @@ struct ShelfContentsView: View, Equatable {
         a.shelf === b.shelf && a.session === b.session && a.owner == b.owner && a.missing == b.missing
             && a.focusCopy === b.focusCopy && a.focusRevision == b.focusRevision
     }
-    @AppStorage("shelfContentsLayout") private var layout = OverviewLayout.grid
+    /// Raster oder Liste, gewählt im Umschalter über den Inhalten (`KallaxView`).
+    @AppStorage(ShelfContentsView.layoutKey) private var storedLayout = OverviewLayout.grid
+    static let layoutKey = "shelfContentsLayout"
+    /// The presentation on screen. It follows `storedLayout` one step later
+    /// (see `body`), so the grid's scroll capture is closed before the
+    /// incoming presentation mounts and can publish row zero.
+    @State private var shownLayout: OverviewLayout?
+    private var layout: OverviewLayout { shownLayout ?? storedLayout }
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     @AppStorage(DisplaySettings.saleListKey) private var saleEnabled = true
     /// Records on the "Verkauf" list (settings tab "Listen"); none while the
@@ -84,14 +91,6 @@ struct ShelfContentsView: View, Equatable {
             hasher.combine(forSale.contains(copy.id))
         }
         return hasher.finalize()
-    }
-
-    private var layoutSelection: Binding<OverviewLayout> {
-        Binding(get: { layout }, set: { value in
-            // Close capture before SwiftUI mounts the incoming presentation.
-            gridRestorePending = true
-            layout = value
-        })
     }
 
     private var selection: Binding<UUID?> {
@@ -237,20 +236,18 @@ struct ShelfContentsView: View, Equatable {
 
     var body: some View {
         ScrollViewReader { proxy in
-            VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                HStack(spacing: AppStyle.itemSpacing) {
-                    Spacer(minLength: AppStyle.rowSpacing)
-                    OverviewLayoutPicker(selection: layoutSelection.animation(AppStyle.fadeAnimation))
-                        .accessibilityLabel("Ansicht der Fachinhalte")
-                }
-                // One slot for both: while fading between them, grid and
-                // table overlap instead of sharing the height.
-                ZStack(alignment: .topLeading) {
-                    if layout == .grid { grid(proxy) }
-                    else { table }
-                }
+            // One slot for both: while fading between them, grid and
+            // table overlap instead of sharing the height.
+            ZStack(alignment: .topLeading) {
+                if layout == .grid { grid(proxy) }
+                else { table }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            // The picker sits on the page; close capture first, then switch.
+            .onChange(of: storedLayout) { _, value in
+                gridRestorePending = true
+                withAnimation(AppStyle.fadeAnimation) { shownLayout = value }
+            }
             .alert("Änderung nicht möglich", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
                 Button("OK") {}
             } message: { Text(error ?? "") }

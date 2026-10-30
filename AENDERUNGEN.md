@@ -1,3 +1,11 @@
+# Regal: Regal-Reiter unten über dem Fachinhalt · 30.10.2026
+
+- **Verschoben (auf Wunsch):** Die Reiter der Regale (z. B. „KALLAX · EKET“) stehen nicht mehr über dem Regalbild, sondern darunter links in der Zeile über den Covern, gegenüber dem Raster/Liste-Umschalter (`KallaxView.contentsBar`). Die Zeile gehört jetzt der Regalseite statt der Fachansicht. Bei leerem oder gesperrtem Fach entfällt der Umschalter, bei nur einem Regal die Reiter, ohne beides die ganze Zeile. Die Einsortier-Karte steht unter der Zeile, über den Covern. ⌘← / ⌘→, Rechtsklick-Menü und „Regal umbenennen …“ bleiben wie gehabt.
+- **Bündig:** Die Cover stehen um `AppStyle.hairSpacing` eingerückt (Platz für ihre Schatten). Die Zeile ist um genau diese Stufe eingerückt, damit Reiter und erstes Cover auf einer Linie stehen (eine erste Fassung ragte 2 pt nach links über das Cover hinaus).
+- **Scroll-Gedächtnis:** Der Umschalter sitzt nicht mehr in `ShelfContentsView`. Die Fachansicht folgt der Einstellung jetzt selbst einen Schritt später (`shownLayout`): Erst wird das Merken der Scrollstelle gesperrt, dann wechselt die Darstellung. So überschreibt das neu eingeblendete Raster die gemerkte Stelle nicht, wie bisher.
+- Handbuch: Regal-Bilder (`shelf`, `sortin`, de/en) neu aufgenommen, Bildunterschriften angepasst; README angepasst.
+- Geprüft: Debug-Build ohne Fehler und Warnungen, 244 Tests bestanden. In der Demo (zwei Regale) per `--snapshot` angesehen: Klassisch hell, Modern hell und Modern dunkel, mit Einsortier-Karte (`--preview-place=Air`). In Klassisch pixelgenau gemessen: Kapselrand und Coverrand beginnen in derselben Spalte (Abweichung 0). **Nicht geprüft:** Umschalten Raster ↔ Liste per Klick in der laufenden App (Scrollstelle danach), Regalwechsel per Klick und ⌘←/⌘→, Fach mit nur einem Regal, die echte Sammlung. In Modern zeichnet `--snapshot` das Glas der Kapsel nicht, dort ist die Kante nur aus dem Code abgeleitet.
+
 # DMG 1.0.0 mit Modern unter der Leiste neu ausgegeben · 26.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält die fließend schmaler werdende Leiste, Modern unter der Leiste mit weichem Ausblenden, die halbfette Auswahl ohne Rand und die Korrektur der Einstellungen. Handbuch-PDFs unverändert.
