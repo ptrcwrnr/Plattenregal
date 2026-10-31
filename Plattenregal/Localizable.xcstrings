@@ -9270,16 +9270,6 @@
         }
       }
     },
-    "Wie in der App" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "As in the app"
-          }
-        }
-      }
-    },
     "Wieder einsortieren" : {
       "localizations" : {
         "en" : {

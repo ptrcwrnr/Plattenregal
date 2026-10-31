@@ -100,8 +100,7 @@ import WidgetKit
             _ = (changes.libraryVersion, changes.placementsVersion, changes.shelvesVersion)
             let records = LibraryRecords.of(context)
             _ = (records.copies, records.exclusions, records.accounts)
-            let preferences = AppPreferences.shared
-            _ = (preferences.drawnCovers, preferences.signatureDesign, preferences.accent)
+            _ = AppPreferences.shared.drawnCovers
         } onChange: { [weak self] in
             Task { @MainActor in
                 self?.follow()
@@ -111,7 +110,7 @@ import WidgetKit
     }
 
     private static func settings() -> [String] {
-        [ShelfRangeLabels.currentStyle.rawValue, ShelfSecondaryOrder.current.rawValue, AtelierCoverFrame.current.rawValue]
+        [ShelfRangeLabels.currentStyle.rawValue, ShelfSecondaryOrder.current.rawValue]
     }
 
     private func settingsMayHaveChanged() {
@@ -256,7 +255,8 @@ import WidgetKit
             // reported yet): its day stays empty until the next run.
             guard let id = picks[number], let copy = byID[id], !copy.isDeleted, copy.modelContext != nil,
                   let release = copy.release else { continue }
-            let (place, placed) = Self.place(of: copy, labels: labels, inUse: inUse, fitting: fitting[id], excluded: excluded.contains(id))
+            let (place, placed, shelf) = Self.place(of: copy, labels: labels, inUse: inUse, fitting: fitting[id], excluded: excluded.contains(id))
+            let rack = shelf.flatMap { Self.rack(for: $0, labels: labels, position: placed ? copy.positionInShelf : nil) }
             let details = [release.year.map(String.init), release.label.isEmpty ? nil : release.displayLabel]
                 .compactMap { $0 }.joined(separator: " · ")
             // A record without a Discogs image gets a drawn one, as everywhere.
@@ -268,13 +268,9 @@ import WidgetKit
             days.append(RecordOfTheDay.Day(day: number, date: dayDate, copyID: id, artist: release.displayArtist,
                                            title: release.displayTitle, seed: release.discogsID,
                                            details: details, place: place,
-                                           isPlaced: placed, cover: nil))
+                                           isPlaced: placed, rack: rack, cover: nil))
         }
-        // Both designs' details: a widget may be set to the one the app isn't.
-        let snapshot = RecordOfTheDay(design: AppStyle.isAtelier ? .classic : .modern,
-                                      classicFrame: AtelierCoverFrame.classicFrame,
-                                      accent: Self.tint(AppPreferences.shared.accent),
-                                      days: days, history: history)
+        let snapshot = RecordOfTheDay(days: days, history: history)
         return (snapshot, sources)
     }
 
@@ -332,35 +328,39 @@ import WidgetKit
     /// – or where it belongs: `fitting`, the shelves it fits
     /// (`AlphabeticalPlacement.fittingShelves`). At the border of two the
     /// placement card's own choice decides, so both name the same shelf.
-    static func place(of copy: RecordCopy, labels: ShelfLabels, inUse: [Shelf], fitting: [Shelf]?, excluded: Bool) -> (String, Bool) {
-        if copy.shelf != nil { return (ShelfRangeLabels.location(of: copy, labels: labels, excluded: excluded), true) }
-        if excluded { return (String(localized: "Ohne Regalplatz"), false) }
+    /// Also the compartment meant, for the widget's rack.
+    static func place(of copy: RecordCopy, labels: ShelfLabels, inUse: [Shelf], fitting: [Shelf]?,
+                      excluded: Bool) -> (String, Bool, Shelf?) {
+        if let shelf = copy.shelf { return (ShelfRangeLabels.location(of: copy, labels: labels, excluded: excluded), true, shelf) }
+        if excluded { return (String(localized: "Ohne Regalplatz"), false, nil) }
         let fitting = fitting ?? []
         let chosen = fitting.count > 1 ? Placement(copy: copy, shelves: inUse).spot?.shelf : fitting.first
         guard let shelf = chosen else {
-            return (String(localized: "Noch nicht einsortiert"), false)
+            return (String(localized: "Noch nicht einsortiert"), false, nil)
         }
         let name = labels.prefix(for: shelf) + (labels[shelf.id] ?? shelf.title)
-        return (String(localized: "Gehört in „\(name)“"), false)
+        return (String(localized: "Gehört in „\(name)“"), false, shelf)
     }
 
-    /// Modern's accent in light and dark; nil for the system's, which the
-    /// widget takes itself.
-    static func tint(_ choice: AccentChoice) -> RecordOfTheDay.Tint? {
-        guard choice != .system else { return nil }
-        let color = NSColor(choice.color)
-        func components(_ name: NSAppearance.Name) -> [Double] {
-            var result: [Double] = []
-            NSAppearance(named: name)?.performAsCurrentDrawingAppearance {
-                if let rgb = color.usingColorSpace(.sRGB) {
-                    result = [rgb.redComponent, rgb.greenComponent, rgb.blueComponent].map(Double.init)
-                }
-            }
-            return result
-        }
-        let light = components(.aqua), dark = components(.darkAqua)
-        guard light.count == 3, dark.count == 3 else { return nil }
-        return RecordOfTheDay.Tint(light: light, dark: dark)
+    /// The cabinet of `shelf` in small, laid out like on the shelf page:
+    /// every compartment at its place in the full grid (`sortOrder`), places
+    /// without a compartment and locked ones hollow. Nil when the shelf has
+    /// no cabinet or a place outside the grid (never in a consistent store).
+    static func rack(for shelf: Shelf, labels: ShelfLabels, position: Int?) -> RecordOfTheDay.Rack? {
+        // A compartment or cabinet deleted meanwhile (a reset not reported
+        // yet) must not be read: SwiftData traps on deleted objects.
+        guard !shelf.isDeleted, shelf.modelContext != nil, let cabinet = shelf.cabinet, !cabinet.isDeleted,
+              cabinet.columns > 0, cabinet.rows > 0 else { return nil }
+        let places = 0..<(cabinet.columns * cabinet.rows)
+        let target = shelf.sortOrder - 1
+        guard places.contains(target) else { return nil }
+        let filled = Set(cabinet.shelves.filter { !$0.isDeleted && !$0.isReserved }.map { $0.sortOrder - 1 })
+        let label = shelf.isReserved
+            ? (shelf.name.isEmpty ? String(localized: "Gesperrtes Fach") : shelf.name)
+            : (labels[shelf.id] ?? shelf.title)
+        return RecordOfTheDay.Rack(columns: cabinet.columns, rows: cabinet.rows, compartment: target,
+                                   locked: places.filter { !filled.contains($0) && $0 != target },
+                                   label: label, position: position)
     }
 
     // MARK: Covers

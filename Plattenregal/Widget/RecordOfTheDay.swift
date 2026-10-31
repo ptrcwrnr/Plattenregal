@@ -14,7 +14,8 @@ nonisolated struct RecordOfTheDay: Codable, Equatable, Sendable {
     static let folderPath = "Library/Application Support/Plattenregal Widget"
     static let fileName = "platte-des-tages.json"
     /// Raised when the format changes in a way an older widget can't read.
-    static let formatVersion = 1
+    /// 2: the rack of each day instead of the app's design (31.10.2026).
+    static let formatVersion = 2
     /// The address the widget opens: the shelf page with the card for the record.
     static let linkScheme = "plattenregal"
     static let linkHost = "platte"
@@ -39,21 +40,27 @@ nonisolated struct RecordOfTheDay: Codable, Equatable, Sendable {
         let place: String
         /// Stands in a compartment (`place` says where), or doesn't.
         let isPlaced: Bool
+        /// The cabinet with the compartment the record stands in or belongs
+        /// in; nil for „Ohne Regalplatz“ or without any shelf.
+        let rack: Rack?
         /// The cover's file in the shared folder; nil while it couldn't be
         /// loaded (no network), the widget then draws the record instead.
         var cover: String?
         var id: Int { day }
     }
 
-    /// The design of the app, so the widget looks like it.
-    enum Design: String, Codable, Sendable {
-        case classic, modern
-    }
-
-    /// A color as sRGB components, in light and in dark mode.
-    struct Tint: Codable, Equatable, Sendable {
-        let light: [Double]
-        let dark: [Double]
+    /// A cabinet as the widget draws it in small: its grid, which
+    /// compartments are locked, and the one of the record.
+    struct Rack: Codable, Equatable, Sendable {
+        let columns: Int
+        let rows: Int
+        /// Compartments in reading order from 0 (top left, row by row).
+        let compartment: Int
+        let locked: [Int]
+        /// The compartment's name: „B – De“, „Fach 3“ or a locked one's name.
+        let label: String
+        /// Its position there; nil while it only belongs there.
+        let position: Int?
     }
 
     /// A day's pick, kept a while so the next days don't repeat it.
@@ -63,13 +70,6 @@ nonisolated struct RecordOfTheDay: Codable, Equatable, Sendable {
     }
 
     var formatVersion = Self.formatVersion
-    /// The design the app is set to; a widget can be set to the other one.
-    var design: Design
-    /// How Klassisch frames its covers (sleeve or passepartout); Modern
-    /// always lays them on its mat.
-    var classicFrame: RecordFrame
-    /// Modern's accent, also while the app shows Klassisch; nil = the system's.
-    var accent: Tint?
     /// Today and the next days, in order.
     var days: [Day]
     /// Days already past, newest last, for picks without repeats.
@@ -87,6 +87,23 @@ nonisolated struct RecordOfTheDay: Codable, Equatable, Sendable {
         guard let current = day(at: date), let index = days.firstIndex(of: current) else { return [] }
         return Array(days[index...])
     }
+
+    /// What a widget timeline holds from `now` on: today's record from now,
+    /// each later one (up to `count` in all) from the start of its day, and
+    /// when to read the file again – when the last day shown begins, or at the
+    /// end of what the app wrote at the next midnight (it may have written
+    /// more meanwhile). Without days: one empty entry, read again in an hour.
+    static func plan(_ snapshot: RecordOfTheDay?, now: Date, count: Int,
+                     calendar: Calendar = .current) -> (entries: [(date: Date, day: Day?)], refresh: Date) {
+        let days = Array((snapshot?.days(from: now) ?? []).prefix(max(count, 1)))
+        guard let first = days.first else { return ([(now, nil)], now.addingTimeInterval(emptyRefresh)) }
+        let entries = [(date: now, day: Optional(first))] + days.dropFirst().map { (date: $0.date, day: Optional($0)) }
+        let nextDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
+        return (entries, days.count > 1 ? days[days.count - 1].date : nextDay)
+    }
+
+    /// Without anything written yet, a widget looks again after this.
+    static let emptyRefresh: TimeInterval = 60 * 60
 
     /// A running number for the day `date` falls on, in `calendar`.
     static func dayNumber(_ date: Date, calendar: Calendar = .current) -> Int {

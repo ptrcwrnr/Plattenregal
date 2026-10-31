@@ -2,57 +2,58 @@ import AppKit
 import SwiftUI
 import WidgetKit
 
-/// The widget „Platte des Tages“ (medium only): today's record with its
-/// cover, as in the app's grids, beside artist, title, year · label and where
-/// it stands on the shelf. In the design the app is set to, or the one chosen
-/// for the widget (Klassisch or Modern). Part of the widget and of the app,
+/// The widget „Platte des Tages“ (medium only), in the paper of Klassisch:
+/// today's record as a sleeve beside artist and title, below them the
+/// cabinet in small with the record's compartment in gold – filled where it
+/// stands, outlined where it only belongs – and its name and position.
+/// Light and dark follow the system. Part of the widget and of the app,
 /// whose tests draw it.
+///
+/// When macOS dims desktop widgets (an app in front), it drops the paper and
+/// draws everything in one tint on glass; the cover keeps its colors and the
+/// gold compartment is tinted apart from the rest (`widgetAccentable`).
 struct RecordOfTheDayView: View {
     let snapshot: RecordOfTheDay?
     let day: RecordOfTheDay.Day?
-    /// Chosen for this widget; nil = as in the app.
-    var design: RecordOfTheDay.Design? = nil
     /// Where the covers are read from.
     var folder: URL? = RecordOfTheDay.folderURL
 
     var body: some View {
-        let look = WidgetLook(snapshot, design: design)
         Group {
             if let day {
-                MediumRecordView(day: day, cover: WidgetCover(day: day, look: look, folder: folder), look: look)
+                RackRecordView(day: day, cover: WidgetCover(day: day, folder: folder))
             } else {
-                EmptyRecordView(look: look, hasSnapshot: snapshot != nil)
+                EmptyRecordView(hasSnapshot: snapshot != nil)
             }
         }
         .widgetURL(day.map { RecordOfTheDay.link(to: $0.copyID) })
-        .containerBackground(for: .widget) { look.background }
+        .containerBackground(for: .widget) { AtelierPalette.paper }
     }
 }
 
-/// The colors and frame of the widget's design.
-struct WidgetLook {
-    let isClassic: Bool
-    let frame: RecordFrame
-    let accent: Color
+/// Sizes of the drawn rack (geometry, not spacing): it always fits the same
+/// box, so a 6 × 6 cabinet gets smaller cells than a 4 × 3 one, never larger
+/// ones than `cellHeight`.
+enum RackMetrics {
+    static let boxWidth: CGFloat = 92
+    /// Holds three rows of full cells: a 4 × 3 KALLAX as in the mockup.
+    static let boxHeight: CGFloat = 49
+    static let cellHeight: CGFloat = 13
+    /// Width to height of a cell, like a KALLAX compartment seen from the front.
+    static let cellAspect: CGFloat = 1.3
+    static let gap: CGFloat = 2
+    /// Between the frame and the cells.
+    static let inset: CGFloat = 3
+    static let cellRadius: CGFloat = 2
+    static let frameRadius: CGFloat = 4
 
-    /// `design`: chosen for the widget; nil = as in the app – or, without
-    /// anything written yet, Klassisch like the handbook.
-    init(_ snapshot: RecordOfTheDay?, design: RecordOfTheDay.Design? = nil) {
-        isClassic = (design ?? snapshot?.design ?? .classic) == .classic
-        frame = isClassic ? snapshot?.classicFrame ?? .sleeve : .modernMat
-        accent = isClassic ? AtelierPalette.accent : snapshot?.accent.map(Self.color) ?? .accentColor
-    }
-
-    var ink: Color { isClassic ? AtelierPalette.ink : .primary }
-    var muted: Color { isClassic ? AtelierPalette.muted : .secondary }
-    var background: Color { isClassic ? AtelierPalette.paper : Color(nsColor: .windowBackgroundColor) }
-
-    private static func color(_ tint: RecordOfTheDay.Tint) -> Color {
-        Color(nsColor: NSColor(name: nil) { appearance in
-            let rgb = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? tint.dark : tint.light
-            guard rgb.count == 3 else { return .controlAccentColor }
-            return NSColor(srgbRed: rgb[0], green: rgb[1], blue: rgb[2], alpha: 1)
-        })
+    /// The cell size for a cabinet of `columns` × `rows` inside the box.
+    static func cell(columns: Int, rows: Int) -> CGSize {
+        let columns = CGFloat(max(columns, 1)), rows = CGFloat(max(rows, 1))
+        let byHeight = (boxHeight - 2 * inset - (rows - 1) * gap) / rows
+        let byWidth = (boxWidth - 2 * inset - (columns - 1) * gap) / columns / cellAspect
+        let height = max(1, min(cellHeight, byHeight, byWidth))
+        return CGSize(width: height * cellAspect, height: height)
     }
 }
 
@@ -60,9 +61,8 @@ struct WidgetLook {
 /// when it was written), the record drawn like the app's drawn covers.
 struct WidgetCover: View {
     let day: RecordOfTheDay.Day
-    let look: WidgetLook
     let folder: URL?
-    /// Drawn covers at this edge are sharp on the large widget.
+    /// Drawn covers at this edge stay sharp.
     static let drawnPixels = 640
 
     var image: NSImage? {
@@ -75,16 +75,8 @@ struct WidgetCover: View {
             .map { NSImage(cgImage: $0, size: .zero) }
     }
 
-    /// Square, as large as the room allows, in the app's frame.
+    /// Square, as large as the height allows, as a sleeve like in Klassisch.
     var body: some View {
-        plain
-            .clipShape(RoundedRectangle(cornerRadius: look.frame.coverRadius))
-            .recordFrame(look.frame)
-            .aspectRatio(1, contentMode: .fit)
-    }
-
-    /// The cover itself, square, without the frame.
-    var plain: some View {
         Group {
             if let image {
                 Image(nsImage: image).resizable().interpolation(.high)
@@ -92,13 +84,106 @@ struct WidgetCover: View {
                     .widgetAccentedRenderingMode(.fullColor)
                     .scaledToFill()
             } else {
-                Rectangle().fill(look.muted.opacity(0.2))
+                Rectangle().fill(AtelierPalette.soft)
             }
         }
         .aspectRatio(1, contentMode: .fit)
         // Covers that aren't square fill the square, never more.
         .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: RecordFrame.sleeve.coverRadius))
+        .recordFrame(.sleeve)
         .accessibilityHidden(true)
+    }
+}
+
+/// The record beside its cover, the rack at the foot.
+struct RackRecordView: View {
+    let day: RecordOfTheDay.Day
+    let cover: WidgetCover
+
+    var body: some View {
+        HStack(alignment: .top, spacing: DesignScale.cardPadding) {
+            cover
+            VStack(alignment: .leading, spacing: DesignScale.tightSpacing) {
+                Text("Platte des Tages")
+                    .font(DesignScale.captionMark)
+                    .foregroundStyle(AtelierPalette.accent)
+                    .widgetAccentable()
+                    .lineLimit(1)
+                Text(day.artist).font(.headline).foregroundStyle(AtelierPalette.ink).lineLimit(1)
+                Text(day.title).font(.subheadline).foregroundStyle(AtelierPalette.muted).lineLimit(1)
+                Spacer(minLength: 0)
+                if let rack = day.rack {
+                    HStack(alignment: .bottom, spacing: DesignScale.rowSpacing) {
+                        RackView(rack: rack)
+                        VStack(alignment: .leading, spacing: DesignScale.hairSpacing) {
+                            Text(rack.label)
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(AtelierPalette.ink)
+                                .lineLimit(1)
+                            Text(rack.position.map { String(localized: "Position \($0)") }
+                                 ?? String(localized: "Noch nicht einsortiert"))
+                                .font(.caption)
+                                .foregroundStyle(AtelierPalette.muted)
+                                .lineLimit(1)
+                        }
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(day.place)
+                } else {
+                    // „Ohne Regalplatz“, or no shelf to belong in yet.
+                    WidgetPlace(day: day, color: AtelierPalette.ink).lineLimit(2)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(DesignScale.cardPadding)
+    }
+}
+
+/// The cabinet in small: every compartment in its place, locked ones and
+/// places without a compartment hollow, the record's in gold – filled where
+/// it stands, outlined where it belongs.
+struct RackView: View {
+    let rack: RecordOfTheDay.Rack
+
+    var body: some View {
+        let cell = RackMetrics.cell(columns: rack.columns, rows: rack.rows)
+        let locked = Set(rack.locked)
+        VStack(spacing: RackMetrics.gap) {
+            ForEach(0..<max(rack.rows, 1), id: \.self) { row in
+                HStack(spacing: RackMetrics.gap) {
+                    ForEach(0..<max(rack.columns, 1), id: \.self) { column in
+                        let index = row * rack.columns + column
+                        compartment(target: index == rack.compartment, locked: locked.contains(index))
+                            .frame(width: cell.width, height: cell.height)
+                    }
+                }
+            }
+        }
+        .padding(RackMetrics.inset)
+        .background {
+            RoundedRectangle(cornerRadius: RackMetrics.frameRadius)
+                .strokeBorder(AtelierPalette.accent.opacity(0.5), lineWidth: DesignScale.borderWidth)
+        }
+    }
+
+    @ViewBuilder private func compartment(target: Bool, locked: Bool) -> some View {
+        let shape = RoundedRectangle(cornerRadius: RackMetrics.cellRadius)
+        if target {
+            Group {
+                if rack.position == nil {
+                    shape.strokeBorder(AtelierPalette.gold, lineWidth: DesignScale.selectionLineWidth)
+                } else {
+                    shape.fill(AtelierPalette.gold)
+                }
+            }
+            .widgetAccentable()
+        } else if locked {
+            shape.strokeBorder(AtelierPalette.ink.opacity(0.2), lineWidth: DesignScale.hairlineWidth)
+        } else {
+            shape.fill(AtelierPalette.ink.opacity(0.12))
+        }
     }
 }
 
@@ -124,72 +209,23 @@ struct WidgetPlace: View {
     }
 }
 
-/// The kicker over the caption.
-struct WidgetKicker: View {
-    let look: WidgetLook
-    var body: some View {
-        Text("Platte des Tages")
-            .font(DesignScale.captionMark)
-            .foregroundStyle(look.accent)
-            .lineLimit(1)
-            // Tinted apart from the rest when macOS draws the widget in one tint.
-            .widgetAccentable()
-    }
-}
-
-/// Artist, title and year · label, as under the covers in the app.
-struct WidgetCaption: View {
-    let day: RecordOfTheDay.Day
-    let look: WidgetLook
-    var titleLines = 1
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignScale.hairSpacing) {
-            Text(day.artist).font(.headline).foregroundStyle(look.ink).lineLimit(1)
-            Text(day.title).font(.subheadline).foregroundStyle(look.muted).lineLimit(titleLines)
-            if !day.details.isEmpty {
-                Text(day.details).font(.caption).foregroundStyle(look.muted).lineLimit(1)
-            }
-        }
-    }
-}
-
-/// The cover beside the caption, the place at its foot.
-struct MediumRecordView: View {
-    let day: RecordOfTheDay.Day
-    let cover: WidgetCover
-    let look: WidgetLook
-
-    var body: some View {
-        HStack(alignment: .top, spacing: DesignScale.cardPadding) {
-            cover
-            VStack(alignment: .leading, spacing: DesignScale.tightSpacing) {
-                WidgetKicker(look: look)
-                WidgetCaption(day: day, look: look, titleLines: 2)
-                Spacer(minLength: 0)
-                WidgetPlace(day: day, color: look.ink).lineLimit(2)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(DesignScale.cardPadding)
-    }
-}
-
 /// Nothing to show yet: the app hasn't written anything, or the collection
 /// is empty.
 struct EmptyRecordView: View {
-    let look: WidgetLook
     let hasSnapshot: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignScale.itemSpacing) {
             Image(systemName: "opticaldisc")
                 .font(DesignScale.emptyStateSymbol)
-                .foregroundStyle(look.accent)
-            WidgetKicker(look: look)
+                .foregroundStyle(AtelierPalette.accent)
+            Text("Platte des Tages")
+                .font(DesignScale.captionMark)
+                .foregroundStyle(AtelierPalette.accent)
+                .widgetAccentable()
             Text(hasSnapshot ? "Noch keine Platten in deiner Collection." : "Öffne Plattenregal einmal, dann liegt hier jeden Tag eine Platte aus deiner Sammlung.")
                 .font(.caption)
-                .foregroundStyle(look.muted)
+                .foregroundStyle(AtelierPalette.muted)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

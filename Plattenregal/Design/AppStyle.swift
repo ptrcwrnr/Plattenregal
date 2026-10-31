@@ -132,7 +132,7 @@ enum AppStyle {
     /// The rim that marks a selection or a drop target (gold in Klassisch,
     /// the accent in Modern, see `selectedBorder`): the same strength on
     /// covers, compartments, rows and cards.
-    static let selectionLineWidth: CGFloat = 1.5
+    static let selectionLineWidth = DesignScale.selectionLineWidth
     /// The track and arc of a progress ring (activity, pull to refresh).
     static let progressLineWidth: CGFloat = 2.5
     /// The line of a value chart (the sparkline on the statistics, the value

@@ -1,4 +1,3 @@
-import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -16,104 +15,62 @@ struct RecordOfTheDayWidget: Widget {
     static let kind = "de.private.Plattenregal.RecordOfTheDay"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: Self.kind, intent: RecordOfTheDayConfiguration.self, provider: RecordOfTheDayProvider()) { entry in
-            RecordOfTheDayView(snapshot: entry.snapshot, day: entry.day, design: entry.design)
+        StaticConfiguration(kind: Self.kind, provider: RecordOfTheDayProvider()) { entry in
+            RecordOfTheDayView(snapshot: entry.snapshot, day: entry.day)
         }
         .configurationDisplayName("Platte des Tages")
         .description("Jeden Tag eine Platte aus deiner Sammlung – und wo sie im Regal steht.")
-        // One size: cover beside caption and place needs the medium's width.
+        // One size: cover, caption and rack need the medium's width.
         .supportedFamilies([.systemMedium])
         // The view keeps the app's padding itself (`DesignScale.cardPadding`).
         .contentMarginsDisabled()
     }
 }
 
-/// The design of one widget: as in the app, or Klassisch or Modern of its
-/// own („Widget bearbeiten“).
-enum WidgetDesignChoice: String, AppEnum {
-    case app, classic, modern
-
-    static var typeDisplayRepresentation: TypeDisplayRepresentation { "Design" }
-    static var caseDisplayRepresentations: [WidgetDesignChoice: DisplayRepresentation] {
-        [.app: "Wie in der App", .classic: "Klassisch", .modern: "Modern"]
-    }
-
-    var design: RecordOfTheDay.Design? {
-        switch self {
-        case .app: nil
-        case .classic: .classic
-        case .modern: .modern
-        }
-    }
-}
-
-struct RecordOfTheDayConfiguration: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource { "Platte des Tages" }
-    static var description: IntentDescription { "Jeden Tag eine Platte aus deiner Sammlung – und wo sie im Regal steht." }
-
-    @Parameter(title: "Design", default: .app)
-    var design: WidgetDesignChoice
-}
-
 nonisolated struct RecordOfTheDayEntry: TimelineEntry {
     let date: Date
     let snapshot: RecordOfTheDay?
     let day: RecordOfTheDay.Day?
-    let design: RecordOfTheDay.Design?
 }
 
 /// Reads what the app wrote. One entry per day, from the start of that day;
 /// a few days at a time, then the widget reads the file again. The app also
 /// asks for a reload whenever it writes something new.
-nonisolated struct RecordOfTheDayProvider: AppIntentTimelineProvider {
+nonisolated struct RecordOfTheDayProvider: TimelineProvider {
     /// Days per timeline: each entry is kept with its cover, so not all of them.
     static let entriesPerTimeline = 3
-    /// Without anything written yet, the widget looks again after this.
-    static let emptyRefresh: TimeInterval = 60 * 60
 
     func placeholder(in context: Context) -> RecordOfTheDayEntry {
-        RecordOfTheDayEntry(date: Date(), snapshot: .sample, day: RecordOfTheDay.sample.days.first, design: nil)
+        RecordOfTheDayEntry(date: Date(), snapshot: .sample, day: RecordOfTheDay.sample.days.first)
     }
 
-    func snapshot(for configuration: RecordOfTheDayConfiguration, in context: Context) async -> RecordOfTheDayEntry {
+    func getSnapshot(in context: Context, completion: @escaping (RecordOfTheDayEntry) -> Void) {
         let now = Date()
         let stored = RecordOfTheDay.load()
         // The gallery shows the user's record of today, or an example.
         let snapshot = context.isPreview && stored?.day(at: now) == nil ? .sample : stored
-        return RecordOfTheDayEntry(date: now, snapshot: snapshot, day: snapshot?.day(at: now), design: configuration.design.design)
+        completion(RecordOfTheDayEntry(date: now, snapshot: snapshot, day: snapshot?.day(at: now)))
     }
 
-    func timeline(for configuration: RecordOfTheDayConfiguration, in context: Context) async -> Timeline<RecordOfTheDayEntry> {
-        let now = Date()
-        let design = configuration.design.design
+    func getTimeline(in context: Context, completion: @escaping (Timeline<RecordOfTheDayEntry>) -> Void) {
         let snapshot = RecordOfTheDay.load()
-        let days = Array((snapshot?.days(from: now) ?? []).prefix(Self.entriesPerTimeline))
-        guard let first = days.first else {
-            let entry = RecordOfTheDayEntry(date: now, snapshot: snapshot, day: nil, design: design)
-            return Timeline(entries: [entry], policy: .after(now.addingTimeInterval(Self.emptyRefresh)))
-        }
-        // Today's from now on, each later one from the start of its day.
-        let entries = [RecordOfTheDayEntry(date: now, snapshot: snapshot, day: first, design: design)]
-            + days.dropFirst().map {
-                RecordOfTheDayEntry(date: $0.date, snapshot: snapshot, day: $0, design: design)
-            }
-        // Read again when the last day shown begins – or, at the end of what
-        // the app wrote, at the next midnight, in case it wrote more meanwhile.
-        let calendar = Calendar.current
-        let nextDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
-        let refresh = days.count > 1 ? days[days.count - 1].date : nextDay
-        return Timeline(entries: entries, policy: .after(refresh))
+        let plan = RecordOfTheDay.plan(snapshot, now: Date(), count: Self.entriesPerTimeline)
+        let entries = plan.entries.map { RecordOfTheDayEntry(date: $0.date, snapshot: snapshot, day: $0.day) }
+        completion(Timeline(entries: entries, policy: .after(plan.refresh)))
     }
 }
 
 extension RecordOfTheDay {
     /// The example in the widget gallery, before the app wrote anything.
     nonisolated static var sample: RecordOfTheDay {
+        let rack = Rack(columns: 4, rows: 3, compartment: 9, locked: [0, 1],
+                        label: "B – De", position: 14)
         let day = RecordOfTheDay.Day(day: dayNumber(Date()), date: Calendar.current.startOfDay(for: Date()),
                                      copyID: UUID(), artist: "Boards of Canada",
                                      title: "Music Has the Right to Children", seed: 7,
                                      details: "1998 · Warp",
-                                     place: String(localized: "Fach \(3)") + " · " + String(localized: "Position \(12)"), isPlaced: true, cover: nil)
-        return RecordOfTheDay(design: .classic, classicFrame: .sleeve, accent: nil, days: [day], history: [])
+                                     place: String(localized: "Fach \(10)") + " · " + String(localized: "Position \(14)"),
+                                     isPlaced: true, rack: rack, cover: nil)
+        return RecordOfTheDay(days: [day], history: [])
     }
 }

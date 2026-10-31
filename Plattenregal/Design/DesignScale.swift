@@ -35,6 +35,9 @@ nonisolated enum DesignScale {
     static let hairlineWidth: CGFloat = 0.5
     /// Every ordinary rim: cards, fields, buttons, chips.
     static let borderWidth: CGFloat = 1
+    /// The rim that marks a selection or a drop target, and the record's
+    /// compartment in the widget's rack when it only belongs there.
+    static let selectionLineWidth: CGFloat = 1.5
 
     // MARK: Symbols
     /// The large symbol of an empty page or widget.
