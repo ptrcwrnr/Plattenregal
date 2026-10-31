@@ -1,3 +1,10 @@
+# DMG 1.0.0 mit der Tropfen-Suche in der Menüleiste neu ausgegeben · 31.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027: Am Widget hat sich nichts geändert, macOS muss nichts neu einlesen. Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Sandbox mit den Ordner-Ausnahmen für App (Schreiben) und Widget (Lesen), URL-Schema `plattenregal`; keine App-Intents-Metadaten; beide Handbücher identisch mit denen im Repository; kein Prüfcode im Programm (`--snapshot=`, `--preview-switch`, `--preview-quicksearch`, `dumpwindows`, `--demo-background`, `--simulate-login-launch` und die vorübergehenden Prüfreste – Gegenprobe: der Debug-Build enthält die Startargumente); neuer Stand im Programm (`QuickSearchDrop`, `DropEdgeInset`, kein `PillEdgeInset` mehr).
+- Release-App aus der DMG in der Demo gestartet (die installierte App lief mit der echten Sammlung weiter und wurde nicht angetastet), die Suche über das Plattensymbol per System Events geöffnet, geschlossen und wieder geöffnet und als Video Bild für Bild angesehen: Tropfen unter dem Symbol, Aufspringen, dunkles Glas, Cursor im Feld, ruhiges Schließen. Im Protokoll keine Fehler, keine Absturzberichte. DMG danach ausgeworfen.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung (die installierte lief) und Tippen in die Suche der Release-App (keine Tastatureingaben, damit nichts in anderen Fenstern landet).
+
 # Suche in der Menüleiste öffnet sich wie ein Tropfen, dunkles Glas · 31.10.2026
 
 - **Wunsch:** Das Ein- und Ausblenden der Suche unter der Schallplatte in der Menüleiste soll anders animiert sein, gewählt wurde „wie ein Tropfen“. Dazu soll die Fensterfarbe schöner sein: dunkles oder „normales“ Glas, je nachdem, was am besten lesbar ist. **Vorher:** Das Fenster erschien und verschwand mit der kurzen Standard-Blende von macOS; in Modern war es helles, zur Fensterfarbe getöntes Glas.
