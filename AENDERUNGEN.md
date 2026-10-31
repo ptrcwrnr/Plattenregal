@@ -1,3 +1,10 @@
+# DMG 1.0.0 mit der Tropfen-Pill neu ausgegeben · 31.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027: Es gibt nichts, was macOS neu einlesen müsste. Die vorige DMG war noch eingehängt (nichts lief daraus) und wurde ausgeworfen. Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen samt Ordner-Ausnahmen und URL-Schema `plattenregal` wie bisher; keine App-Intents-Metadaten; beide Handbücher identisch; kein Prüfcode (`--snapshot=`, `--preview-switch`, `--preview-quicksearch`, `dumpwindows`, `--demo-background`, `--simulate-login-launch` und die vorübergehenden Prüfreste nicht im Programm); neuer Stand im Programm (`PillEdgeInset`).
+- Release-App aus der DMG mit der echten Sammlung gestartet (die installierte App war beendet): Rubriken per ⌘4 und ⌘1 gewechselt und als Video Bild für Bild angesehen. Die Pill wandert in beide Richtungen als Tropfen, die Schrift ist deckungsgleich. Mit ⌥⌘Q beendet, keine Fehler im Protokoll, keine Absturzberichte. DMG danach ausgeworfen.
+- **Nicht geprüft:** das Widget auf dem Schreibtisch (unverändert seit der vorigen DMG).
+
 # Auswahlkapsel wandert wie ein Tropfen, in allen Umschaltern · 31.10.2026
 
 - **Wunsch:** Die Rubriken-Pill oben im Hauptfenster soll beim Wechseln wie ein Tropfen animiert sein, der nachzieht, und das einheitlich überall, wo es passt. **Vorher:** Jede Option hatte ihre eigene Pill. Die alte blendete an Ort und Stelle aus, die neue setzte sich 2 pt von oben auf die gewählte Option.
