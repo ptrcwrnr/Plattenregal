@@ -164,9 +164,9 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     /// so they move as one.
     private func pillLayer(_ content: some View) -> some View {
         content
-            .modifier(PillEdgeInset(edge: .leading, inset: left))
+            .modifier(DropEdgeInset(edge: .leading, inset: left))
             .animation(leftAnimation, value: left)
-            .modifier(PillEdgeInset(edge: .trailing, inset: rowWidth - right))
+            .modifier(DropEdgeInset(edge: .trailing, inset: rowWidth - right))
             .animation(rightAnimation, value: right)
             .padding(.vertical, AppStyle.controlInset)
             .frame(width: rowWidth, height: rowHeight)
@@ -213,19 +213,26 @@ struct GlassSegmentedPicker<Value: Hashable, Label: View>: View {
     }
 }
 
-/// One edge of the selection pill, set in from the row's edge. Animatable,
-/// so each edge runs on its own spring, and never beyond the row: the edge
-/// in front overshoots a little, and at the first or last option it would
-/// leave the bar – there the pill presses flat against the end instead.
-private struct PillEdgeInset: ViewModifier, Animatable {
+/// One edge of a shape that moves like a drop, set in from the edge of its
+/// area: the selection pill, the drop of the search in the menu bar
+/// (`QuickSearchDrop`). Animatable, so each edge runs on its own spring, and
+/// never beyond the area: the edge in front overshoots a little, and where it
+/// would leave the area (the pill at the first or last option, the drop at
+/// its full size) it presses flat against the edge instead.
+struct DropEdgeInset: ViewModifier, Animatable {
     let edge: Edge.Set
     var inset: CGFloat
+    /// The furthest in the edge may go, not animated: the area can shrink
+    /// at once while the edge is still on its way (the search in the menu
+    /// bar emptied while it springs open again), and an edge set in further
+    /// than the area is big would leave the shape no size at all.
+    var limit: CGFloat = .infinity
     var animatableData: CGFloat {
         get { inset }
         set { inset = newValue }
     }
     func body(content: Content) -> some View {
-        content.padding(edge, max(0, inset))
+        content.padding(edge, min(max(0, inset), max(0, limit)))
     }
 }
 

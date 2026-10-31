@@ -38,7 +38,7 @@ struct AppPanelModifier<Item: Identifiable, Panel: View>: ViewModifier {
                             }
                             // Tinted with the window color: the page behind
                             // doesn't run through the text.
-                            .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)),
+                            .glassEffect(AppStyle.isAtelier ? .identity : AppStyle.panelGlass,
                                          in: .rect(cornerRadius: AppStyle.panelRadius))
                             .shadow(color: .black.opacity(0.18), radius: 30, y: 10)
                             // Esc closes it, wherever the focus is.

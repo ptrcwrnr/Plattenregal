@@ -52,7 +52,7 @@ extension View {
                         .overlay(Capsule().strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                 }
             }
-            .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .capsule)
+            .glassEffect(AppStyle.isAtelier ? .identity : AppStyle.panelGlass, in: .capsule)
             // Lifts it off bright covers underneath.
             .shadow(color: .black.opacity(0.15), radius: 10, y: 3)
             .padding(.top, AppStyle.rowSpacing)

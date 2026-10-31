@@ -52,7 +52,8 @@ import SwiftUI
 
     func requestFocus() { focusRequests += 1 }
 
-    /// A fresh start each time the panel opens.
+    /// A fresh start each time the panel opens (not when it is opened again
+    /// while still closing, see `ShelfQuickSearch.open`).
     func reset() {
         text = ""
         results = ShelfSearchResults()
@@ -184,6 +185,14 @@ struct QuickSearchPlace {
     @ObservationIgnored private var statusItem: NSStatusItem?
     @ObservationIgnored private var panel: QuickSearchPanel?
     @ObservationIgnored private var hotKey: GlobalHotKey?
+    /// What the panel's surface shows: the drop or the whole search.
+    @ObservationIgnored private let drop = QuickSearchDrop()
+    /// Open, or opening. The panel stays on screen a moment after closing,
+    /// while the search pulls itself back into the drop.
+    @ObservationIgnored private var isOpen = false
+    /// Counts the openings: a close that ends after the panel was opened
+    /// again leaves it on screen.
+    @ObservationIgnored private var presentation = 0
     /// When the panel last closed because something else was clicked: a
     /// click on the record closes it that way first and must not reopen it.
     @ObservationIgnored private var closedAt = Date.distantPast
@@ -366,25 +375,88 @@ struct QuickSearchPlace {
     #endif
 
     func toggle() {
-        if panel?.isVisible == true { close() } else { open() }
+        if isOpen { close() } else { open() }
     }
 
+    /// Opens from a drop under the record: the drop falls (its lower edge
+    /// ahead on a taut spring) and spreads into the search (the sides after
+    /// it on a softer one), the content fades in as it does. With "Bewegung
+    /// reduzieren" the search only fades in. See `QuickSearchDrop`.
     func open() {
         guard let container, let model else { return }
-        model.reset()
+        isOpen = true
+        presentation += 1
         let panel = panel ?? makePanel(container: container, model: model)
         self.panel = panel
+        // Fully closed: a fresh start from the drop. Opened again while
+        // closing, it springs back out from wherever it is, as it was: an
+        // emptied field would shrink the panel mid-spring, and its content
+        // slid out of the top for a few frames. Before placing the panel:
+        // a record moved meanwhile moves the drop without a spring.
+        if !panel.isVisible {
+            model.reset()
+            drop.animates = false
+            drop.expanded = false
+            drop.contentShown = false
+            drop.visible = false
+        }
         openScreen = statusItem?.button?.window?.screen
             ?? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
         position(panel, height: panel.frame.height)
+        // Modern: dark glass over the desktop, in light and dark mode alike
+        // (`searchPanelSurface(onDesktop:)`), so field, labels and rack are
+        // drawn dark too. Klassisch: the app's appearance. On every opening,
+        // as the design may have changed.
+        panel.appearance = AppStyle.isAtelier ? nil : NSAppearance(named: .darkAqua)
         panel.makeKeyAndOrderFront(nil)
         statusItem?.button?.highlight(true)
-        DispatchQueue.main.async { model.requestFocus() }
+        // Once the drop is on screen, so the springs start from it.
+        DispatchQueue.main.async { [self] in
+            guard isOpen else { return }
+            if AppStyle.reduceMotion {
+                drop.animates = false
+                drop.expanded = true
+                drop.contentShown = true
+                withAnimation(AppStyle.pageInAnimation) { drop.visible = true }
+            } else {
+                drop.animates = true
+                drop.visible = true
+                drop.expanded = true
+                withAnimation(AppStyle.pageInAnimation) { drop.contentShown = true }
+            }
+            model.requestFocus()
+        }
     }
 
+    /// Closes back into the drop, calmly: the content fades at once, the
+    /// lower edge rises ahead, the sides pull in after it, and the drop fades
+    /// under the record; only then the panel goes. With "Bewegung
+    /// reduzieren" it only fades.
     func close() {
-        panel?.orderOut(nil)
         statusItem?.button?.highlight(false)
+        guard isOpen, let panel else { return }
+        isOpen = false
+        // Typing no longer goes into the fading field.
+        panel.makeFirstResponder(nil)
+        guard panel.isVisible else { return }
+        let closing = presentation
+        let finish = { [weak self, weak panel] in
+            guard let self, presentation == closing else { return }
+            panel?.orderOut(nil)
+        }
+        if AppStyle.reduceMotion {
+            withAnimation(AppStyle.pageOutAnimation) { drop.visible = false } completion: { finish() }
+        } else {
+            withAnimation(AppStyle.pageOutAnimation) { drop.contentShown = false }
+            drop.animates = true
+            drop.expanded = false
+            // Started by hand, not as a delayed animation: that one still ran
+            // when the search was opened again meanwhile, and faded it out.
+            DispatchQueue.main.asyncAfter(deadline: .now() + AppStyle.quickSearchDropFadeDelay) { [weak self] in
+                guard let self, presentation == closing else { return }
+                withAnimation(AppStyle.pageOutAnimation) { drop.visible = false } completion: { finish() }
+            }
+        }
     }
 
     /// Closes the panel and shows the record in the main window, on the
@@ -419,7 +491,7 @@ struct QuickSearchPlace {
         let panel = QuickSearchPanel()
         panel.identifier = NSUserInterfaceItemIdentifier(Self.windowID)
         panel.delegate = self
-        let view = ShelfQuickSearchView(model: model, close: { [weak self] in self?.close() },
+        let view = ShelfQuickSearchView(model: model, drop: drop, close: { [weak self] in self?.close() },
                                         show: { [weak self] in self?.showInShelf($0) },
                                         resize: { [weak self, weak panel] height in
                                             guard let self, let panel else { return }
@@ -444,12 +516,16 @@ struct QuickSearchPlace {
         let top = (anchor.map { $0.minY - AppStyle.tightSpacing } ?? visible.maxY - AppStyle.itemSpacing) + room
         var x = anchor.map { $0.midX - width / 2 } ?? visible.midX - width / 2
         x = min(max(x, visible.minX + AppStyle.itemSpacing - room), visible.maxX - width - AppStyle.itemSpacing + room)
+        // The drop hangs under the record, also where the panel is pushed
+        // in from the screen's edge.
+        let center = anchor.map { $0.midX - (x + room) }
+        if drop.centerX != center { drop.centerX = center }
         panel.setFrame(NSRect(x: x, y: top - height, width: width, height: height), display: true)
     }
 
     // A click anywhere else closes it, like a menu.
     func windowDidResignKey(_ notification: Notification) {
-        guard panel?.isVisible == true else { return }
+        guard isOpen else { return }
         closedAt = .now
         close()
     }
@@ -480,16 +556,69 @@ final class QuickSearchPanel: NSPanel {
 
 // MARK: - Panel content
 
+/// What the search panel's surface shows: the drop under the record it
+/// opens from and closes into, or the whole search. Set by
+/// `ShelfQuickSearch.open` and `close`, drawn by `ShelfQuickSearchView`.
+@Observable final class QuickSearchDrop {
+    /// The whole surface (`true`) or the drop.
+    var expanded = false
+    /// Field, matches and rack; they fade in while the drop spreads.
+    var contentShown = false
+    /// The surface at all: the drop fades at the end of closing.
+    var visible = false
+    /// The edges run on their springs. Off while the panel is put back to
+    /// the drop unseen, and with "Bewegung reduzieren".
+    var animates = false
+    /// Where the drop hangs, from the surface's left edge: under the
+    /// record. `nil` (no record in the menu bar): the middle.
+    var centerX: CGFloat?
+}
+
+/// The drop's outline: round while it is small, the surface's corners once
+/// it has spread to its full width. The radius follows the size the edges
+/// give it (`DropEdgeInset`), so it needs no spring of its own.
+nonisolated struct QuickSearchDropShape: InsettableShape {
+    /// The surface's full width, where the corners reach `cornerRadius`.
+    let fullWidth: CGFloat
+    /// The drop's diameter and the surface's corners (`AppStyle`), handed
+    /// in: a shape is drawn off the main actor.
+    let dropSize: CGFloat
+    let cornerRadius: CGFloat
+    /// For the border in Klassisch (`strokeBorder`).
+    var insetAmount: CGFloat = 0
+
+    func inset(by amount: CGFloat) -> QuickSearchDropShape {
+        var shape = self
+        shape.insetAmount += amount
+        return shape
+    }
+
+    func path(in outer: CGRect) -> Path {
+        let rect = outer.insetBy(dx: insetAmount, dy: insetAmount)
+        let size = dropSize - 2 * insetAmount
+        let round = min(rect.width, rect.height) / 2
+        // 1 at the drop's width, 0 at the full width.
+        let full = fullWidth - 2 * insetAmount
+        let spread = full > size ? min(max(1 - (rect.width - size) / (full - size), 0), 1) : 0
+        let corner = cornerRadius - insetAmount
+        let radius = min(round, corner + (round - corner) * spread)
+        return RoundedRectangle(cornerRadius: max(0, radius)).path(in: rect)
+    }
+}
+
 /// Search field, the matches, and the rack with the place of the
 /// highlighted one. ↑ ↓ pick, ↩ shows it in the main window, Esc clears the
 /// field and then closes.
 struct ShelfQuickSearchView: View {
     @Bindable var model: ShelfQuickSearchModel
+    let drop: QuickSearchDrop
     let close: () -> Void
     let show: (RecordCopy) -> Void
     /// The panel follows the content's height.
     let resize: (CGFloat) -> Void
     @FocusState private var focused: Bool
+    /// The surface's height at its full size, for the drop's lower edge.
+    @State private var surfaceHeight: CGFloat = 0
     @AppStorage(DisplaySettings.missingListKey) private var missingEnabled = true
     @Environment(\.modelContext) private var context
 
@@ -514,7 +643,14 @@ struct ShelfQuickSearchView: View {
             }
         }
         .frame(width: AppStyle.searchResultsWidth)
-        .searchPanelSurface()
+        .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { surfaceHeight = $0 }
+        // The content keeps its full layout; the drop's outline shows what
+        // of it is uncovered, and the surface is drawn in the same outline.
+        .opacity(drop.contentShown ? 1 : 0)
+        .mask { dropLayer(dropShape) }
+        .background { dropLayer(Color.clear.searchPanelSurface(in: dropShape, onDesktop: true)) }
+        .opacity(drop.visible ? 1 : 0)
+        .allowsHitTesting(drop.contentShown)
         .padding(QuickSearchPanel.shadowRoom)
         // Its own height, whatever the panel's is; the panel follows it.
         .fixedSize()
@@ -524,6 +660,35 @@ struct ShelfQuickSearchView: View {
         .onChange(of: model.focusRequests) { focused = true }
         .onChange(of: model.dataState) { model.refresh() }
         .onReceive(NotificationCenter.default.publisher(for: .plattenregalDidReset)) { _ in model.reset() }
+    }
+
+    private var dropShape: QuickSearchDropShape {
+        QuickSearchDropShape(fullWidth: AppStyle.searchResultsWidth, dropSize: AppStyle.quickSearchDropSize, cornerRadius: AppStyle.surfaceRadius)
+    }
+
+    /// Anything shaped and placed like the drop: each edge on its own
+    /// spring (see `QuickSearchDrop`). Surface and mask go through here, so
+    /// they move as one; the top edge stays under the record.
+    private func dropLayer(_ layer: some View) -> some View {
+        let full = AppStyle.searchResultsWidth
+        let size = AppStyle.quickSearchDropSize
+        let center = min(max(drop.centerX ?? full / 2, size / 2), full - size / 2)
+        let expanded = drop.expanded
+        let leading = expanded ? 0 : center - size / 2
+        let trailing = expanded ? 0 : full - center - size / 2
+        // Never set in past the drop, whatever the edges are doing.
+        let bottomLimit = max(0, surfaceHeight - size)
+        let bottom = expanded ? 0 : bottomLimit
+        // The lower edge leads both ways: springing open, calm closing.
+        let fall = drop.animates ? (expanded ? AppStyle.pillLeadAnimation : AppStyle.quickSearchDropCloseLead) : nil
+        let sides = drop.animates ? (expanded ? AppStyle.pillTrailAnimation : AppStyle.quickSearchDropCloseTrail) : nil
+        return layer
+            .modifier(DropEdgeInset(edge: .bottom, inset: bottom, limit: bottomLimit))
+            .animation(fall, value: bottom)
+            .modifier(DropEdgeInset(edge: .leading, inset: leading, limit: full - size))
+            .animation(sides, value: leading)
+            .modifier(DropEdgeInset(edge: .trailing, inset: trailing, limit: full - size))
+            .animation(sides, value: trailing)
     }
 
     private var field: some View {

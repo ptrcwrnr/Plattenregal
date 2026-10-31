@@ -36,7 +36,7 @@ extension View {
                     .shadow(color: AtelierPalette.shadow, radius: 7, y: 2)
             } else {
                 Rectangle().fill(.clear)
-                    .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)), in: shape)
+                    .glassEffect(AppStyle.cardGlass, in: shape)
                     .clipShape(shape)
                     .shadow(color: .black.opacity(0.05), radius: 6, y: 1)
             }
@@ -174,7 +174,7 @@ extension View {
         } else {
             presentationBackground {
                 Rectangle().fill(.clear)
-                    .glassEffect(.regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: .rect)
+                    .glassEffect(AppStyle.panelGlass, in: .rect)
             }
         }
     }

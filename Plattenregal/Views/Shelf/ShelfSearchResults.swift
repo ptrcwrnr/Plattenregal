@@ -98,15 +98,24 @@ extension View {
     /// the window color like the popovers and the sync capsule, so the rack
     /// underneath doesn't run through the text.
     func searchPanelSurface() -> some View {
-        let shape = RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
-        return clipShape(shape)
+        searchPanelSurface(in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
+    }
+
+    /// The same surface in another shape. `onDesktop`: the search in the
+    /// menu bar, over whatever lies on the desktop. In Modern dark glass
+    /// there (`desktopPanelGlass`, the panel drawn dark – see
+    /// `ShelfQuickSearch.open`), in light and dark mode alike: compared over
+    /// a bright, busy wallpaper and a dark window it read best – the light
+    /// glass let the wallpaper run through the gray labels.
+    func searchPanelSurface<S: InsettableShape>(in shape: S, onDesktop: Bool = false) -> some View {
+        clipShape(shape)
             .background {
                 if AppStyle.isAtelier {
                     shape.fill(AtelierPalette.surface)
                         .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                 }
             }
-            .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)), in: shape)
+            .glassEffect(AppStyle.isAtelier ? .identity : (onDesktop ? AppStyle.desktopPanelGlass : AppStyle.panelGlass), in: shape)
             .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.1 : 0.15), radius: 14, y: 4)
     }
 }

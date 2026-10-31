@@ -87,6 +87,20 @@ enum AppStyle {
     /// stretches on the way and pulls itself together at the new option.
     /// With "Bewegung reduzieren" the pill fades in the beat above instead.
     static let pillTrailAnimation = Animation.spring(response: 0.48, dampingFraction: 0.78)
+    /// The search in the menu bar opens from a drop under the record and
+    /// closes back into it (`QuickSearchDrop`). Opening on the pill's two
+    /// springs: the lower edge falls ahead (`pillLeadAnimation`), the sides
+    /// spread after it (`pillTrailAnimation`). This is the drop's diameter,
+    /// a little wider than the record.
+    static let quickSearchDropSize: CGFloat = 24
+    /// Closing calm, like everything opened from a button (`closeAnimation`):
+    /// the lower edge rises ahead, the sides pull in after it, neither past
+    /// the drop – on a spring the sides squeezed a tall list into a thin stick.
+    static let quickSearchDropCloseLead = Animation.smooth(duration: 0.22)
+    static let quickSearchDropCloseTrail = Animation.smooth(duration: 0.32)
+    /// … and the drop fades (`pageOutAnimation`) once it has nearly pulled
+    /// itself together under the record.
+    static let quickSearchDropFadeDelay: TimeInterval = 0.24
     /// What goes away on a switch.
     static var pageOutAnimation: Animation { .easeIn(duration: pageFadeOut) }
     /// What comes in on a switch, once the old state is gone.
@@ -236,6 +250,19 @@ enum AppStyle {
     static var successColor: Color { isAtelier ? AtelierPalette.success : Color.green }
     static var warningColor: Color { isAtelier ? AtelierPalette.warning : Color.orange }
     static var errorColor: Color { isAtelier ? AtelierPalette.error : Color.red }
+
+    // MARK: Glass
+    // The tints of Liquid Glass in Modern, by role. Klassisch draws paper instead.
+    /// Panels, popovers and capsules over a page (the panel over the page,
+    /// popovers, the sync capsule, the shelf's search results): tinted
+    /// toward the window color, so a bright cover beneath doesn't run
+    /// through the text.
+    static var panelGlass: Glass { .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)) }
+    /// Cards on a page: lighter, the page shows through more.
+    static var cardGlass: Glass { .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)) }
+    /// A panel over the desktop (the search in the menu bar): dark in light
+    /// and dark mode alike, so it reads over any wallpaper.
+    static var desktopPanelGlass: Glass { .regular.tint(.black.opacity(0.6)) }
 
     // MARK: Wording
     /// "1 Platte", "12 Platten", "1.234 Platten".
