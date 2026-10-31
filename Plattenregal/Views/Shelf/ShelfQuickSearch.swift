@@ -394,7 +394,7 @@ struct QuickSearchPlace {
             model.reset()
             presence.shown = false
         }
-        openScreen = statusItem?.button?.window?.screen
+        openScreen = recordAnchor?.screen
             ?? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
         position(panel, height: panel.frame.height)
         // Modern: the chosen look's appearance (dark for dark glass, light
@@ -473,17 +473,26 @@ struct QuickSearchPlace {
         return panel
     }
 
+    /// The record's window to open under, when chosen (`QuickSearchPosition`)
+    /// and the record is shown; else the search opens in the middle.
+    private var recordAnchor: NSWindow? {
+        AppPreferences.shared.quickSearchPosition == .underRecord ? statusItem?.button?.window : nil
+    }
+
     /// Under the record in the menu bar, its top edge fixed while the list
-    /// grows; without the record (switched off), at the top of the screen
-    /// with the pointer.
+    /// grows; in the middle (chosen, or without the record), at the top of
+    /// the screen with the pointer, centred on the screen – on a MacBook
+    /// right under the notch, which sits in the middle whatever the Dock does.
     private func position(_ panel: NSPanel, height: CGFloat) {
         let room = QuickSearchPanel.shadowRoom
         let width = AppStyle.quickSearchWidth + 2 * room
-        let anchor = statusItem?.button?.window?.frame
-        guard let visible = (openScreen ?? NSScreen.main)?.visibleFrame else { return }
-        // The surface sits a little below the bar; the shadow room around it is transparent.
-        let top = (anchor.map { $0.minY - AppStyle.tightSpacing } ?? visible.maxY - AppStyle.itemSpacing) + room
-        var x = anchor.map { $0.midX - width / 2 } ?? visible.midX - width / 2
+        let anchor = recordAnchor?.frame
+        guard let screen = openScreen ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame
+        // The surface sits a little below the bar, in the middle as under
+        // the record; the shadow room around it is transparent.
+        let top = (anchor?.minY ?? visible.maxY) - AppStyle.tightSpacing + room
+        var x = (anchor?.midX ?? screen.frame.midX) - width / 2
         x = min(max(x, visible.minX + AppStyle.itemSpacing - room), visible.maxX - width - AppStyle.itemSpacing + room)
         panel.setFrame(NSRect(x: x, y: top - height, width: width, height: height), display: true)
     }

@@ -98,6 +98,24 @@ extension AllTests {
             }
         }
 
+        /// Where the search in the menu bar opens: under the record unless
+        /// chosen otherwise, kept across launches, back on reset; an unknown
+        /// stored value falls back to it too.
+        @Test func quickSearchPositionIsUnderTheRecordByDefaultAndPersists() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.quickSearchPosition == .underRecord)
+                for position in QuickSearchPosition.allCases {
+                    preferences.quickSearchPosition = position
+                    #expect(AppPreferences(defaults: defaults).quickSearchPosition == position)
+                }
+                preferences.reset()
+                #expect(AppPreferences(defaults: defaults).quickSearchPosition == .underRecord)
+                defaults.set("left", forKey: AppPreferences.Key.quickSearchPosition)
+                #expect(AppPreferences(defaults: defaults).quickSearchPosition == .underRecord)
+            }
+        }
+
         /// Dark glass draws the panel dark, light glass and white light – in
         /// light and dark mode alike.
         @Test func quickSearchLookSetsThePanelsAppearance() {

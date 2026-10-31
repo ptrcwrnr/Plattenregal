@@ -58,6 +58,26 @@ enum QuickSearchLook: String, CaseIterable, Identifiable {
     }
 }
 
+/// Where the search in the menu bar opens: under the record, or at the top
+/// in the middle of the screen – on a MacBook with a notch right below it.
+enum QuickSearchPosition: String, CaseIterable, Identifiable {
+    case underRecord, center
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .underRecord: String(localized: "Unter dem Symbol")
+        case .center: String(localized: "Oben mittig")
+        }
+    }
+    /// Always shown, so the row keeps its height when switching.
+    var hint: String {
+        switch self {
+        case .underRecord: String(localized: "Erscheint direkt unter der Schallplatte in der Menüleiste.")
+        case .center: String(localized: "Erscheint oben in der Mitte des Bildschirms, bei einer Notch direkt darunter.")
+        }
+    }
+}
+
 /// The app's own accent, or the one set in the macOS settings.
 enum AccentChoice: String, CaseIterable, Identifiable {
     case system, blue, purple, pink, red, orange, yellow, green, graphite

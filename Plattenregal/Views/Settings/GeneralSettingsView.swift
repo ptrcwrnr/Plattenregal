@@ -71,6 +71,16 @@ struct GeneralSettingsView: View {
                 }
                 .disabled(AppStyle.isAtelier || (!preferences.menuBarSearch && !preferences.quickSearchHotKey))
                 Divider()
+                // Without the record there is nothing to open under: always in the middle.
+                SettingsRow(title: String(localized: "Position der Suche"),
+                            hint: preferences.menuBarSearch
+                                ? preferences.quickSearchPosition.hint
+                                : String(localized: "Ohne Schallplatte in der Menüleiste erscheint die Suche oben mittig.")) {
+                    GlassSegmentedPicker(selection: $preferences.quickSearchPosition, options: QuickSearchPosition.allCases) { Text($0.title) }
+                        .accessibilityLabel(String(localized: "Position der Suche"))
+                }
+                .disabled(!preferences.menuBarSearch)
+                Divider()
                 SettingsRow(title: String(localized: "Im Hintergrund weiterlaufen"), hint: backgroundHint) {
                     Toggle("Im Hintergrund weiterlaufen", isOn: $preferences.keepsRunningInBackground)
                         .labelsHidden().toggleStyle(.switch)

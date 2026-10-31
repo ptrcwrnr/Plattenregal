@@ -17,6 +17,7 @@ import SwiftUI
         static let menuBarSearch = "menuBarSearch"
         static let quickSearchHotKey = "quickSearchHotKey"
         static let quickSearchLook = "quickSearchLook"
+        static let quickSearchPosition = "quickSearchPosition"
         static let keepsRunningInBackground = "keepsRunningInBackground"
     }
 
@@ -43,6 +44,9 @@ import SwiftUI
     }
     /// How that search looks in Modern. Dark glass by default.
     var quickSearchLook: QuickSearchLook { didSet { store(quickSearchLook.rawValue, Key.quickSearchLook) } }
+    /// Where that search opens. Under the record by default; without the
+    /// record always at the top in the middle.
+    var quickSearchPosition: QuickSearchPosition { didSet { store(quickSearchPosition.rawValue, Key.quickSearchPosition) } }
     /// ⌘Q and closing the last window keep the app running with only the
     /// record in the menu bar (see `AppLifecycle`). On by default.
     var keepsRunningInBackground: Bool {
@@ -70,6 +74,7 @@ import SwiftUI
         menuBarSearch = defaults.object(forKey: Key.menuBarSearch) == nil || defaults.bool(forKey: Key.menuBarSearch)
         quickSearchHotKey = defaults.object(forKey: Key.quickSearchHotKey) == nil || defaults.bool(forKey: Key.quickSearchHotKey)
         quickSearchLook = defaults.string(forKey: Key.quickSearchLook).flatMap(QuickSearchLook.init) ?? .darkGlass
+        quickSearchPosition = defaults.string(forKey: Key.quickSearchPosition).flatMap(QuickSearchPosition.init) ?? .underRecord
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
         language = languageAtLaunch
     }
@@ -90,6 +95,7 @@ import SwiftUI
         menuBarSearch = true
         quickSearchHotKey = true
         quickSearchLook = .darkGlass
+        quickSearchPosition = .underRecord
         keepsRunningInBackground = true
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }

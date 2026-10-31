@@ -1,3 +1,12 @@
+# Menüleisten-Suche wahlweise oben mittig, unter der Notch · 31.10.2026
+
+- **Wunsch:** Die Suche soll auf Wunsch auch oben in der Mitte des Bildschirms erscheinen, also unter der Notch.
+- **Neue Einstellung** „Position der Suche“ unter Allgemein → Menüleiste (`QuickSearchPosition`, `AppPreferences.quickSearchPosition`, Standard und nach dem Zurücksetzen „Unter dem Symbol“): **Unter dem Symbol** wie bisher oder **Oben mittig**. Mittig heißt mittig zum ganzen Bildschirm (`screen.frame.midX`), nicht zum Bereich neben dem Dock, denn dort sitzt die Notch. Der Bildschirm ist der mit dem Zeiger. Gilt in beiden Designs. Ohne Schallplatte in der Menüleiste ist die Zeile ausgegraut mit dem Hinweis, dass die Suche dann immer oben mittig erscheint.
+- **Angeglichen:** Ohne Symbol stand die Suche bisher `itemSpacing` unter der Menüleiste, unter dem Symbol `tightSpacing`. Jetzt nehmen alle Lagen `tightSpacing`.
+- **Lokalisierung:** 6 neue Texte mit Englisch.
+- **Tests:** neu `quickSearchPositionIsUnderTheRecordByDefaultAndPersists` (Standard, Speichern jeder Variante, Zurücksetzen, unbekannter Wert); 270 Tests bestanden, Build ohne Warnung.
+- **Geprüft in der Demo:** „Oben mittig“ mit Treffern fotografiert, Fenstermitte bei 756 pt auf dem 1512 pt breiten eingebauten Bildschirm, die Notch reicht von 664 bis 849 pt; „Unter dem Symbol“ weiter unter der Schallplatte. Einstellungsseite fotografiert, per Mausklick auf „Oben mittig“ umgestellt, danach öffnete ein Klick auf die Schallplatte die Suche mittig, ein zweiter schloss sie. **Nicht geprüft:** ein zweiter Bildschirm, ein Bildschirm ohne Notch, die installierte App.
+
 # Menüleisten-Suche ohne Glaskante und Rand, Schallplatte ohne Kapsel · 31.10.2026
 
 - **Wunsch:** In der Menüleiste keinen Druckpunkt an der Schallplatte; an der Suche die hellen Linien oben und unten und den schwachen Rand außen herum entfernen, auch am großen Fenster mit Treffern – für alle Varianten.

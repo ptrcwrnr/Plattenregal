@@ -110,6 +110,66 @@
         }
       }
     },
+    "Erscheint direkt unter der Schallplatte in der Menüleiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears right below the record in the menu bar."
+          }
+        }
+      }
+    },
+    "Erscheint oben in der Mitte des Bildschirms, bei einer Notch direkt darunter." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears at the top center of the screen, right below the notch if there is one."
+          }
+        }
+      }
+    },
+    "Oben mittig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top Center"
+          }
+        }
+      }
+    },
+    "Ohne Schallplatte in der Menüleiste erscheint die Suche oben mittig." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without the record in the menu bar, the search appears at the top center."
+          }
+        }
+      }
+    },
+    "Position der Suche" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Position"
+          }
+        }
+      }
+    },
+    "Unter dem Symbol" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Under the Icon"
+          }
+        }
+      }
+    },
     "↩ Im Regal zeigen" : {
       "localizations" : {
         "en" : {
