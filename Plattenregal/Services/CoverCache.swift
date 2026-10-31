@@ -227,6 +227,12 @@ actor CoverCache {
         return removed
     }
 
+    /// Drops the decoded covers in memory, not the files: the app went into
+    /// the background (`AppLifecycle`), no window shows them.
+    nonisolated func releaseMemory() {
+        memory.withLock { $0.removeAll() }
+    }
+
     /// Drops every cached cover; they are downloaded again when next shown.
     /// Returns false when some files could not be removed.
     @discardableResult func clear() -> Bool {

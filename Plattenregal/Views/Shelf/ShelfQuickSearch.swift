@@ -169,8 +169,13 @@ struct QuickSearchPlace {
     /// A record picked in the panel, for the main window: it opens the shelf
     /// page with the card for it (see `RootView`).
     var pendingCopy: UUID?
+    /// The record is in the menu bar (switched on, the store is open) – the
+    /// condition for running in the background (`AppLifecycle`).
+    private(set) var showsStatusItem = false
     /// Opens the main window when it was closed; set by `RootView`.
     @ObservationIgnored var openMainWindow: (() -> Void)?
+    /// Opens the settings, for the record's menu; set by `RootView`.
+    @ObservationIgnored var openSettings: (() -> Void)?
 
     /// The store to search; set at launch (see `PlattenregalApp`). Without
     /// one (the database couldn't be opened) the search stays off.
@@ -216,11 +221,14 @@ struct QuickSearchPlace {
             item.button?.image = RecordGlyph.menuBarImage
             item.button?.target = self
             item.button?.action = #selector(statusItemClicked)
+            // Right-click (or ⌃-click) opens the menu with „Beenden“.
+            item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
             statusItem = item
         } else if !preferences.menuBarSearch, let item = statusItem {
             NSStatusBar.system.removeStatusItem(item)
             statusItem = nil
         }
+        if showsStatusItem != (statusItem != nil) { showsStatusItem = statusItem != nil }
         if preferences.quickSearchHotKey && Self.mayRegisterHotKey {
             if hotKey == nil {
                 let key = GlobalHotKey.quickSearch
@@ -249,9 +257,47 @@ struct QuickSearchPlace {
     }
 
     @objc private func statusItemClicked() {
+        if let event = NSApp.currentEvent, event.type == .rightMouseUp || event.modifierFlags.contains(.control) {
+            showMenu()
+            return
+        }
         guard Date.now.timeIntervalSince(closedAt) > 0.3 else { return }
         toggle()
     }
+
+    /// The record's menu: the search, the main window, the settings and
+    /// quitting – the one way to quit while the app runs in the background.
+    private func showMenu() {
+        guard let statusItem else { return }
+        close()
+        let menu = NSMenu()
+        func add(_ title: String, _ action: Selector) {
+            let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+            item.target = self
+            menu.addItem(item)
+        }
+        add(String(localized: "Im Regal suchen"), #selector(menuSearch))
+        menu.addItem(.separator())
+        add(String(localized: "Plattenregal öffnen"), #selector(menuOpenMainWindow))
+        add(String(localized: "Einstellungen …"), #selector(menuOpenSettings))
+        menu.addItem(.separator())
+        add(AppLifecycle.shared.keepsRunning ? String(localized: "Plattenregal ganz beenden") : String(localized: "Plattenregal beenden"),
+            #selector(menuQuit))
+        // Attached for this one click only: a left click keeps opening the search.
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)
+        statusItem.menu = nil
+    }
+
+    // After the menu has closed, so the panel can take the keyboard.
+    @objc private func menuSearch() { DispatchQueue.main.async { self.open() } }
+    @objc private func menuOpenMainWindow() { showMainWindow() }
+    @objc private func menuOpenSettings() {
+        AppLifecycle.shared.leaveBackground()
+        NSApp.activate()
+        if let openSettings { openSettings() } else { AppLog.error("Menüleiste", "Einstellungen ließen sich nicht öffnen") }
+    }
+    @objc private func menuQuit() { AppLifecycle.shared.quitCompletely() }
 
     #if DEBUG
     /// --preview-quicksearch-keys=down,up,return: presses these keys in the
@@ -259,8 +305,11 @@ struct QuickSearchPlace {
     /// needed inside the app), half a second apart. Also `escape`, `toggle`
     /// (as the record or ⌥ Leertaste would), `type:abc` (types letters),
     /// `closemain` / `minimizemain` (the main window closed or in the Dock),
-    /// `menubar` / `hotkey` (switch the settings) and `dumpwindows` (writes
-    /// the state and every window to the protocol, category „Prüfung“).
+    /// `menubar` / `hotkey` / `background` (switch the settings), `quit` (⌘Q),
+    /// `quitall` (the record's „ganz beenden“), `openmain` / `settings` (the
+    /// record's menu), `loginon` / `loginoff` („Bei der Anmeldung öffnen“),
+    /// `wait` (nothing) and `dumpwindows` (writes the state and every window
+    /// to the protocol, category „Prüfung“).
     private func pressPreviewKeys() {
         guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-quicksearch-keys=") }) else { return }
         let keys = raw.dropFirst("--preview-quicksearch-keys=".count).split(separator: ",")
@@ -271,8 +320,18 @@ struct QuickSearchPlace {
                 // Switches the setting as Einstellungen → Allgemein would.
                 if key == "menubar" { AppPreferences.shared.menuBarSearch.toggle(); return }
                 if key == "hotkey" { AppPreferences.shared.quickSearchHotKey.toggle(); return }
+                if key == "background" { AppPreferences.shared.keepsRunningInBackground.toggle(); return }
+                if key == "quit" { AppLifecycle.shared.quitRequested(); return }
+                if key == "quitall" { menuQuit(); return }
+                if key == "openmain" { menuOpenMainWindow(); return }
+                if key == "settings" { menuOpenSettings(); return }
+                if key == "loginon" || key == "loginoff" {
+                    LoginItem.shared.set(key == "loginon")
+                    AppLog.info("Prüfung", "Anmeldeobjekt: Status \(LoginItem.shared.status.rawValue), an \(LoginItem.shared.isOn), abgelehnt \(LoginItem.shared.failed)")
+                    return
+                }
                 if key == "dumpwindows" {
-                    AppLog.info("Prüfung", "Prozess \(ProcessInfo.processInfo.processIdentifier) Symbol \(statusItem != nil), Kürzel registriert \(hotKey?.isRegistered == true), abgelehnt \(hotKeyRefused), Tooltip „\(statusItem?.button?.toolTip ?? "–")“")
+                    AppLog.info("Prüfung", "Prozess \(ProcessInfo.processInfo.processIdentifier) Symbol \(statusItem != nil), Kürzel registriert \(hotKey?.isRegistered == true), abgelehnt \(hotKeyRefused), Tooltip „\(statusItem?.button?.toolTip ?? "–")“, Hintergrund \(AppLifecycle.shared.isInBackground), Dock \(NSApp.activationPolicy() == .regular), aktiv \(NSApp.isActive)")
                     for window in NSApp.windows {
                         AppLog.info("Prüfung", "Prozess \(ProcessInfo.processInfo.processIdentifier) Fenster \(window.identifier?.rawValue ?? "–") \(type(of: window)) sichtbar \(window.isVisible) im Dock \(window.isMiniaturized) main \(window.canBecomeMain)")
                     }
@@ -333,6 +392,13 @@ struct QuickSearchPlace {
     func showInShelf(_ copy: RecordCopy) {
         close()
         pendingCopy = copy.id
+        showMainWindow()
+    }
+
+    /// The main window in front, from the Dock or anew when it was closed –
+    /// also out of the background, with the Dock icon back.
+    func showMainWindow() {
+        AppLifecycle.shared.leaveBackground()
         NSApp.activate()
         // Only a window on screen or in the Dock: a closed one may linger in
         // the list without its content, `openWindow` builds it anew. Not by
@@ -342,7 +408,7 @@ struct QuickSearchPlace {
             if window.isMiniaturized { window.deminiaturize(nil) }
             window.makeKeyAndOrderFront(nil)
         } else if let openMainWindow {
-            AppLog.info("Menüleiste", "Hauptfenster für „Im Regal zeigen“ neu geöffnet")
+            AppLog.info("Menüleiste", "Hauptfenster neu geöffnet")
             openMainWindow()
         } else {
             AppLog.error("Menüleiste", "Hauptfenster ließ sich nicht öffnen")

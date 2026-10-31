@@ -120,6 +120,16 @@
         }
       }
     },
+    "⌘Q und das Schließen des letzten Fensters lassen Plattenregal ohne Symbol im Dock weiterlaufen; Schallplatte und Kürzel bleiben. Ganz beenden: Rechtsklick auf die Schallplatte oder ⌥⌘Q." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘Q and closing the last window keep Plattenregal running without a Dock icon; the record and the shortcut stay. To quit completely: right-click the record or press ⌥⌘Q."
+          }
+        }
+      }
+    },
     "⌥ Leertaste" : {
       "localizations" : {
         "en" : {
@@ -140,12 +150,32 @@
         }
       }
     },
+    "Bei der Anmeldung öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open at Login"
+          }
+        }
+      }
+    },
     "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen. ↩ zeigt die Platte im Regal." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature. ↩ shows the record on the shelf."
+          }
+        }
+      }
+    },
+    "Einstellungen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings…"
           }
         }
       }
@@ -160,6 +190,16 @@
         }
       }
     },
+    "Freigabe in macOS" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approval in macOS"
+          }
+        }
+      }
+    },
     "Gehört in" : {
       "localizations" : {
         "en" : {
@@ -170,12 +210,32 @@
         }
       }
     },
+    "Geht nur mit der Schallplatte in der Menüleiste – über sie lässt sich Plattenregal dann ganz beenden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only with the record in the menu bar – that’s where you can then quit Plattenregal completely."
+          }
+        }
+      }
+    },
     "Gezeichnete Cover" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Drawn covers"
+          }
+        }
+      }
+    },
+    "Im Hintergrund weiterlaufen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Running in the Background"
           }
         }
       }
@@ -206,6 +266,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show on the shelf where the record belongs"
+          }
+        }
+      }
+    },
+    "In der Demo beendet ⌘Q Plattenregal wie gewohnt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the demo, ⌘Q quits Plattenregal as usual."
           }
         }
       }
@@ -250,6 +320,26 @@
         }
       }
     },
+    "macOS hat die Änderung nicht angenommen. Unter Systemeinstellungen → Allgemein → Anmeldeobjekte lässt sich Plattenregal auch von Hand eintragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS didn’t accept the change. You can also add Plattenregal by hand in System Settings → General → Login Items."
+          }
+        }
+      }
+    },
+    "macOS wartet auf deine Freigabe unter Systemeinstellungen → Allgemein → Anmeldeobjekte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS is waiting for your approval in System Settings → General → Login Items."
+          }
+        }
+      }
+    },
     "Menüleiste" : {
       "localizations" : {
         "en" : {
@@ -266,6 +356,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens the search from anywhere, even while another app is in front. If another app uses %@ as well, only one of them responds – then switch it off here."
+          }
+        }
+      }
+    },
+    "Plattenregal beenden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Plattenregal"
+          }
+        }
+      }
+    },
+    "Plattenregal ganz beenden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Plattenregal Completely"
+          }
+        }
+      }
+    },
+    "Plattenregal öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Plattenregal"
+          }
+        }
+      }
+    },
+    "Startet Plattenregal beim Anmelden am Mac, ohne Fenster: nur mit der Schallplatte in der Menüleiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts Plattenregal when you log in to your Mac, without a window: just the record in the menu bar."
+          }
+        }
+      }
+    },
+    "Startet Plattenregal beim Anmelden am Mac." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts Plattenregal when you log in to your Mac."
           }
         }
       }
@@ -8334,6 +8474,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "System"
+          }
+        }
+      }
+    },
+    "Systemeinstellungen öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open System Settings"
           }
         }
       }

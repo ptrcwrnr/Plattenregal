@@ -78,10 +78,12 @@ struct RootView: View {
     /// The search in the menu bar: a record picked there opens here.
     @State private var quickSearch = ShelfQuickSearch.shared
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     var body: some View {
         library
             .onAppear {
                 quickSearch.openMainWindow = { [openWindow] in openWindow(id: DemoMode.mainWindowID) }
+                quickSearch.openSettings = { [openSettings] in openSettings() }
                 takeQuickSearchRequest()
             }
             .onChange(of: quickSearch.pendingCopy) { takeQuickSearchRequest() }

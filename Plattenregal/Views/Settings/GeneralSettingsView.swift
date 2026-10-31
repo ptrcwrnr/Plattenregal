@@ -5,6 +5,7 @@ import SwiftUI
 struct GeneralSettingsView: View {
     @State private var preferences = AppPreferences.shared
     @State private var quickSearch = ShelfQuickSearch.shared
+    @State private var loginItem = LoginItem.shared
 
     var body: some View {
         @Bindable var preferences = preferences
@@ -30,6 +31,18 @@ struct GeneralSettingsView: View {
                     GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
                         .accessibilityLabel("Startseite")
                 }
+                Divider()
+                SettingsRow(title: String(localized: "Bei der Anmeldung öffnen"), hint: loginHint) {
+                    Toggle("Bei der Anmeldung öffnen", isOn: Binding(get: { loginItem.isOn }, set: { loginItem.set($0) }))
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                if loginItem.needsApproval {
+                    Divider()
+                    SettingsRow(title: String(localized: "Freigabe in macOS"),
+                                hint: String(localized: "macOS wartet auf deine Freigabe unter Systemeinstellungen → Allgemein → Anmeldeobjekte.")) {
+                        SecondaryButton(title: String(localized: "Systemeinstellungen öffnen")) { loginItem.openSystemSettings() }
+                    }
+                }
             }
             SettingsCard(title: String(localized: "Menüleiste")) {
                 SettingsRow(title: String(localized: "Suche in der Menüleiste"),
@@ -46,6 +59,12 @@ struct GeneralSettingsView: View {
                                 : String(localized: "Öffnet die Suche von überall, auch wenn gerade eine andere App vorn ist. Nutzt eine andere App \(GlobalHotKey.quickSearch.title) ebenfalls, reagiert nur eine von beiden – dann hier ausschalten.")) {
                     Toggle("Kürzel", isOn: $preferences.quickSearchHotKey).labelsHidden().toggleStyle(.switch)
                 }
+                Divider()
+                SettingsRow(title: String(localized: "Im Hintergrund weiterlaufen"), hint: backgroundHint) {
+                    Toggle("Im Hintergrund weiterlaufen", isOn: $preferences.keepsRunningInBackground)
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                .disabled(!preferences.menuBarSearch || DemoMode.isActive)
             }
             SettingsCard(title: String(localized: "Demo"), subtitle: String(localized: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.")) {
                 SettingsRow(title: DemoMode.isActive ? String(localized: "Die Demo läuft") : String(localized: "Beispielsammlung"),
@@ -63,6 +82,22 @@ struct GeneralSettingsView: View {
                 }
             }
         }
+        // Can also be changed under Systemeinstellungen → Anmeldeobjekte.
+        .onAppear { loginItem.refresh() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in loginItem.refresh() }
+    }
+
+    private var loginHint: String {
+        if loginItem.failed { return String(localized: "macOS hat die Änderung nicht angenommen. Unter Systemeinstellungen → Allgemein → Anmeldeobjekte lässt sich Plattenregal auch von Hand eintragen.") }
+        return AppLifecycle.shared.keepsRunning
+            ? String(localized: "Startet Plattenregal beim Anmelden am Mac, ohne Fenster: nur mit der Schallplatte in der Menüleiste.")
+            : String(localized: "Startet Plattenregal beim Anmelden am Mac.")
+    }
+
+    private var backgroundHint: String {
+        if DemoMode.isActive { return String(localized: "In der Demo beendet ⌘Q Plattenregal wie gewohnt.") }
+        if !AppPreferences.shared.menuBarSearch { return String(localized: "Geht nur mit der Schallplatte in der Menüleiste – über sie lässt sich Plattenregal dann ganz beenden.") }
+        return String(localized: "⌘Q und das Schließen des letzten Fensters lassen Plattenregal ohne Symbol im Dock weiterlaufen; Schallplatte und Kürzel bleiben. Ganz beenden: Rechtsklick auf die Schallplatte oder ⌥⌘Q.")
     }
 }
 

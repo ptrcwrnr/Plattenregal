@@ -65,6 +65,37 @@ extension AllTests {
             }
         }
 
+        /// „Im Hintergrund weiterlaufen“: on when nothing is stored, back on
+        /// after a reset, "NO" from a launch argument switches it off.
+        @Test func runningInTheBackgroundIsOnByDefaultAndPersists() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.keepsRunningInBackground)
+                preferences.keepsRunningInBackground = false
+                #expect(!AppPreferences(defaults: defaults).keepsRunningInBackground)
+                preferences.reset()
+                #expect(AppPreferences(defaults: defaults).keepsRunningInBackground)
+                defaults.set("NO", forKey: AppPreferences.Key.keepsRunningInBackground)
+                #expect(!AppPreferences(defaults: defaults).keepsRunningInBackground)
+            }
+        }
+
+        /// Only ⌘Q-like requests from outside (Dock, script) go into the
+        /// background; logout, „ganz beenden“, the app's own relaunch, a
+        /// switched-off setting (or no record in the menu bar) and a request
+        /// while already in the background always quit.
+        @Test func quitRequestsGoIntoTheBackgroundOnlyWhenTheyMay() {
+            func decide(keeps: Bool = true, completely: Bool = false, event: Bool = true, system: Bool = false, background: Bool = false) -> QuitDecision {
+                QuitDecision.decide(keepsRunning: keeps, completely: completely, quitEvent: event, systemQuit: system, inBackground: background)
+            }
+            #expect(decide() == .background)
+            #expect(decide(system: true) == .quit)
+            #expect(decide(completely: true) == .quit)
+            #expect(decide(event: false) == .quit)
+            #expect(decide(keeps: false) == .quit)
+            #expect(decide(background: true) == .quit)
+        }
+
         @Test func drawnCoversReplaceTheDiscogsImageStably() {
             let release = Release(discogsID: 4711, artist: "Air (2)", title: "Moon Safari")
             release.coverURL = "https://i.discogs.com/cover.jpg"

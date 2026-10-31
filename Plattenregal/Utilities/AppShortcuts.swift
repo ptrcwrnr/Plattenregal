@@ -40,6 +40,8 @@ enum AppShortcuts {
                 Entry(keys: "⌥⌘R", title: String(localized: "Alles mit Discogs synchronisieren")),
                 Entry(keys: "⌘.", title: String(localized: "Synchronisierung abbrechen")),
                 Entry(keys: "⌘,", title: String(localized: "Einstellungen")),
+                // ⌘Q keeps it running in the background while that is switched on (`AppLifecycle`).
+                Entry(keys: "⌥⌘Q", title: String(localized: "Plattenregal ganz beenden")),
             ]),
             Group(title: String(localized: "Collection und Wantlist"), entries: [
                 Entry(keys: "⌥⌘1 / ⌥⌘2", title: String(localized: "Raster / Liste")),

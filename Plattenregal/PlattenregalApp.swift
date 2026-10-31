@@ -3,7 +3,8 @@ import SwiftData
 
 /// With a single `Window` scene macOS would quit the app when that window
 /// closes; like before, it keeps running (automatic export, tracklist
-/// download, backups) and the Dock or the Fenster menu brings the window back.
+/// download, backups) and the Dock or the Fenster menu brings the window back –
+/// or, running in the background (`AppLifecycle`), the record in the menu bar.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     /// The record in the menu bar and ⌥ Leertaste (see `ShelfQuickSearch`) –
@@ -11,7 +12,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// the shortcut from a running Plattenregal.
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        // Only here: macOS hands over the open event while launching finishes.
+        let atLogin = AppLifecycle.launchedAsLoginItem
         ShelfQuickSearch.shared.start()
+        AppLifecycle.shared.start(launchedAtLogin: atLogin)
+    }
+    /// The Dock's „Beenden“, a script or logout – see `AppLifecycle.terminateReply`.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        AppLifecycle.shared.terminateReply()
+    }
+    /// Opened again from the Finder or Launchpad while running in the
+    /// background: the Dock icon comes back before SwiftUI opens the window.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        AppLifecycle.shared.leaveBackground()
+        return true
     }
 }
 
@@ -101,8 +115,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let container, Self.previewsSettings {
                 AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
             } else if let container {
-                RootView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
-                    .frame(minWidth: 1050, minHeight: 720)
+                ReleasedInBackground {
+                    RootView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
+                }
+                .frame(minWidth: 1050, minHeight: 720)
             } else {
                 if DemoMode.isActive {
                     ContentUnavailableView {
@@ -149,6 +165,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         .windowToolbarLabelStyle(fixed: .iconOnly)
         .commands {
             CommandGroup(replacing: .appInfo) { AboutCommand() }
+            CommandGroup(replacing: .appTermination) { QuitCommands() }
             CommandGroup(replacing: .help) { HelpCommands() }
             CommandGroup(after: .appSettings) {
                 if DemoMode.isActive {
@@ -170,7 +187,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         .commandsRemoved()
         Settings {
             if let container {
-                AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
+                ReleasedInBackground {
+                    AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
+                }
             } else {
                 // Same situation the main window explains; don't open an empty window.
                 ContentUnavailableView("Einstellungen nicht verfügbar", systemImage: "externaldrive.badge.exclamationmark",
@@ -181,6 +200,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         : "Plattenregal konnte deine Sammlung beim Start nicht laden. Beende die App und starte sie noch einmal."))
                     .padding().frame(width: 420, height: 240)
             }
+        }
+    }
+}
+
+/// A closed SwiftUI window keeps its whole content – views, layers, covers –
+/// and only leaves the screen. In the background (`AppLifecycle`) nothing
+/// shows it, so it is dropped and built anew when a window opens again, as
+/// after a launch. Long-running work (sync, tracklists, export, backups)
+/// lives in services, not in these views, and goes on.
+private struct ReleasedInBackground<Content: View>: View {
+    @State private var lifecycle = AppLifecycle.shared
+    @ViewBuilder let content: Content
+    var body: some View {
+        if lifecycle.isInBackground { Color.clear } else { content }
+    }
+}
+
+/// ⌘Q keeps Plattenregal running with only the record in the menu bar while
+/// that is switched on (see `AppLifecycle`); ⌥⌘Q quits completely then.
+private struct QuitCommands: View {
+    @State private var lifecycle = AppLifecycle.shared
+    var body: some View {
+        Button("Plattenregal beenden") { lifecycle.quitRequested() }
+            .keyboardShortcut("q")
+        if lifecycle.keepsRunning {
+            Button("Plattenregal ganz beenden") { lifecycle.quitCompletely() }
+                .keyboardShortcut("q", modifiers: [.command, .option])
         }
     }
 }

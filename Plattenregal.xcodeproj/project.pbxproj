@@ -136,6 +136,7 @@
 		A78EDC7748144F3AE4DCCA12 /* Plattenregal/Utilities/AppearanceChoices.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A5EDA30F381A3A3942CE2D /* Plattenregal/Utilities/AppearanceChoices.swift */; };
 		D6A255881A27E1B31A26F1D5 /* Plattenregal/Utilities/AppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F385AE2B458D24C604B2DE2D /* Plattenregal/Utilities/AppShortcuts.swift */; };
 		8983D0CD2BF150A1979C102A /* Plattenregal/Utilities/GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992857E17924A3515C0B78A6 /* Plattenregal/Utilities/GlobalHotKey.swift */; };
+		14F99906650647F0E96AB8B4 /* Plattenregal/Utilities/AppLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28233483D28D048FCE1D6CC6 /* Plattenregal/Utilities/AppLifecycle.swift */; };
 		DA7C9C2D90EF1DC414B78E1C /* Plattenregal/Views/CoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500F435AE4E17221E001B560 /* Plattenregal/Views/CoverView.swift */; };
 		1C38DE8701BF96E5C83C38CA /* Plattenregal/Views/CollectionCoverGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B0696BFA2BA703AC081757 /* Plattenregal/Views/CollectionCoverGroup.swift */; };
 		DB43043BF298494C43DED27C /* PlattenregalTests/LibraryTests+Shelves.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437C7653C765417162906B62 /* PlattenregalTests/LibraryTests+Shelves.swift */; };
@@ -303,6 +304,7 @@
 		F4A5EDA30F381A3A3942CE2D /* Plattenregal/Utilities/AppearanceChoices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/AppearanceChoices.swift; sourceTree = "<group>"; };
 		F385AE2B458D24C604B2DE2D /* Plattenregal/Utilities/AppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/AppShortcuts.swift; sourceTree = "<group>"; };
 		992857E17924A3515C0B78A6 /* Plattenregal/Utilities/GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/GlobalHotKey.swift; sourceTree = "<group>"; };
+		28233483D28D048FCE1D6CC6 /* Plattenregal/Utilities/AppLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/AppLifecycle.swift; sourceTree = "<group>"; };
 		500F435AE4E17221E001B560 /* Plattenregal/Views/CoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/CoverView.swift; sourceTree = "<group>"; };
 		06B0696BFA2BA703AC081757 /* Plattenregal/Views/CollectionCoverGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/CollectionCoverGroup.swift; sourceTree = "<group>"; };
 		437C7653C765417162906B62 /* PlattenregalTests/LibraryTests+Shelves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlattenregalTests/LibraryTests+Shelves.swift"; sourceTree = "<group>"; };
@@ -360,6 +362,7 @@
 				01B09D2C8BF218778FB6E9D2 /* Plattenregal/Utilities/AppPreferences.swift */,
 				F385AE2B458D24C604B2DE2D /* Plattenregal/Utilities/AppShortcuts.swift */,
 				992857E17924A3515C0B78A6 /* Plattenregal/Utilities/GlobalHotKey.swift */,
+				28233483D28D048FCE1D6CC6 /* Plattenregal/Utilities/AppLifecycle.swift */,
 				F4A5EDA30F381A3A3942CE2D /* Plattenregal/Utilities/AppearanceChoices.swift */,
 				A7168D76582D5F1210EB8B72 /* Plattenregal/Utilities/DisplayChoices.swift */,
 				02521F7BA74415A05D4AF390 /* Plattenregal/Design/AppAppearance.swift */,
@@ -724,6 +727,7 @@
 				8BF218778FB6E9D23BA4B988 /* Plattenregal/Utilities/AppPreferences.swift in Sources */,
 				D6A255881A27E1B31A26F1D5 /* Plattenregal/Utilities/AppShortcuts.swift in Sources */,
 				8983D0CD2BF150A1979C102A /* Plattenregal/Utilities/GlobalHotKey.swift in Sources */,
+				14F99906650647F0E96AB8B4 /* Plattenregal/Utilities/AppLifecycle.swift in Sources */,
 				A78EDC7748144F3AE4DCCA12 /* Plattenregal/Utilities/AppearanceChoices.swift in Sources */,
 				49F806B10306EF2D193D73FA /* Plattenregal/Utilities/DisplayChoices.swift in Sources */,
 				AF98C763E6527CB8CC2F0512 /* Plattenregal/Services/CabinetService.swift in Sources */,
