@@ -28,9 +28,6 @@ import WidgetKit
     /// Edge of the covers written for the widget: sharp on the large one.
     static let coverPixels = 640
     nonisolated static let coverQuality = 0.85
-    /// Tracks written per day: more than the large widget has room for, it
-    /// counts the rest.
-    static let trackCount = 24
     /// Changes within this time go out together.
     static let pause: Duration = .seconds(2)
     /// After a cover couldn't be loaded (no network), the next try.
@@ -100,9 +97,7 @@ import WidgetKit
         guard let context = container?.mainContext else { return }
         withObservationTracking {
             let changes = LibraryChanges.shared
-            // Tracklists arrive after a sync, in the background: the large
-            // widget lists them. Many changes in a row go out once (`pause`).
-            _ = (changes.libraryVersion, changes.tracksVersion, changes.placementsVersion, changes.shelvesVersion)
+            _ = (changes.libraryVersion, changes.placementsVersion, changes.shelvesVersion)
             let records = LibraryRecords.of(context)
             _ = (records.copies, records.exclusions, records.accounts)
             let preferences = AppPreferences.shared
@@ -272,8 +267,6 @@ import WidgetKit
             }
             days.append(RecordOfTheDay.Day(day: number, date: dayDate, copyID: id, artist: release.displayArtist,
                                            title: release.displayTitle, seed: release.discogsID,
-                                           tracks: release.tracks.filter { !$0.title.isEmpty }.prefix(Self.trackCount)
-                                               .map { RecordOfTheDay.TrackLine(position: $0.position, title: $0.title) },
                                            details: details, place: place,
                                            isPlaced: placed, cover: nil))
         }

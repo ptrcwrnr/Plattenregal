@@ -17,13 +17,13 @@ struct RecordOfTheDayWidget: Widget {
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: Self.kind, intent: RecordOfTheDayConfiguration.self, provider: RecordOfTheDayProvider()) { entry in
-            RecordOfTheDayView(snapshot: entry.snapshot, day: entry.day, family: entry.family, design: entry.design)
+            RecordOfTheDayView(snapshot: entry.snapshot, day: entry.day, design: entry.design)
         }
         .configurationDisplayName("Platte des Tages")
         .description("Jeden Tag eine Platte aus deiner Sammlung – und wo sie im Regal steht.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
-        // The small one shows the cover edge to edge; the others keep the
-        // app's padding themselves.
+        // One size: cover beside caption and place needs the medium's width.
+        .supportedFamilies([.systemMedium])
+        // The view keeps the app's padding itself (`DesignScale.cardPadding`).
         .contentMarginsDisabled()
     }
 }
@@ -59,7 +59,6 @@ nonisolated struct RecordOfTheDayEntry: TimelineEntry {
     let date: Date
     let snapshot: RecordOfTheDay?
     let day: RecordOfTheDay.Day?
-    let family: WidgetFamily
     let design: RecordOfTheDay.Design?
 }
 
@@ -73,8 +72,7 @@ nonisolated struct RecordOfTheDayProvider: AppIntentTimelineProvider {
     static let emptyRefresh: TimeInterval = 60 * 60
 
     func placeholder(in context: Context) -> RecordOfTheDayEntry {
-        RecordOfTheDayEntry(date: Date(), snapshot: .sample, day: RecordOfTheDay.sample.days.first,
-                            family: context.family, design: nil)
+        RecordOfTheDayEntry(date: Date(), snapshot: .sample, day: RecordOfTheDay.sample.days.first, design: nil)
     }
 
     func snapshot(for configuration: RecordOfTheDayConfiguration, in context: Context) async -> RecordOfTheDayEntry {
@@ -82,8 +80,7 @@ nonisolated struct RecordOfTheDayProvider: AppIntentTimelineProvider {
         let stored = RecordOfTheDay.load()
         // The gallery shows the user's record of today, or an example.
         let snapshot = context.isPreview && stored?.day(at: now) == nil ? .sample : stored
-        return RecordOfTheDayEntry(date: now, snapshot: snapshot, day: snapshot?.day(at: now),
-                                   family: context.family, design: configuration.design.design)
+        return RecordOfTheDayEntry(date: now, snapshot: snapshot, day: snapshot?.day(at: now), design: configuration.design.design)
     }
 
     func timeline(for configuration: RecordOfTheDayConfiguration, in context: Context) async -> Timeline<RecordOfTheDayEntry> {
@@ -92,13 +89,13 @@ nonisolated struct RecordOfTheDayProvider: AppIntentTimelineProvider {
         let snapshot = RecordOfTheDay.load()
         let days = Array((snapshot?.days(from: now) ?? []).prefix(Self.entriesPerTimeline))
         guard let first = days.first else {
-            let entry = RecordOfTheDayEntry(date: now, snapshot: snapshot, day: nil, family: context.family, design: design)
+            let entry = RecordOfTheDayEntry(date: now, snapshot: snapshot, day: nil, design: design)
             return Timeline(entries: [entry], policy: .after(now.addingTimeInterval(Self.emptyRefresh)))
         }
         // Today's from now on, each later one from the start of its day.
-        let entries = [RecordOfTheDayEntry(date: now, snapshot: snapshot, day: first, family: context.family, design: design)]
+        let entries = [RecordOfTheDayEntry(date: now, snapshot: snapshot, day: first, design: design)]
             + days.dropFirst().map {
-                RecordOfTheDayEntry(date: $0.date, snapshot: snapshot, day: $0, family: context.family, design: design)
+                RecordOfTheDayEntry(date: $0.date, snapshot: snapshot, day: $0, design: design)
             }
         // Read again when the last day shown begins – or, at the end of what
         // the app wrote, at the next midnight, in case it wrote more meanwhile.
@@ -115,10 +112,6 @@ extension RecordOfTheDay {
         let day = RecordOfTheDay.Day(day: dayNumber(Date()), date: Calendar.current.startOfDay(for: Date()),
                                      copyID: UUID(), artist: "Boards of Canada",
                                      title: "Music Has the Right to Children", seed: 7,
-                                     tracks: [("A1", "Wildlife Analysis"), ("A2", "An Eagle in Your Mind"), ("A3", "The Color of the Fire"),
-                                              ("A4", "Telephasic Workshop"), ("B1", "Triangles & Rhombuses"), ("B2", "Sixtyten"),
-                                              ("B3", "Turquoise Hexagon Sun"), ("B4", "Kaini Industries"), ("C1", "Bocuma"),
-                                              ("C2", "Roygbiv"), ("C3", "Rue the Whirl")].map { TrackLine(position: $0.0, title: $0.1) },
                                      details: "1998 · Warp",
                                      place: String(localized: "Fach \(3)") + " · " + String(localized: "Position \(12)"), isPlaced: true, cover: nil)
         return RecordOfTheDay(design: .classic, classicFrame: .sleeve, accent: nil, days: [day], history: [])

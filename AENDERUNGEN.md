@@ -1,3 +1,11 @@
+# Widget nur noch mittelgroß · 31.10.2026
+
+- **Geändert:** Das Widget „Platte des Tages“ gibt es nur noch in der mittleren Größe (`supportedFamilies([.systemMedium])`). Entfernt: kleines Widget samt Band und Glas-Layout (`SmallRecordView`, `SmallTintedRecordView`), großes Widget samt Tracklist (`LargeRecordView`, `WidgetTracks`, `WidgetMetrics`), die Tracklisten im Datenformat (`Day.tracks`, `TrackLine`) und im Publisher (`trackCount`, Beobachtung von `tracksVersion`), die Größe im Zeitplan, die Bandfarben in `WidgetLook` und der nur dafür nötige Darstellungsmodus der Ansicht. Eine Datei älterer Fassung mit Tracklisten liest das Widget weiter (überzählige Felder werden übergangen).
+- **Bereits auf dem Schreibtisch liegende kleine und große Widgets** entfernt macOS, sobald die neue Fassung installiert ist, weil das Widget diese Größen nicht mehr anbietet (nicht geprüft).
+- **Lokalisierung:** „+ %lld weitere“ entfernt; Abgleich: 937 Texte im Code, 937 im Katalog, keiner fehlt, keiner ohne Englisch.
+- **Doku:** README (Abschnitt Widget, Dateien, Tests). Handbuch unverändert (nennt keine Größen).
+- Geprüft: Build ohne Warnung, 264 Tests bestanden; der Ansichten-Test zeichnet jetzt in der Größe, die macOS 27 laut Systemprotokoll auf dem Schreibtisch verwendet (344 × 164 pt), und die Bilder wurden angesehen.
+
 # DMG 1.0.0 mit dem Widget im Glas-Stil neu ausgegeben · 31.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026). Die vorige DMG war noch eingehängt (nichts lief daraus) und wurde ausgeworfen. Handbuch-PDFs unverändert.

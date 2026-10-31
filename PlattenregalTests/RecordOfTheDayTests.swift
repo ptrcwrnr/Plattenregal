@@ -77,7 +77,7 @@ extension AllTests {
             let start = Date(timeIntervalSince1970: 1_800_000_000)
             let days = (0..<3).map { offset in
                 RecordOfTheDay.Day(day: offset, date: start.addingTimeInterval(Double(offset) * 86_400), copyID: UUID(),
-                                   artist: "A\(offset)", title: "T", seed: offset, tracks: [], details: "", place: "", isPlaced: false, cover: nil)
+                                   artist: "A\(offset)", title: "T", seed: offset, details: "", place: "", isPlaced: false, cover: nil)
             }
             let snapshot = RecordOfTheDay(design: .classic, classicFrame: .sleeve, accent: nil, days: days, history: [])
             #expect(snapshot.day(at: start.addingTimeInterval(-10))?.day == 0)
@@ -241,21 +241,19 @@ extension AllTests {
 
         // MARK: The widget's views
 
-        /// The widget in each size and design, light and dark, drawn into
-        /// images – they must have content of their own size. With
+        /// The medium widget in each design, light and dark, drawn into images
+        /// at the size macOS 27 gives it on the desktop (344 × 164 pt, read
+        /// from the system log) – they must have content of that size. With
         /// `PLATTENREGAL_WIDGET_RENDERS` set (`TEST_RUNNER_PLATTENREGAL_WIDGET_RENDERS=1`
         /// for xcodebuild) they are kept to look at, in the test host's temporary folder.
-        @Test func widgetViewsDrawInEverySizeAndDesign() throws {
-            let sizes: [(WidgetFamily, CGSize)] = [(.systemSmall, CGSize(width: 170, height: 170)),
-                                                    (.systemMedium, CGSize(width: 364, height: 170)),
-                                                    (.systemLarge, CGSize(width: 364, height: 382))]
+        @Test func widgetViewsDrawInEveryDesign() throws {
+            let size = CGSize(width: 344, height: 164)
             let day = RecordOfTheDay.Day(day: 1, date: Date(), copyID: UUID(), artist: "Boards of Canada",
                                          title: "Music Has the Right to Children", seed: 7,
-                                         tracks: (1...14).map { RecordOfTheDay.TrackLine(position: "A\($0)", title: "Track Nummer \($0) mit einem langen Titel") },
                                          details: "1998 · Warp",
                                          place: "KALLAX · A – Be · Position 12", isPlaced: true, cover: nil)
             let unplaced = RecordOfTheDay.Day(day: 1, date: Date(), copyID: UUID(), artist: "Moderat",
-                                              title: "II", seed: 99, tracks: [], details: "2013 · Monkeytown Records",
+                                              title: "II", seed: 99, details: "2013 · Monkeytown Records",
                                               place: "Gehört in „KALLAX · Ma – Mo“", isPlaced: false, cover: nil)
             // Inside the sandbox of the test host: its temporary folder.
             let keep = ProcessInfo.processInfo.environment["PLATTENREGAL_WIDGET_RENDERS"] == nil ? nil
@@ -264,29 +262,26 @@ extension AllTests {
             let snapshot = RecordOfTheDay(design: .classic, classicFrame: .sleeve,
                                           accent: RecordOfTheDayPublisher.tint(.purple), days: [day], history: [])
             for design in [RecordOfTheDay.Design.classic, .modern] {
-                for (dark, tinted) in [(false, false), (true, false), (false, true)] {
-                    for (family, size) in sizes {
-                        for (name, shown) in [("platte", day as RecordOfTheDay.Day?), ("ohne-fach", unplaced), ("leer", nil)] {
-                            let view = RecordOfTheDayView(snapshot: shown == nil ? nil : snapshot, day: shown, family: family,
-                                                          design: design, folder: nil,
-                                                          renderingMode: tinted ? .accented : .fullColor)
-                                .frame(width: size.width, height: size.height)
-                                .background(WidgetLook(snapshot, design: design).background)
-                                .environment(\.colorScheme, dark ? .dark : .light)
-                            var image: CGImage?
-                            NSAppearance(named: dark ? .darkAqua : .aqua)?.performAsCurrentDrawingAppearance {
-                                let renderer = ImageRenderer(content: view)
-                                renderer.scale = 2
-                                image = renderer.cgImage
-                            }
-                            let drawn = try #require(image)
-                            #expect(drawn.width == Int(size.width * 2) && drawn.height == Int(size.height * 2))
-                            if let keep {
-                                try FileManager.default.createDirectory(at: keep, withIntermediateDirectories: true)
-                                let file = keep.appendingPathComponent("\(design.rawValue)-\(tinted ? "glas" : dark ? "dunkel" : "hell")-\(family.description)-\(name).png")
-                                let rep = NSBitmapImageRep(cgImage: drawn)
-                                try rep.representation(using: .png, properties: [:])?.write(to: file)
-                            }
+                for dark in [false, true] {
+                    for (name, shown) in [("platte", day as RecordOfTheDay.Day?), ("ohne-fach", unplaced), ("leer", nil)] {
+                        let view = RecordOfTheDayView(snapshot: shown == nil ? nil : snapshot, day: shown,
+                                                      design: design, folder: nil)
+                            .frame(width: size.width, height: size.height)
+                            .background(WidgetLook(snapshot, design: design).background)
+                            .environment(\.colorScheme, dark ? .dark : .light)
+                        var image: CGImage?
+                        NSAppearance(named: dark ? .darkAqua : .aqua)?.performAsCurrentDrawingAppearance {
+                            let renderer = ImageRenderer(content: view)
+                            renderer.scale = 2
+                            image = renderer.cgImage
+                        }
+                        let drawn = try #require(image)
+                        #expect(drawn.width == Int(size.width * 2) && drawn.height == Int(size.height * 2))
+                        if let keep {
+                            try FileManager.default.createDirectory(at: keep, withIntermediateDirectories: true)
+                            let file = keep.appendingPathComponent("\(design.rawValue)-\(dark ? "dunkel" : "hell")-\(name).png")
+                            let rep = NSBitmapImageRep(cgImage: drawn)
+                            try rep.representation(using: .png, properties: [:])?.write(to: file)
                         }
                     }
                 }

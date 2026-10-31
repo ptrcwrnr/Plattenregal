@@ -32,8 +32,6 @@ nonisolated struct RecordOfTheDay: Codable, Equatable, Sendable {
         /// The release's Discogs ID: the color of the drawn cover the widget
         /// shows while it has no image, the same as the app's drawn covers.
         let seed: Int
-        /// The first tracks, for the large widget.
-        let tracks: [TrackLine]
         /// „1998 · Warp“, as under the covers; may be empty.
         let details: String
         /// Where it stands („KALLAX · A – Be · Position 3“), where it belongs
@@ -45,12 +43,6 @@ nonisolated struct RecordOfTheDay: Codable, Equatable, Sendable {
         /// loaded (no network), the widget then draws the record instead.
         var cover: String?
         var id: Int { day }
-    }
-
-    /// A track as the record's popover lists it.
-    struct TrackLine: Codable, Equatable, Sendable {
-        let position: String
-        let title: String
     }
 
     /// The design of the app, so the widget looks like it.
