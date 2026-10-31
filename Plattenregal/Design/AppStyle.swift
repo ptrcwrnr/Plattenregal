@@ -60,6 +60,12 @@ enum AppStyle {
     /// The list of hits that drops from the toolbar's bar on the shelf page:
     /// wide enough for artist and title beside the cover.
     static let searchResultsWidth: CGFloat = 360
+    /// The search in the menu bar: narrower, it hangs under a small symbol
+    /// and shows fewer hits. Still room for a rack of six columns (about
+    /// 43 pt a compartment) and for most artists in full beside the cover;
+    /// at 300 pt titles were cut to a few letters, 330 pt hardly helped
+    /// the longest names.
+    static let quickSearchWidth: CGFloat = 320
     /// The round button at the bottom right and the actions around it.
     static let floatingButtonSize: CGFloat = 52
     static let floatingItemSize: CGFloat = 40

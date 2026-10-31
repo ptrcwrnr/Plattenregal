@@ -1,3 +1,10 @@
+# Menüleisten-Suche schmaler · 31.10.2026
+
+- **Wunsch:** Die Suche in der Menüleiste weniger breit. **Vorher:** 360 pt, dieselbe Breite wie die Trefferliste der Regalseite (`searchResultsWidth`).
+- **Jetzt:** eigene Stufe `AppStyle.quickSearchWidth` = 320 pt (Fenster und Inhalt); die Trefferliste der Regalseite bleibt bei 360 pt.
+- **Abgewogen:** Die Platz-Spalte rechts in den Trefferzeilen (Fach, Regal und Position) behält ihre Breite, gekürzt werden Interpret und Titel. Verglichen mit den längsten Einträgen der Demo („Enter the Wu-Tang (36 Chambers)“, „Jean-Michel Jarre“, „Selected Ambient Works 85-92“ mit „Gesucht“): Bei 300 pt wurden Interpreten nach wenigen Buchstaben abgeschnitten und vom Titel neben „Gesucht“ blieb nur „…“; bei 320 pt passen die meisten Interpreten ganz (nur sehr lange wie „Jean-Michel Jarre“ werden gekürzt); 330 pt kürzt dieselben Namen nur wenige Buchstaben später. Das Mini-Regal hat auch bei 6 Spalten noch rund 43 pt pro Fach.
+- **Geprüft:** Build ohne Warnung, 269 Tests bestanden. In der Demo fotografiert: 300, 320 und 330 pt mit langen Namen; 320 pt leer, mit Treffern in dunklem Glas, Weiß und Klassisch; mittig unter dem Plattensymbol. **Nicht geprüft:** ein Regal mit 6 Spalten im Bild (die Demo hat 4 × 3 und 2 × 2; nachgerechnet), die installierte App.
+
 # DMG 1.0.0 mit sanft absetzender Menüleisten-Suche neu ausgegeben · 31.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs unverändert.

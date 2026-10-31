@@ -480,7 +480,7 @@ struct QuickSearchPlace {
     /// with the pointer.
     private func position(_ panel: NSPanel, height: CGFloat) {
         let room = QuickSearchPanel.shadowRoom
-        let width = AppStyle.searchResultsWidth + 2 * room
+        let width = AppStyle.quickSearchWidth + 2 * room
         let anchor = statusItem?.button?.window?.frame
         guard let visible = (openScreen ?? NSScreen.main)?.visibleFrame else { return }
         // The surface sits a little below the bar; the shadow room around it is transparent.
@@ -564,7 +564,7 @@ struct ShelfQuickSearchView: View {
                 }
             }
         }
-        .frame(width: AppStyle.searchResultsWidth)
+        .frame(width: AppStyle.quickSearchWidth)
         .searchPanelSurface(desktop: AppPreferences.shared.quickSearchLook)
         // Faded out: a few points higher and a little smaller, so it
         // settles in as it fades in (only the fade with "Bewegung reduzieren").
