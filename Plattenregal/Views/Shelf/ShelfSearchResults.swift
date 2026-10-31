@@ -97,16 +97,14 @@ extension View {
     /// Klassisch: paper card like the popovers. Modern: glass tinted toward
     /// the window color like the popovers and the sync capsule, so the rack
     /// underneath doesn't run through the text.
-    func searchPanelSurface() -> some View {
-        searchPanelSurface(in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
-    }
-
-    /// The same surface in another shape. `desktop`: the search in the menu
-    /// bar, over whatever lies on the desktop, in the look chosen for Modern
-    /// (dark or light glass, white; the panel's appearance follows it, see
-    /// `ShelfQuickSearch.open`). Klassisch is paper either way.
-    func searchPanelSurface<S: InsettableShape>(in shape: S, desktop: QuickSearchLook? = nil) -> some View {
-        clipShape(shape)
+    ///
+    /// `desktop`: the search in the menu bar, over whatever lies on the
+    /// desktop, in the look chosen for Modern (dark or light glass, white;
+    /// the panel's appearance follows it, see `ShelfQuickSearch.open`).
+    /// Klassisch is paper either way.
+    func searchPanelSurface(desktop: QuickSearchLook? = nil) -> some View {
+        let shape = RoundedRectangle(cornerRadius: AppStyle.surfaceRadius)
+        return clipShape(shape)
             .background {
                 if AppStyle.isAtelier {
                     shape.fill(AtelierPalette.surface)
