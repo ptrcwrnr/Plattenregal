@@ -209,7 +209,7 @@ final class PageStackView<Page: Hashable>: NSView {
 
     /// Every switch fades through: the old page fades out quickly on the
     /// spot, then the new one fades in while settling down a little from
-    /// above, like the pill of the switch control – whichever way it was
+    /// above – whichever way it was
     /// triggered (switch control, ⌘1…4, "Im Regal anzeigen"). The two pages are never visible on top of each other: a
     /// crossfade showed both grids half transparent and, shifted against each
     /// other, covers of one page in the gaps of the other. In between there is

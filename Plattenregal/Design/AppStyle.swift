@@ -70,16 +70,23 @@ enum AppStyle {
     // MARK: Switching a whole area
     // A page (`PageStackView.show`) with the toolbar above it, a settings
     // tab, another cabinet: everything that changes fades out quickly on the
-    // spot, then the new state fades in – one beat for the page, the pill of
-    // the switch, the search field and its placeholder. Never both half
-    // visible on top of each other. Areas settle down from
-    // `pageSettleDistance` above while fading in, the pill only from
-    // `pillSettleDistance`. With "Bewegung reduzieren" only the fade.
+    // spot, then the new state fades in – one beat for the page, the search
+    // field and its placeholder. Never both half visible on top of each
+    // other. Areas settle down from `pageSettleDistance` above while fading
+    // in. With "Bewegung reduzieren" only the fade. The pill of a switch
+    // travels instead (`pillLeadAnimation`).
     static let pageFadeOut: TimeInterval = 0.1
     static let pageFadeInDelay: TimeInterval = 0.07
     static let pageFadeIn: TimeInterval = 0.22
     static let pageSettleDistance: CGFloat = itemSpacing
-    static let pillSettleDistance: CGFloat = hairSpacing
+    /// The selection pill of a switch (`GlassSegmentedPicker`) travelling
+    /// to a new option like a drop: the edge in front runs ahead on this
+    /// taut spring, overshooting a little …
+    static let pillLeadAnimation = Animation.spring(response: 0.28, dampingFraction: 0.7)
+    /// … and the edge behind follows on this softer one, so the pill
+    /// stretches on the way and pulls itself together at the new option.
+    /// With "Bewegung reduzieren" the pill fades in the beat above instead.
+    static let pillTrailAnimation = Animation.spring(response: 0.48, dampingFraction: 0.78)
     /// What goes away on a switch.
     static var pageOutAnimation: Animation { .easeIn(duration: pageFadeOut) }
     /// What comes in on a switch, once the old state is gone.
@@ -256,7 +263,8 @@ enum AppStyle {
     /// Something opened from a button springs out of it, a little past its
     /// end and back: the search from its magnifying glass (which bounces
     /// once), the actions fanned out of the round button. Only these – page
-    /// switches, the selection pill, moving records and panels stay calm.
+    /// switches, moving records and panels stay calm (the selection pill has
+    /// its own springs, `pillLeadAnimation`).
     /// `nil` (= instant) with reduce motion; callers that should still fade
     /// then choose their own fallback.
     static var openAnimation: Animation? { reduceMotion ? nil : .bouncy(duration: 0.45, extraBounce: 0.12) }
