@@ -1,3 +1,10 @@
+# Widget im abgedunkelten Glas-Stil: Cover farbig, kleines Widget angepasst · 31.10.2026
+
+- **Rückmeldung mit Bildschirmfotos:** Auf dem Schreibtisch erschienen die Cover als weiße Flächen und das Widget glasig, sobald eine App vorn war; ein anderes Design war nicht zu sehen. Ursache, nachgesehen statt angenommen: macOS 27 hat unter Systemeinstellungen → Schreibtisch & Dock den Schalter „Widgets auf dem Schreibtisch abdunkeln“ (Texte aus `DesktopSettings.appex` gelesen); an zeichnet macOS Widgets bei einer App im Vordergrund einfarbig auf Glas – ohne Hintergründe, alles in einem Ton, Bilder ohne Freigabe ebenfalls eingefärbt. Klassisch und Modern unterscheiden sich in diesem Modus nicht; ihr Unterschied zeigt sich in Farbe (Schreibtisch angeklickt oder Schalter aus).
+- **Behoben:** Cover mit `widgetAccentedRenderingMode(.fullColor)` (Apples Weg für Albumcover), „Platte des Tages“ mit `widgetAccentable()`. Das kleine Widget legt im Glas-Stil den Text nicht mehr auf das dann farblose Band, sondern zeigt das Cover über dem Interpreten (`SmallTintedRecordView`). „Position 14“ bricht nicht mehr zwischen Wort und Zahl um (geschütztes Leerzeichen vor der Zahl am Ende, `WidgetPlace.keepingNumber`).
+- **Doku:** README (Abschnitt Widget). Handbuch unverändert.
+- Geprüft: 264 Tests bestanden (neu: `thePositionStaysWithItsNumber`; die Ansichten-Tests zeichnen zusätzlich den Glas-Stil). Glas-Layout und Umbruch als Bild angesehen. **Nicht geprüft:** die tatsächliche Einfärbung durch macOS auf dem Schreibtisch – sie lässt sich außerhalb des Schreibtischs nicht zeichnen.
+
 # DMG 1.0.0 mit dem Widget „Platte des Tages“ neu ausgegeben · 31.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026, Versionsnummer unverändert). Enthält erstmals eine Erweiterung: das Widget unter `Contents/PlugIns/PlattenregalWidget.appex`. Beide Handbuch-PDFs dabei neu erzeugt (Zeile „Platte des Tages auf dem Schreibtisch“ in „Kleine Hilfen“), weiter je 10 Seiten; Seite 10 pixelgleich mit der vorher angesehenen Probe, Seite 6 endet über der Fußzeile.

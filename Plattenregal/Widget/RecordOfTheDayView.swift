@@ -16,14 +16,24 @@ struct RecordOfTheDayView: View {
     var design: RecordOfTheDay.Design? = nil
     /// Where the covers are read from.
     var folder: URL? = RecordOfTheDay.folderURL
+    /// How macOS draws the widget; set only by the tests, which have no
+    /// widget around them.
+    var renderingMode: WidgetRenderingMode?
+    @Environment(\.widgetRenderingMode) private var systemRenderingMode
 
     var body: some View {
         let look = WidgetLook(snapshot, design: design)
+        // In color, or – with „Widgets auf dem Schreibtisch abdunkeln“ while
+        // an app is in front – in one tint on glass: backgrounds gone, text
+        // and shapes in the tint, only the covers keep their colors.
+        let inColor = (renderingMode ?? systemRenderingMode) == .fullColor
         Group {
             if let day {
                 let cover = WidgetCover(day: day, look: look, folder: folder)
                 switch family {
-                case .systemSmall: SmallRecordView(day: day, cover: cover, look: look)
+                case .systemSmall:
+                    if inColor { SmallRecordView(day: day, cover: cover, look: look) }
+                    else { SmallTintedRecordView(day: day, cover: cover, look: look) }
                 case .systemLarge: LargeRecordView(day: day, cover: cover, look: look)
                 default: MediumRecordView(day: day, cover: cover, look: look)
                 }
@@ -100,7 +110,10 @@ struct WidgetCover: View {
     var plain: some View {
         Group {
             if let image {
-                Image(nsImage: image).resizable().interpolation(.high).scaledToFill()
+                Image(nsImage: image).resizable().interpolation(.high)
+                    // Album art keeps its colors when macOS tints the widget.
+                    .widgetAccentedRenderingMode(.fullColor)
+                    .scaledToFill()
             } else {
                 Rectangle().fill(look.muted.opacity(0.2))
             }
@@ -121,10 +134,16 @@ struct WidgetPlace: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: DesignScale.tightSpacing) {
             Image(systemName: day.isPlaced ? "square.grid.3x3.fill" : "square.grid.3x3")
-            Text(day.place)
+            Text(Self.keepingNumber(day.place))
         }
         .font(DesignScale.captionLabel)
         .foregroundStyle(color)
+    }
+
+    /// „… · Position 14“ never breaks between the word and its number.
+    static func keepingNumber(_ place: String) -> String {
+        guard let range = place.range(of: #" (\d+)$"#, options: .regularExpression) else { return place }
+        return place.replacingCharacters(in: range.lowerBound..<place.index(after: range.lowerBound), with: "\u{00A0}")
     }
 }
 
@@ -136,6 +155,8 @@ struct WidgetKicker: View {
             .font(DesignScale.captionMark)
             .foregroundStyle(look.accent)
             .lineLimit(1)
+            // Tinted apart from the rest when macOS draws the widget in one tint.
+            .widgetAccentable()
     }
 }
 
@@ -185,6 +206,22 @@ struct SmallRecordView: View {
         }
         .background { cover.plain }
         .clipped()
+    }
+}
+
+/// The small widget while macOS tints it: the band would lose its color and
+/// its text would stand on the cover unreadable, so the artist goes below.
+struct SmallTintedRecordView: View {
+    let day: RecordOfTheDay.Day
+    let cover: WidgetCover
+    let look: WidgetLook
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignScale.itemSpacing) {
+            cover.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            Text(day.artist).font(.headline).foregroundStyle(look.ink).lineLimit(1)
+        }
+        .padding(DesignScale.cardPadding)
     }
 }
 

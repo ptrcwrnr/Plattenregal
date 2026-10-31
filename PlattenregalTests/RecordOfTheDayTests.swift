@@ -103,6 +103,12 @@ extension AllTests {
             #expect(abs(green.light[1] - 0.62) < 0.01)
         }
 
+        @Test func thePositionStaysWithItsNumber() {
+            #expect(WidgetPlace.keepingNumber("KALLAX · B – De · Position 14") == "KALLAX · B – De · Position\u{00A0}14")
+            #expect(WidgetPlace.keepingNumber("Gehört in „Ma – Mo“") == "Gehört in „Ma – Mo“")
+            #expect(WidgetPlace.keepingNumber("Fach 3") == "Fach\u{00A0}3")
+        }
+
         @Test func aWidgetCanShowTheOtherDesign() {
             let snapshot = RecordOfTheDay(design: .classic, classicFrame: .classicMat,
                                           accent: RecordOfTheDayPublisher.tint(.green), days: [], history: [])
@@ -258,11 +264,12 @@ extension AllTests {
             let snapshot = RecordOfTheDay(design: .classic, classicFrame: .sleeve,
                                           accent: RecordOfTheDayPublisher.tint(.purple), days: [day], history: [])
             for design in [RecordOfTheDay.Design.classic, .modern] {
-                for dark in [false, true] {
+                for (dark, tinted) in [(false, false), (true, false), (false, true)] {
                     for (family, size) in sizes {
                         for (name, shown) in [("platte", day as RecordOfTheDay.Day?), ("ohne-fach", unplaced), ("leer", nil)] {
                             let view = RecordOfTheDayView(snapshot: shown == nil ? nil : snapshot, day: shown, family: family,
-                                                          design: design, folder: nil)
+                                                          design: design, folder: nil,
+                                                          renderingMode: tinted ? .accented : .fullColor)
                                 .frame(width: size.width, height: size.height)
                                 .background(WidgetLook(snapshot, design: design).background)
                                 .environment(\.colorScheme, dark ? .dark : .light)
@@ -276,7 +283,7 @@ extension AllTests {
                             #expect(drawn.width == Int(size.width * 2) && drawn.height == Int(size.height * 2))
                             if let keep {
                                 try FileManager.default.createDirectory(at: keep, withIntermediateDirectories: true)
-                                let file = keep.appendingPathComponent("\(design.rawValue)-\(dark ? "dunkel" : "hell")-\(family.description)-\(name).png")
+                                let file = keep.appendingPathComponent("\(design.rawValue)-\(tinted ? "glas" : dark ? "dunkel" : "hell")-\(family.description)-\(name).png")
                                 let rep = NSBitmapImageRep(cgImage: drawn)
                                 try rep.representation(using: .png, properties: [:])?.write(to: file)
                             }
