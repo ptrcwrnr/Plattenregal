@@ -1,4 +1,4 @@
-# Aktueller Stand · 31.10.2026 (Widget „Platte des Tages“)
+# Aktueller Stand · 31.10.2026 (Widget „Platte des Tages“, DMG)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
 
@@ -6,8 +6,8 @@ Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
 - **Verifikation:** Debug- und Release-Build ohne Warnung, nur arm64, Signatur und Berechtigungen geprüft; 263 Tests bestanden; Erweiterung bei macOS registriert; Klick-Weg in der Demo geprüft; Sandbox-Ausnahme im echten Ordner geprüft (Nachbarordner verweigert); Widget-Ansichten als Bilder angesehen; Laufzeit mit 5 000 Platten gemessen (20 ms ohne neue Auswahl).
 - **Lokalisierung:** 938 Einträge, alle mit Englisch, 6 neu; jeder Text im Code von App und Widget hat einen Eintrag.
 - **App-Protokoll** 31.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
-- **DMG:** noch nicht neu gebaut; die Handbuch-PDFs im Repository sind noch ohne die neue Zeile.
-- **Nicht geprüft:** das Widget auf dem Schreibtisch mit der echten Sammlung (braucht die neue App installiert).
+- **DMG:** neu gebaut und geprüft (Abbild gültig, App und Widget 1.0.0 (102026), nur arm64, ab macOS 27.0, Signatur gültig, Berechtigungen samt Ordner-Ausnahmen, URL-Schema und Widget-Einstellung enthalten, beide Handbücher identisch und je 10 Seiten, kein Prüfcode).
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung und das Widget auf dem Schreibtisch (die installierte App lief und wurde nicht beendet).
 
 # Aktueller Stand · 31.10.2026 (Im Hintergrund weiterlaufen, DMG)
 
