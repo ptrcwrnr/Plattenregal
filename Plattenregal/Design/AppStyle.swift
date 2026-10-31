@@ -259,11 +259,15 @@ enum AppStyle {
     /// Cards on a page: lighter, the page shows through more.
     static var cardGlass: Glass { .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)) }
     /// The search in the menu bar, over whatever lies on the desktop, as
-    /// chosen (`QuickSearchLook`). Dark glass, in light and dark mode alike:
-    /// at 45 % it still read clearly over a bright, busy wallpaper, without
-    /// looking heavy (60 % was too dark). Light glass is `panelGlass` in the
-    /// light appearance.
-    static var darkDesktopGlass: Glass { .regular.tint(.black.opacity(0.45)) }
+    /// chosen (`QuickSearchLook`): a plain blur with a tint, not Liquid
+    /// Glass – its lit rim drew bright lines along the top and bottom of the
+    /// flat field and a pale band around the edge. Dark glass, in light and
+    /// dark mode alike: at 45 % it still read clearly over a bright, busy
+    /// wallpaper, without looking heavy (60 % was too dark). Light glass
+    /// takes `panelGlass`'s tint in the light appearance.
+    static let desktopPanelBlur: Material = .ultraThinMaterial
+    static let darkDesktopTint = Color.black.opacity(0.3)
+    static var lightDesktopTint: Color { Color(nsColor: .windowBackgroundColor).opacity(0.65) }
     /// White: opaque, edged with `borderColor` so it stands off a bright
     /// wallpaper.
     static let desktopPanelWhite = Color.white

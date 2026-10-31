@@ -1,3 +1,11 @@
+# Menüleisten-Suche ohne Glaskante und Rand, Schallplatte ohne Kapsel · 31.10.2026
+
+- **Wunsch:** In der Menüleiste keinen Druckpunkt an der Schallplatte; an der Suche die hellen Linien oben und unten und den schwachen Rand außen herum entfernen, auch am großen Fenster mit Treffern – für alle Varianten.
+- **Fläche:** Dunkles und helles Glas sind jetzt eine schlichte Unschärfe (`AppStyle.desktopPanelBlur`, `.ultraThinMaterial`) mit Tönung statt Liquid Glass. Dessen beleuchtete Kante zog die hellen Linien und den blassen Rand und lässt sich nicht abschalten. Tönung dunkel jetzt Schwarz 30 % (`darkDesktopTint`, vorher 45 % auf Glas): gemessen über demselben Hintergrund 115/64/132 gegen 118/59/136 vorher, also gleich hell (`.thinMaterial` mit 45 % war mit 86/46/100 deutlich dunkler). Hell nimmt die Tönung von `panelGlass` (`lightDesktopTint`). `darkDesktopGlass` entfällt.
+- **Kein Rand in allen Varianten:** Weiß und Papier (Klassisch) haben in der Menüleisten-Suche keine Randlinie mehr, nur noch den Schatten. Die Trefferliste der Regalseite im Fenster bleibt unverändert (Glas bzw. Papier mit Rand).
+- **Schallplatte:** Solange die Suche offen ist, trägt das Symbol keine Kapsel mehr (`highlight(true/false)` entfernt). **Nicht erreicht:** die kurze Kapsel, solange die Maustaste gedrückt ist. Die zeichnet macOS selbst: Weder `highlightsBy = []` am Knopf noch eine eigene Klickfläche über dem Symbol, die nachweislich alle Klicks bekam, verhinderten sie. Beides wieder entfernt.
+- **Geprüft:** Build ohne Warnung, alle Tests bestanden. In der Demo fotografiert: dunkles Glas leer und mit Treffern, helles Glas, Weiß, Papier; Farbwerte quer über die Kante gemessen (Schatten geht ohne Randlinie in die Fläche über). Symbol mit echten Mausereignissen gedrückt, offen und geschlossen fotografiert, Öffnen und Schließen per Klick funktioniert. **Nicht geprüft:** Rechtsklick-Menü (am Klickweg nichts geändert), die installierte App.
+
 # DMG 1.0.0 mit schmalerer Menüleisten-Suche neu ausgegeben · 31.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs unverändert.

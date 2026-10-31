@@ -403,7 +403,6 @@ struct QuickSearchPlace {
         // appearance. On every opening, as the design or look may have changed.
         panel.appearance = AppStyle.isAtelier ? nil : AppPreferences.shared.quickSearchLook.appearance
         panel.makeKeyAndOrderFront(nil)
-        statusItem?.button?.highlight(true)
         // Once the faded-out search is on screen, so it settles in from there.
         DispatchQueue.main.async { [self] in
             guard isOpen else { return }
@@ -415,7 +414,6 @@ struct QuickSearchPlace {
     /// Fades out quickly, a little back up and smaller; only then the panel
     /// goes. A close that ends after the search was opened again leaves it.
     func close() {
-        statusItem?.button?.highlight(false)
         guard isOpen, let panel else { return }
         isOpen = false
         // Typing no longer goes into the fading field.
