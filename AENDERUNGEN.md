@@ -1,3 +1,9 @@
+# DMG 1.0.0 mit dem Widget im Entwurf C neu ausgegeben · 31.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026). Die vorige DMG war noch eingehängt (nichts lief daraus) und wurde ausgeworfen. Handbuch-PDFs unverändert.
+- **Beim Prüfen gefunden:** Der erste Bau enthielt in der Widget-Erweiterung noch `Metadata.appintents` aus dem vorigen Release-Build – Xcode baut inkrementell und räumt entfallene Erzeugnisse nicht weg; macOS hätte daraus die nicht mehr vorhandene Design-Einstellung anbieten können. Deshalb `xcodebuild clean` für Release und neu gebaut; danach keine App-Intents-Metadaten und keine Spur der alten Einstellung mehr. Künftig vor einer DMG nach entfernten Zielen oder Ressourcen sauber bauen.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102026), nur arm64, Signatur gültig (`--deep --strict`); Ordner-Ausnahmen in App und Widget; beide Handbücher identisch; kein Prüfcode; neuer Stand im Widget. **Nicht geprüft:** das Widget auf dem Schreibtisch, auch nicht im abgedunkelten Zustand, und ob macOS die bisher platzierten Widgets (mit der alten Einstellung) behält.
+
 # Widget im Entwurf C „Regal“: Hülle, Mini-Regal mit goldenem Fach · 31.10.2026
 
 - **Neu gestaltet** nach dem gewählten Mockup C (aus drei Entwürfen, gezeichnet in der Schreibtischgröße mit der echten Platte des Tages): Papier von Klassisch, hell und dunkel nach System; das Cover als Hülle; „Platte des Tages“, Interpret, Titel; darunter das Regal der Platte im Kleinen mit dem Fach in Gold (gefüllt: steht dort; umrandet: gehört dorthin, „Noch nicht einsortiert“) und daneben groß der Fachname, klein die Position. Bei „Ohne Regalplatz“ oder ohne Fach mit Platten der Standort als Text.

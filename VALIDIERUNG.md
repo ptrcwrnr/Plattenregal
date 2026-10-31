@@ -3,7 +3,7 @@
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
 
 - **Geändert seit der letzten DMG:** Widget „Platte des Tages“ (neues Erweiterungsziel, klein/mittel/groß, Klassisch und Modern, Klick öffnet die Platte im Regal), gemeinsame Designstufen für App und Widget (siehe AENDERUNGEN).
-- **Nachtrag Entwurf C:** Widget mit Mini-Regal und goldenem Fach; Randfälle in Tests geprüft; 267 Tests bestanden; Lauf ohne Änderung 22–24 ms bei 5 000 Platten.
+- **Nachtrag Entwurf C:** Widget mit Mini-Regal und goldenem Fach; Randfälle in Tests geprüft; 267 Tests bestanden; Lauf ohne Änderung 22–24 ms bei 5 000 Platten. DMG sauber neu gebaut (Release `clean`, keine veralteten App-Intents-Metadaten) und geprüft.
 - **Nachtrag mittelgroß:** Widget nur noch in der mittleren Größe; 264 Tests bestanden; noch keine neue DMG.
 - **Nachtrag Glas-Stil:** Cover bleiben farbig, wenn macOS Widgets abdunkelt; kleines Widget dann mit Interpret unter dem Cover; DMG neu gebaut und geprüft; 264 Tests bestanden.
 - **Verifikation:** Debug- und Release-Build ohne Warnung, nur arm64, Signatur und Berechtigungen geprüft; 263 Tests bestanden; Erweiterung bei macOS registriert; Klick-Weg in der Demo geprüft; Sandbox-Ausnahme im echten Ordner geprüft (Nachbarordner verweigert); Widget-Ansichten als Bilder angesehen; Laufzeit mit 5 000 Platten gemessen (20 ms ohne neue Auswahl).
