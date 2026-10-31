@@ -150,12 +150,52 @@
         }
       }
     },
+    "Aussehen der Suche" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Appearance"
+          }
+        }
+      }
+    },
     "Bei der Anmeldung öffnen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open at Login"
+          }
+        }
+      }
+    },
+    "Deckend weiß, nichts scheint durch." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solid white, nothing shows through."
+          }
+        }
+      }
+    },
+    "Dunkel getönt, liest sich über jedem Hintergrundbild gut." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tinted dark, reads well over any wallpaper."
+          }
+        }
+      }
+    },
+    "Dunkles Glas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark Glass"
           }
         }
       }
@@ -226,6 +266,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Drawn covers"
+          }
+        }
+      }
+    },
+    "Hell getönt, das Hintergrundbild schimmert durch." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tinted light, the wallpaper shimmers through."
+          }
+        }
+      }
+    },
+    "Helles Glas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light Glass"
+          }
+        }
+      }
+    },
+    "Im Design Klassisch erscheint die Suche auf Papier." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Classic design the search appears on paper."
           }
         }
       }
@@ -9180,6 +9250,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What happened?"
+          }
+        }
+      }
+    },
+    "Weiß" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "White"
           }
         }
       }

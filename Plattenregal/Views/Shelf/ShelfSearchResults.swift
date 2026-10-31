@@ -101,22 +101,34 @@ extension View {
         searchPanelSurface(in: RoundedRectangle(cornerRadius: AppStyle.surfaceRadius))
     }
 
-    /// The same surface in another shape. `onDesktop`: the search in the
-    /// menu bar, over whatever lies on the desktop. In Modern dark glass
-    /// there (`desktopPanelGlass`, the panel drawn dark – see
-    /// `ShelfQuickSearch.open`), in light and dark mode alike: compared over
-    /// a bright, busy wallpaper and a dark window it read best – the light
-    /// glass let the wallpaper run through the gray labels.
-    func searchPanelSurface<S: InsettableShape>(in shape: S, onDesktop: Bool = false) -> some View {
+    /// The same surface in another shape. `desktop`: the search in the menu
+    /// bar, over whatever lies on the desktop, in the look chosen for Modern
+    /// (dark or light glass, white; the panel's appearance follows it, see
+    /// `ShelfQuickSearch.open`). Klassisch is paper either way.
+    func searchPanelSurface<S: InsettableShape>(in shape: S, desktop: QuickSearchLook? = nil) -> some View {
         clipShape(shape)
             .background {
                 if AppStyle.isAtelier {
                     shape.fill(AtelierPalette.surface)
                         .overlay(shape.strokeBorder(AtelierPalette.border, lineWidth: AppStyle.borderWidth))
+                } else if desktop == .white {
+                    shape.fill(AppStyle.desktopPanelWhite)
+                        .overlay(shape.strokeBorder(AppStyle.borderColor, lineWidth: AppStyle.borderWidth))
                 }
             }
-            .glassEffect(AppStyle.isAtelier ? .identity : (onDesktop ? AppStyle.desktopPanelGlass : AppStyle.panelGlass), in: shape)
+            .glassEffect(searchPanelGlass(desktop), in: shape)
             .shadow(color: .black.opacity(AppStyle.isAtelier ? 0.1 : 0.15), radius: 14, y: 4)
+    }
+}
+
+/// No glass on paper and white; dark glass for the menu bar's search when
+/// chosen, else the panels' glass.
+private func searchPanelGlass(_ desktop: QuickSearchLook?) -> Glass {
+    if AppStyle.isAtelier { return .identity }
+    switch desktop {
+    case .darkGlass: return AppStyle.darkDesktopGlass
+    case .white: return .identity
+    case .lightGlass, nil: return AppStyle.panelGlass
     }
 }
 

@@ -60,6 +60,17 @@ struct GeneralSettingsView: View {
                     Toggle("Kürzel", isOn: $preferences.quickSearchHotKey).labelsHidden().toggleStyle(.switch)
                 }
                 Divider()
+                // Only Modern has a choice; Klassisch shows its paper. Without
+                // the record and the shortcut there is no search to show.
+                SettingsRow(title: String(localized: "Aussehen der Suche"),
+                            hint: AppStyle.isAtelier
+                                ? String(localized: "Im Design Klassisch erscheint die Suche auf Papier.")
+                                : preferences.quickSearchLook.hint) {
+                    GlassSegmentedPicker(selection: $preferences.quickSearchLook, options: QuickSearchLook.allCases) { Text($0.title) }
+                        .accessibilityLabel(String(localized: "Aussehen der Suche"))
+                }
+                .disabled(AppStyle.isAtelier || (!preferences.menuBarSearch && !preferences.quickSearchHotKey))
+                Divider()
                 SettingsRow(title: String(localized: "Im Hintergrund weiterlaufen"), hint: backgroundHint) {
                     Toggle("Im Hintergrund weiterlaufen", isOn: $preferences.keepsRunningInBackground)
                         .labelsHidden().toggleStyle(.switch)

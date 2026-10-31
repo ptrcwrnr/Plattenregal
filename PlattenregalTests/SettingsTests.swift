@@ -80,6 +80,32 @@ extension AllTests {
             }
         }
 
+        /// The look of the search in the menu bar: dark glass unless chosen
+        /// otherwise, kept across launches, back to dark glass on reset; an
+        /// unknown stored value falls back to it too.
+        @Test func quickSearchLookIsDarkGlassByDefaultAndPersists() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.quickSearchLook == .darkGlass)
+                for look in QuickSearchLook.allCases {
+                    preferences.quickSearchLook = look
+                    #expect(AppPreferences(defaults: defaults).quickSearchLook == look)
+                }
+                preferences.reset()
+                #expect(AppPreferences(defaults: defaults).quickSearchLook == .darkGlass)
+                defaults.set("purple", forKey: AppPreferences.Key.quickSearchLook)
+                #expect(AppPreferences(defaults: defaults).quickSearchLook == .darkGlass)
+            }
+        }
+
+        /// Dark glass draws the panel dark, light glass and white light – in
+        /// light and dark mode alike.
+        @Test func quickSearchLookSetsThePanelsAppearance() {
+            #expect(QuickSearchLook.darkGlass.appearance?.name == .darkAqua)
+            #expect(QuickSearchLook.lightGlass.appearance?.name == .aqua)
+            #expect(QuickSearchLook.white.appearance?.name == .aqua)
+        }
+
         /// Only ⌘Q-like requests from outside (Dock, script) go into the
         /// background; logout, „ganz beenden“, the app's own relaunch, a
         /// switched-off setting (or no record in the menu bar) and a request

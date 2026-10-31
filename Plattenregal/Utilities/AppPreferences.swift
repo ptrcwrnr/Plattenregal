@@ -16,6 +16,7 @@ import SwiftUI
         static let drawnCovers = "drawnCovers"
         static let menuBarSearch = "menuBarSearch"
         static let quickSearchHotKey = "quickSearchHotKey"
+        static let quickSearchLook = "quickSearchLook"
         static let keepsRunningInBackground = "keepsRunningInBackground"
     }
 
@@ -40,6 +41,8 @@ import SwiftUI
     var quickSearchHotKey: Bool {
         didSet { defaults.set(quickSearchHotKey, forKey: Key.quickSearchHotKey); ShelfQuickSearch.shared.applySettings() }
     }
+    /// How that search looks in Modern. Dark glass by default.
+    var quickSearchLook: QuickSearchLook { didSet { store(quickSearchLook.rawValue, Key.quickSearchLook) } }
     /// ⌘Q and closing the last window keep the app running with only the
     /// record in the menu bar (see `AppLifecycle`). On by default.
     var keepsRunningInBackground: Bool {
@@ -66,6 +69,7 @@ import SwiftUI
         // On unless switched off; `bool(forKey:)` also reads "NO" from a launch argument.
         menuBarSearch = defaults.object(forKey: Key.menuBarSearch) == nil || defaults.bool(forKey: Key.menuBarSearch)
         quickSearchHotKey = defaults.object(forKey: Key.quickSearchHotKey) == nil || defaults.bool(forKey: Key.quickSearchHotKey)
+        quickSearchLook = defaults.string(forKey: Key.quickSearchLook).flatMap(QuickSearchLook.init) ?? .darkGlass
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
         language = languageAtLaunch
     }
@@ -85,6 +89,7 @@ import SwiftUI
         drawnCovers = false
         menuBarSearch = true
         quickSearchHotKey = true
+        quickSearchLook = .darkGlass
         keepsRunningInBackground = true
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }

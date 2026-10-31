@@ -28,6 +28,36 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
     }
 }
 
+/// How the search in the menu bar looks in Modern, over whatever lies on
+/// the desktop. In Klassisch it is always paper, like the design's cards.
+enum QuickSearchLook: String, CaseIterable, Identifiable {
+    case darkGlass, lightGlass, white
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .darkGlass: String(localized: "Dunkles Glas")
+        case .lightGlass: String(localized: "Helles Glas")
+        case .white: String(localized: "Weiß")
+        }
+    }
+    /// Always shown, so the row keeps its height when switching.
+    var hint: String {
+        switch self {
+        case .darkGlass: String(localized: "Dunkel getönt, liest sich über jedem Hintergrundbild gut.")
+        case .lightGlass: String(localized: "Hell getönt, das Hintergrundbild schimmert durch.")
+        case .white: String(localized: "Deckend weiß, nichts scheint durch.")
+        }
+    }
+    /// The panel's appearance: field, labels and rack follow it, in light
+    /// and dark mode alike.
+    var appearance: NSAppearance? {
+        switch self {
+        case .darkGlass: NSAppearance(named: .darkAqua)
+        case .lightGlass, .white: NSAppearance(named: .aqua)
+        }
+    }
+}
+
 /// The app's own accent, or the one set in the macOS settings.
 enum AccentChoice: String, CaseIterable, Identifiable {
     case system, blue, purple, pink, red, orange, yellow, green, graphite

@@ -88,19 +88,23 @@ enum AppStyle {
     /// With "Bewegung reduzieren" the pill fades in the beat above instead.
     static let pillTrailAnimation = Animation.spring(response: 0.48, dampingFraction: 0.78)
     /// The search in the menu bar opens from a drop under the record and
-    /// closes back into it (`QuickSearchDrop`). Opening on the pill's two
-    /// springs: the lower edge falls ahead (`pillLeadAnimation`), the sides
-    /// spread after it (`pillTrailAnimation`). This is the drop's diameter,
+    /// closes back into it (`QuickSearchDrop`). This is the drop's diameter,
     /// a little wider than the record.
     static let quickSearchDropSize: CGFloat = 24
+    /// Opening like the pill, a drop on two springs, only quicker – the
+    /// search is wanted at once: the lower edge falls ahead on the taut one,
+    /// overshooting a little …
+    static let quickSearchDropOpenLead = Animation.spring(response: 0.22, dampingFraction: 0.7)
+    /// … and the sides spread after it on the softer one.
+    static let quickSearchDropOpenTrail = Animation.spring(response: 0.36, dampingFraction: 0.78)
     /// Closing calm, like everything opened from a button (`closeAnimation`):
     /// the lower edge rises ahead, the sides pull in after it, neither past
     /// the drop – on a spring the sides squeezed a tall list into a thin stick.
-    static let quickSearchDropCloseLead = Animation.smooth(duration: 0.22)
-    static let quickSearchDropCloseTrail = Animation.smooth(duration: 0.32)
+    static let quickSearchDropCloseLead = Animation.smooth(duration: 0.16)
+    static let quickSearchDropCloseTrail = Animation.smooth(duration: 0.24)
     /// … and the drop fades (`pageOutAnimation`) once it has nearly pulled
     /// itself together under the record.
-    static let quickSearchDropFadeDelay: TimeInterval = 0.24
+    static let quickSearchDropFadeDelay: TimeInterval = 0.18
     /// What goes away on a switch.
     static var pageOutAnimation: Animation { .easeIn(duration: pageFadeOut) }
     /// What comes in on a switch, once the old state is gone.
@@ -260,9 +264,15 @@ enum AppStyle {
     static var panelGlass: Glass { .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.65)) }
     /// Cards on a page: lighter, the page shows through more.
     static var cardGlass: Glass { .regular.tint(Color(nsColor: .windowBackgroundColor).opacity(0.45)) }
-    /// A panel over the desktop (the search in the menu bar): dark in light
-    /// and dark mode alike, so it reads over any wallpaper.
-    static var desktopPanelGlass: Glass { .regular.tint(.black.opacity(0.6)) }
+    /// The search in the menu bar, over whatever lies on the desktop, as
+    /// chosen (`QuickSearchLook`). Dark glass, in light and dark mode alike:
+    /// at 45 % it still read clearly over a bright, busy wallpaper, without
+    /// looking heavy (60 % was too dark). Light glass is `panelGlass` in the
+    /// light appearance.
+    static var darkDesktopGlass: Glass { .regular.tint(.black.opacity(0.45)) }
+    /// White: opaque, edged with `borderColor` so it stands off a bright
+    /// wallpaper.
+    static let desktopPanelWhite = Color.white
 
     // MARK: Wording
     /// "1 Platte", "12 Platten", "1.234 Platten".
@@ -290,8 +300,9 @@ enum AppStyle {
     /// Something opened from a button springs out of it, a little past its
     /// end and back: the search from its magnifying glass (which bounces
     /// once), the actions fanned out of the round button. Only these – page
-    /// switches, moving records and panels stay calm (the selection pill has
-    /// its own springs, `pillLeadAnimation`).
+    /// switches, moving records and panels stay calm (the selection pill and
+    /// the drop of the search in the menu bar have their own springs,
+    /// `pillLeadAnimation`, `quickSearchDropOpenLead`).
     /// `nil` (= instant) with reduce motion; callers that should still fade
     /// then choose their own fallback.
     static var openAnimation: Animation? { reduceMotion ? nil : .bouncy(duration: 0.45, extraBounce: 0.12) }

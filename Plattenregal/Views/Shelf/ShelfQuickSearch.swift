@@ -403,11 +403,11 @@ struct QuickSearchPlace {
         openScreen = statusItem?.button?.window?.screen
             ?? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
         position(panel, height: panel.frame.height)
-        // Modern: dark glass over the desktop, in light and dark mode alike
-        // (`searchPanelSurface(onDesktop:)`), so field, labels and rack are
-        // drawn dark too. Klassisch: the app's appearance. On every opening,
-        // as the design may have changed.
-        panel.appearance = AppStyle.isAtelier ? nil : NSAppearance(named: .darkAqua)
+        // Modern: the chosen look's appearance (dark for dark glass, light
+        // for light glass and white), in light and dark mode alike, so
+        // field, labels and rack match the surface. Klassisch: the app's
+        // appearance. On every opening, as the design or look may have changed.
+        panel.appearance = AppStyle.isAtelier ? nil : AppPreferences.shared.quickSearchLook.appearance
         panel.makeKeyAndOrderFront(nil)
         statusItem?.button?.highlight(true)
         // Once the drop is on screen, so the springs start from it.
@@ -648,7 +648,7 @@ struct ShelfQuickSearchView: View {
         // of it is uncovered, and the surface is drawn in the same outline.
         .opacity(drop.contentShown ? 1 : 0)
         .mask { dropLayer(dropShape) }
-        .background { dropLayer(Color.clear.searchPanelSurface(in: dropShape, onDesktop: true)) }
+        .background { dropLayer(Color.clear.searchPanelSurface(in: dropShape, desktop: AppPreferences.shared.quickSearchLook)) }
         .opacity(drop.visible ? 1 : 0)
         .allowsHitTesting(drop.contentShown)
         .padding(QuickSearchPanel.shadowRoom)
@@ -680,8 +680,8 @@ struct ShelfQuickSearchView: View {
         let bottomLimit = max(0, surfaceHeight - size)
         let bottom = expanded ? 0 : bottomLimit
         // The lower edge leads both ways: springing open, calm closing.
-        let fall = drop.animates ? (expanded ? AppStyle.pillLeadAnimation : AppStyle.quickSearchDropCloseLead) : nil
-        let sides = drop.animates ? (expanded ? AppStyle.pillTrailAnimation : AppStyle.quickSearchDropCloseTrail) : nil
+        let fall = drop.animates ? (expanded ? AppStyle.quickSearchDropOpenLead : AppStyle.quickSearchDropCloseLead) : nil
+        let sides = drop.animates ? (expanded ? AppStyle.quickSearchDropOpenTrail : AppStyle.quickSearchDropCloseTrail) : nil
         return layer
             .modifier(DropEdgeInset(edge: .bottom, inset: bottom, limit: bottomLimit))
             .animation(fall, value: bottom)
