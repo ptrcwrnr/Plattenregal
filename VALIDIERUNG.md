@@ -1,3 +1,14 @@
+# Aktueller Stand · 31.10.2026 (Im Hintergrund weiterlaufen, DMG)
+
+Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
+
+- **Geändert seit der letzten DMG:** Im Hintergrund weiterlaufen: Nach ⌘Q bleibt die Schallplatte in der Menüleiste, ohne Dock-Symbol. Ganz beenden mit ⌥⌘Q oder über das neue Menü der Schallplatte. Neu ist auch „Bei der Anmeldung öffnen“. Fensterinhalt und Cover-Speicher werden im Hintergrund freigegeben (siehe AENDERUNGEN).
+- **Verifikation:** Debug-Build ohne Warnung, 248 Tests bestanden (neu: `runningInTheBackgroundIsOnByDefaultAndPersists`, `quitRequestsGoIntoTheBackgroundOnlyWhenTheyMay`). In der Demo alle Wege zwischen Vorder- und Hintergrund geprüft, Speicher mit der echten Sammlung gemessen (242 → 110 MB).
+- **Lokalisierung:** 932 Einträge, alle mit Englisch, 15 neu; jeder Text im Code hat einen Eintrag.
+- **App-Protokoll** 31.10.: kein `ERROR`. **macOS-Absturzberichte:** keine.
+- **DMG:** neu gebaut und geprüft (Abbild gültig, 1.0.0 (102026), nur arm64, ab macOS 27.0, Signatur gültig, Berechtigungen aus den unveränderten Build-Einstellungen, beide Handbücher identisch, kein Prüfcode, neuer Stand im Programm). Release-App aus der DMG mit der echten Sammlung gestartet (852 Exemplare) und mit echten Tastendrücken über System Events bedient: ⌘Q → im Hintergrund, ⌥ Leertaste und Tippen ohne Fehler, erneutes Öffnen → Vordergrund, ⌥⌘Q → beendet.
+- **Nicht geprüft:** echte Mausklicks auf das Menü der Schallplatte, eine echte Anmeldung nach Neustart des Macs, echtes Abmelden. Das Suchfenster aus der DMG wurde nicht per Bild angesehen.
+
 # Aktueller Stand · 30.10.2026 (Suche in der Menüleiste, DMG)
 
 Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
