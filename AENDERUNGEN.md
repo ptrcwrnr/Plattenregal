@@ -1,3 +1,8 @@
+# DMG 1.0.0 mit dem Widget im Glas-Stil neu ausgegeben · 31.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026). Die vorige DMG war noch eingehängt (nichts lief daraus) und wurde ausgeworfen. Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102026), nur arm64, Signatur gültig (`--deep --strict`); Ordner-Ausnahmen in App und Widget; beide Handbücher identisch mit denen im Repository; kein Prüfcode; neuer Stand im Widget (`SmallTintedRecordView`). **Nicht geprüft:** die Einfärbung auf dem Schreibtisch.
+
 # Widget im abgedunkelten Glas-Stil: Cover farbig, kleines Widget angepasst · 31.10.2026
 
 - **Rückmeldung mit Bildschirmfotos:** Auf dem Schreibtisch erschienen die Cover als weiße Flächen und das Widget glasig, sobald eine App vorn war; ein anderes Design war nicht zu sehen. Ursache, nachgesehen statt angenommen: macOS 27 hat unter Systemeinstellungen → Schreibtisch & Dock den Schalter „Widgets auf dem Schreibtisch abdunkeln“ (Texte aus `DesktopSettings.appex` gelesen); an zeichnet macOS Widgets bei einer App im Vordergrund einfarbig auf Glas – ohne Hintergründe, alles in einem Ton, Bilder ohne Freigabe ebenfalls eingefärbt. Klassisch und Modern unterscheiden sich in diesem Modus nicht; ihr Unterschied zeigt sich in Farbe (Schreibtisch angeklickt oder Schalter aus).
