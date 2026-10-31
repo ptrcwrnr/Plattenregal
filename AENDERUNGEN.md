@@ -1,3 +1,11 @@
+# Build 102027: macOS liest das Widget neu ein; DMG neu ausgegeben · 31.10.2026
+
+- **Rückmeldung:** In der Widget-Galerie ließen sich noch das kleine und das große Widget auswählen. **Ursache, nachgesehen:** `chronod` (der Dienst hinter der Galerie) hatte in seiner Datenbank noch die alte Beschreibung gespeichert – `supportedSizeClasses = 14` (klein, mittel, groß) und `intentType = appintent:RecordOfTheDayConfiguration` – und liest sie nur neu ein, wenn sich die Build-Nummer ändert; die stand seit Wochen auf 102026. Beide registrierten Kopien des Widgets enthielten schon nur noch die mittlere Größe.
+- **Versucht, ohne Wirkung:** veraltete Registrierungen (Xcode-Build-Ordner, alte DMG-Einhängepunkte) bei LaunchServices und pluginkit ausgetragen und `chronod` neu gestartet – die gespeicherte Beschreibung blieb alt. Die Datenbank von `chronod` wurde bewusst nicht verändert (Systemdatei).
+- **Behoben:** Build-Nummer 102026 → 102027 (`CURRENT_PROJECT_VERSION` für App und Widget, mit Zustimmung); Version bleibt 1.0.0. README und STATISTIK nennen den neuen Stand.
+- **DMG** neu gebaut (Release vorher `clean`), Handbuch-PDFs unverändert. Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, Signatur gültig; Ordner-Ausnahmen in App und Widget; keine App-Intents-Metadaten und keine Spur der alten Größen oder Einstellung im Widget; Handbücher identisch; kein Prüfcode. Build ohne Warnung, 267 Tests bestanden.
+- **Nicht geprüft:** dass die Galerie nach dem Installieren nur noch die mittlere Größe anbietet – das zeigt erst die installierte 102027.
+
 # DMG 1.0.0 mit dem Widget im Entwurf C neu ausgegeben · 31.10.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release, Build 102026). Die vorige DMG war noch eingehängt (nichts lief daraus) und wurde ausgeworfen. Handbuch-PDFs unverändert.

@@ -1,8 +1,9 @@
 # Aktueller Stand · 31.10.2026 (Widget „Platte des Tages“, DMG)
 
-Projektversion **1.0.0 (102026)**, Schema **V18** (unverändert).
+Projektversion **1.0.0 (102027)**, Schema **V18** (unverändert).
 
 - **Geändert seit der letzten DMG:** Widget „Platte des Tages“ (neues Erweiterungsziel, klein/mittel/groß, Klassisch und Modern, Klick öffnet die Platte im Regal), gemeinsame Designstufen für App und Widget (siehe AENDERUNGEN).
+- **Nachtrag Build 102027:** Build-Nummer erhöht, damit macOS die Widget-Beschreibung neu einliest (die Galerie bot noch klein und groß an); DMG sauber neu gebaut und geprüft (1.0.0 (102027)); 267 Tests bestanden.
 - **Nachtrag Entwurf C:** Widget mit Mini-Regal und goldenem Fach; Randfälle in Tests geprüft; 267 Tests bestanden; Lauf ohne Änderung 22–24 ms bei 5 000 Platten. DMG sauber neu gebaut (Release `clean`, keine veralteten App-Intents-Metadaten) und geprüft.
 - **Nachtrag mittelgroß:** Widget nur noch in der mittleren Größe; 264 Tests bestanden; noch keine neue DMG.
 - **Nachtrag Glas-Stil:** Cover bleiben farbig, wenn macOS Widgets abdunkelt; kleines Widget dann mit Interpret unter dem Cover; DMG neu gebaut und geprüft; 264 Tests bestanden.
