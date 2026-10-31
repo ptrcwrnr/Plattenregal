@@ -1,3 +1,11 @@
+# DMG 1.0.0 mit schmalerer Menüleisten-Suche neu ausgegeben · 31.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen von App und Widget gleich wie in der installierten Fassung; URL-Schema `plattenregal`; keine App-Intents-Metadaten; beide Handbücher identisch; kein Prüfcode (Gegenprobe am Debug-Build); neuer Stand im Programm (`QuickSearchPresence`).
+- Release-App aus der DMG in der Demo gestartet, Suche über das Plattensymbol per System Events geöffnet und geschlossen: Fensterbreite am laufenden Fenster gemessen, 360 pt = 320 pt Suche + 2 × 20 pt Schattenrand, Mitte unter dem Symbol; sanftes Ein- und kurzes Ausblenden im Video. Im Protokoll keine Fehler, keine Absturzberichte. DMG danach ausgeworfen.
+- **Beobachtet:** Die installierte App (echte Sammlung, lief im Hintergrund) kam um 22:48:39 in den Vordergrund und wurde 1,5 s später regulär beendet („Beendet“ im Protokoll, kein Absturz). Die Prüfschritte gingen nur an die Prozessnummer der Demo-App; die Ursache ließ sich nicht feststellen.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung, Tippen in die Suche der Release-App.
+
 # Menüleisten-Suche schmaler · 31.10.2026
 
 - **Wunsch:** Die Suche in der Menüleiste weniger breit. **Vorher:** 360 pt, dieselbe Breite wie die Trefferliste der Regalseite (`searchResultsWidth`).
