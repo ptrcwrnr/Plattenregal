@@ -1,3 +1,11 @@
+# DMG 1.0.0 ohne Glaskante und mit wählbarer Position der Suche neu ausgegeben · 01.11.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen von App und Widget gleich wie in der installierten Fassung; URL-Schema `plattenregal`; keine App-Intents-Metadaten; beide Handbücher identisch; kein Prüfcode (`--snapshot=`, `--preview-switch`, `--preview-quicksearch`, `dumpwindows`, `--demo-background`, `--simulate-login-launch`, vorübergehende Prüfausgabe; Gegenprobe: `Plattenregal.debug.dylib` des Debug-Builds enthält sie); neuer Stand im Programm (`quickSearchPosition`, englischer Katalog mit „Top Center“ und „Search Position“; die kurzen deutschen Texte legt Swift direkt in den Code, sie sind mit `strings` nicht zu finden).
+- Release-App aus der DMG in der Demo gestartet, die Suche per echtem Mausklick auf die Schallplatte geöffnet (unter dem Symbol, 360 pt mit Schattenrand) und mit einem zweiten Klick geschlossen. Im Protokoll keine Fehler, keine Absturzberichte. DMG danach ausgeworfen.
+- **Beobachtet:** ⌥⌘Q per System Events beendete die Demo nicht; der Tastendruck geht an die vorderste App, nicht an den gemeinten Prozess. Die Demo wurde danach per Signal beendet. Künftig die Demo nicht über Tastendrücke beenden. Die installierte App war schon vorher beendet: um 23:45:24 regulär („Beendet“ im Protokoll, 1,5 s nachdem sie in den Vordergrund kam), wie schon um 22:48 beobachtet; die Ursache ließ sich wieder nicht feststellen.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung, „Oben mittig“ in der Release-App (in der Debug-Demo geprüft).
+
 # Menüleisten-Suche wahlweise oben mittig, unter der Notch · 31.10.2026
 
 - **Wunsch:** Die Suche soll auf Wunsch auch oben in der Mitte des Bildschirms erscheinen, also unter der Notch.
