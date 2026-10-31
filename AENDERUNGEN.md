@@ -1,3 +1,10 @@
+# DMG 1.0.0 mit wählbarem Aussehen der Menüleisten-Suche neu ausgegeben · 31.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Die vorige DMG war noch eingehängt (nichts lief daraus, die installierte App läuft aus dem Programme-Ordner) und wurde ausgeworfen. Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen gleich wie in der installierten Fassung (Sandbox, Dateien nach Wahl, Netzwerk, Ordner-Ausnahmen für App und Widget, `get-task-allow` von der Ad-hoc-Signierung wie zuvor); URL-Schema `plattenregal`; keine App-Intents-Metadaten; beide Handbücher identisch; kein Prüfcode (Gegenprobe: der Debug-Build enthält die Startargumente); neuer Stand im Programm (`QuickSearchLook`, `quickSearchLook`).
+- Release-App aus der DMG in der Demo gestartet (die installierte App lief mit der echten Sammlung weiter und wurde nicht angetastet): Suche über das Plattensymbol per System Events geöffnet und geschlossen, als Video angesehen (Tropfen im neuen Tempo, dunkles Glas 45 %), dazu ein Lauf mit hellem Glas als Foto. Im Protokoll keine Fehler, keine Absturzberichte. DMG danach ausgeworfen.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung, Tippen in die Suche der Release-App, Weiß in der Release-App (in der Debug-Demo angesehen).
+
 # Menüleisten-Suche schneller, dunkles Glas heller, Aussehen wählbar · 31.10.2026
 
 - **Wunsch:** Die Tropfen-Animation etwas schneller, das dunkle Glas weniger dunkel, und in den Einstellungen die Wahl zwischen dunklem Glas, hellem Glas und Weiß (Modern), Papier in Klassisch. Gewählt wurde „je nach Design“: Die drei Varianten gibt es in Modern, Klassisch bleibt immer Papier (Rückfrage beantwortet).
