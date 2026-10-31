@@ -158,6 +158,23 @@
 		9076B44A62D6D51EE41BA5A2 /* Plattenregal/Link/TVLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AD8AD734FB19F93FBDA6B4 /* Plattenregal/Link/TVLink.swift */; };
 		B41250BB5E929EF90FCD752C /* Plattenregal/Link/AppleTVLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CAB8B5E82000703434ED0A5 /* Plattenregal/Link/AppleTVLink.swift */; };
 		2F69D82A366C443498A74CD5 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9969D26BE0D923643AA8FCB4 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift */; };
+		5D7A0000000000000000000E /* Plattenregal/Design/DesignScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000001 /* Plattenregal/Design/DesignScale.swift */; };
+		5D7A0000000000000000000F /* Plattenregal/Design/SignatureToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000002 /* Plattenregal/Design/SignatureToolbar.swift */; };
+		5D7A00000000000000000010 /* Plattenregal/Design/RecordFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000003 /* Plattenregal/Design/RecordFrame.swift */; };
+		5D7A00000000000000000011 /* Plattenregal/Utilities/DemoCover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000004 /* Plattenregal/Utilities/DemoCover.swift */; };
+		5D7A00000000000000000012 /* Plattenregal/Widget/RecordOfTheDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000005 /* Plattenregal/Widget/RecordOfTheDay.swift */; };
+		5D7A00000000000000000013 /* Plattenregal/Widget/RecordOfTheDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000006 /* Plattenregal/Widget/RecordOfTheDayView.swift */; };
+		5D7A00000000000000000014 /* Plattenregal/Services/RecordOfTheDayPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000007 /* Plattenregal/Services/RecordOfTheDayPublisher.swift */; };
+		5D7A00000000000000000015 /* PlattenregalWidget/PlattenregalWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000008 /* PlattenregalWidget/PlattenregalWidget.swift */; };
+		5D7A00000000000000000016 /* Plattenregal/Widget/RecordOfTheDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000005 /* Plattenregal/Widget/RecordOfTheDay.swift */; };
+		5D7A00000000000000000017 /* Plattenregal/Widget/RecordOfTheDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000006 /* Plattenregal/Widget/RecordOfTheDayView.swift */; };
+		5D7A00000000000000000018 /* Plattenregal/Design/DesignScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000001 /* Plattenregal/Design/DesignScale.swift */; };
+		5D7A00000000000000000019 /* Plattenregal/Design/RecordFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000003 /* Plattenregal/Design/RecordFrame.swift */; };
+		5D7A0000000000000000001A /* Plattenregal/Utilities/DemoCover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000000004 /* Plattenregal/Utilities/DemoCover.swift */; };
+		5D7A0000000000000000001B /* Plattenregal/Design/AtelierPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF28C0691C87891FCA711544 /* Plattenregal/Design/AtelierPalette.swift */; };
+		5D7A0000000000000000001C /* Plattenregal/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */; };
+		5D7A0000000000000000001D /* PlattenregalWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5D7A0000000000000000000D /* PlattenregalWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5D7A00000000000000001002 /* PlattenregalTests/RecordOfTheDayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A00000000000000001001 /* PlattenregalTests/RecordOfTheDayTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -167,6 +184,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = C13732C8E715C9BEE4FA51C9;
 			remoteInfo = Plattenregal;
+		};
+		5D7A00000000000000000023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5D7A00000000000000000022;
+			remoteInfo = PlattenregalWidget;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -326,7 +350,35 @@
 		A4AD8AD734FB19F93FBDA6B4 /* Plattenregal/Link/TVLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Link/TVLink.swift; sourceTree = "<group>"; };
 		6CAB8B5E82000703434ED0A5 /* Plattenregal/Link/AppleTVLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Link/AppleTVLink.swift; sourceTree = "<group>"; };
 		9969D26BE0D923643AA8FCB4 /* Plattenregal/Views/Settings/AppleTVSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Settings/AppleTVSettingsView.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000001 /* Plattenregal/Design/DesignScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/DesignScale.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000002 /* Plattenregal/Design/SignatureToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/SignatureToolbar.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000003 /* Plattenregal/Design/RecordFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/RecordFrame.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000004 /* Plattenregal/Utilities/DemoCover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/DemoCover.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000005 /* Plattenregal/Widget/RecordOfTheDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Widget/RecordOfTheDay.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000006 /* Plattenregal/Widget/RecordOfTheDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Widget/RecordOfTheDayView.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000007 /* Plattenregal/Services/RecordOfTheDayPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/RecordOfTheDayPublisher.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000008 /* PlattenregalWidget/PlattenregalWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalWidget/PlattenregalWidget.swift; sourceTree = "<group>"; };
+		5D7A00000000000000000009 /* PlattenregalWidget/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PlattenregalWidget/Info.plist; sourceTree = "<group>"; };
+		5D7A0000000000000000000A /* PlattenregalWidget/PlattenregalWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PlattenregalWidget/PlattenregalWidget.entitlements; sourceTree = "<group>"; };
+		5D7A0000000000000000000B /* Plattenregal/Plattenregal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Plattenregal/Plattenregal.entitlements; sourceTree = "<group>"; };
+		5D7A0000000000000000000C /* Plattenregal/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Plattenregal/Info.plist; sourceTree = "<group>"; };
+		5D7A0000000000000000000D /* PlattenregalWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PlattenregalWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D7A00000000000000001001 /* PlattenregalTests/RecordOfTheDayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/RecordOfTheDayTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5D7A00000000000000000021 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				5D7A0000000000000000001D /* PlattenregalWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		1ABF84E55BD30AC2CEF8FC42 /* Frameworks */ = {
@@ -337,6 +389,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		78AE8C6BEB2A40A6D824CCEE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5D7A0000000000000000001F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -358,6 +417,10 @@
 		121BBCBF42974BB31BC56237 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				5D7A00000000000000000001 /* Plattenregal/Design/DesignScale.swift */,
+				5D7A00000000000000000002 /* Plattenregal/Design/SignatureToolbar.swift */,
+				5D7A00000000000000000003 /* Plattenregal/Design/RecordFrame.swift */,
+				5D7A00000000000000000004 /* Plattenregal/Utilities/DemoCover.swift */,
 				EBC86593C4E0C6B4DBFD485A /* Plattenregal/Utilities/FolderAccess.swift */,
 				01B09D2C8BF218778FB6E9D2 /* Plattenregal/Utilities/AppPreferences.swift */,
 				F385AE2B458D24C604B2DE2D /* Plattenregal/Utilities/AppShortcuts.swift */,
@@ -397,6 +460,9 @@
 		69F8D45498D7E20DA99BB780 /* Plattenregal */ = {
 			isa = PBXGroup;
 			children = (
+				5D7A0000000000000000000C /* Plattenregal/Info.plist */,
+				5D7A0000000000000000000B /* Plattenregal/Plattenregal.entitlements */,
+				5D7A00000000000000000028 /* Widget */,
 				F60635B88B91F3EEFB155C2C /* Plattenregal/PlattenregalApp.swift */,
 				843EBC136D87F7E70013A055 /* Plattenregal/Assets.xcassets */,
 				A1C0DE00000000000000C0F1 /* Plattenregal/Localizable.xcstrings */,
@@ -417,6 +483,7 @@
 		BFC937463906E5DB7A02A37C /* PlattenregalTests */ = {
 			isa = PBXGroup;
 			children = (
+				5D7A00000000000000001001 /* PlattenregalTests/RecordOfTheDayTests.swift */,
 				533299BAA2EB97D6247703AE /* PlattenregalTests/CabinetTests.swift */,
 				7030A606B2D04D8993B18266 /* PlattenregalTests/ShelfHistoryTests.swift */,
 				BF24FE25F5B9BCB18BAB9C4D /* PlattenregalTests/ShelfPanelTests.swift */,
@@ -524,6 +591,7 @@
 				D4A3881F783EFFC63FCD2683 /* VALIDIERUNG.md */,
 				69F8D45498D7E20DA99BB780 /* Plattenregal */,
 				BFC937463906E5DB7A02A37C /* PlattenregalTests */,
+				5D7A00000000000000000029 /* PlattenregalWidget */,
 				FBDC4F23F93125BBEEAE800C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -531,6 +599,7 @@
 		E8764D70B53FA9D06CBC14A9 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				5D7A00000000000000000007 /* Plattenregal/Services/RecordOfTheDayPublisher.swift */,
 				B8BBCFAB16F7E9BB4DD4445C /* Plattenregal/Services/ResetService.swift */,
 				F5C0F32914BC632A098D7F5E /* Plattenregal/Services/ScheduledExportService.swift */,
 				81DBC184AF98C763E6527CB8 /* Plattenregal/Services/CabinetService.swift */,
@@ -589,10 +658,30 @@
 		FBDC4F23F93125BBEEAE800C /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				5D7A0000000000000000000D /* PlattenregalWidget.appex */,
 				8BCD5BC4CDFDF0918087C782 /* Plattenregal.app */,
 				F219C0274590DA45E4BEF1EA /* PlattenregalTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		5D7A00000000000000000028 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				5D7A00000000000000000005 /* Plattenregal/Widget/RecordOfTheDay.swift */,
+				5D7A00000000000000000006 /* Plattenregal/Widget/RecordOfTheDayView.swift */,
+			);
+			name = Widget;
+			sourceTree = "<group>";
+		};
+		5D7A00000000000000000029 /* PlattenregalWidget */ = {
+			isa = PBXGroup;
+			children = (
+				5D7A00000000000000000008 /* PlattenregalWidget/PlattenregalWidget.swift */,
+				5D7A00000000000000000009 /* PlattenregalWidget/Info.plist */,
+				5D7A0000000000000000000A /* PlattenregalWidget/PlattenregalWidget.entitlements */,
+			);
+			name = PlattenregalWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -623,15 +712,34 @@
 				971ED9D05B25DB6C4D7680D4 /* Sources */,
 				78AE8C6BEB2A40A6D824CCEE /* Frameworks */,
 				364863F9F2E558B0F50473FC /* Resources */,
+				5D7A00000000000000000021 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				5D7A00000000000000000024 /* PBXTargetDependency */,
 			);
 			name = Plattenregal;
 			productName = Plattenregal;
 			productReference = 8BCD5BC4CDFDF0918087C782 /* Plattenregal.app */;
 			productType = "com.apple.product-type.application";
+		};
+		5D7A00000000000000000022 /* PlattenregalWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5D7A00000000000000000025 /* Build configuration list for PBXNativeTarget "PlattenregalWidget" */;
+			buildPhases = (
+				5D7A0000000000000000001E /* Sources */,
+				5D7A0000000000000000001F /* Frameworks */,
+				5D7A00000000000000000020 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PlattenregalWidget;
+			productName = PlattenregalWidget;
+			productReference = 5D7A0000000000000000000D /* PlattenregalWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -659,6 +767,7 @@
 			targets = (
 				C13732C8E715C9BEE4FA51C9 /* Plattenregal */,
 				64BCB755386F844C96A2A5B0 /* PlattenregalTests */,
+				5D7A00000000000000000022 /* PlattenregalWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -682,6 +791,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5D7A00000000000000000020 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D7A0000000000000000001C /* Plattenregal/Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -689,6 +806,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5D7A00000000000000001002 /* PlattenregalTests/RecordOfTheDayTests.swift in Sources */,
 				A2EB97D6247703AE58EB8E07 /* PlattenregalTests/CabinetTests.swift in Sources */,
 				4334130526044346A33C765F /* PlattenregalTests/ShelfHistoryTests.swift in Sources */,
 				FF935500CB0EE886D7986F53 /* PlattenregalTests/ShelfPanelTests.swift in Sources */,
@@ -721,6 +839,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5D7A0000000000000000000E /* Plattenregal/Design/DesignScale.swift in Sources */,
+				5D7A0000000000000000000F /* Plattenregal/Design/SignatureToolbar.swift in Sources */,
+				5D7A00000000000000000010 /* Plattenregal/Design/RecordFrame.swift in Sources */,
+				5D7A00000000000000000011 /* Plattenregal/Utilities/DemoCover.swift in Sources */,
+				5D7A00000000000000000012 /* Plattenregal/Widget/RecordOfTheDay.swift in Sources */,
+				5D7A00000000000000000013 /* Plattenregal/Widget/RecordOfTheDayView.swift in Sources */,
+				5D7A00000000000000000014 /* Plattenregal/Services/RecordOfTheDayPublisher.swift in Sources */,
 				16F7E9BB4DD4445CF437E9CB /* Plattenregal/Services/ResetService.swift in Sources */,
 				14BC632A098D7F5EC4128E10 /* Plattenregal/Services/ScheduledExportService.swift in Sources */,
 				C4E0C6B4DBFD485AC3BC9028 /* Plattenregal/Utilities/FolderAccess.swift in Sources */,
@@ -846,6 +971,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5D7A0000000000000000001E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D7A00000000000000000015 /* PlattenregalWidget/PlattenregalWidget.swift in Sources */,
+				5D7A00000000000000000016 /* Plattenregal/Widget/RecordOfTheDay.swift in Sources */,
+				5D7A00000000000000000017 /* Plattenregal/Widget/RecordOfTheDayView.swift in Sources */,
+				5D7A00000000000000000018 /* Plattenregal/Design/DesignScale.swift in Sources */,
+				5D7A00000000000000000019 /* Plattenregal/Design/RecordFrame.swift in Sources */,
+				5D7A0000000000000000001A /* Plattenregal/Utilities/DemoCover.swift in Sources */,
+				5D7A0000000000000000001B /* Plattenregal/Design/AtelierPalette.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -854,6 +993,11 @@
 			target = C13732C8E715C9BEE4FA51C9 /* Plattenregal */;
 			targetProxy = D799BAE6088A90139B415FCC /* PBXContainerItemProxy */;
 		};
+		5D7A00000000000000000024 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5D7A00000000000000000022 /* PlattenregalWidget */;
+			targetProxy = 5D7A00000000000000000023 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -861,6 +1005,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Plattenregal/Plattenregal.entitlements;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -873,6 +1018,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Plattenregal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Plattenregal;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Plattenregal schickt Discogs-Token und Regal-Belegung an Plattenregal auf deinem Apple TV.";
@@ -899,6 +1045,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
@@ -951,6 +1098,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_TESTABILITY = NO;
@@ -972,6 +1120,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Plattenregal/Plattenregal.entitlements;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -984,6 +1133,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Plattenregal/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Plattenregal;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Plattenregal schickt Discogs-Token und Regal-Belegung an Plattenregal auf deinem Apple TV.";
@@ -1037,6 +1187,74 @@
 			};
 			name = Debug;
 		};
+		5D7A00000000000000000026 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = PlattenregalWidget/PlattenregalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 102026;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlattenregalWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Plattenregal;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LM_SKIP_METADATA_EXTRACTION = NO;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		5D7A00000000000000000027 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = PlattenregalWidget/PlattenregalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 102026;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlattenregalWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Plattenregal;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LM_SKIP_METADATA_EXTRACTION = NO;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1063,6 +1281,15 @@
 			buildConfigurations = (
 				E9B2E96ABC5F6856F2BE79CF /* Debug */,
 				5A8C91857F674E16E2724F47 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5D7A00000000000000000025 /* Build configuration list for PBXNativeTarget "PlattenregalWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D7A00000000000000000026 /* Debug */,
+				5D7A00000000000000000027 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

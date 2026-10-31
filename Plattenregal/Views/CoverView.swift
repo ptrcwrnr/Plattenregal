@@ -83,7 +83,8 @@ struct CoverView: View {
 }
 
 extension EnvironmentValues {
-    @Entry var coverCornerRadius: CGFloat = 6
+    /// A cover on a mat (see `RecordFrame.coverRadius`).
+    @Entry var coverCornerRadius: CGFloat = RecordFrame.modernMat.coverRadius
 }
 
 extension Release {

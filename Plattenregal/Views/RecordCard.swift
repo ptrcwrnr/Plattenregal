@@ -34,9 +34,8 @@ struct RecordCard: View {
 }
 
 /// How Klassisch frames a cover. `sleeve` (default): the cover as a real
-/// LP sleeve – nearly square corners, a fine printed edge, lying on the paper
-/// with a close and a soft shadow. `passepartout`: the earlier cream mat with
-/// rounded corners, kept to switch back:
+/// LP sleeve (see `RecordFrame.sleeve`). `passepartout`: the earlier cream mat
+/// with rounded corners, kept to switch back:
 /// `defaults write <bundle id> atelierCoverFrame passepartout`.
 enum AtelierCoverFrame: String {
     case sleeve, passepartout
@@ -46,40 +45,19 @@ enum AtelierCoverFrame: String {
     /// Distance of the tags on a cover from its edge, the mat included.
     static var badgeInset: CGFloat { usesMat ? 11 : 8 }
     /// The cover lies on a mat: Klassisch's passepartout, and always in Modern.
-    static var usesMat: Bool { !(AppStyle.isAtelier && current == .sleeve) }
-    /// Modern's mat: white in light mode; a light veil in dark mode, so it
-    /// sits a little above the window like Klassisch's surface on its paper.
-    static let modernMat = Color(nsColor: NSColor(name: nil) { appearance in
-        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(white: 1, alpha: 0.1) : .white
-    })
+    static var usesMat: Bool { frame != .sleeve }
+    /// The frame of the design shown.
+    static var frame: RecordFrame { AppStyle.isAtelier ? classicFrame : .modernMat }
+    /// Klassisch's frame, whichever design is shown (the widget can show either).
+    static var classicFrame: RecordFrame { current == .sleeve ? .sleeve : .classicMat }
 }
 
 extension View {
     /// Atelier's frame around the existing image. The unchanged cover
     /// remains in the tree, including its loading state, in every design.
     @ViewBuilder func atelierRecordSleeve() -> some View {
-        if !AtelierCoverFrame.usesMat {
-            environment(\.coverCornerRadius, 2)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 2)
-                        .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: AppStyle.hairlineWidth)
-                }
-                .shadow(color: AtelierPalette.petrol.opacity(0.18), radius: 1, y: 1)
-                .shadow(color: AtelierPalette.petrol.opacity(0.14), radius: 10, y: 6)
-        } else {
-            // The mat in both designs; Modern only takes the system's surface
-            // and edge instead of cream.
-            padding(6)
-                .background {
-                    RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                        .fill(AppStyle.isAtelier ? AtelierPalette.surface : AtelierCoverFrame.modernMat)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: AppStyle.cardRadius)
-                                .strokeBorder(AppStyle.borderColor, lineWidth: AppStyle.borderWidth)
-                        }
-                }
-                .shadow(color: .black.opacity(0.08), radius: 8, y: 3)
-        }
+        let frame = AtelierCoverFrame.frame
+        environment(\.coverCornerRadius, frame.coverRadius).recordFrame(frame)
     }
 }
 

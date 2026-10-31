@@ -16,6 +16,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let atLogin = AppLifecycle.launchedAsLoginItem
         ShelfQuickSearch.shared.start()
         AppLifecycle.shared.start(launchedAtLogin: atLogin)
+        // The widget „Platte des Tages“ shows the user's own collection,
+        // never the demo's.
+        if let container = ShelfQuickSearch.shared.container, !DemoMode.isActive {
+            RecordOfTheDayPublisher.shared.start(container: container)
+        }
+        #if DEBUG
+        // --preview-widget-link=Artist: a click on the widget showing that
+        // artist's record, while launching – as when the click launches the app.
+        if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-widget-link=") }),
+           let context = ShelfQuickSearch.shared.container?.mainContext {
+            let artist = String(raw.dropFirst("--preview-widget-link=".count))
+            let copies = (try? context.fetch(RecordCopy.fetchingReleases())) ?? []
+            if let copy = copies.first(where: { $0.release?.artist == artist }) {
+                RecordOfTheDayPublisher.open(RecordOfTheDay.link(to: copy.id))
+            }
+        }
+        #endif
+    }
+    /// A click on the widget „Platte des Tages“ (`plattenregal://platte/…`).
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls { RecordOfTheDayPublisher.open(url) }
     }
     /// The Dock's „Beenden“, a script or logout – see `AppLifecycle.terminateReply`.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

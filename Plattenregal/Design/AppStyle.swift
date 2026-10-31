@@ -9,15 +9,16 @@ enum AppStyle {
     // MARK: Spacing
     // One scale for every distance: steps of 4, and 2 for the lines of one
     // caption. Views take a step from here instead of a number of their own,
-    // so edges that belong together land on the same line.
+    // so edges that belong together land on the same line. The steps
+    // themselves live in `DesignScale`, which the widget shares.
     /// Lines of one caption: a title and what stands under it.
-    static let hairSpacing: CGFloat = 2
-    static let tightSpacing: CGFloat = 4
-    static let itemSpacing: CGFloat = 8
-    static let rowSpacing: CGFloat = 12
-    static let cardPadding: CGFloat = 16
-    static let sectionSpacing: CGFloat = 20
-    static let pagePadding: CGFloat = 24
+    static let hairSpacing = DesignScale.hairSpacing
+    static let tightSpacing = DesignScale.tightSpacing
+    static let itemSpacing = DesignScale.itemSpacing
+    static let rowSpacing = DesignScale.rowSpacing
+    static let cardPadding = DesignScale.cardPadding
+    static let sectionSpacing = DesignScale.sectionSpacing
+    static let pagePadding = DesignScale.pagePadding
     /// A page's side margins: its covers, cards and tables start here.
     static let pageMargin: CGFloat = 28
     /// Between the big blocks of a page: banners, header, rack, compartment.
@@ -103,17 +104,17 @@ enum AppStyle {
     // Shared corner radius for secondary surfaces (search fields, result
     // dropdowns, metric chips) so they read as one consistent system instead
     // of each picking its own rounding.
-    static let surfaceRadius: CGFloat = 12
+    static let surfaceRadius = DesignScale.surfaceRadius
     /// Cards: record covers, shelf cards, dashboard/metric cards.
-    static let cardRadius: CGFloat = 12
+    static let cardRadius = DesignScale.cardRadius
     /// Larger control surfaces: toolbars, control bars, prominent panels.
-    static let controlRadius: CGFloat = 18
+    static let controlRadius = DesignScale.controlRadius
     /// Rows and small tiles (lists, cabinet and compartment chips, legend
     /// entries) and the hover or selection tint behind them.
-    static let rowRadius: CGFloat = 8
+    static let rowRadius = DesignScale.rowRadius
     /// Cards that mark where something happens: the placement card, the
     /// target shelf above "Platte hinzufügen" (see `accentGlassCard`).
-    static let featureRadius: CGFloat = 16
+    static let featureRadius = DesignScale.featureRadius
     /// Klassisch draws its controls and the bars around them as rounded
     /// rectangles where Modern uses capsules: buttons, pickers, the search
     /// field and the toolbar band. A selection inside such a bar sits
@@ -125,9 +126,9 @@ enum AppStyle {
 
     // MARK: Lines
     /// Fine rims of drawn miniatures and sleeves.
-    static let hairlineWidth: CGFloat = 0.5
+    static let hairlineWidth = DesignScale.hairlineWidth
     /// Every ordinary rim: cards, fields, buttons, chips.
-    static let borderWidth: CGFloat = 1
+    static let borderWidth = DesignScale.borderWidth
     /// The rim that marks a selection or a drop target (gold in Klassisch,
     /// the accent in Modern, see `selectedBorder`): the same strength on
     /// covers, compartments, rows and cards.
@@ -163,7 +164,7 @@ enum AppStyle {
     // `.callout`, `.caption`, `.caption2`, `.headline` for card titles).
     // Weighted variants have a role of their own and live here.
     /// The name in a list row: artist, label, record, option.
-    static let rowTitle = Font.callout.weight(.medium)
+    static let rowTitle = DesignScale.rowTitle
     /// The text typed into the search in the menu bar: larger, as the panel
     /// is about this one field (like Spotlight).
     static let searchFieldFont = Font.title3
@@ -175,9 +176,9 @@ enum AppStyle {
     static let strongCallout = Font.callout.weight(.semibold)
     /// Small numbers and marks with weight: positions on covers, a kicker
     /// over a card, a change in a figure.
-    static let captionMark = Font.caption.weight(.semibold)
+    static let captionMark = DesignScale.captionMark
     /// Small labels with weight: hints and actions inside a result row.
-    static let captionLabel = Font.caption.weight(.medium)
+    static let captionLabel = DesignScale.captionLabel
     /// The tiny badges on covers and rows (sold, missing, status).
     static let badge = Font.caption2.weight(.medium)
     /// The small capitals over a group of rows in a menu.
@@ -196,7 +197,7 @@ enum AppStyle {
     /// Leading a card next to a page title (where a record stands).
     static let cardSymbol = Font.system(size: 30)
     /// The large symbol of an empty page.
-    static let emptyStateSymbol = Font.system(size: 40, weight: .light)
+    static let emptyStateSymbol = DesignScale.emptyStateSymbol
     /// The symbol on a tinted tile leading a figure or a sync line (see `SymbolTile`).
     static let tileSymbol = Font.callout.weight(.semibold)
     /// The tile itself.
@@ -213,7 +214,7 @@ enum AppStyle {
     static var isAtelier: Bool { AppPreferences.shared.signatureDesign == .atelier }
     /// Labels and symbols on the toolbar's bar that aren't chosen: the
     /// page switch's options, the magnifying glass.
-    static var toolbarLabel: AnyShapeStyle { isAtelier ? AnyShapeStyle(Color.white.opacity(0.8)) : AnyShapeStyle(.secondary) }
+    static var toolbarLabel: AnyShapeStyle { isAtelier ? AnyShapeStyle(AtelierPalette.bandLabel) : AnyShapeStyle(.secondary) }
     static var hoverBackground: Color { isAtelier ? AtelierPalette.ink.opacity(0.05) : Color.primary.opacity(0.05) }
     /// The accent chosen in the settings (or the system's). Read in `body`,
     /// so views redraw when it changes.
@@ -222,7 +223,7 @@ enum AppStyle {
     /// (which turns the cream gray); the gold border marks the choice.
     static var selectedBackground: Color { isAtelier ? AtelierPalette.soft : accent.opacity(0.12) }
     static var selectedBorder: Color { isAtelier ? AtelierPalette.gold : accent }
-    static var borderColor: Color { isAtelier ? AtelierPalette.border : Color.primary.opacity(0.08) }
+    static var borderColor: Color { isAtelier ? AtelierPalette.border : DesignScale.modernBorder }
     /// Klassisch keeps the meaning but takes earthy tones that sit on cream
     /// and on the dark paper, instead of the system's bright ones.
     static var successColor: Color { isAtelier ? AtelierPalette.success : Color.green }

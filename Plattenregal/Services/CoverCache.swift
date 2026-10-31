@@ -56,24 +56,36 @@ actor CoverCache {
     }
 
     func image(_ url: URL, maximumPixelSize: Int) async throws -> ImagePayload {
+        try await image(url, maximumPixelSize: maximumPixelSize, remember: true)
+    }
+
+    /// The same, but not kept in memory: for covers no window shows (the
+    /// widget's, see `RecordOfTheDayPublisher`), which would otherwise fill
+    /// the memory freed in the background again. Still read from and
+    /// written to the disk cache.
+    func imageForExport(_ url: URL, maximumPixelSize: Int) async throws -> ImagePayload {
+        try await image(url, maximumPixelSize: maximumPixelSize, remember: false)
+    }
+
+    private func image(_ url: URL, maximumPixelSize: Int, remember: Bool) async throws -> ImagePayload {
         let key = CacheKey(url: url, maximumPixelSize: maximumPixelSize)
         if let payload = memory.withLock({ $0.lookup(key, now: .now) }) { return payload }
         // Demo covers are drawn, never downloaded or written to disk.
         if url.scheme == DemoCover.scheme {
             guard let payload = await Self.drawn(url, maximumPixelSize: maximumPixelSize) else { throw DiscogsError.invalidResponse }
-            storeInMemory(payload, for: key)
+            if remember { storeInMemory(payload, for: key) }
             return payload
         }
         if let fileURL = fileURL(for: url),
            let payload = await Self.thumbnail(fromFile: fileURL, maximumPixelSize: maximumPixelSize) {
-            storeInMemory(payload, for: key)
+            if remember { storeInMemory(payload, for: key) }
             return payload
         }
         let data = try await downloadData(for: url)
         guard let payload = await Self.decoded(data, maximumPixelSize: maximumPixelSize) else {
             throw DiscogsError.invalidResponse
         }
-        storeInMemory(payload, for: key)
+        if remember { storeInMemory(payload, for: key) }
         return payload
     }
 

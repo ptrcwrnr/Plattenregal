@@ -120,6 +120,46 @@
         }
       }
     },
+    "+ %lld weitere" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+ 1 weiterer"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+ %lld weitere"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+ 1 more"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+ %lld more"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "⌘Q und das Schließen des letzten Fensters lassen Plattenregal ohne Symbol im Dock weiterlaufen; Schallplatte und Kürzel bleiben. Ganz beenden: Rechtsklick auf die Schallplatte oder ⌥⌘Q." : {
       "localizations" : {
         "en" : {
@@ -290,6 +330,16 @@
         }
       }
     },
+    "Jeden Tag eine Platte aus deiner Sammlung – und wo sie im Regal steht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A record from your collection every day – and where it stands on the shelf."
+          }
+        }
+      }
+    },
     "Kürzel" : {
       "localizations" : {
         "en" : {
@@ -350,12 +400,42 @@
         }
       }
     },
+    "Noch keine Platten in deiner Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records in your collection yet."
+          }
+        }
+      }
+    },
+    "Öffne Plattenregal einmal, dann liegt hier jeden Tag eine Platte aus deiner Sammlung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Plattenregal once, and a record from your collection will be here every day."
+          }
+        }
+      }
+    },
     "Öffnet die Suche von überall, auch wenn gerade eine andere App vorn ist. Nutzt eine andere App %@ ebenfalls, reagiert nur eine von beiden – dann hier ausschalten." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens the search from anywhere, even while another app is in front. If another app uses %@ as well, only one of them responds – then switch it off here."
+          }
+        }
+      }
+    },
+    "Platte des Tages" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record of the Day"
           }
         }
       }
@@ -9226,6 +9306,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As on the shelf"
+          }
+        }
+      }
+    },
+    "Wie in der App" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As in the app"
           }
         }
       }
