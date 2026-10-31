@@ -1,3 +1,10 @@
+# DMG 1.0.0 mit sanft absetzender Menüleisten-Suche neu ausgegeben · 31.10.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs unverändert.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen von App und Widget Zeichen für Zeichen gleich wie in der installierten Fassung; URL-Schema `plattenregal`; keine App-Intents-Metadaten; beide Handbücher identisch; kein Prüfcode (Gegenprobe: der Debug-Build enthält die Startargumente); neuer Stand im Programm (`QuickSearchPresence`, kein `QuickSearchDrop`/`DropEdgeInset` mehr, wieder `PillEdgeInset`).
+- Release-App aus der DMG in der Demo gestartet (die echte Sammlung blieb unberührt), Suche über das Plattensymbol per System Events geöffnet und geschlossen, als Video angesehen: sanftes Einblenden, kurze Blende beim Schließen. Im Protokoll keine Fehler, keine Absturzberichte. DMG danach ausgeworfen.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung und Tippen in die Suche der Release-App.
+
 # Menüleisten-Suche setzt sich sanft ab statt als Tropfen · 31.10.2026
 
 - **Wunsch:** Der Tropfen sagte nicht zu. Aus fünf vorgeschlagenen Alternativen gewählt: „sanft absetzen“.
