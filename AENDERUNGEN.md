@@ -1,3 +1,10 @@
+# DMG 1.0.0 nach der Code-Prüfung der letzten Tage neu ausgegeben · 01.11.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs unverändert. Enthält auch die Änderungen von heute früh (Festhalten in der Suche, „Pos. x von y“, Lage oben mittig/oben rechts), die noch in keiner DMG waren.
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen von App und Widget gleich wie in der installierten Fassung; URL-Schema `plattenregal`; keine App-Intents-Metadaten; beide Handbücher identisch; kein Prüfcode (`--snapshot=`, `--preview-quicksearch`, `dumpwindows`, `--demo-background`, `--simulate-login-launch`; Gegenprobe: `Plattenregal.debug.dylib` des Debug-Builds enthält sie); neuer Stand im Programm (`recordCounts`, englischer Hinweis „Click a match to hold it.“).
+- Release-App aus der DMG in der Demo gestartet: Start und Datenbank im Protokoll, keine Fehler, keine Absturzberichte; per Signal beendet, DMG danach ausgeworfen. Die installierte App lief die ganze Zeit weiter.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung, Bedienung der Suche in der Release-App (in der Debug-Demo geprüft), eine echte Anmeldung nach Neustart des Macs.
+
 # Code-Prüfung der letzten Tage: Hauptfenster aus dem Anmelde-Start, veralteter Hinweis, schnellere Fachzählung · 01.11.2026
 
 - **Wunsch:** Den Code der letzten Tage (Menüleisten-Suche, Hintergrundbetrieb, Kürzel, Widget „Platte des Tages“, Umschalter, Regalseite) auf Fehler, Randfälle, unnötige Mehrarbeit und toten Code prüfen.

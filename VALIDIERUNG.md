@@ -1,3 +1,14 @@
+# Aktueller Stand · 01.11.2026 (Code-Prüfung der letzten Tage, DMG)
+
+Projektversion **1.0.0 (102027)**, Schema **V18** (unverändert).
+
+- **Geändert seit der letzten DMG:** Menüleisten-Suche führt nicht mehr in die App (Klick hält fest, „Pos. x von y“, Lage oben mittig oder oben rechts); Code-Prüfung: Hauptfenster und Einstellungen öffnen sich auch nach dem Start bei der Anmeldung, veralteter Hinweis ersetzt, Fachzählung je Datenstand zwischengespeichert und schneller, Mini-Regal ohne gelöschte Fächer (siehe AENDERUNGEN).
+- **Verifikation:** Debug- und Release-Build ohne Warnung, nur arm64; 274 Tests bestanden; Anmelde-Start in der Debug-Demo nachgestellt (alter Stand: „Hauptfenster ließ sich nicht öffnen“, neuer Stand: Hauptfenster und Einstellungen öffnen sich); Suche in der Demo fotografiert.
+- **Lokalisierung:** ein Eintrag geändert (Hinweis zur Suche in der Menüleiste, de/en), keiner neu oder verwaist.
+- **App-Protokoll** 01.11.: kein `ERROR` außer dem bewusst nachgestellten im alten Stand. **macOS-Absturzberichte:** keine.
+- **DMG:** neu gebaut und geprüft (Abbild gültig, App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig, Berechtigungen gleich der installierten Fassung, beide Handbücher identisch, kein Prüfcode, neuer Stand im Programm). Release-App aus der DMG in der Demo gestartet, ohne Fehler.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung, eine echte Anmeldung nach Neustart des Macs, die Einstellungsseite im Bild.
+
 # Aktueller Stand · 31.10.2026 (Widget „Platte des Tages“, DMG)
 
 Projektversion **1.0.0 (102027)**, Schema **V18** (unverändert).
