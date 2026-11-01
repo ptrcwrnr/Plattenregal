@@ -16,7 +16,11 @@ import SwiftUI
     private(set) var results = ShelfSearchResults()
     private(set) var labels = ShelfLabels()
     /// The match the rack below the list shows.
-    var highlighted: UUID?
+    private(set) var highlighted: UUID?
+    /// The match held by a click (or ↩): the pointer passing over other rows
+    /// no longer moves the rack, so it can stay open while one looks for the
+    /// record at the shelf. The arrow keys take the hold along.
+    private(set) var pinned: UUID?
     /// Bumped once the panel is on screen: the field takes the cursor then
     /// (a focus set while the panel is hidden doesn't stick).
     private(set) var focusRequests = 0
@@ -58,14 +62,34 @@ import SwiftUI
         text = ""
         results = ShelfSearchResults()
         highlighted = nil
+        pinned = nil
     }
 
-    /// Up or down the list, stopping at both ends.
+    /// Up or down the list, stopping at both ends. A held match moves along.
     func move(_ offset: Int) {
         let matches = matches
         guard !matches.isEmpty else { return }
         let current = matches.firstIndex { $0.id == highlightedCopy?.id } ?? 0
         highlighted = matches[min(max(current + offset, 0), matches.count - 1)].id
+        if pinned != nil { pinned = highlighted }
+    }
+
+    /// The pointer over a row picks it, like the arrow keys – unless a
+    /// match is held.
+    func hover(_ copy: RecordCopy) {
+        guard pinned == nil else { return }
+        highlighted = copy.id
+    }
+
+    /// A click on a row (or ↩ on the highlighted one) holds it; again on
+    /// the held one lets go. Nothing opens the main window from here.
+    func togglePin(_ copy: RecordCopy) {
+        if pinned == copy.id {
+            pinned = nil
+        } else {
+            pinned = copy.id
+            highlighted = copy.id
+        }
     }
 
     /// The records changed while the panel is open (a sync, a record
@@ -85,7 +109,7 @@ import SwiftUI
 
     private func search() {
         let words = SearchIndex<UUID>.words(text)
-        guard !words.isEmpty else { results = ShelfSearchResults(); highlighted = nil; return }
+        guard !words.isEmpty else { results = ShelfSearchResults(); highlighted = nil; pinned = nil; return }
         let records = records
         let copies = records.copies
         let changes = LibraryChanges.shared
@@ -116,6 +140,9 @@ import SwiftUI
             labels = labelsCache.labels(for: records.shelves, style: style)
             labelsState = labelsFor
         }
+        // A held match that no longer matches (or was deleted) lets go.
+        if let pinned, !matches.contains(where: { $0.id == pinned }) { self.pinned = nil }
+        if let pinned { highlighted = pinned }
         if !matches.contains(where: { $0.id == highlighted }) { highlighted = matches.first?.id }
     }
 
@@ -167,8 +194,8 @@ struct QuickSearchPlace {
     /// app (or a second Plattenregal) holds too – both register, and only
     /// the one that registered first receives it (tried 30.10.2026).
     private(set) var hotKeyRefused = false
-    /// A record picked in the panel, for the main window: it opens the shelf
-    /// page with the card for it (see `RootView`).
+    /// A record picked in the widget „Platte des Tages“, for the main window:
+    /// it opens the shelf page with the card for it (see `RootView`).
     var pendingCopy: UUID?
     /// The record is in the menu bar (switched on, the store is open) – the
     /// condition for running in the background (`AppLifecycle`).
@@ -346,7 +373,7 @@ struct QuickSearchPlace {
                     }
                     return
                 }
-                // The main window closed or in the Dock, for "Im Regal zeigen" from there.
+                // The main window closed or in the Dock, for the record's menu („Plattenregal öffnen“) from there.
                 if key == "closemain" || key == "minimizemain" {
                     let main = NSApp.windows.first { $0.identifier?.rawValue == DemoMode.mainWindowID && $0.isVisible }
                     if key == "closemain" { main?.performClose(nil) } else { main?.miniaturize(nil) }
@@ -394,8 +421,8 @@ struct QuickSearchPlace {
             model.reset()
             presence.shown = false
         }
-        openScreen = recordAnchor?.screen
-            ?? NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
+        // The screen with the pointer – also the record's, when it was clicked.
+        openScreen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
         position(panel, height: panel.frame.height)
         // Modern: the chosen look's appearance (dark for dark glass, light
         // for light glass and white), in light and dark mode alike, so
@@ -429,7 +456,8 @@ struct QuickSearchPlace {
     }
 
     /// Closes the panel and shows the record in the main window, on the
-    /// shelf page with the card "Hier steht …" or "Einsortieren …".
+    /// shelf page with the card "Hier steht …" or "Einsortieren …" – for the
+    /// widget; the search itself doesn't lead into the app.
     func showInShelf(_ copy: RecordCopy) {
         close()
         pendingCopy = copy.id
@@ -461,7 +489,6 @@ struct QuickSearchPlace {
         panel.identifier = NSUserInterfaceItemIdentifier(Self.windowID)
         panel.delegate = self
         let view = ShelfQuickSearchView(model: model, presence: presence, close: { [weak self] in self?.close() },
-                                        show: { [weak self] in self?.showInShelf($0) },
                                         resize: { [weak self, weak panel] height in
                                             guard let self, let panel else { return }
                                             position(panel, height: height)
@@ -473,28 +500,33 @@ struct QuickSearchPlace {
         return panel
     }
 
-    /// The record's window to open under, when chosen (`QuickSearchPosition`)
-    /// and the record is shown; else the search opens in the middle.
-    private var recordAnchor: NSWindow? {
-        AppPreferences.shared.quickSearchPosition == .underRecord ? statusItem?.button?.window : nil
+    /// At the top of the screen with the pointer, a little below the menu
+    /// bar, its top edge fixed while the list grows (`QuickSearchPosition`):
+    /// centred on the whole screen – on a MacBook right under the notch,
+    /// which sits in the middle whatever the Dock does – or in the top right
+    /// corner, as far from the right edge as from the menu bar.
+    private func position(_ panel: NSPanel, height: CGFloat) {
+        guard let screen = openScreen ?? NSScreen.main else { return }
+        let room = QuickSearchPanel.shadowRoom
+        let corner = Self.surfaceCorner(width: AppStyle.quickSearchWidth, screen: screen.frame, visible: screen.visibleFrame,
+                                        position: AppPreferences.shared.quickSearchPosition)
+        // The shadow room around the surface is transparent.
+        let top = corner.y + room
+        panel.setFrame(NSRect(x: corner.x - room, y: top - height, width: AppStyle.quickSearchWidth + 2 * room, height: height),
+                       display: true)
     }
 
-    /// Under the record in the menu bar, its top edge fixed while the list
-    /// grows; in the middle (chosen, or without the record), at the top of
-    /// the screen with the pointer, centred on the screen – on a MacBook
-    /// right under the notch, which sits in the middle whatever the Dock does.
-    private func position(_ panel: NSPanel, height: CGFloat) {
-        let room = QuickSearchPanel.shadowRoom
-        let width = AppStyle.quickSearchWidth + 2 * room
-        let anchor = recordAnchor?.frame
-        guard let screen = openScreen ?? NSScreen.main else { return }
-        let visible = screen.visibleFrame
-        // The surface sits a little below the bar, in the middle as under
-        // the record; the shadow room around it is transparent.
-        let top = (anchor?.minY ?? visible.maxY) - AppStyle.tightSpacing + room
-        var x = (anchor?.midX ?? screen.frame.midX) - width / 2
-        x = min(max(x, visible.minX + AppStyle.itemSpacing - room), visible.maxX - width - AppStyle.itemSpacing + room)
-        panel.setFrame(NSRect(x: x, y: top - height, width: width, height: height), display: true)
+    /// The top left corner of the surface itself (without the shadow room),
+    /// in screen coordinates: `tightSpacing` below the menu bar and, in the
+    /// top right corner, as far from the edge. Apart from the panel for the tests.
+    static func surfaceCorner(width: CGFloat, screen: CGRect, visible: CGRect, position: QuickSearchPosition) -> CGPoint {
+        let gap = AppStyle.tightSpacing
+        let x = switch position {
+        case .center: min(max(screen.midX - width / 2, visible.minX + gap), visible.maxX - width - gap)
+        // The visible area's edge: a Dock on the right stays clear.
+        case .topRight: visible.maxX - width - gap
+        }
+        return CGPoint(x: x, y: visible.maxY - gap)
     }
 
     // A click anywhere else closes it, like a menu.
@@ -538,13 +570,13 @@ final class QuickSearchPanel: NSPanel {
 }
 
 /// Search field, the matches, and the rack with the place of the
-/// highlighted one. ↑ ↓ pick, ↩ shows it in the main window, Esc clears the
-/// field and then closes.
+/// highlighted one. ↑ ↓ or the pointer pick, a click or ↩ holds the pick
+/// (again: lets go), Esc clears the field and then closes. Nothing here
+/// opens the main window – the search only tells where a record is.
 struct ShelfQuickSearchView: View {
     @Bindable var model: ShelfQuickSearchModel
     let presence: QuickSearchPresence
     let close: () -> Void
-    let show: (RecordCopy) -> Void
     /// The panel follows the content's height.
     let resize: (CGFloat) -> Void
     @FocusState private var focused: Bool
@@ -599,7 +631,7 @@ struct ShelfQuickSearchView: View {
                 .focused($focused)
                 .onKeyPress(.downArrow) { model.move(1); return .handled }
                 .onKeyPress(.upArrow) { model.move(-1); return .handled }
-                .onSubmit { if let copy = model.highlightedCopy { show(copy) } }
+                .onSubmit { if let copy = model.highlightedCopy { model.togglePin(copy) } }
                 .onKeyPress(.escape) {
                     if model.text.isEmpty { close() } else { model.text = "" }
                     return .handled
@@ -620,6 +652,7 @@ struct ShelfQuickSearchView: View {
     @ViewBuilder private func results(highlighted: UUID?) -> some View {
         let placed = model.placed, unplaced = model.unplaced
         let missing = missing
+        let pinned = model.pinned
         if placed.isEmpty && unplaced.isEmpty {
             Text("Keine Treffer im Regal.")
                 .font(.callout)
@@ -629,10 +662,10 @@ struct ShelfQuickSearchView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(placed) { row($0, placeable: false, missing: missing, highlighted: highlighted) }
+                ForEach(placed) { row($0, placeable: false, missing: missing, highlighted: highlighted, pinned: pinned) }
                 if !unplaced.isEmpty {
                     ShelfSearchUnplacedTitle(first: placed.isEmpty)
-                    ForEach(unplaced) { row($0, placeable: true, missing: missing, highlighted: highlighted) }
+                    ForEach(unplaced) { row($0, placeable: true, missing: missing, highlighted: highlighted, pinned: pinned) }
                 }
                 if model.results.hidden > 0 { ShelfSearchMoreNote(hidden: model.results.hidden) }
             }
@@ -640,15 +673,18 @@ struct ShelfQuickSearchView: View {
         }
     }
 
-    private func row(_ copy: RecordCopy, placeable: Bool, missing: Set<UUID>, highlighted: UUID?) -> some View {
-        Button { show(copy) } label: {
+    private func row(_ copy: RecordCopy, placeable: Bool, missing: Set<UUID>, highlighted: UUID?, pinned: UUID?) -> some View {
+        let isPinned = pinned == copy.id
+        return Button { model.togglePin(copy) } label: {
             SearchResultRow(copy: copy, labels: model.labels, missing: missing.contains(copy.id),
-                            placeable: placeable, highlighted: highlighted == copy.id)
+                            placeable: placeable, highlighted: highlighted == copy.id, pinned: isPinned)
         }
         .buttonStyle(.plain)
-        // The pointer picks the match the rack shows, like the arrow keys.
-        .onHover { if $0 { model.highlighted = copy.id } }
-        .help(placeable ? String(localized: "Im Regal zeigen, wo die Platte hingehört") : String(localized: "Im Regal zeigen"))
+        // The pointer picks the match the rack shows, like the arrow keys –
+        // unless a click holds one.
+        .onHover { if $0 { model.hover(copy) } }
+        .help(isPinned ? String(localized: "Klicken, um die Platte wieder loszulassen") : String(localized: "Klicken, um die Platte festzuhalten"))
+        .accessibilityAddTraits(isPinned ? .isSelected : [])
     }
 }
 
@@ -671,9 +707,6 @@ struct QuickSearchRack: View {
                 Spacer(minLength: 0)
             }
             grid
-            // What ↩ does, right under what it opens.
-            Text("↩ Im Regal zeigen").font(AppStyle.captionLabel).foregroundStyle(SearchPanelInk.muted)
-                .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 
@@ -682,7 +715,9 @@ struct QuickSearchRack: View {
     }
 
     private var location: String {
-        let shelf = String(localized: "Fach „\(shelfName)“ · Position \(place.position)")
+        // Out of how many: a record that only belongs there would be one more.
+        let position = place.shelf.positionText(place.position, joining: !place.placed)
+        let shelf = String(localized: "Fach „\(shelfName)“ · \(position)")
         return showsCabinet ? "\(place.cabinet.name) · \(shelf)" : shelf
     }
 

@@ -409,7 +409,7 @@ import WidgetKit
 
 extension RecordOfTheDayPublisher {
     /// A click on the widget: the shelf page with the card for the record
-    /// („Hier steht …“ or „Einsortieren …“), as ↩ in the menu bar search.
+    /// („Hier steht …“ or „Einsortieren …“).
     /// False for addresses that aren't the widget's.
     @discardableResult static func open(_ url: URL) -> Bool {
         guard let id = RecordOfTheDay.copyID(from: url) else { return false }

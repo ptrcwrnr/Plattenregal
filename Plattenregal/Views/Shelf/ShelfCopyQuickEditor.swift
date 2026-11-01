@@ -12,9 +12,8 @@ struct ShelfCopyQuickEditor: View {
     /// Walks the shelf's records: `body` reads it once (it runs again with
     /// every step of the slider), not in each of the places that show it.
     private var currentMaxPosition: Int {
-        // The same copies the grid and table count (see `ShelfCopyItem.snapshot`).
         guard let shelf = copy.shelf else { return 1 }
-        return shelf.copies.filter { !$0.isDeleted && $0.shelf?.id == shelf.id && $0.id != copy.id }.count + 1
+        return shelf.recordCount(excluding: copy.id) + 1
     }
 
     var body: some View {

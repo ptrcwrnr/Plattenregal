@@ -49,6 +49,16 @@ extension View {
         self.background(hovering ? AppStyle.hoverBackground : Color.clear, in: RoundedRectangle(cornerRadius: cornerRadius))
             .animation(AppStyle.quickAnimation, value: hovering)
     }
+
+    /// The selection style for a row that stays chosen (tint and accent
+    /// line), the same as a marked compartment; animates like the hover.
+    func appSelected(_ selected: Bool, cornerRadius: CGFloat = AppStyle.cardRadius) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius)
+        return self
+            .background(selected ? AppStyle.selectedBackground : Color.clear, in: shape)
+            .overlay(shape.strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: AppStyle.selectionLineWidth))
+            .animation(AppStyle.quickAnimation, value: selected)
+    }
 }
 
 extension View {

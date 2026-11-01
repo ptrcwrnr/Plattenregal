@@ -136,6 +136,9 @@ struct SearchResultRow: View {
     /// once (pointer resting on one, keys on another) read as two choices.
     /// `nil` on the shelf page: the row lights up under the pointer.
     var highlighted: Bool? = nil
+    /// Search in the menu bar: held by a click. Drawn in the selection
+    /// style, like its compartment in the small rack below the list.
+    var pinned = false
     @State private var hovering = false
 
     var body: some View {
@@ -160,17 +163,23 @@ struct SearchResultRow: View {
         .padding(.horizontal, AppStyle.itemSpacing)
         .frame(height: AssignmentRowMetrics.height)
         .contentShape(Rectangle())
-        .appHoverable(highlighted ?? hovering, cornerRadius: AppStyle.rowRadius)
+        .appHoverable(!pinned && (highlighted ?? hovering), cornerRadius: AppStyle.rowRadius)
+        .appSelected(pinned, cornerRadius: AppStyle.rowRadius)
         .onHover { hovering = $0 }
     }
 
     /// Where it stands, in two short lines instead of one cut-off one: the
-    /// compartment, then cabinet and position. Without a shelf: the way to one.
+    /// compartment, then cabinet and "Pos. x von y". Without a shelf: on the
+    /// shelf page the way to one.
     private var place: some View {
         VStack(alignment: .trailing, spacing: AppStyle.hairSpacing) {
             if placeable || copy.shelf == nil {
-                // "Noch nicht einsortiert" already heads the section.
-                Text("Platz finden").font(AppStyle.captionLabel).foregroundStyle(AppStyle.accent)
+                // "Noch nicht einsortiert" already heads the section. Only on
+                // the shelf page, where a click leads there: the menu bar's
+                // search (`highlighted` set) leads nowhere, its rack says where.
+                if highlighted == nil {
+                    Text("Platz finden").font(AppStyle.captionLabel).foregroundStyle(AppStyle.accent)
+                }
             } else if let shelf = copy.shelf {
                 let prefix = labels.prefix(for: shelf)
                 if shelf.isReserved {
@@ -183,7 +192,7 @@ struct SearchResultRow: View {
                 } else {
                     Text(labels[shelf.id] ?? String(localized: "Leeres Fach"))
                         .font(AppStyle.captionLabel).foregroundStyle(SearchPanelInk.ink)
-                    Text(prefix + String(localized: "Position \(copy.positionInShelf)"))
+                    Text(prefix + shelf.positionText(copy.positionInShelf))
                         .font(.caption2.monospacedDigit()).foregroundStyle(SearchPanelInk.muted)
                 }
             }

@@ -58,22 +58,25 @@ enum QuickSearchLook: String, CaseIterable, Identifiable {
     }
 }
 
-/// Where the search in the menu bar opens: under the record, or at the top
-/// in the middle of the screen – on a MacBook with a notch right below it.
+/// Where the search in the menu bar opens: at the top in the middle of the
+/// screen – on a MacBook with a notch right below it – or in the top right
+/// corner. Either way, whether opened from the record or with ⌥ Leertaste.
+/// (Until 1.11.2026 there was "underRecord" instead of the corner; a stored
+/// "underRecord" now reads as unknown and falls back to the middle.)
 enum QuickSearchPosition: String, CaseIterable, Identifiable {
-    case underRecord, center
+    case center, topRight
     var id: Self { self }
     var title: String {
         switch self {
-        case .underRecord: String(localized: "Unter dem Symbol")
         case .center: String(localized: "Oben mittig")
+        case .topRight: String(localized: "Oben rechts")
         }
     }
     /// Always shown, so the row keeps its height when switching.
     var hint: String {
         switch self {
-        case .underRecord: String(localized: "Erscheint direkt unter der Schallplatte in der Menüleiste.")
         case .center: String(localized: "Erscheint oben in der Mitte des Bildschirms, bei einer Notch direkt darunter.")
+        case .topRight: String(localized: "Erscheint oben rechts in der Ecke des Bildschirms, so nah am Rand wie an der Menüleiste.")
         }
     }
 }

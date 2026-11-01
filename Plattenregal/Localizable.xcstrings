@@ -110,22 +110,52 @@
         }
       }
     },
-    "Erscheint direkt unter der Schallplatte in der Menüleiste." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appears right below the record in the menu bar."
-          }
-        }
-      }
-    },
     "Erscheint oben in der Mitte des Bildschirms, bei einer Notch direkt darunter." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appears at the top center of the screen, right below the notch if there is one."
+          }
+        }
+      }
+    },
+    "Erscheint oben rechts in der Ecke des Bildschirms, so nah am Rand wie an der Menüleiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears in the top right corner of the screen, as close to the edge as to the menu bar."
+          }
+        }
+      }
+    },
+    "Fach „%@“ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartment “%1$@” · %2$@"
+          }
+        }
+      }
+    },
+    "Klicken, um die Platte festzuhalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to hold this record"
+          }
+        }
+      }
+    },
+    "Klicken, um die Platte wieder loszulassen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to let go of this record"
           }
         }
       }
@@ -140,12 +170,22 @@
         }
       }
     },
-    "Ohne Schallplatte in der Menüleiste erscheint die Suche oben mittig." : {
+    "Oben rechts" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Without the record in the menu bar, the search appears at the top center."
+            "value" : "Top Right"
+          }
+        }
+      }
+    },
+    "Pos. %lld von %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pos. %1$lld of %2$lld"
           }
         }
       }
@@ -156,26 +196,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search Position"
-          }
-        }
-      }
-    },
-    "Unter dem Symbol" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Under the Icon"
-          }
-        }
-      }
-    },
-    "↩ Im Regal zeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "↩ Show on Shelf"
           }
         }
       }
@@ -280,16 +300,6 @@
         }
       }
     },
-    "Fach „%@“ · Position %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compartment “%1$@” · Position %2$lld"
-          }
-        }
-      }
-    },
     "Freigabe in macOS" : {
       "localizations" : {
         "en" : {
@@ -386,16 +396,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search the Shelf (Menu Bar)"
-          }
-        }
-      }
-    },
-    "Im Regal zeigen, wo die Platte hingehört" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show on the shelf where the record belongs"
           }
         }
       }
