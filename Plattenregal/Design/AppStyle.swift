@@ -262,14 +262,15 @@ enum AppStyle {
     /// chosen (`QuickSearchLook`): a plain blur with a tint, not Liquid
     /// Glass – its lit rim drew bright lines along the top and bottom of the
     /// flat field and a pale band around the edge. Dark glass, in light and
-    /// dark mode alike: at 45 % it still read clearly over a bright, busy
-    /// wallpaper, without looking heavy (60 % was too dark). Light glass
-    /// takes `panelGlass`'s tint in the light appearance.
+    /// dark mode alike: black at 30 % over the blur is as light as the
+    /// earlier 45 % on Liquid Glass, which read clearly over a bright, busy
+    /// wallpaper without looking heavy. Light glass takes `panelGlass`'s
+    /// tint in the light appearance.
     static let desktopPanelBlur: Material = .ultraThinMaterial
     static let darkDesktopTint = Color.black.opacity(0.3)
     static var lightDesktopTint: Color { Color(nsColor: .windowBackgroundColor).opacity(0.65) }
-    /// White: opaque, edged with `borderColor` so it stands off a bright
-    /// wallpaper.
+    /// White: opaque, without an edge line like every look of this search;
+    /// its shadow sets it off a bright wallpaper.
     static let desktopPanelWhite = Color.white
 
     // MARK: Wording

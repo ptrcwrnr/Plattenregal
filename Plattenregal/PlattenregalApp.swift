@@ -232,9 +232,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// lives in services, not in these views, and goes on.
 private struct ReleasedInBackground<Content: View>: View {
     @State private var lifecycle = AppLifecycle.shared
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     @ViewBuilder let content: Content
     var body: some View {
-        if lifecycle.isInBackground { Color.clear } else { content }
+        Group {
+            if lifecycle.isInBackground { Color.clear } else { content }
+        }
+        // The record's menu opens main window and settings with these. Set
+        // here, not in `RootView`: launched at login straight into the
+        // background, the window shows only `Color.clear` before it closes,
+        // and `RootView` would never have handed them over.
+        .onAppear {
+            let search = ShelfQuickSearch.shared
+            search.openMainWindow = { [openWindow] in openWindow(id: DemoMode.mainWindowID) }
+            search.openSettings = { [openSettings] in openSettings() }
+        }
     }
 }
 

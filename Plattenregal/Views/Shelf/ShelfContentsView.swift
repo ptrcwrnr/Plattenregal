@@ -83,7 +83,8 @@ struct ShelfContentsView: View, Equatable {
         hasher.combine(shelf.id)
         hasher.combine(LibraryChanges.shared.libraryVersion)
         hasher.combine(owner)
-        for copy in shelf.copies where !copy.isDeleted && copy.shelf?.id == shelf.id {
+        let me = shelf.persistentModelID
+        for copy in shelf.copies where !copy.isDeleted && copy.shelf?.persistentModelID == me {
             hasher.combine(copy.id)
             hasher.combine(copy.positionInShelf)
             hasher.combine(copy.discogsActive)

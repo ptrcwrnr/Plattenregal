@@ -36,7 +36,9 @@ nonisolated struct ShelfCopyItem: Identifiable {
     /// SwiftData may publish the two sides of a relationship at different
     /// times after a move. The copy's current shelf is the final authority.
     @MainActor static func snapshot(for shelf: Shelf, owner: String?, missing: Set<UUID>, forSale: Set<UUID>) -> [ShelfCopyItem] {
-        let copies = shelf.copies.filter { !$0.isDeleted && $0.shelf?.id == shelf.id }
+        // By the model's identifier, read once: see `Shelf.recordCount`.
+        let me = shelf.persistentModelID
+        let copies = shelf.copies.filter { !$0.isDeleted && $0.shelf?.persistentModelID == me }
         return PositionService.inShelfOrder(copies).map {
             ShelfCopyItem($0, release: .of($0), owner: owner, missing: missing.contains($0.id), forSale: forSale.contains($0.id))
         }

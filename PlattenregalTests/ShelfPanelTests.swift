@@ -128,6 +128,17 @@ extension AllTests {
             let gold = try #require(model.matches.first)
             let place = try #require(model.place(of: gold))
             #expect(place.placed && place.position == gold.positionInShelf)
+
+            // The search counts each compartment once per data state – and
+            // again once a record is sorted in or taken out.
+            #expect(model.recordCount(in: shelf) == 3)
+            let positions = PositionService(context: container.mainContext)
+            try positions.insert(release: Release(artist: "Abba", title: "Waterloo"), shelf: shelf, position: 1)
+            #expect(model.recordCount(in: shelf) == 4)
+            let other = try #require(try CabinetService(context: container.mainContext).cabinets().first?.orderedShelves[1])
+            try positions.move(gold, to: other, position: 1)
+            #expect(model.recordCount(in: shelf) == 3)
+            #expect(model.recordCount(in: other) == 1)
         }
 
         /// A MacBook screen, the menu bar 33 pt high: in the middle under the

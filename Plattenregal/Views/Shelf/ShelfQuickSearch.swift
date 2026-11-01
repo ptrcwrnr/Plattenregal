@@ -37,6 +37,11 @@ import SwiftUI
     /// view asks on every redraw (the pointer moving over the list), and
     /// for a record without a shelf it walks every placed record.
     @ObservationIgnored private var placeCache: (key: [AnyHashable], place: QuickSearchPlace?)?
+    /// Records per compartment for "Pos. x von y", in the data state they
+    /// were counted in: every row and the rack ask on every redraw (the
+    /// pointer, the arrow keys, each keystroke), and counting reads every
+    /// record of the compartment.
+    @ObservationIgnored private var recordCounts: (state: [Int], counts: [PersistentIdentifier: Int])?
 
     init(context: ModelContext) { self.context = context }
 
@@ -77,7 +82,8 @@ import SwiftUI
     /// The pointer over a row picks it, like the arrow keys – unless a
     /// match is held.
     func hover(_ copy: RecordCopy) {
-        guard pinned == nil else { return }
+        // The same row again changes nothing: no redraw of the whole panel.
+        guard pinned == nil, highlighted != copy.id else { return }
         highlighted = copy.id
     }
 
@@ -146,6 +152,17 @@ import SwiftUI
         if !matches.contains(where: { $0.id == highlighted }) { highlighted = matches.first?.id }
     }
 
+    /// `Shelf.recordCount()`, counted once per data state.
+    func recordCount(in shelf: Shelf) -> Int {
+        let state = dataState
+        if recordCounts?.state != state { recordCounts = (state, [:]) }
+        let key = shelf.persistentModelID
+        if let count = recordCounts?.counts[key] { return count }
+        let count = shelf.recordCount()
+        recordCounts?.counts[key] = count
+        return count
+    }
+
     /// Where the highlighted match stands – or, without a shelf, where it
     /// belongs alphabetically.
     func place(of copy: RecordCopy) -> QuickSearchPlace? {
@@ -200,9 +217,9 @@ struct QuickSearchPlace {
     /// The record is in the menu bar (switched on, the store is open) – the
     /// condition for running in the background (`AppLifecycle`).
     private(set) var showsStatusItem = false
-    /// Opens the main window when it was closed; set by `RootView`.
+    /// Opens the main window when it was closed; set by the windows' content (`ReleasedInBackground`).
     @ObservationIgnored var openMainWindow: (() -> Void)?
-    /// Opens the settings, for the record's menu; set by `RootView`.
+    /// Opens the settings, for the record's menu; set with `openMainWindow`.
     @ObservationIgnored var openSettings: (() -> Void)?
 
     /// The store to search; set at launch (see `PlattenregalApp`). Without
@@ -598,7 +615,8 @@ struct ShelfQuickSearchView: View {
                 results(highlighted: highlighted?.id)
                 if let copy = highlighted, let place = model.place(of: copy) {
                     Divider()
-                    QuickSearchRack(place: place, labels: model.labels, showsCabinet: model.cabinetCount > 1)
+                    QuickSearchRack(place: place, labels: model.labels, showsCabinet: model.cabinetCount > 1,
+                                    recordCount: model.recordCount(in: place.shelf))
                         .padding(AppStyle.cardPadding)
                 }
             }
@@ -677,7 +695,8 @@ struct ShelfQuickSearchView: View {
         let isPinned = pinned == copy.id
         return Button { model.togglePin(copy) } label: {
             SearchResultRow(copy: copy, labels: model.labels, missing: missing.contains(copy.id),
-                            placeable: placeable, highlighted: highlighted == copy.id, pinned: isPinned)
+                            placeable: placeable, highlighted: highlighted == copy.id, pinned: isPinned,
+                            shelfCount: copy.shelf.map(model.recordCount(in:)))
         }
         .buttonStyle(.plain)
         // The pointer picks the match the rack shows, like the arrow keys –
@@ -696,6 +715,8 @@ struct QuickSearchRack: View {
     let labels: ShelfLabels
     /// The cabinet's name only matters with more than one.
     let showsCabinet: Bool
+    /// The records standing in the compartment (`Shelf.recordCount`).
+    let recordCount: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
@@ -716,14 +737,16 @@ struct QuickSearchRack: View {
 
     private var location: String {
         // Out of how many: a record that only belongs there would be one more.
-        let position = place.shelf.positionText(place.position, joining: !place.placed)
+        let position = place.shelf.positionText(place.position, joining: !place.placed, count: recordCount)
         let shelf = String(localized: "Fach „\(shelfName)“ · \(position)")
         return showsCabinet ? "\(place.cabinet.name) · \(shelf)" : shelf
     }
 
     private var grid: some View {
         let cabinet = place.cabinet
-        let shelves = Dictionary(cabinet.shelves.map { ("\($0.row)-\($0.column)", $0) }) { a, _ in a }
+        // A compartment deleted meanwhile (a reset not reported yet) must
+        // not be read: SwiftData traps on deleted objects.
+        let shelves = Dictionary(cabinet.shelves.filter { !$0.isDeleted }.map { ("\($0.row)-\($0.column)", $0) }) { a, _ in a }
         return Grid(horizontalSpacing: AppStyle.tightSpacing, verticalSpacing: AppStyle.tightSpacing) {
             ForEach(1...max(cabinet.rows, 1), id: \.self) { row in
                 GridRow {

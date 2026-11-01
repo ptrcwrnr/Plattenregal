@@ -75,17 +75,11 @@ struct RootView: View {
     // recomputing everything from scratch on every visit.
     @State private var statisticsModel = StatisticsViewModel()
     @State private var welcome = AppWelcome.shared
-    /// The search in the menu bar: a record picked there opens here.
+    /// A record picked in the widget „Platte des Tages“ opens here (`pendingCopy`).
     @State private var quickSearch = ShelfQuickSearch.shared
-    @Environment(\.openWindow) private var openWindow
-    @Environment(\.openSettings) private var openSettings
     var body: some View {
         library
-            .onAppear {
-                quickSearch.openMainWindow = { [openWindow] in openWindow(id: DemoMode.mainWindowID) }
-                quickSearch.openSettings = { [openSettings] in openSettings() }
-                takeQuickSearchRequest()
-            }
+            .onAppear { takeQuickSearchRequest() }
             .onChange(of: quickSearch.pendingCopy) { takeQuickSearchRequest() }
             // Over all pages, in the middle of the window; marked as seen however it closes.
             .appPanel(item: $welcome.request, alignment: .center, onDismiss: { _ in AppWelcome.shared.markSeen() }) { _ in
@@ -202,7 +196,7 @@ struct RootView: View {
         case .shelf: KallaxView(requests: shelfRequests, search: shelfSearch)
         }
     }
-    /// A record picked in the menu bar: the shelf page with its card.
+    /// A record picked in the widget: the shelf page with its card.
     private func takeQuickSearchRequest() {
         guard let id = quickSearch.pendingCopy else { return }
         quickSearch.pendingCopy = nil

@@ -139,6 +139,9 @@ struct SearchResultRow: View {
     /// Search in the menu bar: held by a click. Drawn in the selection
     /// style, like its compartment in the small rack below the list.
     var pinned = false
+    /// The records in its compartment, when the caller has counted them
+    /// (the menu bar's search, once per data state); otherwise counted here.
+    var shelfCount: Int? = nil
     @State private var hovering = false
 
     var body: some View {
@@ -192,7 +195,7 @@ struct SearchResultRow: View {
                 } else {
                     Text(labels[shelf.id] ?? String(localized: "Leeres Fach"))
                         .font(AppStyle.captionLabel).foregroundStyle(SearchPanelInk.ink)
-                    Text(prefix + shelf.positionText(copy.positionInShelf))
+                    Text(prefix + shelf.positionText(copy.positionInShelf, count: shelfCount))
                         .font(.caption2.monospacedDigit()).foregroundStyle(SearchPanelInk.muted)
                 }
             }

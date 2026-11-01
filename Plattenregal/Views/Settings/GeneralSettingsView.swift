@@ -46,7 +46,7 @@ struct GeneralSettingsView: View {
             }
             SettingsCard(title: String(localized: "Menüleiste")) {
                 SettingsRow(title: String(localized: "Suche in der Menüleiste"),
-                            hint: String(localized: "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen. ↩ zeigt die Platte im Regal.")) {
+                            hint: String(localized: "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen. Ein Klick auf einen Treffer hält ihn fest.")) {
                     Toggle("Suche in der Menüleiste", isOn: $preferences.menuBarSearch).labelsHidden().toggleStyle(.switch)
                 }
                 Divider()

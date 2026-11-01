@@ -47,9 +47,7 @@ enum AtelierCoverFrame: String {
     /// The cover lies on a mat: Klassisch's passepartout, and always in Modern.
     static var usesMat: Bool { frame != .sleeve }
     /// The frame of the design shown.
-    static var frame: RecordFrame { AppStyle.isAtelier ? classicFrame : .modernMat }
-    /// Klassisch's frame, whichever design is shown (the widget can show either).
-    static var classicFrame: RecordFrame { current == .sleeve ? .sleeve : .classicMat }
+    static var frame: RecordFrame { AppStyle.isAtelier ? (current == .sleeve ? .sleeve : .classicMat) : .modernMat }
 }
 
 extension View {
