@@ -1,3 +1,10 @@
+# DMG 1.0.0 mit dem Demo-Fenster in eigener Größe neu ausgegeben · 02.11.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release vorher `clean`), Build bleibt 102027; Handbuch-PDFs unverändert.
+- Geprüft wie bei der DMG von heute Vormittag: Abbild gültig, App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig, Berechtigungen gleich der installierten Fassung, URL-Schema, keine App-Intents-Metadaten, Handbücher identisch, kein Prüfcode (Gegenprobe im Debug-Build), neuer Stand im Programm.
+- Release-App aus der DMG in der Demo gestartet: Fenster 1219 × 772 pt an der Stelle des eigenen Hauptfensters, keine Fehler im Protokoll, keine Absturzberichte; DMG danach ausgeworfen. Debug danach neu gebaut (`clean` entfernt ihn).
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung.
+
 # Webseite auf den Stand der App gebracht · 02.11.2026
 
 - **Wunsch:** Prüfen, ob die Artefakt-Seite aktuell ist, und sie sonst aktualisieren.

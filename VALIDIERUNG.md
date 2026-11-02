@@ -7,6 +7,7 @@ Projektversion **1.0.0 (102027)**, Schema **V18** (unverändert).
 - **Lokalisierung:** 7 Einträge neu (alle mit Englisch), 6 nicht mehr benutzte entfernt.
 - **App-Protokoll** 02.11.: kein `ERROR`. **macOS-Absturzberichte:** keine.
 - **DMG:** sauber neu gebaut (Release `clean`) und geprüft: Abbild gültig, App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`), Berechtigungen von App und Widget gleich der installierten Fassung, URL-Schema `plattenregal`, keine App-Intents-Metadaten, beide Handbücher identisch mit dem Repository, kein Prüfcode (Gegenprobe: `Plattenregal.debug.dylib` enthält ihn), neuer Stand im Programm (neue Texte de/en enthalten). Release-App aus der DMG in der Demo gestartet, ohne Fehler.
+- **Nachtrag Demo-Fenster und Webseite:** Die Demo öffnet so groß wie das eigene Hauptfenster (Test neu, 275 Tests bestanden); Webseite auf den Stand der App gebracht (siehe AENDERUNGEN). DMG sauber neu gebaut (Release `clean`), weiter 1.0.0 (102027), und wie oben geprüft; die Demo aus der DMG öffnete mit 1219 × 772 pt an der Stelle des eigenen Fensters, ohne Fehler.
 - **Nicht geprüft:** die App aus der DMG mit der echten Sammlung.
 
 # Aktueller Stand · 01.11.2026 (Code-Prüfung der letzten Tage, DMG)
