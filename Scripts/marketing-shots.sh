@@ -6,7 +6,9 @@
 # Dazu kommen 72 Cover aus dem Cover-Cache für die Cover-Wand.
 #
 #   zsh Scripts/marketing-shots.sh            (alle Aufnahmen und die Cover)
-#   zsh Scripts/marketing-shots.sh sortin …   (nur diese Aufnahmen, Cover bleiben)
+#   zsh Scripts/marketing-shots.sh detail …   (nur diese Aufnahmen, Cover bleiben)
+#   UI_LANG=en zsh Scripts/marketing-shots.sh detail …
+#                                              (App auf Englisch, Dateien mit „-en“)
 #
 # Braucht die Freigabe „Bildschirmaufnahme“ fürs Terminal und einen
 # entsperrten Bildschirm; Plattenregal darf nicht laufen. Das Fenster liegt
@@ -52,6 +54,9 @@ TRAPEXIT() { restore }
 
 # Nur die als Argument genannten Aufnahmen (ohne Argument alle).
 ONLY=($@)
+# Sprache der App: deutsch wie das System, mit UI_LANG=en englisch (Dateiname mit „-en“).
+LANG_ARGS=(); SUFFIX=""
+if [[ -n $UI_LANG && $UI_LANG != de ]]; then LANG_ARGS=(-AppleLanguages "($UI_LANG)"); SUFFIX="-$UI_LANG"; fi
 
 # shot <Name> <Design: atelier|none> <light|dark> <Wartezeit> [Schalter …]
 shot() {
@@ -62,7 +67,7 @@ shot() {
   local y=$(( ${visible[1]%.*} + (${visible[2]%.*} - H) / 2 ))
   defaults write $PREF $KEY "8 $y $W $H 0 0 ${visible[3]%.*} $(( ${visible[1]%.*} + ${visible[2]%.*} ))"
   # Erst die Paare, dann die Schalter (siehe README, Startargumente).
-  open -n -a $APP --args -signatureDesign $design -appearanceMode $mode -atelierCoverFrame sleeve -tourSeen YES "$@"
+  open -n -a $APP --args -signatureDesign $design -appearanceMode $mode -atelierCoverFrame sleeve -tourSeen YES $LANG_ARGS "$@"
   sleep $wait
   osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $(pgrep -n -x Plattenregal)) to true" >/dev/null
   sleep 1.5
@@ -70,9 +75,9 @@ shot() {
   # Beenden und warten, bevor TRAPEXIT die Fenstergröße zurücksetzt: die App
   # schreibt ihre Fenstergröße beim Beenden noch einmal.
   if [[ $id == 0 ]]; then echo "$name: kein Fenster gefunden" >&2; pkill -x Plattenregal; sleep 2; exit 1; fi
-  screencapture -x -o -l $id $OUT/$name.png
+  screencapture -x -o -l $id $OUT/$name$SUFFIX.png
   pkill -x Plattenregal; sleep 2
-  echo "$name.png"
+  echo "$name$SUFFIX.png"
 }
 
 # panel <Name> <Design> <light|dark> <Aussehen: darkGlass|lightGlass|white> <Suchbegriff>
@@ -86,13 +91,13 @@ panel() {
   local file=$CONTAINER/tmp/marketing-$name.png
   rm -f $file
   $APP/Contents/MacOS/Plattenregal -signatureDesign $design -appearanceMode $mode -quickSearchLook $look \
-    -tourSeen YES --preview-quicksearch=$text --snapshot=marketing-$name.png >/dev/null 2>&1 &
+    -tourSeen YES $LANG_ARGS --preview-quicksearch=$text --snapshot=marketing-$name.png >/dev/null 2>&1 &
   local pid=$! i
   for i in {1..60}; do kill -0 $pid 2>/dev/null || break; sleep 1; done
   kill $pid 2>/dev/null || true; sleep 2
   [[ -f $file ]] || { echo "$name: kein Schnappschuss" >&2; exit 1; }
-  mv $file $OUT/$name.png
-  echo "$name.png"
+  mv $file $OUT/$name$SUFFIX.png
+  echo "$name$SUFFIX.png"
 }
 
 shot collection        atelier light 9  --preview-page=Collection

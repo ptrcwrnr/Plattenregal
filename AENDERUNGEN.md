@@ -1,3 +1,12 @@
+# Webseite wie die Social-Media-Bilder, mit Download oben und unten · 02.11.2026
+
+- **Wunsch:** Die Webseite so aufbauen wie die Marketingbilder, mit direktem Download-Link oben und unten; Bilder aus der echten Sammlung; ein Link, der auch nach einem Update stimmt.
+- **Fester Download-Link:** Das Release v1.0.0 hat zusätzlich `Plattenregal.dmg` (dieselbe Datei wie `Plattenregal-1.0.0.dmg`). `…/releases/latest/download/Plattenregal.dmg` lädt damit immer die neueste Version; geprüft: ohne Anmeldung byte-gleich (SHA-256 `bd1c62fc…`). README beschreibt den Schritt für künftige Versionen.
+- **Webseite neu aufgebaut** (`Webseite/index.html`, Version 13 des Artifacts): Titel-Bande mit Cover-Wand, „Deine Platten. Und wo jede steht.“, Download-Knopf (Version, Größe, kostenlos) und „Hinweise zur Version“; sechs Gründe als Bänder abwechselnd Klassisch/Modern (Regal, Plattenkarte, Suche in der Menüleiste dunkel mit Tastenkappen, Rubriken mit ⌘1–⌘4, Sortierung prüfen mit Such- und Verkaufsliste, Einstellungen mit Sicherung, Export, Platte des Tages, Zufallsfund); Loslegen; unten Download-Knopf und Link zum Quellcode. Der Fußtext sagt jetzt „kostenlos, Quellcode unter MIT-Lizenz auf GitHub“ statt „wird persönlich weitergegeben“; der Hinweis „alle Bilder stammen aus der Demo“ ist entfallen. Deutsch und Englisch wie bisher.
+- **Bilder aus der echten Sammlung:** neues Skript `Scripts/web-images.swift` (Ausschnitte, verkleinert, JPEG; Suche als PNG; 48 Cover) nach `Marketing/Webseite/` (nicht im Repository), `Webseite/Fotos` verweist dorthin. `Scripts/marketing-shots.sh` kann die App mit `UI_LANG=en` auf Englisch aufnehmen (Dateien mit `-en`). Die 14 alten Demo-Bilder und `icon.png` sind aus dem Artifact entfernt.
+- **Geprüft:** Seite mit WebKit in 1280 und 390 px Breite, hell und dunkel, Deutsch und Englisch ganz gerendert und angesehen: kein seitliches Überlaufen, alle 105 Bilder geladen, Umschalter DE/EN tauscht Texte und Bilder; nachgebessert: Umbruch „Discogs-/Konto“ in der Zeile unter dem Knopf. Live nach dem Veröffentlichen ohne Anmeldung aufgerufen. Fenstergröße der echten App nach den Aufnahmen unverändert, die installierte App läuft wieder.
+- README (Webseite, Quellcode) angepasst.
+
 # Social-Media-Bilder: Gründe statt eigener Zahlen · 02.11.2026
 
 - **Wunsch:** Die Beiträge sollen für alle Sinn ergeben – „852 Platten“ gilt nur für die eigene Sammlung, „In Liquid Glass“ ist nett, aber kein Grund. Stattdessen zeigen, was Leute zur App bringt, etwa die Suche auf dem Schreibtisch, die Rubriken und die Einstellmöglichkeiten.
