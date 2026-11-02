@@ -1,3 +1,11 @@
+# DMG und Release 1.0.1 · 02.11.2026
+
+- **Wunsch:** DMG, Handbuch und Webseite auf 1.0.1 bringen und das Release veröffentlichen.
+- `dist/Plattenregal-1.0.1.dmg` gebaut (Release `clean`, `Scripts/make-dmg.sh`), 1.0.1 (102028). Beide Handbuch-PDFs neu erzeugt (Titelseite „Version 1.0.1“, je 10 Seiten).
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.1 (102028), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen gleich wie in der DMG 1.0.0; URL-Schema `plattenregal`; Handbücher in der App identisch mit denen im Repository; keine Debug-Schalter (`--preview-…`, `--snapshot=`) im Release; App aus der DMG als Demo gestartet, „Über Plattenregal“ zeigt 1.0.1 mit „Was ist neu“.
+- Webseite: Version 1.0.1 im Download-Knopf (oben und unten) und im Fußtext (de/en), veröffentlicht als Version 15 des Artifacts.
+- Release **v1.0.1** auf GitHub mit `Plattenregal-1.0.1.dmg` und `Plattenregal.dmg` (gleiche Datei, fester Link), SHA-256 `006a7335…`. v1.0.0 bleibt als älteres Release bestehen.
+
 # Version 1.0.1 mit „Was ist neu“ in „Über Plattenregal“ · 02.11.2026
 
 - **Wunsch:** Einen Changelog auf der Über-Karte, beginnend mit den gerade gemachten Änderungen; auf 1.0.1 gehen, falls die DMG schon geladen wurde.
