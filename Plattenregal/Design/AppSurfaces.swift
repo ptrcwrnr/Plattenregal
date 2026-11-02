@@ -84,15 +84,19 @@ extension View {
     }
 
     /// A card that says "this is where things happen" (location, placement,
-    /// target shelf): glass with a faint accent tint.
-    func accentGlassCard() -> some View {
+    /// target shelf): glass with a faint accent tint. `tinted: false` keeps
+    /// the glass neutral – the location card on the record sheet, already
+    /// on a glass panel, where the blue cast looked out of place.
+    /// Klassisch: paper with a gold edge either way.
+    func accentGlassCard(tinted: Bool = true) -> some View {
         background {
             if AppStyle.isAtelier {
                 RoundedRectangle(cornerRadius: AppStyle.featureRadius).fill(AtelierPalette.surface)
                     .overlay(RoundedRectangle(cornerRadius: AppStyle.featureRadius).strokeBorder(AtelierPalette.gold, lineWidth: AppStyle.borderWidth))
             }
         }
-        .glassEffect(AppStyle.isAtelier ? .identity : .regular.tint(AppStyle.accent.opacity(0.12)), in: .rect(cornerRadius: AppStyle.featureRadius))
+        .glassEffect(AppStyle.isAtelier ? .identity : tinted ? .regular.tint(AppStyle.accent.opacity(0.12)) : .regular,
+                     in: .rect(cornerRadius: AppStyle.featureRadius))
     }
 
     /// A page's scroll view in Modern runs on up under the toolbar: the

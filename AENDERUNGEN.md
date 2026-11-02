@@ -1,3 +1,11 @@
+# Plattenkarte: Standort-Karte ohne Blaustich · 02.11.2026
+
+- **Wunsch:** In der Karte aus Zufallsfund und „Zuletzt hinzugefügt“ die Glaskarte „Standort“ ohne Blaustich – normale Glasfarbe oder ohne Glas wie in Klassisch, was optisch mehr Sinn macht.
+- **Verglichen** (Demo, Modern hell und dunkel, vorübergehender Debug-Schalter, wieder entfernt): bisher (Glas mit 12 % Akzent), normales Glas, Kartenglas wie Statistik und Einstellungen, nur ein feiner Rand. Gewählt: **normales Glas** – hebt die Karte in beiden Modi ruhig vom Glas des Fensters ab; das Kartenglas ging im Dunkeln fast unter, der Rand allein wirkte wie ein leerer Kasten.
+- **Umsetzung:** `accentGlassCard(tinted:)` in `AppSurfaces.swift` (zentral), die Standort-Karte nimmt `tinted: false`. Klassisch unverändert (Papier, Goldrand). Die Karten der Regalseite („Hier steht …“, „Sortierung prüfen“) behalten ihren Akzentton.
+- Geprüft: Debug-Build ohne Fehler; Karte in Modern hell und dunkel sowie Klassisch hell angesehen.
+- STATISTIK.md: Absatz zur Plattenkarte.
+
 # Sprung ins Regal: neues Fach gleich an der Platte · 02.11.2026
 
 - **Wunsch:** Die beim letzten Mal gefundene Mehrarbeit beheben: Bei einer Platte in einem anderen Fach baute die Regalseite das neue Fach erst ohne Auswahl auf und sprang dann.

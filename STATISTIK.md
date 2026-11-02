@@ -29,7 +29,7 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 | Neuzugänge | Zugänge pro Monat oder Jahr, lückenlos vom ersten bis zum letzten Zeitraum (leere eingeschlossen) |
 | Zuletzt hinzugefügt | Die neuesten Platten |
 
-Ein Klick auf ein Cover unter „Zuletzt hinzugefügt“ oder „Details“ beim Zufallsfund öffnet die **Plattenkarte** (`RecordDetailView`): Cover, Interpret und Titel, daneben die Angaben als ruhige Liste – Bezeichnung links, Wert rechts, wie im Fenster eines Covers in der Collection: Label mit Katalognummer, Jahr, Land, Format, Genre, Styles (als Text, ohne Plaketten); leere Angaben fallen weg. Oben rechts „Auf Discogs öffnen“, darunter die Karte „Standort“ mit „Im Regal anzeigen“ und „Ohne Regalplatz“. Beide Knöpfe sind derselbe `SecondaryButton` (Glas, Schrift in Textfarbe) und enden rechts bündig.
+Ein Klick auf ein Cover unter „Zuletzt hinzugefügt“ oder „Details“ beim Zufallsfund öffnet die **Plattenkarte** (`RecordDetailView`): Cover, Interpret und Titel, daneben die Angaben als ruhige Liste – Bezeichnung links, Wert rechts, wie im Fenster eines Covers in der Collection: Label mit Katalognummer, Jahr, Land, Format, Genre, Styles (als Text, ohne Plaketten); leere Angaben fallen weg. Oben rechts „Auf Discogs öffnen“, darunter die Karte „Standort“ mit „Im Regal anzeigen“ und „Ohne Regalplatz“ – in Modern auf neutralem Glas ohne Blaustich (`accentGlassCard(tinted: false)`), in Klassisch Papier mit Goldrand. Beide Knöpfe sind derselbe `SecondaryButton` (Glas, Schrift in Textfarbe) und enden rechts bündig.
 
 ## Sammlungswert
 

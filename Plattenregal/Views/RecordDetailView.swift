@@ -62,7 +62,7 @@ struct RecordDetailView: View {
           }
         }
         .padding(AppStyle.sectionSpacing)
-        .accentGlassCard()
+        .accentGlassCard(tinted: false)
     }
 
     /// Excluding takes the copy out of its shelf; including puts it back among
