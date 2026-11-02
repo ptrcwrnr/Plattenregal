@@ -1,3 +1,12 @@
+# Social-Media-Bilder: Gründe statt eigener Zahlen · 02.11.2026
+
+- **Wunsch:** Die Beiträge sollen für alle Sinn ergeben – „852 Platten“ gilt nur für die eigene Sammlung, „In Liquid Glass“ ist nett, aber kein Grund. Stattdessen zeigen, was Leute zur App bringt, etwa die Suche auf dem Schreibtisch, die Rubriken und die Einstellmöglichkeiten.
+- **Neue Texte und Motive** (nur lokal in `Marketing/Bilder/`): Klassisch „Deine Platten. Und wo jede steht.“ (Cover-Wand, Discogs als Quelle), „Dein Regal. Fach für Fach.“ (Regale wie zu Hause, wohin eine neue Platte gehört), „Wo stand die noch mal?“ (Plattenkarte mit Standort und Discogs-Angaben). Modern „Finden, ohne die App zu öffnen.“ (Suche in der Menüleiste, Tastenkappen ⌥ Leertaste, dunkel), „Collection, Wantlist, Regal, Statistik.“ (⌘1–⌘4), „So, wie du es magst.“ (Einstellungen: Designs, Akzentfarbe, Export, Sicherung, Kürzel). Kein Sammlungswert und keine Plattenzahl mehr auf den Bildern. Die drei Modern-Bilder von vorhin (Collection, Regal dunkel, Statistik) sind ersetzt.
+- **Aufnahmen:** `Scripts/marketing-shots.sh` nimmt jetzt auch die Einstellungen (`modern-settings`) und das Suchfenster der Menüleiste auf; das Suchfenster zeichnet die App mit `--snapshot` selbst, weil `screencapture` das nicht aktivierende Panel nicht findet (es schließt, sobald die App nach vorn kommt). Einzelne Aufnahmen lassen sich per Name nachholen, die Cover-Wand bleibt dabei. Bei einem Fehler wartet das Skript nach dem Beenden der App, bevor es die Fenstergröße zurücksetzt. Verworfen: „Einsortieren“ aus der echten Sammlung (dort ist nichts offen, die Ansicht zeigt nur „Nur noch gesuchte Platten“); Suchbegriff „Moon“ (findet über Tracknamen Platten, deren Titel nicht danach aussehen).
+- **Vorlage:** Tastenkappen `.key` aus der Abstandsskala; Ausschnitte nehmen mit `data-width` auch Fotos, die schmaler als 2560 px sind.
+- Geprüft: alle sechs Bilder in voller Größe angesehen (1080 × 1350, ohne Alphakanal); nachgebessert: Titelumbruch „Discogs-/Sammlung“, Suchfenster zu nah am unteren Rand, Gedankenstrich am Zeilenanfang und halb abgeschnittene Zeile bei den Einstellungen. Die Fenstergröße der echten App ist nach allen Läufen unverändert, die installierte App läuft wieder.
+- README (Produktbilder) angepasst.
+
 # Social-Media-Bilder im Hochformat: drei in Klassisch, drei in Modern · 02.11.2026
 
 - **Wunsch:** Typische Marketingbilder für Social Media im Hochformat, drei im Design Modern und drei in Klassisch; auf Nachfrage mit der echten Sammlung und im Format 4:5.

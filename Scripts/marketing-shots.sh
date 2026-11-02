@@ -5,7 +5,8 @@
 # das Fenster mit screencapture (ohne Systemschatten, den setzt die Vorlage).
 # Dazu kommen 72 Cover aus dem Cover-Cache für die Cover-Wand.
 #
-#   zsh Scripts/marketing-shots.sh
+#   zsh Scripts/marketing-shots.sh            (alle Aufnahmen und die Cover)
+#   zsh Scripts/marketing-shots.sh sortin …   (nur diese Aufnahmen, Cover bleiben)
 #
 # Braucht die Freigabe „Bildschirmaufnahme“ fürs Terminal und einen
 # entsperrten Bildschirm; Plattenregal darf nicht laufen. Das Fenster liegt
@@ -49,9 +50,13 @@ restore() { if [[ -n $PREVIOUS ]]; then defaults write $PREF $KEY "$PREVIOUS"; e
 # Auch bei Abbruch oder Fehler zurücksetzen (zsh: TRAPEXIT).
 TRAPEXIT() { restore }
 
+# Nur die als Argument genannten Aufnahmen (ohne Argument alle).
+ONLY=($@)
+
 # shot <Name> <Design: atelier|none> <light|dark> <Wartezeit> [Schalter …]
 shot() {
   local name=$1 design=$2 mode=$3 wait=$4; shift 4
+  if (( ${#ONLY} )) && (( ! ${ONLY[(Ie)$name]} )); then return; fi
   # Links, senkrecht mittig im sichtbaren Bereich (Menüleiste und Dock).
   local visible=(${(s: :)$(osascript -l JavaScript -e 'ObjC.import("AppKit"); const f=$.NSScreen.mainScreen.visibleFrame; const s=$.NSScreen.mainScreen.frame; [f.origin.y, f.size.height, s.size.width, s.size.height].join(" ")')})
   local y=$(( ${visible[1]%.*} + (${visible[2]%.*} - H) / 2 ))
@@ -61,8 +66,32 @@ shot() {
   sleep $wait
   osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $(pgrep -n -x Plattenregal)) to true" >/dev/null
   sleep 1.5
-  screencapture -x -o -l $($WINID) $OUT/$name.png
+  local id=$($WINID)
+  # Beenden und warten, bevor TRAPEXIT die Fenstergröße zurücksetzt: die App
+  # schreibt ihre Fenstergröße beim Beenden noch einmal.
+  if [[ $id == 0 ]]; then echo "$name: kein Fenster gefunden" >&2; pkill -x Plattenregal; sleep 2; exit 1; fi
+  screencapture -x -o -l $id $OUT/$name.png
   pkill -x Plattenregal; sleep 2
+  echo "$name.png"
+}
+
+# panel <Name> <Design> <light|dark> <Aussehen: darkGlass|lightGlass|white> <Suchbegriff>
+# Das Suchfenster der Menüleiste: screencapture findet es nicht (nicht
+# aktivierendes Panel, schließt, sobald die App nach vorn kommt), deshalb
+# zeichnet die App es selbst mit --snapshot in ihren tmp-Ordner (mit
+# transparentem Rand). Beendet sich danach von selbst.
+panel() {
+  local name=$1 design=$2 mode=$3 look=$4 text=$5
+  if (( ${#ONLY} )) && (( ! ${ONLY[(Ie)$name]} )); then return; fi
+  local file=$CONTAINER/tmp/marketing-$name.png
+  rm -f $file
+  $APP/Contents/MacOS/Plattenregal -signatureDesign $design -appearanceMode $mode -quickSearchLook $look \
+    -tourSeen YES --preview-quicksearch=$text --snapshot=marketing-$name.png >/dev/null 2>&1 &
+  local pid=$! i
+  for i in {1..60}; do kill -0 $pid 2>/dev/null || break; sleep 1; done
+  kill $pid 2>/dev/null || true; sleep 2
+  [[ -f $file ]] || { echo "$name: kein Schnappschuss" >&2; exit 1; }
+  mv $file $OUT/$name.png
   echo "$name.png"
 }
 
@@ -75,11 +104,15 @@ shot shelf-dark        atelier dark  9  --preview-page=Regal
 shot sortcheck         atelier light 9  --preview-page=Regal --preview-sortcheck --preview-sortcheck-done=1
 shot stats             atelier light 11 --preview-page=Statistik
 shot detail            atelier light 11 --preview-page=Statistik --preview-detail=Moonbeam
-# Modern für die Hochformat-Beiträge (post-4 bis post-6)
+# Modern (Beiträge post-modern-*; Regal dunkel und Statistik als Vorrat)
 shot modern-shelf-dark none    dark  11 --preview-page=Regal --preview-place=Moonbeam
 shot modern-stats      none    light 11 --preview-page=Statistik
+shot modern-settings   none    light 11 --settings-tab=Darstellung
+panel modern-quicksearch none dark darkGlass Moonbeam
 
-# Cover für die Wand: zufällig, quadratisch beschnitten, 400 px.
+# Cover für die Wand: zufällig, quadratisch beschnitten, 400 px
+# (nur beim vollen Lauf; einzelne Aufnahmen lassen die Wand, wie sie ist).
+if (( ${#ONLY} )); then exit 0; fi
 rm -rf $OUT/Cover; mkdir -p $OUT/Cover
 i=0
 for f in ${(f)"$(ls $COVERS | sort -R)"}; do
