@@ -46,10 +46,10 @@ struct RecordDetailView: View {
             }
             Spacer(minLength: AppStyle.rowSpacing)
             if let showShelf {
-                Button(action: showShelf) {
-                    Text(copy.shelf == nil ? "Platz im Regal finden" : "Im Regal anzeigen").foregroundStyle(AppStyle.accent)
-                }
-                .appGlassButton()
+                // Text in the normal color: accent text on the accent-tinted card
+                // was hard to read in Modern dark.
+                SecondaryButton(title: copy.shelf == nil ? String(localized: "Platz im Regal finden") : String(localized: "Im Regal anzeigen"),
+                                action: showShelf)
                 .controlSize(.large)
             }
           }
@@ -79,52 +79,65 @@ struct RecordDetailView: View {
 struct ReleaseHeaderView: View {
     let release: Release
     let removedFromDiscogs: Bool
+    @Environment(\.openURL) private var openURL
     var body: some View {
-        // Same language as the "Zufallsfund" on the statistics page: small
-        // captions over their values, styles as badges.
+        // Like the popover of a cover in the collection, only larger: a quiet
+        // list with the name on the left and the value on the right. Empty
+        // values are left out; styles are plain text, not badges.
         HStack(alignment: .top, spacing: AppStyle.sectionSpacing) {
             CoverView(url: release.shownCoverURL, size: 220)
                 .shadow(color: .black.opacity(0.2), radius: 14, y: 6)
             VStack(alignment: .leading, spacing: AppStyle.cardPadding) {
-                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                    Text(release.displayArtist).font(.title2).foregroundStyle(.secondary).lineLimit(2)
-                    Text(release.displayTitle).font(AppStyle.pageTitle).lineLimit(3)
-                }
-                .textSelection(.enabled)
-                Grid(alignment: .leading, horizontalSpacing: AppStyle.sectionSpacing, verticalSpacing: AppStyle.rowSpacing) {
-                    GridRow {
-                        detail(String(localized: "Jahr"), release.year.map(String.init))
-                        detail(String(localized: "Land"), release.country)
-                        detail(String(localized: "Format"), release.format)
+                HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
+                    VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                        Text(release.displayArtist).font(.title2).foregroundStyle(.secondary).lineLimit(2)
+                        Text(release.displayTitle).font(AppStyle.pageTitle).lineLimit(3)
                     }
-                    GridRow {
-                        detail(String(localized: "Label"), release.displayLabel)
-                        detail(String(localized: "Katalognummer"), release.catalogNumber)
-                        detail(String(localized: "Genre"), release.genres.joined(separator: " · "))
+                    .textSelection(.enabled)
+                    Spacer(minLength: 0)
+                    // Same button as "Im Regal anzeigen" below, its right edge in
+                    // line with that one (which sits inside the card's padding).
+                    if let url = release.sourceURL {
+                        SecondaryButton(title: String(localized: "Auf Discogs öffnen")) { openURL(url) }
+                            .controlSize(.large)
+                            .padding(.trailing, AppStyle.sectionSpacing)
                     }
                 }
-                if !release.styles.isEmpty || removedFromDiscogs {
-                    HStack(spacing: AppStyle.itemSpacing) {
-                        ForEach(release.styles.prefix(5), id: \.self) { AppBadge(title: $0) }
-                        if removedFromDiscogs { AppBadge(title: String(localized: "Nicht mehr in der Discogs-Collection"), systemImage: "exclamationmark.circle") }
+                Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: AppStyle.cardPadding, verticalSpacing: AppStyle.itemSpacing) {
+                    ForEach(details, id: \.name) { row in
+                        GridRow {
+                            Text(row.name).foregroundStyle(.secondary)
+                            Text(row.value).lineLimit(2).textSelection(.enabled)
+                        }
                     }
                 }
-                if let url = release.sourceURL {
-                    Link(destination: url) {
-                        Label("Auf Discogs öffnen", systemImage: "arrow.up.forward")
-                    }
-                    .appGlassButton()
+                .font(.callout)
+                if removedFromDiscogs {
+                    Label("Nicht mehr in der Discogs-Collection", systemImage: "exclamationmark.circle")
+                        .font(.callout)
+                        .foregroundStyle(AppStyle.warningColor)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    @ViewBuilder private func detail(_ title: String, _ value: String?) -> some View {
-        VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-            Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(value.flatMap { $0.isEmpty ? nil : $0 } ?? "—").font(AppStyle.rowTitle).lineLimit(2)
-                .textSelection(.enabled)
+    /// The rows of the list, only those with a value. Label and catalog
+    /// number belong together, like on the sleeve.
+    private var details: [(name: String, value: String)] {
+        let label = [release.label.isEmpty ? "" : release.displayLabel, release.catalogNumber]
+            .filter { !$0.isEmpty }.joined(separator: " · ")
+        let rows: [(String, String?)] = [
+            (String(localized: "Label"), label),
+            (String(localized: "Jahr"), release.year.map(String.init)),
+            (String(localized: "Land"), release.country),
+            (String(localized: "Format"), release.format),
+            (String(localized: "Genre"), release.genres.joined(separator: ", ")),
+            (String(localized: "Styles"), release.styles.joined(separator: ", ")),
+        ]
+        return rows.compactMap { name, value in
+            guard let value, !value.isEmpty else { return nil }
+            return (name, value)
         }
     }
 }

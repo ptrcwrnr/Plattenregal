@@ -135,8 +135,13 @@ struct StatisticsView: View {
         .task {
             guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-detail=") }) else { return }
             let artist = String(raw.dropFirst("--preview-detail=".count))
-            try? await Task.sleep(for: .seconds(1))
-            opened = LibraryRecords.of(context).copies.first { $0.release?.artist == artist }
+            // The demo fills its records only after the page appears: try for up to 10 s.
+            for _ in 0..<20 {
+                try? await Task.sleep(for: .milliseconds(500))
+                if let copy = LibraryRecords.of(context).copies.first(where: { $0.release?.artist == artist }) {
+                    opened = copy; return
+                }
+            }
         }
         #endif
     }

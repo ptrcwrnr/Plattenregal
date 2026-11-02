@@ -29,6 +29,8 @@ Die Seite **Statistik** wertet die aktuelle Collection aus und zeigt den Verlauf
 | Neuzugänge | Zugänge pro Monat oder Jahr, lückenlos vom ersten bis zum letzten Zeitraum (leere eingeschlossen) |
 | Zuletzt hinzugefügt | Die neuesten Platten |
 
+Ein Klick auf ein Cover unter „Zuletzt hinzugefügt“ oder „Details“ beim Zufallsfund öffnet die **Plattenkarte** (`RecordDetailView`): Cover, Interpret und Titel, daneben die Angaben als ruhige Liste – Bezeichnung links, Wert rechts, wie im Fenster eines Covers in der Collection: Label mit Katalognummer, Jahr, Land, Format, Genre, Styles (als Text, ohne Plaketten); leere Angaben fallen weg. Oben rechts „Auf Discogs öffnen“, darunter die Karte „Standort“ mit „Im Regal anzeigen“ und „Ohne Regalplatz“. Beide Knöpfe sind derselbe `SecondaryButton` (Glas, Schrift in Textfarbe) und enden rechts bündig.
+
 ## Sammlungswert
 
 Einzige Discogs-Anfrage der Statistik: `GET /users/{username}/collection/value` über den gemeinsamen API-Client (Taktung, `Retry-After`, Token aus dem Schlüsselbund). Vor und nach dem Abruf wird geprüft, dass Token und Bestand noch zum Konto passen; sonst wird nichts gespeichert. Ändert ein Sync die Sammlung, während der Wert noch geladen wird, fragt die Statistik einmal für die neue Sammlung nach; die Meldung „Der Discogs-Token passt nicht mehr zum geladenen Konto“ kommt nur bei wirklich geändertem Token (Test `collectionChangingDuringValueRequestIsAskedAgain`).

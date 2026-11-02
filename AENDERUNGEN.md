@@ -1,3 +1,12 @@
+# Plattenkarte aufgeräumt · 02.11.2026
+
+- **Wunsch:** Die Karte, die sich in der Statistik per Klick auf ein Cover öffnet, ordentlicher machen: „Auf Discogs öffnen“ ohne Pfeil-Symbol, die Genre-/Style-Pillen passen nicht zur App, die Angaben wirken verstreut; im dunklen Design ist „Im Regal anzeigen“ schwer lesbar; die Discogs-Pille unter der Liste sieht unpassend aus, lieber oben, bündig im Stil von „Im Regal anzeigen“.
+- **Angaben** (`ReleaseHeaderView` in `RecordDetailView.swift`): statt eines 3×2-Rasters mit Überschriften und Style-Plaketten eine ruhige Liste, Bezeichnung links, Wert rechts, wie im Fenster eines Covers in der Collection – Label mit Katalognummer, Jahr, Land, Format, Genre, Styles; Styles als Text, leere Angaben fallen weg statt „—“. „Nicht mehr in der Discogs-Collection“ ist eine Textzeile in der Warnfarbe statt einer Plakette.
+- **Knöpfe:** „Im Regal anzeigen“ und „Auf Discogs öffnen“ sind beide `SecondaryButton` (Glas, Schrift in Textfarbe, groß) – vorher Akzentblau auf der blau getönten Standort-Karte, im dunklen Modern kaum lesbar. „Auf Discogs öffnen“ steht ohne Pfeil oben rechts neben Interpret und Titel, rechts bündig mit „Im Regal anzeigen“.
+- **Debug:** `--preview-detail=…` wartet bis 10 s auf die Platte (die Demo füllt ihre Platten erst nach dem Erscheinen der Seite; vorher öffnete sich dort keine Karte).
+- Geprüft: Debug-Build ohne Fehler; Karte mit echter Platte in Modern dunkel und Klassisch hell (Fenster vorn) angesehen, dazu die Demo; Knöpfe rechts bündig, gut lesbar. Tests nicht gelaufen (abgebrochen). Die installierte App läuft wieder, Fenstergröße unverändert.
+- STATISTIK.md: Absatz zur Plattenkarte.
+
 # Webseite: Download-Knopf ohne Symbol · 02.11.2026
 
 - **Wunsch:** Das Pfeil-Symbol im Download-Knopf (oben und unten) sieht unpassend aus.
