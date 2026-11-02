@@ -1,3 +1,9 @@
+# DMG 1.0.0 mit den neu aufgenommenen Handbuch-Bildern · 02.11.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release `clean`), weiter 1.0.0 (102027); geprüft wie zuvor (Abbild gültig, nur arm64, ab macOS 27.0, Signatur, Berechtigungen, URL-Schema, keine App-Intents-Metadaten, Handbücher identisch mit den neuen PDFs, kein Prüfcode, Gegenprobe im Debug-Build); Debug danach neu gebaut.
+- Demo aus der DMG mit `open -n -a … --args --demo` gestartet: Fenster 1219 × 772 pt an der Stelle des eigenen Fensters, keine Fehler.
+- **Beobachtet:** Direkt aus der Shell gestartet (Programmdatei ohne `open`), während die echte App lief, legte die Demo zeitweise gar kein Hauptfenster an (nur Schallplatte und Suchfenster); um 12:09 ging derselbe Aufruf noch. Über `open` – wie jeder echte Start und der Wechsel in die Demo per Neustart – erschien das Fenster jedes Mal. Für Prüfungen deshalb `open -n` nehmen.
+
 # Handbuch-Bilder neu aufgenommen · 02.11.2026
 
 - **Wunsch:** Die Handbuch-Bilder neu aufnehmen, nachdem das Demo-Fenster seine vorgegebene Größe jetzt sicher bekommt.
