@@ -1,3 +1,11 @@
+# Webseite auf den Stand der App gebracht · 02.11.2026
+
+- **Wunsch:** Prüfen, ob die Artefakt-Seite aktuell ist, und sie sonst aktualisieren.
+- **Befund:** `Webseite/index.html` und das Artifact standen auf dem 24.10. Seitdem kamen die Toolbar-Leiste mit Lupe, die Regal-Reiter unten links, die Suche in der Menüleiste samt „Im Hintergrund weiterlaufen“ und das Widget „Platte des Tages“ dazu; die Handbuch-Bilder waren am 26. und 30.10. neu aufgenommen worden, im Artifact lagen noch die alten.
+- **Geändert (de/en):** Text „Suchen“ (Lupe am Ende der Rubriken statt Suchfeld oben rechts), Bildunterschriften von Collection und Regalseite wie im Handbuch, zwei neue Karten im Rundgang („Suche in der Menüleiste“ mit ⌥ Leertaste und ⌥⌘Q, „Platte des Tages“), Tastenkürzel ⌥ Leertaste und esc wie im Handbuch, Maße des Discogs-Bilds (1200 × 376). Alle 14 Bilder aus `Handbuch/Bilder/` neu mitveröffentlicht.
+- Geprüft: jeder `data-t`-Schlüssel hat Englisch und umgekehrt; lokal bei 494 und 1200 px Breite, Deutsch und Englisch angesehen, kein seitlicher Bildlauf; nach dem Veröffentlichen (Version 9) die Live-Seite geöffnet, neues Bild mit Lupe und neue Bildunterschrift da.
+- README (Abschnitt Webseite) ergänzt.
+
 # Demo öffnet so groß wie das eigene Hauptfenster · 02.11.2026
 
 - **Wunsch:** Das Hauptfenster der Demo soll so groß sein wie das eigene – das sieht besser aus.
