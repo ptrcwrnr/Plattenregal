@@ -849,19 +849,25 @@ struct KallaxView: View {
         // Another compartment builds its whole grid or table in one long
         // frame; a card animating in at the same time would stall and jump.
         // So the compartment opens first and the card follows once it's built.
-        let id = UUID()
-        pendingPlacement = opens ? id : nil
-        moveCard {
-            placement = opens ? nil : new
-            if opens, let target { highlight = target.id }
-        }
+        // The same on arriving from another page: the page fades in, so the
+        // card waits for it too.
+        let defersCard = opens || opensShelf
         // A placed record is picked out in the grid and selected in the table,
-        // when its compartment is the open one.
-        if new.found && new.putAwayIn == nil && target?.id == highlight {
+        // when its compartment is (or is about to be) the open one. Picked
+        // before the compartment changes: `moveCard` draws that change at
+        // once, and a compartment loaded without the record stood at its top
+        // first, then jumped (see `ShelfContentsView.reload`).
+        if new.found && new.putAwayIn == nil && (opens || target?.id == highlight) {
             focusCopy = copy
             focusRevision += 1
         }
-        guard opens else { return }
+        let id = UUID()
+        pendingPlacement = defersCard ? id : nil
+        moveCard {
+            placement = defersCard ? nil : new
+            if opens, let target { highlight = target.id }
+        }
+        guard defersCard else { return }
         Task {
             await Self.untilSettled()
             guard pendingPlacement == id else { return }

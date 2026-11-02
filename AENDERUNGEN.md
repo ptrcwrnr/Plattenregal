@@ -1,3 +1,12 @@
+# Sprung ins Regal: neues Fach gleich an der Platte · 02.11.2026
+
+- **Wunsch:** Die beim letzten Mal gefundene Mehrarbeit beheben: Bei einer Platte in einem anderen Fach baute die Regalseite das neue Fach erst ohne Auswahl auf und sprang dann.
+- **Ursache, mit vorübergehenden Protokollzeilen bestätigt:** Die Regalseite bleibt verborgen bestehen (`PageStack`), sie wird beim Sprung nicht neu aufgebaut. `startPlacement` setzte erst das neue Fach (`moveCard`, das diese Änderung sofort zeichnet) und erst danach die Auswahl. Das neue Fach (88 Platten) wurde so ohne Auswahl geladen, stand zuerst oben und sprang dann per Ausblenden zur Platte – ein zusätzlicher Aufbau des Fachanfangs samt Covern und ~0,25 s länger.
+- **Neu** (`KallaxView.startPlacement`): Die Auswahl wird vor dem Fachwechsel gesetzt (gleiche Bedingung wie bisher: Platte steht in einem Fach eines aktiven Regals). Das Fach wird gleich mit der Auswahl geladen und blendet unsichtbar positioniert an der Platte ein. Bei Sprüngen von einer anderen Seite (`opensShelf`) wartet die Karte „Hier steht …“ jetzt immer, bis Seite und Fach stehen, wie schon beim Fachwechsel.
+- Verworfen: das Fach schon beim Öffnen der Seite vorzuwählen (`ensureShelfSelected`) – wirkungslos, weil die Seite beim Sprung schon besteht.
+- Geprüft: Protokoll (neues Fach wird mit Auswahl geladen, unsichtbares Hinspringen greift); Videos mit der echten Sammlung: anderes Fach in Modern und Klassisch, gleiches Fach in Modern – das Fach steht nach ~0,2 s ruhig an der Platte, die Karte folgt. Bleibt: Beim Einblenden der Seite ist ~0,1 s blass das zuletzt offene Fach zu sehen (der Seitenwechsel blendet das bereits Gezeichnete ein). Auf unnötige Arbeit geprüft: Auswahl und Revision lösen je eine Scroll-Anfrage aus; die zweite ersetzt die erste nach einem Tick, ohne Bewegung – vernachlässigbar, belassen. 275 Tests grün.
+- README (Sprung ins Regal).
+
 # Sprung ins Regal: ruhig ankommen statt hastig scrollen · 02.11.2026
 
 - **Wunsch:** „Im Regal anzeigen“ aus Collection, Wantlist und anderswo springt in die Rubrik Regal und scrollt bei Platten weit hinten super schnell und ruckelig nach unten – geschmeidiger, robust und gründlich lösen, Code und Performance prüfen, unnötige Mehrarbeit finden.
