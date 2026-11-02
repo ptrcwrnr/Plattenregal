@@ -1,3 +1,10 @@
+# Handbuch-Bilder neu aufgenommen · 02.11.2026
+
+- **Wunsch:** Die Handbuch-Bilder neu aufnehmen, nachdem das Demo-Fenster seine vorgegebene Größe jetzt sicher bekommt.
+- `swift Scripts/guide-screenshots.swift` (beide Sprachen; die installierte App dafür von Hand ganz beendet und danach wieder gestartet; alte Bilder vorher gesichert).
+- **Ergebnis:** 11 der 14 Bilder Byte für Byte gleich – die Aufnahmen hatten also schon die richtige Größe (die Sorge aus dem Eintrag „Demo öffnet so groß wie das eigene Hauptfenster“ war unbegründet). Neu: `en/sortin.jpg` ohne die vom Mauszeiger hervorgehobene letzte Zeile samt Hover-Hinweis im Kopf; `de/statistics.jpg` und `en/statistics.jpg` nur mit neuem „Stand“-Datum.
+- Handbuch-PDFs neu erzeugt (je 10 Seiten, Seite 7 des englischen angesehen); die drei Bilder auf der Webseite neu veröffentlicht.
+
 # DMG 1.0.0 mit dem Demo-Fenster in eigener Größe neu ausgegeben · 02.11.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release vorher `clean`), Build bleibt 102027; Handbuch-PDFs unverändert.
