@@ -26,7 +26,9 @@ struct GeneralSettingsView: View {
                     }
                 }
             }
-            SettingsCard(title: String(localized: "Start")) {
+            // Everything about opening and quitting in one place; the search
+            // in the menu bar below keeps only its own choices.
+            SettingsCard(title: String(localized: "Starten und Beenden")) {
                 SettingsRow(title: String(localized: "Beim Öffnen zeigen"), hint: String(localized: "Die Seite, mit der das Hauptfenster startet.")) {
                     GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
                         .accessibilityLabel("Startseite")
@@ -43,6 +45,12 @@ struct GeneralSettingsView: View {
                         SecondaryButton(title: String(localized: "Systemeinstellungen öffnen")) { loginItem.openSystemSettings() }
                     }
                 }
+                Divider()
+                SettingsRow(title: String(localized: "Im Hintergrund weiterlaufen"), hint: backgroundHint) {
+                    Toggle("Im Hintergrund weiterlaufen", isOn: $preferences.keepsRunningInBackground)
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                .disabled(!preferences.menuBarSearch || DemoMode.isActive)
             }
             SettingsCard(title: String(localized: "Menüleiste")) {
                 SettingsRow(title: String(localized: "Suche in der Menüleiste"),
@@ -77,12 +85,6 @@ struct GeneralSettingsView: View {
                         .accessibilityLabel(String(localized: "Position der Suche"))
                 }
                 .disabled(!preferences.menuBarSearch && !preferences.quickSearchHotKey)
-                Divider()
-                SettingsRow(title: String(localized: "Im Hintergrund weiterlaufen"), hint: backgroundHint) {
-                    Toggle("Im Hintergrund weiterlaufen", isOn: $preferences.keepsRunningInBackground)
-                        .labelsHidden().toggleStyle(.switch)
-                }
-                .disabled(!preferences.menuBarSearch || DemoMode.isActive)
             }
             SettingsCard(title: String(localized: "Demo"), subtitle: String(localized: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.")) {
                 SettingsRow(title: DemoMode.isActive ? String(localized: "Die Demo läuft") : String(localized: "Beispielsammlung"),

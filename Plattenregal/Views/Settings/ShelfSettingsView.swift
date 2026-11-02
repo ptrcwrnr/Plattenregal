@@ -115,19 +115,18 @@ struct ShelfSettingsView: View {
                 }
             }
 
-            SettingsCard(title: String(localized: "Einsortieren"),
-                         subtitle: String(localized: "Wie die Platten im Fach stehen.")) {
+            // The two choices that apply to every shelf, in one card below
+            // the shelf being edited.
+            SettingsCard(title: String(localized: "Sortierung und Beschriftung"),
+                         subtitle: String(localized: "Gilt für alle Regale.")) {
                 SettingsRow(title: String(localized: "Bei gleichem Interpreten nach"), hint: String(localized: "Immer zuerst nach Interpret. \(secondaryOrder.hint) Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection.")) {
                     GlassSegmentedPicker(selection: $secondaryOrder, options: ShelfSecondaryOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Bei gleichem Interpreten nach")
                 }
-            }
-
-            SettingsCard(title: String(localized: "Beschriftung"),
-                         subtitle: String(localized: "Wie die Fächer auf der Regalseite, in Listen und im Export heißen.")) {
+                Divider()
                 SettingsRow(title: String(localized: "Fächer benennen nach"), hint: labelStyle == .range
-                            ? String(localized: "Erste und letzte Buchstaben der Interpreten im Fach, \(labelStyle.example).")
-                            : String(localized: "Platz im Regal von links oben, \(labelStyle.example).")) {
+                            ? String(localized: "Erste und letzte Buchstaben der Interpreten im Fach, \(labelStyle.example). So heißen die Fächer auf der Regalseite, in Listen und im Export.")
+                            : String(localized: "Platz im Regal von links oben, \(labelStyle.example). So heißen die Fächer auf der Regalseite, in Listen und im Export.")) {
                     GlassSegmentedPicker(selection: $labelStyle, options: ShelfLabelStyle.allCases) { Text($0.title) }
                         .accessibilityLabel("Beschriftung")
                 }

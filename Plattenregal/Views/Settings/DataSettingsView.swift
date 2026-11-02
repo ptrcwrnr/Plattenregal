@@ -129,7 +129,8 @@ struct DataSettingsView: View {
             .animation(AppStyle.standardAnimation, value: storageError)
 
             SettingsCard(title: String(localized: "Diagnose")) {
-                SettingsRow(title: String(localized: "Protokoll"), hint: String(localized: "Enthält nie den Discogs-Token.")) {
+                // Not just "Protokoll": that row is in "Speicherplatz" above already.
+                SettingsRow(title: String(localized: "Protokoll weitergeben"), hint: String(localized: "Für einen Fehlerbericht. Enthält nie den Discogs-Token.")) {
                     HStack(spacing: AppStyle.itemSpacing) {
                         if let directory = AppLog.logDirectory {
                             GhostButton(title: String(localized: "Im Finder zeigen")) {

@@ -1,3 +1,15 @@
+# Einstellungen übersichtlicher: Starten und Beenden, eine Karte für alle Regale, eindeutige Zeilennamen · 02.11.2026
+
+- **Wunsch:** Die Einstellungen auf Reihenfolge, Darstellung und Einteilung durchsehen und verbessern, wo es sinnvoll ist.
+- **Ergebnis der Durchsicht:** Aufbau, Kartensprache und die zehn Tabs passen; ein Umbau der Tabs (etwa Export und Sicherung zusammen) hätte die ohnehin langen Seiten noch länger gemacht und Handbuch und Gewohnheit gebrochen. Geändert wurden nur vier Stellen, an denen etwas an der falschen Stelle stand oder doppelt hieß.
+- **Allgemein:** Die Karte „Start“ heißt jetzt „Starten und Beenden“ und enthält neben Startseite und „Bei der Anmeldung öffnen“ auch „Im Hintergrund weiterlaufen“ (bisher fünfte Zeile der Karte „Menüleiste“). Die Karte „Menüleiste“ enthält damit nur noch die Suche: Schallplatte, Kürzel ⌥ Leertaste, Aussehen, Position.
+- **Regal:** Die beiden Einzeiler-Karten „Einsortieren“ und „Beschriftung“ sind eine Karte „Sortierung und Beschriftung“ mit dem Hinweis „Gilt für alle Regale.“ – so ist klar, dass sie nicht zum gerade gewählten Regal darüber gehören. Was bisher im Untertitel von „Beschriftung“ stand (wo die Fachnamen erscheinen), steht jetzt im Hinweis der Zeile.
+- **Export:** Die Zeile „Daten“ (Collection, Wantlist, Verkaufsliste) heißt „Liste“ – „Daten“ ist der Name eines anderen Tabs.
+- **Daten:** Die Zeile „Protokoll“ unter „Diagnose“ heißt „Protokoll weitergeben“ (Hinweis „Für einen Fehlerbericht. Enthält nie den Discogs-Token.“), weil „Speicherplatz“ darüber schon eine Zeile „Protokoll“ hat.
+- Englisch im String-Katalog nachgezogen („Launch and Quit“, „Sorting and Labeling“, „Applies to all shelves.“, „Share Log“ …), nicht mehr benutzte Einträge entfernt. README (Tab-Tabelle, Verweis auf die Sortierung) angepasst; das Handbuch nennt die Karten nicht einzeln und bleibt richtig.
+- Geprüft: Debug-Build, alle Tests bestanden; Bildschirmfotos (`--snapshot`, Demo) von Allgemein, Regal, Export und Daten auf Deutsch und Englisch – neue Karten, Reihenfolge und Texte wie gewollt.
+- **Nicht geprüft:** Klassisch und Dunkel (an der Darstellung selbst nichts geändert), Bedienung per Klick.
+
 # DMG 1.0.0 nach der Code-Prüfung der letzten Tage neu ausgegeben · 01.11.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs unverändert. Enthält auch die Änderungen von heute früh (Festhalten in der Suche, „Pos. x von y“, Lage oben mittig/oben rechts), die noch in keiner DMG waren.

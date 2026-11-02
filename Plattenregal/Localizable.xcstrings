@@ -140,6 +140,16 @@
         }
       }
     },
+    "Für einen Fehlerbericht. Enthält nie den Discogs-Token." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For a bug report. Never contains the Discogs token."
+          }
+        }
+      }
+    },
     "Klicken, um die Platte festzuhalten" : {
       "localizations" : {
         "en" : {
@@ -196,6 +206,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Search Position"
+          }
+        }
+      }
+    },
+    "Protokoll weitergeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Log"
           }
         }
       }
@@ -4453,16 +4473,6 @@
         }
       }
     },
-    "Enthält nie den Discogs-Token." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Never contains the Discogs token."
-          }
-        }
-      }
-    },
     "Erhalten bleiben die letzten %lld Stände und zusätzlich der letzte Stand jedes Tages der vergangenen %lld Tage." : {
       "localizations" : {
         "de" : {
@@ -4559,12 +4569,12 @@
         }
       }
     },
-    "Erste und letzte Buchstaben der Interpreten im Fach, %@." : {
+    "Erste und letzte Buchstaben der Interpreten im Fach, %@. So heißen die Fächer auf der Regalseite, in Listen und im Export." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "First and last letters of the artists in the compartment, %@."
+            "value" : "First and last letters of the artists in the compartment, %@. This is what the compartments are called on the shelf page, in lists and in the export."
           }
         }
       }
@@ -7372,12 +7382,12 @@
         }
       }
     },
-    "Platz im Regal von links oben, %@." : {
+    "Platz im Regal von links oben, %@. So heißen die Fächer auf der Regalseite, in Listen und im Export." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Position on the shelf from the top left, %@."
+            "value" : "Position on the shelf from the top left, %@. This is what the compartments are called on the shelf page, in lists and in the export."
           }
         }
       }
@@ -8328,12 +8338,12 @@
         }
       }
     },
-    "Start" : {
+    "Starten und Beenden" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start"
+            "value" : "Launch and Quit"
           }
         }
       }
@@ -9370,22 +9380,22 @@
         }
       }
     },
-    "Wie die Fächer auf der Regalseite, in Listen und im Export heißen." : {
+    "Gilt für alle Regale." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What the compartments are called on the shelf page, in lists and in the export."
+            "value" : "Applies to all shelves."
           }
         }
       }
     },
-    "Wie die Platten im Fach stehen." : {
+    "Sortierung und Beschriftung" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How records stand in the compartment."
+            "value" : "Sorting and Labeling"
           }
         }
       }

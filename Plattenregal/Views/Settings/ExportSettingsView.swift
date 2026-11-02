@@ -18,7 +18,7 @@ struct ExportSettingsView: View {
     @AppStorage(ShelfLabelStyle.key) private var labelStyle = ShelfLabelStyle.range
     @AppStorage(ScheduledExport.enabledKey) private var autoEnabled = false
     @AppStorage(ScheduledExport.intervalKey) private var autoInterval = ExportInterval.weekly
-    /// The lists the automatic export writes – its own choice, not "Daten" above.
+    /// The lists the automatic export writes – its own choice, not "Liste" above.
     @AppStorage(ScheduledExport.sourcesKey) private var storedAutoSources = ExportSettings.stored.source.rawValue
     @State private var scheduled = ScheduledExport.shared
     /// The export folder, resolved when the page appears or the export ran –
@@ -49,7 +49,8 @@ struct ExportSettingsView: View {
             SettingsCard(title: String(localized: "Inhalt"), subtitle: source == .sale
                          ? String(localized: "Exportiert werden nur die zum Verkauf vorgemerkten Platten (Einstellungen → Listen).")
                          : String(localized: "Exportiert wird die Collection bzw. Wantlist des aktuellen Discogs-Kontos.")) {
-                SettingsRow(title: String(localized: "Daten")) {
+                // Not "Daten": that is the name of another settings tab.
+                SettingsRow(title: String(localized: "Liste")) {
                     segmented(Binding(get: { source }, set: { storedSource = $0 }), sources) { $0.title }
                 }
                 Divider()
@@ -170,7 +171,7 @@ struct ExportSettingsView: View {
                     segmented($autoInterval, ExportInterval.allCases) { $0.title }
                 }
                 Divider()
-                // Independent of "Daten" above, and more than one at a time.
+                // Independent of "Liste" above, and more than one at a time.
                 ForEach(sources) { source in
                     SettingsRow(title: source.title, hint: String(localized: "Datei „\(autoFileName(source))“")) {
                         Toggle(source.title, isOn: autoBinding(for: source)).labelsHidden().toggleStyle(.switch)
