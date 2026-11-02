@@ -8,7 +8,7 @@ MIT – siehe [`LICENSE`](LICENSE). Plattenregal nutzt die [Discogs-API](https:/
 
 ## Quellcode
 
-Der Quellcode liegt im privaten GitHub-Repository [`ptrcwrnr/Plattenregal`](https://github.com/ptrcwrnr/Plattenregal); hochgeladen wird nur der Zweig `main`. Nicht im Repository sind `dist/`, `Marketing/` und lokale Git-Sicherungen (`*.bundle`).
+Der Quellcode liegt öffentlich im GitHub-Repository [`ptrcwrnr/Plattenregal`](https://github.com/ptrcwrnr/Plattenregal); hochgeladen wird nur der Zweig `main`. Nicht im Repository sind `dist/`, `Marketing/` und lokale Git-Sicherungen (`*.bundle`). Commits tragen statt einer E-Mail-Adresse die anonyme GitHub-Adresse `348229331+ptrcwrnr@users.noreply.github.com` (lokal in `.git/config` als `user.email` gesetzt).
 
 ## In Xcode starten
 

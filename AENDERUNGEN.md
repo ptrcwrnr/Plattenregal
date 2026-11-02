@@ -1,3 +1,11 @@
+# Projekt öffentlich auf GitHub, ohne E-Mail-Adresse · 02.11.2026
+
+- **Wunsch:** Das Repository soll für alle sichtbar sein, die E-Mail-Adresse aber nirgends darin stehen.
+- **Historie umgeschrieben** (`git filter-repo --mailmap`): Alle 400 Commits tragen als Autor und Committer jetzt `Patrice Werner <348229331+ptrcwrnr@users.noreply.github.com>` statt der Gmail-Adresse. Die Dateiinhalte sind unverändert (Inhalt des letzten Stands vorher und nachher identisch, Baum `7141165`); alle Commit-Kennungen sind dadurch neu. Vorher eine vollständige Sicherung angelegt: `Plattenregal-Git-Sicherung-2026-11-02.bundle` (nur lokal, `*.bundle` ist ausgeschlossen). Für dieses Projekt ist `user.email` auf die noreply-Adresse gesetzt.
+- **Inhalt geprüft, bevor es öffentlich wird:** Die Adresse stand nur in den Absenderangaben, in keiner Datei und keiner Commit-Nachricht. Alle 143 Bilder aus der ganzen Historie (Handbuch, frühere Tour-Bilder, App-Symbole) angesehen: nur die Demo mit gezeichneten Covern und Beispielwerten, keine echten Cover, nichts aus der eigenen Sammlung. Texte und Code aller Versionen durchsucht: keine lokalen Pfade, keine Token, kein Discogs-Benutzername, keine Netzadressen. Frühere Build-Ausgaben (`outputs/`) gibt es nur in lokalen Codex-Zwischenständen, die nicht hochgeladen werden.
+- `main` neu hochgeladen (ersetzt den privaten Stand von vorhin), Repository auf öffentlich gestellt.
+- README: Abschnitt „Quellcode“ angepasst.
+
 # Projekt auf GitHub (privat) · 02.11.2026
 
 - **Wunsch:** Das Projekt mit dem eigenen Account auf GitHub stellen, als privates Repository.
