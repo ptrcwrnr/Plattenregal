@@ -1,3 +1,12 @@
+# Version 1.0.1 mit „Was ist neu“ in „Über Plattenregal“ · 02.11.2026
+
+- **Wunsch:** Einen Changelog auf der Über-Karte, beginnend mit den gerade gemachten Änderungen; auf 1.0.1 gehen, falls die DMG schon geladen wurde.
+- **Downloads nachgesehen** (GitHub-Release v1.0.0): `Plattenregal.dmg` 17-mal, `Plattenregal-1.0.0.dmg` 3-mal, davon 3 eigene Prüfungen – die 1.0.0 ist also draußen. Daher **1.0.1 (Build 102028)**, in allen vier Build-Einstellungen.
+- **„Über Plattenregal“** (`AboutView.swift`): unter Version und Autor eine Trennlinie, dann „Was ist neu“ (`captionMark`), je Version „Version 1.0.1“ (`strongCallout`) mit Datum (nach Sprache formatiert) und Punkten in Fließtextgröße; neueste zuerst, bis 240 pt hoch, dann scrollt die Liste. Die Karte ist dafür 340 statt 260 pt breit. Einträge in `Changelog.entries` (Deutsch), die englischen Fassungen im Sprachkatalog (nur die fünf neuen Einträge ergänzt, Datei sonst unverändert).
+- **1.0.1 enthält:** aufgeräumte Plattenkarte (Angaben als Liste, Styles ohne Plaketten, „Auf Discogs öffnen“ oben rechts), Standort-Karte im Dunklen lesbar und ohne Blaustich, „Im Regal anzeigen“ kommt ruhig an.
+- Geprüft: Debug-Build ohne Fehler; Über-Karte in der Demo über das App-Menü geöffnet und angesehen – Modern hell und dunkel, Klassisch, Deutsch und Englisch; 275 Tests grün. DMG, Release, Webseite (Version im Text) und Handbuch-PDFs (Version auf der Titelseite) sind noch nicht auf 1.0.1.
+- README (Projektstand, Über Plattenregal, Ablauf für neue Versionen).
+
 # Plattenkarte: Standort-Karte ohne Blaustich · 02.11.2026
 
 - **Wunsch:** In der Karte aus Zufallsfund und „Zuletzt hinzugefügt“ die Glaskarte „Standort“ ohne Blaustich – normale Glasfarbe oder ohne Glas wie in Klassisch, was optisch mehr Sinn macht.

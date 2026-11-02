@@ -110,6 +110,26 @@
         }
       }
     },
+    "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The location on the record card reads well in dark mode and no longer has a blue cast."
+          }
+        }
+      }
+    },
+    "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record card is tidier: the details as a calm list, styles without badges and “Open on Discogs” at the top right."
+          }
+        }
+      }
+    },
     "Erscheint oben in der Mitte des Bildschirms, bei einer Notch direkt darunter." : {
       "localizations" : {
         "en" : {
@@ -216,6 +236,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share Log"
+          }
+        }
+      }
+    },
+    "Version %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@"
+          }
+        }
+      }
+    },
+    "Was ist neu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What’s New"
+          }
+        }
+      }
+    },
+    "„Im Regal anzeigen“ kommt ruhig bei der Platte an, statt hastig durch das Fach zu scrollen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Show on Shelf” now arrives calmly at the record instead of rushing through the compartment."
           }
         }
       }

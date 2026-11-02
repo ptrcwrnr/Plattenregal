@@ -3,6 +3,7 @@ import AppKit
 
 /// "Über Plattenregal": a small card with icon, name, version and author
 /// instead of the system panel, whose empty credits area made it tall.
+/// Below them what changed, newest version first (`Changelog`).
 struct AboutView: View {
     static let windowID = "about"
     static let author = "Patrice Werner"
@@ -27,11 +28,77 @@ struct AboutView: View {
             Text("© 2026 \(Self.author)")
                 .font(.caption).foregroundStyle(.tertiary)
                 .padding(.top, AppStyle.tightSpacing)
+            if !Changelog.entries.isEmpty {
+                Divider().padding(.vertical, AppStyle.itemSpacing)
+                changes
+            }
         }
         .padding(.horizontal, AppStyle.pagePadding)
         .padding(.top, AppStyle.pagePadding + AppStyle.itemSpacing)
         .padding(.bottom, AppStyle.pagePadding)
-        .frame(width: 260)
+        .frame(width: Changelog.entries.isEmpty ? 260 : 340)
+    }
+
+    /// Newest version first. As tall as its content up to a limit, then it
+    /// scrolls – like the tracklist in a cover's popover.
+    private var changes: some View {
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            Text("Was ist neu").font(AppStyle.captionMark).foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: AppStyle.cardPadding) {
+                    ForEach(Changelog.entries) { entry in
+                        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                            HStack(alignment: .firstTextBaseline) {
+                                Text("Version \(entry.version)").font(AppStyle.strongCallout).monospacedDigit()
+                                Spacer(minLength: AppStyle.itemSpacing)
+                                Text(entry.date, format: .dateTime.day().month(.abbreviated).year())
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                            ForEach(entry.changes, id: \.self) { change in
+                                HStack(alignment: .firstTextBaseline, spacing: AppStyle.itemSpacing) {
+                                    Text(verbatim: "•").foregroundStyle(.tertiary).accessibilityHidden(true)
+                                    Text(change).fixedSize(horizontal: false, vertical: true)
+                                }
+                                .font(.callout)
+                            }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: 240)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .textSelection(.enabled)
+    }
+}
+
+/// What changed in each version since 1.0.0, newest first, as shown in
+/// "Über Plattenregal". A new version gets its entry at the top – in plain
+/// words for people using the app, not the technical changelog
+/// (AENDERUNGEN.md). Its version must match `MARKETING_VERSION`.
+enum Changelog {
+    struct Entry: Identifiable {
+        let version: String
+        let date: Date
+        let changes: [String]
+        var id: String { version }
+    }
+
+    static var entries: [Entry] {
+        [
+            Entry(version: "1.0.1", date: day(2026, 11, 2), changes: [
+                String(localized: "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts."),
+                String(localized: "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr."),
+                String(localized: "„Im Regal anzeigen“ kommt ruhig bei der Platte an, statt hastig durch das Fach zu scrollen."),
+            ]),
+        ]
+    }
+
+    private static func day(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        Calendar(identifier: .gregorian).date(from: DateComponents(year: year, month: month, day: day, hour: 12)) ?? .distantPast
     }
 }
 
