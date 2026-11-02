@@ -2,6 +2,24 @@ import AppKit
 import Foundation
 import SwiftUI
 
+/// A launch that leaves the keychain and Discogs alone: the demo, and in
+/// Debug builds the launches for pictures (`--preview-…`, `--snapshot=…`).
+/// Those show the real collection, but a Debug build is signed differently
+/// from the installed app, so reading the token made macOS ask for the
+/// keychain password on every recording – and a picture needs no Discogs.
+nonisolated enum OfflineLaunch {
+    static let isActive: Bool = DemoMode.isActive || isPreview
+
+    /// Debug only: started with a preview or snapshot switch.
+    static let isPreview: Bool = {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--preview-") || $0.hasPrefix("--snapshot=") }
+        #else
+        false
+        #endif
+    }()
+}
+
 /// Plattenregal with a sample collection instead of the own one – to try
 /// things out or show the app. Started and ended by relaunching, so the real
 /// database and the demo are never open at the same time. The relaunch can't

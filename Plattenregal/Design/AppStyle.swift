@@ -118,6 +118,13 @@ enum AppStyle {
     /// Gliding hundreds of covers back in looked busy.
     static var searchExitFadeOut: Animation { pageOutAnimation }
     static var searchExitFadeIn: Animation { .easeOut(duration: pageFadeIn) }
+    /// A far jump in the shelf's cover grid ("Im Regal anzeigen", a search
+    /// hit further down): the covers fade out quickly, stand at the record
+    /// and fade in – timed like leaving a search. Scrolling there animated
+    /// through rows the lazy grid only built on the way: hasty and jerky.
+    static var farJumpFadeOut: Animation { searchExitFadeOut }
+    static var farJumpFadeOutDuration: TimeInterval { pageFadeOut }
+    static var farJumpFadeIn: Animation { searchExitFadeIn }
 
     // MARK: Corner radii
     // Shared corner radius for secondary surfaces (search fields, result

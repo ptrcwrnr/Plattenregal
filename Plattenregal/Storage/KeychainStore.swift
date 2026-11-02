@@ -4,12 +4,13 @@ import Security
 nonisolated enum KeychainStore {
     private static var query: [String: Any] { [kSecClass as String: kSecClassGenericPassword,
         kSecAttrService as String: "de.private.Plattenregal.discogs", kSecAttrAccount as String: "personal-token"] }
-    /// Demo launches use sample data and must never read – or overwrite – the real token.
-    private static var isDemo: Bool { DemoMode.isActive }
+    /// Demo and preview launches must never read – or overwrite – the real
+    /// token (see `OfflineLaunch`).
+    private static var isDemo: Bool { OfflineLaunch.isActive }
     /// A non-empty token is stored. An unreadable keychain counts as yes: the
     /// sync then reports the actual problem.
     static var hasToken: Bool {
-        // The demo never touches the keychain.
+        // Demo and previews never touch the keychain.
         if isDemo { return true }
         // Unreadable: offer the sync, which then says what's wrong.
         do { return !(try load() ?? "").isEmpty } catch {

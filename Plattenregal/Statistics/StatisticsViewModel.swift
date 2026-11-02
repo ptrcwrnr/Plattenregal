@@ -96,8 +96,8 @@ import Observation
         busy = true; error = nil; collectionChangedDuringRefresh = false
         defer { busy = false }
         await reload(container: container)
-        // No Discogs in the demo: recalculating is all a refresh does.
-        if DemoMode.isActive { return }
+        // No Discogs in the demo or a preview: recalculating is all a refresh does.
+        if OfflineLaunch.isActive { return }
         if !owner.isEmpty {
             do { try await CollectionValueHistoryService.shared.refresh(owner: owner, container: container, force: force) }
             catch is CancellationError { return }

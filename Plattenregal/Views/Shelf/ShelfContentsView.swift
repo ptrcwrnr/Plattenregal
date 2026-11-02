@@ -68,6 +68,9 @@ struct ShelfContentsView: View, Equatable {
     /// invisible until it stands at that record, then fades in – instead of
     /// fading in at the top and visibly scrolling through the covers.
     @State private var gridRevealPending: UUID?
+    /// A far jump within the open compartment (see `isFarInGrid`): the grid
+    /// is faded out for this request until it stands at the record.
+    @State private var farJumpRequest: UUID?
 
     private struct FocusScroll: Equatable {
         let shelfID: UUID
@@ -296,16 +299,59 @@ struct ShelfContentsView: View, Equatable {
                       loadedShelfID == request.shelfID,
                       focusCopy?.id == request.copyID,
                       items.contains(where: { $0.id == request.copyID }) else { return }
-                withAnimation(AppStyle.layoutAnimation) {
-                    // ScrollViewReader can reveal a target without publishing
-                    // it through scrollPosition. Keep the saved anchor in sync
-                    // so a later status update cannot restore the old place.
-                    session.gridScrollPositions[request.shelfID] = request.copyID
-                    proxy.scrollTo(request.copyID, anchor: .center)
+                // A compartment that is being revealed jumps there itself (see `gridScroll`).
+                guard gridRevealPending != request.shelfID else { return }
+                guard isFarInGrid(request.copyID, shelfID: request.shelfID) else {
+                    withAnimation(AppStyle.layoutAnimation) { showInGrid(request, proxy) }
+                    return
                 }
+                // Far away: no ride through rows the lazy grid would build on
+                // the way (and whose covers it would load). Fade out, stand at
+                // the record, fade in. A newer far jump takes over the faded
+                // grid; only the request that still owns it fades it back in,
+                // also when it is cancelled – the grid is never left hidden.
+                let alreadyFaded = farJumpRequest != nil
+                withAnimation(AppStyle.farJumpFadeOut) { farJumpRequest = request.requestID }
+                defer {
+                    if farJumpRequest == request.requestID {
+                        withAnimation(AppStyle.farJumpFadeIn) { farJumpRequest = nil }
+                    }
+                }
+                if !alreadyFaded { try? await Task.sleep(for: .seconds(AppStyle.farJumpFadeOutDuration)) }
+                guard !Task.isCancelled, request == focusScroll, loadedShelfID == request.shelfID,
+                      items.contains(where: { $0.id == request.copyID }) else { return }
+                withAnimation(nil) { showInGrid(request, proxy) }
+                // Let the rows around the record lay out before they fade in.
+                await Task.yield()
             }
         }
     }
+
+    /// Centers the record and keeps the saved anchor in sync: ScrollViewReader
+    /// can reveal a target without publishing it through scrollPosition, and
+    /// a later status update must not restore the old place.
+    private func showInGrid(_ request: FocusScroll, _ proxy: ScrollViewProxy) {
+        session.gridScrollPositions[request.shelfID] = request.copyID
+        proxy.scrollTo(request.copyID, anchor: .center)
+    }
+
+    /// Rows below (and one above) the top visible one that still count as
+    /// near: a short, animated scroll. Anything further fades instead.
+    private static let nearGridRows = 2
+
+    /// Whether the record is further from the grid's top visible row than a
+    /// short scroll. Without a known position the grid stands at its top.
+    private func isFarInGrid(_ id: UUID, shelfID: UUID) -> Bool {
+        guard let target = items.firstIndex(where: { $0.id == id }) else { return false }
+        let top = session.gridScrollPositions[shelfID].flatMap { top in items.firstIndex { $0.id == top } } ?? 0
+        let columns = max(1, gridColumnCount)
+        let rows = target / columns - top / columns
+        return rows < -1 || rows > Self.nearGridRows
+    }
+
+    /// The grid's width inside its slot, and its columns (see `gridScroll`).
+    private var gridContentWidth: CGFloat { max(0, gridWidth - 4) }
+    private var gridColumnCount: Int { CoverGrid.columnCount(available: gridContentWidth, minimum: 135) }
 
     /// Only the width counts (it sets the columns). A `GeometryReader` here
     /// rebuilt every tile on any change of size – also of the height alone,
@@ -315,13 +361,12 @@ struct ShelfContentsView: View, Equatable {
             .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { gridWidth = $0 }
             .overlay(alignment: .topLeading) {
                 // Built once the width is known, so it never reflows from zero.
-                if gridWidth > 0 { gridScroll(proxy, width: max(0, gridWidth - 4)) }
+                if gridWidth > 0 { gridScroll(proxy, width: gridContentWidth, columns: gridColumnCount) }
             }
     }
 
-    private func gridScroll(_ proxy: ScrollViewProxy, width: CGFloat) -> some View {
-        let columns = CoverGrid.columnCount(available: width, minimum: 135)
-        return ScrollView {
+    private func gridScroll(_ proxy: ScrollViewProxy, width: CGFloat, columns: Int) -> some View {
+        ScrollView {
             // Every tile carries a glass tag (Modern): one container for
             // all of them renders them together, ~10 % less per scroll step.
             GlassEffectContainer(spacing: 0) {
@@ -362,7 +407,7 @@ struct ShelfContentsView: View, Equatable {
         }
         .padding(.horizontal, -CoverGrid.shadowRoom)
         .scrollPosition(tracking: scrollPosition(for: .grid))
-        .opacity(gridRevealPending != nil && gridRevealPending == loadedShelfID ? 0 : 1)
+        .opacity((gridRevealPending != nil && gridRevealPending == loadedShelfID) || farJumpRequest != nil ? 0 : 1)
         .id(loadedShelfID)
         .task(id: loadedShelfID) {
             let shelfID = shelf.id

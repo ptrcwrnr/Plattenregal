@@ -92,6 +92,20 @@ struct RootView: View {
             // Writes the export into the chosen folder when it is due.
             .task { ScheduledExport.shared.start(container: context.container) }
             .task { CoverCache.shared.pruneDisk() }
+            #if DEBUG
+            // Recording the jump without clicking: --preview-show-on-shelf=Artist
+            // does "Im Regal anzeigen" for the first record whose artist starts
+            // with it, 4 s after launch, from whichever page is open (like the
+            // context menu).
+            .task {
+                guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-show-on-shelf=") }) else { return }
+                let artist = String(raw.dropFirst("--preview-show-on-shelf=".count))
+                try? await Task.sleep(for: .seconds(4))
+                if let copy = LibraryRecords.of(context).copies.first(where: { $0.shelf != nil && ($0.release?.artist ?? "").hasPrefix(artist) }) {
+                    showShelf(copy)
+                }
+            }
+            #endif
     }
 
     /// No sidebar: one bar centered in the toolbar, the page switch and the

@@ -183,7 +183,7 @@ import SystemConfiguration
 
     /// Offers the service only while it is needed: something is paired, or a pairing is open.
     private func updateListener() {
-        let needed = container != nil && !DemoMode.isActive && (!devices.isEmpty || pairing != nil)
+        let needed = container != nil && !OfflineLaunch.isActive && (!devices.isEmpty || pairing != nil)
         if needed, listener == nil {
             startListener()
         } else if !needed {
