@@ -1,3 +1,11 @@
+# Webseite: eigenes Kapitel für die Suche in der Menüleiste · 02.11.2026
+
+- **Wunsch:** Die Suche aus der Menüleiste kam auf der Webseite zu kurz (nur eine kleine Karte im Rundgang) – gerade sie ist praktisch.
+- **Neu (de/en):** Kapitel „Menüleiste und Schreibtisch – Auch ohne Fenster immer zur Hand“ direkt nach dem Rundgang: links ein Bild der Suche (Suchbegriff „Ai“: vier Treffer mit Fach und Position, darunter das Mini-Regal mit goldenem Fach), rechts Text und drei Punkte (Treffer festhalten, Weiterlaufen ohne Dock-Symbol und ganz beenden, Lage und Aussehen, abschaltbar), darunter das Widget „Platte des Tages“. Sprunglink „Menüleiste“ in der Titel-Bande, Einleitung nennt die Suche aus der Menüleiste. Die beiden Karten von heute Vormittag sind darin aufgegangen. Neue Stufe `figure.narrow` (höchstens 400 px) für hochformatige Bilder.
+- **Bild:** `Handbuch/Bilder/<de|en>/quicksearch.jpg` (680 × 862), neuer Eintrag `quicksearch` in `Scripts/guide-screenshots.swift` (`--preview-quicksearch=Ai`, Ausschnitt 10 pt Papier rund um die Karte). Diesmal von Hand mit demselben Ausschnitt zugeschnitten, weil das Skript bei laufender App nicht startet. Andere Suchbegriffe verworfen: „Daft“ zeigt die absichtlich unsortierte Stelle der Demo (Discovery hinter Homework), „Bo“, „Mi“, „Ra“ zu lang.
+- Geprüft: jeder `data-t`-Schlüssel mit Englisch und umgekehrt; lokal über einen Testserver bei 1200 px (zweispaltig) und 375 px (einspaltig, kein seitlicher Bildlauf); live nach dem Veröffentlichen (Version 11): Kapitel, Bild, Umlaute und Sprunglink in Ordnung.
+- README (Webseite, Bildschirmfotos) ergänzt.
+
 # DMG 1.0.0 mit den neu aufgenommenen Handbuch-Bildern · 02.11.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release `clean`), weiter 1.0.0 (102027); geprüft wie zuvor (Abbild gültig, nur arm64, ab macOS 27.0, Signatur, Berechtigungen, URL-Schema, keine App-Intents-Metadaten, Handbücher identisch mit den neuen PDFs, kein Prüfcode, Gegenprobe im Debug-Build); Debug danach neu gebaut.

@@ -273,6 +273,8 @@
     background: var(--surface);
   }
   figcaption { font-size: var(--t-small); color: var(--muted); max-width: var(--measure); }
+  /* Upright pictures (the search from the menu bar) stay small beside the text. */
+  figure.narrow { max-width: 400px; justify-self: center; }
 
   .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-4xl); align-items: start; }
   .split.wide-left { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
@@ -405,6 +407,7 @@
     <p class="meta">Version 1.0.0 · macOS 27 · Apple Silicon</p>
     <ul class="jump">
       <li><a href="#rundgang" data-t="j1">Rundgang</a></li>
+      <li><a href="#menueleiste" data-t="j6">Menüleiste</a></li>
       <li><a href="#regal" data-t="j2">Regal</a></li>
       <li><a href="#einsortieren" data-t="j3">Einsortieren</a></li>
       <li><a href="#statistik" data-t="j4">Statistik</a></li>
@@ -422,7 +425,7 @@
       <div class="rule"></div>
     </div>
     <div class="stack">
-      <p class="lead" data-t="lead">Plattenregal holt deine Collection und deine Wantlist aus Discogs und merkt sich, in welchem Regal, in welchem Fach und an welcher Stelle jede Platte steht. Dazu kommen eine Statistik mit dem Wert deiner Sammlung, eine Suchliste, eine Verkaufsliste, Sicherungen und Exporte.</p>
+      <p class="lead" data-t="lead">Plattenregal holt deine Collection und deine Wantlist aus Discogs und merkt sich, in welchem Regal, in welchem Fach und an welcher Stelle jede Platte steht. Dazu kommen eine Suche direkt aus der Menüleiste, eine Statistik mit dem Wert deiner Sammlung, eine Suchliste, eine Verkaufsliste, Sicherungen und Exporte.</p>
       <figure>
         <img data-img="collection.jpg" src="Bilder/de/collection.jpg" width="1600" height="726" alt="Die Collection als Raster mit Covern" data-alt="altCollection">
         <figcaption data-t="capCollection">Die Collection im Design Klassisch. Oben die Rubriken, an ihrem Ende die Lupe für die Suche.</figcaption>
@@ -445,15 +448,30 @@
           <figcaption data-t="capFan">Der runde Knopf unten rechts fächert aus: Raster oder Liste, Synchronisieren, Einstellungen.</figcaption>
         </figure>
       </div>
-      <div class="grid-2">
-        <div class="card">
-          <h3 data-t="mbH">Suche in der Menüleiste</h3>
-          <p class="small" data-t="mbP">Eine kleine Schallplatte in der Menüleiste oder <kbd>⌥ Leertaste</kbd> sucht direkt im Regal, auch wenn gerade eine andere App vorn ist: Treffer mit ihrem Fach, darunter das Regal im Kleinen. Nach <kbd>⌘Q</kbd> läuft Plattenregal dafür ohne Symbol im Dock weiter, ganz beenden mit <kbd>⌥⌘Q</kbd>.</p>
-        </div>
-        <div class="card">
-          <h3 data-t="wdH">Platte des Tages</h3>
-          <p class="small" data-t="wdP">Ein Widget für Schreibtisch und Mitteilungszentrale zeigt jeden Tag eine Platte aus deiner Collection mit Cover und Standort. Ein Klick darauf zeigt sie im Regal. Hinzufügen: Rechtsklick auf den Schreibtisch → <span class="ui">Widgets bearbeiten</span>.</p>
-        </div>
+    </div>
+  </section>
+
+  <section class="wrap chapter" id="menueleiste">
+    <div class="chapter-head">
+      <div class="kicker" data-t="k7">Menüleiste und Schreibtisch</div>
+      <h2 class="title" data-t="h7">Auch ohne Fenster immer zur Hand</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="split">
+      <figure class="narrow">
+        <img data-img="quicksearch.jpg" src="Bilder/de/quicksearch.jpg" width="680" height="862" alt="Die Suche aus der Menüleiste mit vier Treffern und dem Regal im Kleinen" data-alt="altQs">
+        <figcaption data-t="capQs">Die Suche aus der Menüleiste: Treffer mit Fach und Position, unten das Regal im Kleinen.</figcaption>
+      </figure>
+      <div class="text">
+        <h3 data-t="mbH">Suche in der Menüleiste</h3>
+        <p data-t="mbP">Plattenregal muss dafür nicht vorn sein: Ein Klick auf die kleine Schallplatte in der Menüleiste oder <kbd>⌥ Leertaste</kbd> öffnet ein Suchfeld über allem, was gerade offen ist. Tippe ein paar Buchstaben, und du siehst sofort, in welchem Regal, in welchem Fach und an welcher Stelle eine Platte steht, darunter das Regal im Kleinen mit dem Fach in Gold.</p>
+        <ul class="bullets small">
+          <li data-t="qs1">Ein Klick auf einen Treffer hält ihn fest, so gehst du in Ruhe zum Regal.</li>
+          <li data-t="qs2">Nach <kbd>⌘Q</kbd> läuft Plattenregal ohne Symbol im Dock weiter, damit die Suche jederzeit bereit ist. Ganz beenden: <kbd>⌥⌘Q</kbd> oder Rechtsklick auf die Schallplatte.</li>
+          <li data-t="qs3">Oben mittig unter der Notch oder oben rechts, in Modern als dunkles oder helles Glas oder weiß, abschaltbar unter Einstellungen → Allgemein.</li>
+        </ul>
+        <h3 data-t="wdH">Platte des Tages</h3>
+        <p data-t="wdP">Ein Widget für Schreibtisch und Mitteilungszentrale zeigt jeden Tag eine Platte aus deiner Collection mit Cover und Standort. Ein Klick darauf zeigt sie im Regal. Hinzufügen: Rechtsklick auf den Schreibtisch → <span class="ui">Widgets bearbeiten</span>.</p>
       </div>
     </div>
   </section>
@@ -670,9 +688,9 @@
     const en = {
       kicker: "For the Mac · with Discogs",
       claim: "Your Discogs collection –<br>and where every record sits on the shelf.",
-      j1: "Tour", j2: "Shelf", j3: "Placing", j4: "Statistics", j5: "Get started",
+      j1: "Tour", j6: "Menu bar", j2: "Shelf", j3: "Placing", j4: "Statistics", j5: "Get started",
       k1: "A quick tour", h1: "Four sections, one window",
-      lead: "Plattenregal brings in your collection and your wantlist from Discogs and remembers on which shelf, in which compartment and at which spot every record sits. On top of that there are statistics with the value of your collection, a search list, a sale list, backups and exports.",
+      lead: "Plattenregal brings in your collection and your wantlist from Discogs and remembers on which shelf, in which compartment and at which spot every record sits. On top of that there are a search right from the menu bar, statistics with the value of your collection, a search list, a sale list, backups and exports.",
       altCollection: "The collection as a grid of covers",
       capCollection: "The collection in the Classic design. At the top the sections, at their end the magnifying glass for the search.",
       r1: "All your records as a cover grid or a list. Clicking a cover shows details and the tracklist.",
@@ -685,8 +703,14 @@
       rightP: "Right-clicking a cover offers to show the record on the shelf, to find a spot for it or to open it on Discogs.",
       altFan: "The round button with grid, list, sync and settings",
       capFan: "The round button at the bottom right fans out: grid or list, sync, settings.",
+      k7: "Menu bar and desktop", h7: "At hand even without a window",
+      altQs: "The search from the menu bar with four matches and the shelf in miniature",
+      capQs: "The search from the menu bar: matches with compartment and position, below them the shelf in miniature.",
       mbH: "Search in the menu bar",
-      mbP: "A small record in the menu bar or <kbd>⌥ Space</kbd> searches your shelves directly, even while another app is in front: matches with their compartment, below them the shelf in miniature. After <kbd>⌘Q</kbd> Plattenregal keeps running for this without a Dock icon, quit completely with <kbd>⌥⌘Q</kbd>.",
+      mbP: "Plattenregal doesn’t need to be in front: a click on the small record in the menu bar or <kbd>⌥ Space</kbd> opens a search field over whatever is open. Type a few letters and you see right away on which shelf, in which compartment and at which spot a record sits, with the shelf in miniature below and the compartment in gold.",
+      qs1: "Click a match to hold it, so you can walk over to the shelf at your own pace.",
+      qs2: "After <kbd>⌘Q</kbd> Plattenregal keeps running without a Dock icon, so the search is always ready. To quit completely: <kbd>⌥⌘Q</kbd> or right-click the record.",
+      qs3: "At the top center below the notch or at the top right, in Modern as dark or light glass or white, and it can be switched off under Settings → General.",
       wdH: "Record of the Day",
       wdP: "A widget for the desktop and Notification Center shows a record from your collection every day, with its cover and location. Clicking it shows the record on the shelf. To add it: right-click the desktop → <span class=\"ui\">Edit Widgets</span>.",
       k2: "The shelf", h2: "Every compartment knows what’s in it",

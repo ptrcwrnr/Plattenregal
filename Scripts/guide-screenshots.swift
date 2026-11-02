@@ -79,6 +79,9 @@ let shots: [Shot] = [
     Shot(name: "statistics", arguments: ["--preview-page=Statistik"], crop: .top(0.69), maxWidth: 1600),
     Shot(name: "settings-discogs", arguments: ["--settings-tab=Discogs"], crop: .topPoints(270), maxWidth: 1200),
     Shot(name: "settings-shelf", arguments: ["--settings-tab=Regal"], crop: .rect(x: 20, y: 58, width: 440, height: 204), maxWidth: 900),
+    // The search from the menu bar (for the web page): four matches with
+    // their compartment and the shelf in miniature, a little paper around it.
+    Shot(name: "quicksearch", arguments: ["--preview-quicksearch=Ai"], crop: .rect(x: 10, y: 10, width: 340, height: 431), maxWidth: 680),
 ]
 
 /// Cuts, scales and saves as JPEG. On the main window, a plain piece of the
