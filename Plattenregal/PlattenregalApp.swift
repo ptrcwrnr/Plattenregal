@@ -140,6 +140,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     RootView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
                 }
                 .frame(minWidth: 1050, minHeight: 720)
+                // The demo opens as large as the real window (see `DemoWindowFrame`).
+                .background { if DemoMode.isActive { DemoWindowFrame() } }
             } else {
                 if DemoMode.isActive {
                     ContentUnavailableView {

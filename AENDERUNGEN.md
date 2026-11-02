@@ -1,3 +1,12 @@
+# Demo öffnet so groß wie das eigene Hauptfenster · 02.11.2026
+
+- **Wunsch:** Das Hauptfenster der Demo soll so groß sein wie das eigene – das sieht besser aus.
+- **Ursache:** Die Demo speichert ihre Fenstergröße unter eigenem Namen („NSWindow Frame demo“), damit Ausprobieren das echte Fenster nicht verstellt. macOS hat diesen Rahmen aber nie angewandt: Das Demo-Fenster öffnete immer in der Mindestgröße 1050 × 772 pt, egal was gespeichert war (gemessen; das eigene Fenster hier: 1219 × 772 pt).
+- **Lösung:** `DemoMode.prepare()` übernimmt beim Demo-Start den Rahmen des echten Hauptfensters in den Demo-Schlüssel (`adoptMainWindowFrame`), und der neue Baustein `DemoWindowFrame` setzt ihn beim ersten Erscheinen des Fensters direkt (nie unter der Mindestgröße). Was in der Demo verändert wird, bleibt in der Demo; das echte Fenster bleibt unberührt. Läufe mit `--snapshot` (Handbuch-Bilder) übernehmen nichts und bekommen den Rahmen, den das Skript vorgibt – auch der wurde vorher nicht angewandt.
+- Test `theDemoOpensWithTheSizeOfTheRealMainWindow` (Übernahme, ohne echtes Fenster bleibt alles, Zerlegen des gespeicherten Rahmens). README ergänzt.
+- Geprüft: Debug-Build, 275 Tests bestanden; Demo gestartet und gemessen: 1219 × 772 pt an derselben Stelle wie das eigene Fenster; Foto-Lauf mit vorgegebenen 1223 × 793 pt: genau diese Größe (macOS rückt das Fenster dabei ganz auf den Bildschirm); der Rahmen des echten Fensters danach unverändert.
+- **Nicht gemacht:** keine neue DMG; die Handbuch-Bilder nicht neu aufgenommen (sie entstanden womöglich in der Mindestgröße statt in 1223 × 793 pt).
+
 # DMG 1.0.0 mit den übersichtlicheren Einstellungen und dem ergänzten Handbuch · 02.11.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs wie heute erzeugt (Skript meldet „unverändert“).

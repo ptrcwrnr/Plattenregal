@@ -86,6 +86,31 @@ nonisolated enum DemoMode {
         try? FileManager.default.removeItem(at: temporaryDirectory)
         try? FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
         AppDefaults.resetDemo()
+        // Screenshot runs (`--snapshot`) set the demo's window themselves.
+        let screenshotRun = ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--snapshot=") }
+        if !screenshotRun { adoptMainWindowFrame(in: .standard) }
+    }
+
+    /// Where macOS keeps the size and place of each main window (see `mainWindowID`).
+    static let mainFrameKey = "NSWindow Frame main"
+    static let demoFrameKey = "NSWindow Frame demo"
+
+    /// The demo opens with the size and place of the real main window, so
+    /// it looks like the app does every day. It still saves its frame under
+    /// its own key: resizing during the demo leaves the real window alone.
+    /// Without a real window yet (first start right into the demo) the demo
+    /// keeps what it had.
+    /// The window's own rectangle from a saved frame ("x y width height"
+    /// followed by the screen's); nil for anything unusable.
+    static func windowRect(fromSavedFrame saved: String) -> NSRect? {
+        let numbers = saved.split(separator: " ").compactMap { Double($0) }
+        guard numbers.count >= 4, numbers[2] > 0, numbers[3] > 0 else { return nil }
+        return NSRect(x: numbers[0], y: numbers[1], width: numbers[2], height: numbers[3])
+    }
+
+    static func adoptMainWindowFrame(in defaults: UserDefaults) {
+        guard let frame = defaults.string(forKey: mainFrameKey), !frame.isEmpty else { return }
+        defaults.set(frame, forKey: demoFrameKey)
     }
 
     // MARK: Starting and ending
@@ -191,6 +216,33 @@ nonisolated enum AppDefaults {
     /// Every demo starts with the default settings.
     fileprivate static func resetDemo() {
         store.removePersistentDomain(forName: demoSuite)
+    }
+}
+
+/// Gives the demo's main window the frame `DemoMode.prepare()` stored for it
+/// (the real window's, or a screenshot run's own). macOS doesn't restore
+/// it by itself: the demo window always opened at its minimum size.
+/// Applied once, when the window first appears; resizing afterwards is the
+/// user's – and stays in the demo.
+struct DemoWindowFrame: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { Probe() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+    private final class Probe: NSView {
+        @MainActor private static var applied = false
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window, !Self.applied,
+                  let saved = UserDefaults.standard.string(forKey: DemoMode.demoFrameKey),
+                  var frame = DemoMode.windowRect(fromSavedFrame: saved) else { return }
+            Self.applied = true
+            // Never below the window's minimum size. Not fitted into the
+            // screen (as `setFrame(from:)` would): screenshot runs place the
+            // window mostly beside it on purpose.
+            let minimum = window.frameRect(forContentRect: NSRect(origin: .zero, size: window.contentMinSize)).size
+            frame.size.width = max(frame.width, minimum.width, window.minSize.width)
+            frame.size.height = max(frame.height, minimum.height, window.minSize.height)
+            window.setFrame(frame, display: true)
+        }
     }
 }
 

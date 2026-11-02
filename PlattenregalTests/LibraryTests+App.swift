@@ -112,6 +112,26 @@ extension AllTests.LibraryTests {
         #expect(ScheduledExport.fileName(for: ExportSettings()) == "Plattenregal Collection.csv")
         #expect(ScheduledExport.fileName(for: ExportSettings(format: .pdf, source: .sale)) == "Plattenregal Verkaufsliste.pdf")
     }
+    @Test func theDemoOpensWithTheSizeOfTheRealMainWindow() throws {
+        let suite = "DemoWindowFrameTest"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        // No real window yet: the demo keeps its own frame.
+        defaults.set("149 177 1050 772 0 0 1512 949", forKey: DemoMode.demoFrameKey)
+        DemoMode.adoptMainWindowFrame(in: defaults)
+        #expect(defaults.string(forKey: DemoMode.demoFrameKey) == "149 177 1050 772 0 0 1512 949")
+        // With one, the demo takes its size and place …
+        defaults.set("129 138 1219 772 0 0 1512 949", forKey: DemoMode.mainFrameKey)
+        DemoMode.adoptMainWindowFrame(in: defaults)
+        #expect(defaults.string(forKey: DemoMode.demoFrameKey) == "129 138 1219 772 0 0 1512 949")
+        // … and the real one stays as it is.
+        #expect(defaults.string(forKey: DemoMode.mainFrameKey) == "129 138 1219 772 0 0 1512 949")
+        // The window itself is set from the first four numbers.
+        #expect(DemoMode.windowRect(fromSavedFrame: "129 138 1219 772 0 0 1512 949 ") == NSRect(x: 129, y: 138, width: 1219, height: 772))
+        #expect(DemoMode.windowRect(fromSavedFrame: "-1000 20 1223 793 0 0 1512 949") == NSRect(x: -1000, y: 20, width: 1223, height: 793))
+        #expect(DemoMode.windowRect(fromSavedFrame: "") == nil)
+        #expect(DemoMode.windowRect(fromSavedFrame: "1 2 0 772") == nil)
+    }
     @Test func crashOfThePreviousSessionIsFoundInTheLog() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("crash-\(UUID()).log")
         defer { try? FileManager.default.removeItem(at: url) }
