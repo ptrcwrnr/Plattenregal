@@ -1,3 +1,7 @@
+# DMG 1.0.0 mit dem neuen Handbuch (Seite 9) · 02.11.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release `clean`), weiter 1.0.0 (102027); geprüft wie zuvor: Abbild gültig, nur arm64, ab macOS 27.0, Signatur, Berechtigungen, URL-Schema, keine App-Intents-Metadaten, Handbücher identisch mit den neuen PDFs, kein Prüfcode (Gegenprobe im Debug-Build). Demo aus der DMG über `open -n`: Fenster 1219 × 772 pt, keine Fehler, keine Absturzberichte. Debug danach neu gebaut.
+
 # Handbuch: Suche in der Menüleiste statt Kürzel-Tabelle; Webseite ohne Kürzel-Tabellen · 02.11.2026
 
 - **Wunsch:** Die Suche aus der Menüleiste im Handbuch mit Bild ausbauen; die Tastenkürzel-Tabelle darf dafür raus, auf der Webseite ebenfalls.
