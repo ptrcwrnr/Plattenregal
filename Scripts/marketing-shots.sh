@@ -75,6 +75,9 @@ shot shelf-dark        atelier dark  9  --preview-page=Regal
 shot sortcheck         atelier light 9  --preview-page=Regal --preview-sortcheck --preview-sortcheck-done=1
 shot stats             atelier light 11 --preview-page=Statistik
 shot detail            atelier light 11 --preview-page=Statistik --preview-detail=Moonbeam
+# Modern für die Hochformat-Beiträge (post-4 bis post-6)
+shot modern-shelf-dark none    dark  11 --preview-page=Regal --preview-place=Moonbeam
+shot modern-stats      none    light 11 --preview-page=Statistik
 
 # Cover für die Wand: zufällig, quadratisch beschnitten, 400 px.
 rm -rf $OUT/Cover; mkdir -p $OUT/Cover

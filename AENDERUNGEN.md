@@ -1,3 +1,13 @@
+# Social-Media-Bilder im Hochformat: drei in Klassisch, drei in Modern · 02.11.2026
+
+- **Wunsch:** Typische Marketingbilder für Social Media im Hochformat, drei im Design Modern und drei in Klassisch; auf Nachfrage mit der echten Sammlung und im Format 4:5.
+- **Neu (nur lokal in `Marketing/Bilder/`, nicht im Repository):** sechs Beiträge 1080 × 1350. Klassisch: Cover-Wand „852 Platten. Ein Regal.“ (Petrol), „Jede Platte hat ihren Platz.“ (Regal auf Papier), „Wo stand die noch mal?“ (Plattenkarte mit Standort). Modern: „Deine Platten. In Liquid Glass.“ (Collection hell), „Sofort gefunden.“ (Regal dunkel mit „Hier steht: Moonbeam – Cocoon“), „Deine Sammlung in Zahlen.“ (Statistik hell). Die Modern-Flächen haben eigene zentrale Werte in der Vorlage (Systemschrift, Akzentblau, Farbschleier hell und dunkel); die alten drei Beiträge sind durch die Klassisch-Beiträge ersetzt.
+- **Vorlage wiederhergestellt:** `Marketing/Produktbilder.html` fehlte im Projektordner (beim Entfernen von `Marketing/` aus dem Repository am 26.10. verloren gegangen); aus der Git-Sicherung vom 26.10. geholt und erweitert.
+- **Neu aufgenommen** mit `Scripts/marketing-shots.sh` (alle Aufnahmen und 72 Cover; die alten zeigten noch die Oberfläche vom 21.10.). Das Skript nimmt jetzt zusätzlich `modern-shelf-dark` und `modern-stats` auf. Die installierte App dafür beendet und danach wieder gestartet; die Fenstergröße der echten App ist wieder die vorige (ein erster, abgebrochener Lauf hatte sie nicht zurückgesetzt, von Hand korrigiert und geprüft).
+- **`Scripts/make-marketing.swift` zuverlässiger:** Ein Bild blieb in etwa jedem sechsten Fall leer (das große Fensterfoto noch nicht gezeichnet). Jetzt wartet es bis 20 s aufs Dekodieren und macht vor dem eigentlichen Bild eine Probeaufnahme; zwei Durchläufe hintereinander ergaben byte-gleiche, vollständige Bilder.
+- Geprüft: alle sechs Bilder in voller Größe angesehen (1080 × 1350, ohne Alphakanal).
+- README (Produktbilder) angepasst.
+
 # Release 1.0.0 auf GitHub · 02.11.2026
 
 - **Wunsch:** Die App unter „Releases“ auf GitHub zum Herunterladen anbieten.

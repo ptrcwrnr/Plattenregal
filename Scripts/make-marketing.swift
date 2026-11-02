@@ -63,20 +63,26 @@ func fail(_ message: String) -> Never {
                 let size = CGSize(width: width, height: height)
                 window.setContentSize(size)
                 webView.frame = CGRect(origin: .zero, size: size)
-                // Hidden pictures are decoded only once shown: wait for them (at most 5 s;
-                // no requestAnimationFrame – an off-screen window gets no frames).
+                // Hidden pictures are decoded only once shown: wait for them (at most 20 s –
+                // a full window screenshot of 2560 × 1600 once took longer than 5 s and the
+                // window stayed empty; no requestAnimationFrame – an off-screen window gets no frames).
                 _ = try await webView.callAsyncJavaScript("""
                     const pictures = [...document.getElementById(id).querySelectorAll('img')];
                     await Promise.race([
                         Promise.all(pictures.map(i => i.decode().catch(() => null))),
-                        new Promise(r => setTimeout(r, 5000))
+                        new Promise(r => setTimeout(r, 20000))
                     ]);
                     """, arguments: ["id": id], contentWorld: .page)
-                try await Task.sleep(for: .milliseconds(800))
+                try await Task.sleep(for: .milliseconds(1500))
 
                 let configuration = WKSnapshotConfiguration()
                 configuration.rect = CGRect(origin: .zero, size: size)
                 configuration.afterScreenUpdates = true
+                // A large screenshot is sometimes drawn only after the first snapshot
+                // (the window stayed empty in about one of six pictures): take one to
+                // warm up, then the real one.
+                _ = try await webView.takeSnapshot(configuration: configuration)
+                try await Task.sleep(for: .milliseconds(1000))
                 let image = try await webView.takeSnapshot(configuration: configuration)
                 save(image, pixels: CGSize(width: width * scale, height: height * scale),
                      to: output.appendingPathComponent("\(id).jpg"))
