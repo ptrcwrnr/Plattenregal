@@ -1,3 +1,8 @@
+# Webseite: Download-Knopf ohne Symbol · 02.11.2026
+
+- **Wunsch:** Das Pfeil-Symbol im Download-Knopf (oben und unten) sieht unpassend aus.
+- Symbol aus beiden Knöpfen entfernt, Knopf jetzt mit gleichem Innenabstand links und rechts und mittig gesetzter Schrift. Veröffentlicht als Version 14 des Artifacts; vom Nutzer live angesehen und abgenommen.
+
 # Webseite wie die Social-Media-Bilder, mit Download oben und unten · 02.11.2026
 
 - **Wunsch:** Die Webseite so aufbauen wie die Marketingbilder, mit direktem Download-Link oben und unten; Bilder aus der echten Sammlung; ein Link, der auch nach einem Update stimmt.
