@@ -1,3 +1,11 @@
+# Release 1.0.0 auf GitHub · 02.11.2026
+
+- **Wunsch:** Die App unter „Releases“ auf GitHub zum Herunterladen anbieten.
+- Release **Plattenregal 1.0.0** (Tag `v1.0.0` auf `d3170ec`) mit `Plattenregal-1.0.0.dmg` angelegt, Text auf Deutsch und Englisch: Voraussetzungen (Apple-Chip, macOS 27, Discogs-Token oder Demo), Installation samt „Dennoch öffnen“ (ad hoc signiert, nicht beglaubigt), Handbuch im Hilfe-Menü, SHA-256 der DMG.
+- Vorher geprüft: DMG aus dem aktuellen Code (seit dem Bau nur Doku geändert), `hdiutil verify` gültig, 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (ad hoc, Gatekeeper lehnt erwartungsgemäß ab), beide Handbücher enthalten.
+- Nachher geprüft: Release ist veröffentlicht (kein Entwurf), Releaseseite ohne Anmeldung erreichbar, DMG ohne Anmeldung heruntergeladen und byte-gleich (SHA-256 `bd1c62fc…`).
+- README: Abschnitt „Quellcode“ nennt die Releases und wie eine neue Version veröffentlicht wird.
+
 # Projekt öffentlich auf GitHub, ohne E-Mail-Adresse · 02.11.2026
 
 - **Wunsch:** Das Repository soll für alle sichtbar sein, die E-Mail-Adresse aber nirgends darin stehen.

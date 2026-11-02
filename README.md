@@ -10,6 +10,8 @@ MIT – siehe [`LICENSE`](LICENSE). Plattenregal nutzt die [Discogs-API](https:/
 
 Der Quellcode liegt öffentlich im GitHub-Repository [`ptrcwrnr/Plattenregal`](https://github.com/ptrcwrnr/Plattenregal); hochgeladen wird nur der Zweig `main`. Nicht im Repository sind `dist/`, `Marketing/` und lokale Git-Sicherungen (`*.bundle`). Commits tragen statt einer E-Mail-Adresse die anonyme GitHub-Adresse `348229331+ptrcwrnr@users.noreply.github.com` (lokal in `.git/config` als `user.email` gesetzt).
 
+Die fertige App steht unter [Releases](https://github.com/ptrcwrnr/Plattenregal/releases) zum Herunterladen, je Version mit Tag `v<Version>` und der DMG aus `Scripts/make-dmg.sh`. Neue Version: DMG bauen und prüfen, dann `gh release create v<Version> dist/Plattenregal-<Version>.dmg --title "Plattenregal <Version>" --notes-file <Text>`.
+
 ## In Xcode starten
 
 1. `Plattenregal.xcodeproj` öffnen.
