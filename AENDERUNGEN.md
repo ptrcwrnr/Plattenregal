@@ -1,3 +1,11 @@
+# DMG 1.0.0 mit den übersichtlicheren Einstellungen und dem ergänzten Handbuch · 02.11.2026
+
+- `dist/Plattenregal-1.0.0.dmg` neu gebaut mit `Scripts/make-dmg.sh` (Release vorher `clean`), Build bleibt 102027 (am Widget nichts geändert). Handbuch-PDFs wie heute erzeugt (Skript meldet „unverändert“).
+- Geprüft: `hdiutil verify` gültig; App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen von App und Widget gleich wie in der installierten Fassung; URL-Schema `plattenregal`; keine App-Intents-Metadaten; beide Handbücher identisch mit dem Repository; kein Prüfcode (Gegenprobe: `Plattenregal.debug.dylib` des Debug-Builds enthält `--snapshot=`); neue Texte („Starten und Beenden“, „Sortierung und Beschriftung“, „Protokoll weitergeben“, „Launch and Quit“, „Share Log“) im Programm.
+- Release-App aus der DMG in der Demo gestartet: Start und Datenbank im Protokoll, keine Fehler, keine Absturzberichte; danach beendet, DMG ausgeworfen. Die installierte App lief die ganze Zeit weiter.
+- Hinweis: `xcodebuild clean` für Release hat auch den Debug-Build entfernt; Debug danach neu gebaut.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung.
+
 # Handbuch: Tab „Apple TV“ in der Übersicht der Einstellungen · 02.11.2026
 
 - **Wunsch:** Die fehlende Zeile für den Tab „Apple TV“ in der Tab-Tabelle des Handbuchs ergänzen (bei der Durchsicht der Einstellungen aufgefallen).

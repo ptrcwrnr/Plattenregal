@@ -1,3 +1,14 @@
+# Aktueller Stand · 02.11.2026 (Einstellungen übersichtlicher, Handbuch, DMG)
+
+Projektversion **1.0.0 (102027)**, Schema **V18** (unverändert).
+
+- **Geändert seit der letzten DMG:** Einstellungen an vier Stellen neu geordnet bzw. benannt („Starten und Beenden“ mit „Im Hintergrund weiterlaufen“, eine Karte „Sortierung und Beschriftung“ für alle Regale, Export-Zeile „Liste“, „Protokoll weitergeben“); Handbuch mit Tab „Apple TV“ in der Übersicht, PDFs neu erzeugt (siehe AENDERUNGEN).
+- **Verifikation:** Debug- und Release-Build ohne Fehler, nur arm64; alle Tests bestanden; geänderte Einstellungsseiten auf Deutsch und Englisch in der Demo fotografiert; Seite 9 beider Handbücher angesehen.
+- **Lokalisierung:** 7 Einträge neu (alle mit Englisch), 6 nicht mehr benutzte entfernt.
+- **App-Protokoll** 02.11.: kein `ERROR`. **macOS-Absturzberichte:** keine.
+- **DMG:** sauber neu gebaut (Release `clean`) und geprüft: Abbild gültig, App und Widget 1.0.0 (102027), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`), Berechtigungen von App und Widget gleich der installierten Fassung, URL-Schema `plattenregal`, keine App-Intents-Metadaten, beide Handbücher identisch mit dem Repository, kein Prüfcode (Gegenprobe: `Plattenregal.debug.dylib` enthält ihn), neuer Stand im Programm (neue Texte de/en enthalten). Release-App aus der DMG in der Demo gestartet, ohne Fehler.
+- **Nicht geprüft:** die App aus der DMG mit der echten Sammlung.
+
 # Aktueller Stand · 01.11.2026 (Code-Prüfung der letzten Tage, DMG)
 
 Projektversion **1.0.0 (102027)**, Schema **V18** (unverändert).
