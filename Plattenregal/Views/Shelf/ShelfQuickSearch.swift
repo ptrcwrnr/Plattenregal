@@ -333,6 +333,10 @@ struct QuickSearchPlace {
         menu.addItem(.separator())
         add(String(localized: "Plattenregal öffnen"), #selector(menuOpenMainWindow))
         add(String(localized: "Einstellungen …"), #selector(menuOpenSettings))
+        // Found by the daily check while running here in the background.
+        if let release = UpdateChecker.shared.announcedRelease {
+            add(String(localized: "Plattenregal \(release.version.description) ist da …"), #selector(menuShowUpdate))
+        }
         menu.addItem(.separator())
         add(AppLifecycle.shared.keepsRunning ? String(localized: "Plattenregal ganz beenden") : String(localized: "Plattenregal beenden"),
             #selector(menuQuit))
@@ -351,6 +355,11 @@ struct QuickSearchPlace {
         if let openSettings { openSettings() } else { AppLog.error("Menüleiste", "Einstellungen ließen sich nicht öffnen") }
     }
     @objc private func menuQuit() { AppLifecycle.shared.quitCompletely() }
+    @objc private func menuShowUpdate() {
+        AppLifecycle.shared.leaveBackground()
+        NSApp.activate()
+        if let open = UpdateChecker.shared.openWindow { open() } else { AppLog.error("Menüleiste", "Update-Fenster ließ sich nicht öffnen") }
+    }
 
     #if DEBUG
     /// --preview-quicksearch-keys=down,up,return: presses these keys in the

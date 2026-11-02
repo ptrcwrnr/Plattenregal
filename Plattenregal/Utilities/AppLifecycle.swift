@@ -143,6 +143,8 @@ import ServiceManagement
         NSApp.setActivationPolicy(.regular)
         ProcessInfo.processInfo.enableAutomaticTermination(Self.terminationReason)
         AppLog.info("App", "Wieder im Vordergrund")
+        // A newer version found meanwhile shows now.
+        UpdateChecker.shared.announceSoon()
     }
 
     private func windowDidBecomeKey(_ window: NSWindow) {

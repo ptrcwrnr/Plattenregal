@@ -89,6 +89,11 @@ enum Changelog {
 
     static var entries: [Entry] {
         [
+            Entry(version: "1.0.2", date: day(2026, 11, 3), changes: [
+                String(localized: "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung."),
+                String(localized: "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein."),
+                String(localized: "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet."),
+            ]),
             Entry(version: "1.0.1", date: day(2026, 11, 2), changes: [
                 String(localized: "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts."),
                 String(localized: "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr."),

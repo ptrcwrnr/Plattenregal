@@ -16,12 +16,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let atLogin = AppLifecycle.launchedAsLoginItem
         ShelfQuickSearch.shared.start()
         AppLifecycle.shared.start(launchedAtLogin: atLogin)
+        // Once a day, quietly; not in the demo or preview starts.
+        UpdateChecker.shared.startAutomaticChecks()
         // The widget „Platte des Tages“ shows the user's own collection,
         // never the demo's.
         if let container = ShelfQuickSearch.shared.container, !DemoMode.isActive {
             RecordOfTheDayPublisher.shared.start(container: container)
         }
         #if DEBUG
+        // --preview-update=…: the update window with a given answer (see `UpdateChecker.showPreview`).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { UpdateChecker.shared.showPreview() }
         // --preview-widget-link=Artist: a click on the widget showing that
         // artist's record, while launching – as when the click launches the app.
         if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-widget-link=") }),
@@ -187,7 +191,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // layout is fixed.
         .windowToolbarLabelStyle(fixed: .iconOnly)
         .commands {
-            CommandGroup(replacing: .appInfo) { AboutCommand() }
+            CommandGroup(replacing: .appInfo) {
+                AboutCommand()
+                UpdateCommand()
+            }
             CommandGroup(replacing: .appTermination) { QuitCommands() }
             CommandGroup(replacing: .help) { HelpCommands() }
             CommandGroup(after: .appSettings) {
@@ -207,6 +214,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         .restorationBehavior(.disabled)
         .defaultPosition(.center)
         // Not a document: no entry in the Fenster menu.
+        .commandsRemoved()
+        Window("Softwareaktualisierung", id: UpdateView.windowID) {
+            UpdateView().appAppearance().windowMinimizeBehavior(.disabled)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+        .restorationBehavior(.disabled)
+        .defaultPosition(.center)
         .commandsRemoved()
         Settings {
             if let container {
@@ -249,6 +264,7 @@ private struct ReleasedInBackground<Content: View>: View {
             let search = ShelfQuickSearch.shared
             search.openMainWindow = { [openWindow] in openWindow(id: DemoMode.mainWindowID) }
             search.openSettings = { [openSettings] in openSettings() }
+            UpdateChecker.shared.openWindow = { [openWindow] in openWindow(id: UpdateView.windowID) }
         }
     }
 }

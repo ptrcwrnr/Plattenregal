@@ -6,6 +6,8 @@ struct GeneralSettingsView: View {
     @State private var preferences = AppPreferences.shared
     @State private var quickSearch = ShelfQuickSearch.shared
     @State private var loginItem = LoginItem.shared
+    @State private var updates = UpdateChecker.shared
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         @Bindable var preferences = preferences
@@ -86,6 +88,22 @@ struct GeneralSettingsView: View {
                 }
                 .disabled(!preferences.menuBarSearch && !preferences.quickSearchHotKey)
             }
+            SettingsCard(title: String(localized: "Updates")) {
+                SettingsRow(title: String(localized: "Automatisch nach Updates suchen"),
+                            hint: DemoMode.isActive
+                                ? String(localized: "In der Demo sucht Plattenregal nicht von selbst nach Updates.")
+                                : String(localized: "Fragt einmal am Tag bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen.")) {
+                    // The demo never checks on its own, whatever the setting says.
+                    Toggle("Automatisch nach Updates suchen", isOn: DemoMode.isActive ? .constant(false) : $preferences.automaticUpdateChecks)
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                .disabled(DemoMode.isActive)
+                Divider()
+                SettingsRow(title: String(localized: "Version \(updates.currentVersion.description)"), hint: updateHint) {
+                    SecondaryButton(title: String(localized: "Jetzt prüfen")) { UpdateCommand.check(openWindow) }
+                        .disabled(updates.state == .checking)
+                }
+            }
             SettingsCard(title: String(localized: "Demo"), subtitle: String(localized: "Plattenregal mit einer Beispielsammlung ausprobieren oder vorführen.")) {
                 SettingsRow(title: DemoMode.isActive ? String(localized: "Die Demo läuft") : String(localized: "Beispielsammlung"),
                             hint: DemoMode.isActive
@@ -105,6 +123,15 @@ struct GeneralSettingsView: View {
         // Can also be changed under Systemeinstellungen → Anmeldeobjekte.
         .onAppear { loginItem.refresh() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in loginItem.refresh() }
+    }
+
+    /// What the last check said, and when.
+    private var updateHint: String {
+        if case .available(let release) = updates.state {
+            return String(localized: "Version \(release.version.description) ist da.")
+        }
+        guard let lastCheck = updates.lastCheck else { return String(localized: "Noch nicht geprüft.") }
+        return String(localized: "Zuletzt geprüft: \(lastCheck.formatted(.relative(presentation: .named)))")
     }
 
     private var loginHint: String {

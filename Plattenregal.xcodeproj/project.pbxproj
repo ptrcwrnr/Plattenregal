@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7D0C0DE00000000000000B3 /* PlattenregalTests/UpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0C0DE00000000000000F3 /* PlattenregalTests/UpdateTests.swift */; };
+		A7D0C0DE00000000000000B2 /* Plattenregal/Views/UpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0C0DE00000000000000F2 /* Plattenregal/Views/UpdateView.swift */; };
+		A7D0C0DE00000000000000B1 /* Plattenregal/Services/UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0C0DE00000000000000F1 /* Plattenregal/Services/UpdateChecker.swift */; };
 		005BAF1A4673DA152131D179 /* Plattenregal/Services/PositionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E0AD8DA08D7E3BED87977C /* Plattenregal/Services/PositionService.swift */; };
 		0A1A73C477102FEC879EABBF /* Plattenregal/Views/WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/WelcomeView.swift */; };
 		0B0065E8BEB7875F78F47B57 /* Plattenregal/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 843EBC136D87F7E70013A055 /* Plattenregal/Assets.xcassets */; };
@@ -195,6 +198,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A7D0C0DE00000000000000F3 /* PlattenregalTests/UpdateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/UpdateTests.swift; sourceTree = "<group>"; };
+		A7D0C0DE00000000000000F2 /* Plattenregal/Views/UpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/UpdateView.swift; sourceTree = "<group>"; };
+		A7D0C0DE00000000000000F1 /* Plattenregal/Services/UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/UpdateChecker.swift; sourceTree = "<group>"; };
 		01B09D2C8BF218778FB6E9D2 /* Plattenregal/Utilities/AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Utilities/AppPreferences.swift; sourceTree = "<group>"; };
 		02521F7BA74415A05D4AF390 /* Plattenregal/Design/AppAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/AppAppearance.swift; sourceTree = "<group>"; };
 		040C897EB13218C8C4FD54C9 /* Plattenregal/Views/Shelf/ShelfFurniture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfFurniture.swift; sourceTree = "<group>"; };
@@ -491,6 +497,7 @@
 				E7A0C0DE0000000000000003 /* PlattenregalTests/ExportTests.swift */,
 				E7A0C0DE00000000000000A1 /* PlattenregalTests/ScenarioTests.swift */,
 				E7A0C0DE0000000000000013 /* PlattenregalTests/BackupTests.swift */,
+				A7D0C0DE00000000000000F3 /* PlattenregalTests/UpdateTests.swift */,
 				ABCDF0000000000000000001 /* PlattenregalTests/SettingsTests.swift */,
 				F81099FF1C0BF4C1C166E06C /* PlattenregalTests/LibraryTests.swift */,
 				C79791E0CE7855D817CE7F12 /* PlattenregalTests/StatisticsTestStubs.swift */,
@@ -580,6 +587,7 @@
 				79CCEF660A7BF70D8298A7DC /* Plattenregal/Views/WelcomeView.swift */,
 				A1C0DE0000000000000000F1 /* Plattenregal/Views/PageStack.swift */,
 				A1C0DE0000000000000000F2 /* Plattenregal/Views/AboutView.swift */,
+				A7D0C0DE00000000000000F2 /* Plattenregal/Views/UpdateView.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -631,6 +639,7 @@
 				52D3EB1966C3DDF43C7DE6D7 /* Plattenregal/Statistics/CollectionValueHistoryService.swift */,
 				AA82A45918513E1AA45D57A2 /* Plattenregal/Statistics/CollectionAnalyticsService.swift */,
 				5110D643748BDD81ADC00EDB /* Plattenregal/Services/CoverCache.swift */,
+				A7D0C0DE00000000000000F1 /* Plattenregal/Services/UpdateChecker.swift */,
 				19E0AD8DA08D7E3BED87977C /* Plattenregal/Services/PositionService.swift */,
 				6D61F0D9CB6F4BCA8BB2E43B /* Plattenregal/Services/ShelfStatisticsService.swift */,
 				5F26BDD59CA34F408F43B03F /* Plattenregal/Services/ShelfHistory.swift */,
@@ -806,6 +815,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7D0C0DE00000000000000B3 /* PlattenregalTests/UpdateTests.swift in Sources */,
 				5D7A00000000000000001002 /* PlattenregalTests/RecordOfTheDayTests.swift in Sources */,
 				A2EB97D6247703AE58EB8E07 /* PlattenregalTests/CabinetTests.swift in Sources */,
 				4334130526044346A33C765F /* PlattenregalTests/ShelfHistoryTests.swift in Sources */,
@@ -839,6 +849,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7D0C0DE00000000000000B2 /* Plattenregal/Views/UpdateView.swift in Sources */,
+				A7D0C0DE00000000000000B1 /* Plattenregal/Services/UpdateChecker.swift in Sources */,
 				5D7A0000000000000000000E /* Plattenregal/Design/DesignScale.swift in Sources */,
 				5D7A0000000000000000000F /* Plattenregal/Design/SignatureToolbar.swift in Sources */,
 				5D7A00000000000000000010 /* Plattenregal/Design/RecordFrame.swift in Sources */,
@@ -1010,7 +1022,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 102028;
+				CURRENT_PROJECT_VERSION = 102029;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -1029,7 +1041,7 @@
 				LM_SKIP_METADATA_EXTRACTION = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1125,7 +1137,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 102028;
+				CURRENT_PROJECT_VERSION = 102029;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -1144,7 +1156,7 @@
 				LM_SKIP_METADATA_EXTRACTION = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1194,7 +1206,7 @@
 				CODE_SIGN_ENTITLEMENTS = PlattenregalWidget/PlattenregalWidget.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 102028;
+				CURRENT_PROJECT_VERSION = 102029;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1208,7 +1220,7 @@
 				LM_SKIP_METADATA_EXTRACTION = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1228,7 +1240,7 @@
 				CODE_SIGN_ENTITLEMENTS = PlattenregalWidget/PlattenregalWidget.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 102028;
+				CURRENT_PROJECT_VERSION = 102029;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1242,7 +1254,7 @@
 				LM_SKIP_METADATA_EXTRACTION = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;

@@ -19,6 +19,7 @@ import SwiftUI
         static let quickSearchLook = "quickSearchLook"
         static let quickSearchPosition = "quickSearchPosition"
         static let keepsRunningInBackground = "keepsRunningInBackground"
+        static let automaticUpdateChecks = "automaticUpdateChecks"
     }
 
     private let defaults: UserDefaults
@@ -51,6 +52,13 @@ import SwiftUI
     var keepsRunningInBackground: Bool {
         didSet { defaults.set(keepsRunningInBackground, forKey: Key.keepsRunningInBackground) }
     }
+    /// Once a day ask GitHub for a newer version (`UpdateChecker`). On by default.
+    var automaticUpdateChecks: Bool {
+        didSet {
+            defaults.set(automaticUpdateChecks, forKey: Key.automaticUpdateChecks)
+            UpdateChecker.shared.automaticChecksChanged()
+        }
+    }
     /// Whether the chosen language shows differently from this launch – a
     /// restart is only worth it then: on a German Mac, "System" and
     /// "Deutsch" look the same.
@@ -75,6 +83,7 @@ import SwiftUI
         quickSearchLook = defaults.string(forKey: Key.quickSearchLook).flatMap(QuickSearchLook.init) ?? .darkGlass
         quickSearchPosition = defaults.string(forKey: Key.quickSearchPosition).flatMap(QuickSearchPosition.init) ?? .center
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
+        automaticUpdateChecks = defaults.object(forKey: Key.automaticUpdateChecks) == nil || defaults.bool(forKey: Key.automaticUpdateChecks)
         language = languageAtLaunch
     }
 
@@ -96,6 +105,7 @@ import SwiftUI
         quickSearchLook = .darkGlass
         quickSearchPosition = .center
         keepsRunningInBackground = true
+        automaticUpdateChecks = true
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }
     }

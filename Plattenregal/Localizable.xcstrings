@@ -110,6 +110,76 @@
         }
       }
     },
+    "Alle Hinweise auf GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Release Notes on GitHub"
+          }
+        }
+      }
+    },
+    "Anfrage abgelehnt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request Refused"
+          }
+        }
+      }
+    },
+    "Auf GitHub ist gerade keine Version von Plattenregal veröffentlicht. Versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No version of Plattenregal is published on GitHub right now. Try again later."
+          }
+        }
+      }
+    },
+    "Auf GitHub öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open on GitHub"
+          }
+        }
+      }
+    },
+    "Automatisch nach Updates suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates Automatically"
+          }
+        }
+      }
+    },
+    "Bei GitHub gibt es gerade ein Problem (Fehler %lld). Versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub is having a problem right now (error %lld). Try again later."
+          }
+        }
+      }
+    },
+    "Der Mac ist gerade nicht mit dem Internet verbunden. Prüfe WLAN oder Kabel und versuche es noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Mac isn’t connected to the internet right now. Check Wi-Fi or the cable and try again."
+          }
+        }
+      }
+    },
     "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr." : {
       "localizations" : {
         "en" : {
@@ -120,12 +190,122 @@
         }
       }
     },
+    "Die DMG wird in deinem Browser geladen. Öffne sie danach und ersetze Plattenregal wie unten beschrieben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your browser is downloading the DMG. Then open it and replace Plattenregal as described below."
+          }
+        }
+      }
+    },
+    "Die geladene DMG öffnen, Plattenregal beenden und die neue Version in den Ordner „Programme“ ziehen, die alte ersetzen. Sammlung, Regale, Einstellungen und Token bleiben erhalten. Fragt macOS danach nach dem Schlüsselbund, wähle „Immer erlauben“; eventuell ist „Dennoch öffnen“ unter Systemeinstellungen → Datenschutz & Sicherheit noch einmal nötig." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the downloaded DMG, quit Plattenregal and drag the new version to the Applications folder, replacing the old one. Your collection, shelves, settings and token stay. If macOS then asks about the keychain, choose “Always Allow”; “Open Anyway” under System Settings → Privacy & Security may be needed once more."
+          }
+        }
+      }
+    },
+    "Die geladene DMG öffnen, Plattenregal ganz beenden (⌥⌘Q) und die neue Version in den Ordner „Programme“ ziehen, die alte ersetzen. Sammlung, Regale, Einstellungen und Token bleiben erhalten. Fragt macOS danach nach dem Schlüsselbund, wähle „Immer erlauben“; eventuell ist „Dennoch öffnen“ unter Systemeinstellungen → Datenschutz & Sicherheit noch einmal nötig." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the downloaded DMG, quit Plattenregal completely (⌥⌘Q) and drag the new version to the Applications folder, replacing the old one. Your collection, shelves, settings and token stay. If macOS then asks about the keychain, choose “Always Allow”; “Open Anyway” under System Settings → Privacy & Security may be needed once more."
+          }
+        }
+      }
+    },
     "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The record card is tidier: the details as a calm list, styles without badges and “Open on Discogs” at the top right."
+          }
+        }
+      }
+    },
+    "Die Seite der Version ist im Browser geöffnet. Lade dort die DMG und ersetze Plattenregal wie unten beschrieben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The version’s page is open in your browser. Download the DMG there and replace Plattenregal as described below."
+          }
+        }
+      }
+    },
+    "Die sichere Verbindung zu GitHub ließ sich nicht aufbauen. Prüfe, ob Datum und Uhrzeit des Macs stimmen. In manchen Netzen, etwa im WLAN eines Hotels, musst du dich zuerst im Browser anmelden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A secure connection to GitHub couldn’t be established. Check that the Mac’s date and time are correct. Some networks, such as hotel Wi-Fi, require you to sign in in your browser first."
+          }
+        }
+      }
+    },
+    "Diese Version überspringen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip This Version"
+          }
+        }
+      }
+    },
+    "Download: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download: %@."
+          }
+        }
+      }
+    },
+    "Du hast Version %@, die neueste Version." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have version %@, the latest version."
+          }
+        }
+      }
+    },
+    "Du hast Version %@, neuer als die zuletzt veröffentlichte %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have version %1$@, newer than the last published %2$@."
+          }
+        }
+      }
+    },
+    "Du hast Version %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have version %@."
+          }
+        }
+      }
+    },
+    "Erneut versuchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
           }
         }
       }
@@ -160,12 +340,212 @@
         }
       }
     },
+    "Fragt einmal am Tag bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asks GitHub once a day whether there is a new version and shows it. Nothing about you or your collection is sent."
+          }
+        }
+      }
+    },
     "Für einen Fehlerbericht. Enthält nie den Discogs-Token." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "For a bug report. Never contains the Discogs token."
+          }
+        }
+      }
+    },
+    "Geprüft um %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked at %@"
+          }
+        }
+      }
+    },
+    "Gerade zu viele Anfragen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too Many Requests"
+          }
+        }
+      }
+    },
+    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in ein paar Minuten noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub has received too many requests from your network. Try again in a few minutes."
+          }
+        }
+      }
+    },
+    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in etwa %lld Minuten noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub has received too many requests from your network. Try again in about %lld minutes."
+          }
+        }
+      }
+    },
+    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in etwa einer Minute noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub has received too many requests from your network. Try again in about a minute."
+          }
+        }
+      }
+    },
+    "GitHub hat die Anfrage abgelehnt (Fehler %lld). Versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub refused the request (error %lld). Try again later."
+          }
+        }
+      }
+    },
+    "GitHub hat eine Antwort geschickt, mit der Plattenregal nichts anfangen kann. Verlangt dein Netzwerk eine Anmeldung, etwa im WLAN eines Hotels, melde dich zuerst im Browser an. Sonst versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub sent a reply Plattenregal can’t make sense of. If your network requires you to sign in, such as hotel Wi-Fi, sign in in your browser first. Otherwise try again later."
+          }
+        }
+      }
+    },
+    "GitHub hat nicht rechtzeitig geantwortet. Vielleicht ist die Verbindung gerade langsam – versuche es gleich noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub didn’t answer in time. The connection may be slow right now – try again in a moment."
+          }
+        }
+      }
+    },
+    "GitHub ist nicht erreichbar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub Can’t Be Reached"
+          }
+        }
+      }
+    },
+    "GitHub, wo die Versionen von Plattenregal liegen, ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub, where the versions of Plattenregal are kept, can’t be reached right now. Check your internet connection and try again later."
+          }
+        }
+      }
+    },
+    "Herunterladen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
+          }
+        }
+      }
+    },
+    "Im Browser ansehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View in Browser"
+          }
+        }
+      }
+    },
+    "In der Demo sucht Plattenregal nicht von selbst nach Updates." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the demo, Plattenregal doesn’t check for updates on its own."
+          }
+        }
+      }
+    },
+    "Jetzt prüfen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Now"
+          }
+        }
+      }
+    },
+    "Keine Antwort von GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Answer from GitHub"
+          }
+        }
+      }
+    },
+    "Keine Internetverbindung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Internet Connection"
+          }
+        }
+      }
+    },
+    "Keine sichere Verbindung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Secure Connection"
+          }
+        }
+      }
+    },
+    "Keine Version gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Version Found"
+          }
+        }
+      }
+    },
+    "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If the check fails, Plattenregal says why, for example without internet or when GitHub isn’t answering."
           }
         }
       }
@@ -190,6 +570,36 @@
         }
       }
     },
+    "Nach Updates suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking for Updates"
+          }
+        }
+      }
+    },
+    "Nach Updates suchen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates …"
+          }
+        }
+      }
+    },
+    "Noch nicht geprüft." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked yet."
+          }
+        }
+      }
+    },
     "Oben mittig" : {
       "localizations" : {
         "en" : {
@@ -206,6 +616,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Top Right"
+          }
+        }
+      }
+    },
+    "Plattenregal %@ ist da" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal %@ Is Available"
+          }
+        }
+      }
+    },
+    "Plattenregal %@ ist da …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal %@ Is Available …"
+          }
+        }
+      }
+    },
+    "Plattenregal fragt bei GitHub nach der neuesten Version …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal is asking GitHub for the latest version …"
+          }
+        }
+      }
+    },
+    "Plattenregal ist aktuell" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal Is Up to Date"
+          }
+        }
+      }
+    },
+    "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal checks for a new version once a day and then shows what’s new – with the download and short instructions."
           }
         }
       }
@@ -230,12 +690,82 @@
         }
       }
     },
+    "Problem bei GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problem at GitHub"
+          }
+        }
+      }
+    },
     "Protokoll weitergeben" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share Log"
+          }
+        }
+      }
+    },
+    "Schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "So aktualisierst du" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to Update"
+          }
+        }
+      }
+    },
+    "Softwareaktualisierung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Software Update"
+          }
+        }
+      }
+    },
+    "Suche nach Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking for updates"
+          }
+        }
+      }
+    },
+    "Unerwartete Antwort" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unexpected Reply"
+          }
+        }
+      }
+    },
+    "Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updates"
           }
         }
       }
@@ -250,6 +780,26 @@
         }
       }
     },
+    "Version %@ ist da." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ is available."
+          }
+        }
+      }
+    },
+    "Veröffentlicht am %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Published on %@."
+          }
+        }
+      }
+    },
     "Was ist neu" : {
       "localizations" : {
         "en" : {
@@ -260,12 +810,32 @@
         }
       }
     },
+    "Zuletzt geprüft: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last checked: %@"
+          }
+        }
+      }
+    },
     "„Im Regal anzeigen“ kommt ruhig bei der Platte an, statt hastig durch das Fach zu scrollen." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "“Show on Shelf” now arrives calmly at the record instead of rushing through the compartment."
+          }
+        }
+      }
+    },
+    "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Check for Updates …” in the Plattenregal menu checks right away; turn it on or off and check by hand under Settings → General."
           }
         }
       }

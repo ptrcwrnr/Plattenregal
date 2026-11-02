@@ -85,7 +85,9 @@ enum DebugSnapshot {
 
     private static func capture(_ window: NSWindow, name: String, waited: TimeInterval) {
         // --preview-quicksearch=…: the panel of the menu bar instead of the main window.
-        let window = NSApp.windows.first { $0.identifier?.rawValue == ShelfQuickSearch.windowID && $0.isVisible } ?? window
+        // --preview-update=…: the update window.
+        let window = NSApp.windows.first { $0.identifier?.rawValue == ShelfQuickSearch.windowID && $0.isVisible }
+            ?? NSApp.windows.first { $0.identifier?.rawValue.hasPrefix(UpdateView.windowID) == true && $0.isVisible } ?? window
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
         if let view = window.contentView?.superview ?? window.contentView,
            let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
