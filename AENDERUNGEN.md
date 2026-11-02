@@ -1,3 +1,11 @@
+# Handbuch: Suche in der Menüleiste statt Kürzel-Tabelle; Webseite ohne Kürzel-Tabellen · 02.11.2026
+
+- **Wunsch:** Die Suche aus der Menüleiste im Handbuch mit Bild ausbauen; die Tastenkürzel-Tabelle darf dafür raus, auf der Webseite ebenfalls.
+- **Handbuch (de/en), weiter 10 Seiten:** Seite 9 heißt jetzt Kapitel 07 „Menüleiste und Einstellungen“ / „Menu bar and settings“ mit der Überschrift „Suchen ohne Fenster“: zwei Absätze zur Suche (Schallplatte oder ⌥ Leertaste, auch über anderen Apps; Treffer mit Fach, Regal und Position, goldenes Fach im Mini-Regal, Klick hält fest, esc leert und schließt), ein kleiner Absatz zum Weiterlaufen nach ⌘Q, ⌥⌘Q und Einstellungen → Allgemein, daneben das Bild `quicksearch.jpg`. Darunter „Die Einstellungen“ mit der Tabelle der Reiter. Die Tabelle „Die wichtigsten Tastenkürzel“ ist entfallen (alle Kürzel unter Einstellungen → Tastenkürzel; ⌘1–⌘4 und ⌘F erklärt der Rundgang). Der Einzelsatz zur Menüleiste auf Seite 6 ist in Seite 9 aufgegangen. Inhaltsverzeichnis angepasst; Willkommenstext nennt die Suche aus der Menüleiste. Damit Seite 9 Luft zur Fußzeile hat: Design-Satz gekürzt, Zeile „Darstellung“ einzeilig (ohne „Reihenfolge“).
+- **Webseite:** Kapitel „Darstellung und Tastenkürzel“ heißt „Darstellung – Zwei Designs, hell und dunkel“, die beiden Kürzel-Tabellen und ihre CSS-Regeln sind entfernt (Version 12).
+- Geprüft: beide PDFs 10 Seiten; Seiten 2, 6 und 9 als Bild angesehen (nichts überlappt, Abstand zur Fußzeile da); Webseite: jeder `data-t`-Schlüssel mit Englisch und umgekehrt, live nach dem Veröffentlichen angesehen.
+- README angepasst.
+
 # Webseite: eigenes Kapitel für die Suche in der Menüleiste · 02.11.2026
 
 - **Wunsch:** Die Suche aus der Menüleiste kam auf der Webseite zu kurz (nur eine kleine Karte im Rundgang) – gerade sie ist praktisch.

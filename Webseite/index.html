@@ -334,22 +334,6 @@
   }
   .steps.gold li::before { background: var(--gold); color: var(--gold-ink); }
 
-  .table-scroll { overflow-x: auto; min-width: 0; }
-  table.list { width: 100%; border-collapse: collapse; font-size: var(--t-small); }
-  table.list th {
-    text-align: left;
-    font-size: var(--t-label);
-    font-weight: 600;
-    letter-spacing: 1.3px;
-    text-transform: uppercase;
-    color: var(--cream);
-    background: var(--band);
-    padding: var(--s-s) var(--s-m);
-  }
-  table.list th:first-child { border-top-left-radius: var(--radius-s); }
-  table.list th:last-child { border-top-right-radius: var(--radius-s); }
-  table.list td { padding: var(--s-s) var(--s-m); border-bottom: var(--line) solid var(--border); vertical-align: top; }
-  table.list td:first-child { white-space: nowrap; width: 1%; padding-right: var(--s-xl); }
 
   /* ---------- Loslegen ---------- */
   .start {
@@ -560,38 +544,14 @@
     </div>
   </section>
 
-  <section class="wrap chapter" id="kuerzel">
+  <section class="wrap chapter" id="darstellung">
     <div class="chapter-head">
-      <div class="kicker" data-t="k5">Darstellung und Tastenkürzel</div>
-      <h2 class="title" data-t="h5">Zwei Designs, schnell per Tastatur</h2>
+      <div class="kicker" data-t="k5">Darstellung</div>
+      <h2 class="title" data-t="h5">Zwei Designs, hell und dunkel</h2>
       <div class="rule"></div>
     </div>
     <div class="stack">
       <div class="text"><p data-t="designP">Unter Einstellungen → Darstellung wählst du zwischen <strong>Modern</strong> mit Liquid Glass und <strong>Klassisch</strong> in Petrol, Creme und Gold, wie auf dieser Seite. Beide gibt es hell und dunkel, auf Deutsch und Englisch.</p></div>
-      <div class="grid-2">
-        <div class="table-scroll">
-          <table class="list">
-            <tr><th data-t="tEverywhere">Überall</th><th></th></tr>
-            <tr><td><kbd>⌥ Leertaste</kbd></td><td data-t="ks11">Im Regal suchen, auch aus anderen Apps</td></tr>
-            <tr><td><kbd>⌘1</kbd> – <kbd>⌘4</kbd></td><td data-t="ks1">Collection, Wantlist, Regal, Statistik</td></tr>
-            <tr><td><kbd>⌘F</kbd></td><td data-t="ks2">Suchen</td></tr>
-            <tr><td><kbd>⌘R</kbd></td><td data-t="ks3">Seite aktualisieren</td></tr>
-            <tr><td><kbd>⌥⌘R</kbd></td><td data-t="ks4">Alles mit Discogs synchronisieren</td></tr>
-            <tr><td><kbd>⌘,</kbd></td><td data-t="ks5">Einstellungen</td></tr>
-          </table>
-        </div>
-        <div class="table-scroll">
-          <table class="list">
-            <tr><th data-t="tPages">Seiten</th><th></th></tr>
-            <tr><td><kbd>⌥⌘1</kbd> / <kbd>⌥⌘2</kbd></td><td data-t="ks6">Raster / Liste</td></tr>
-            <tr><td><kbd>⌘+</kbd> / <kbd>⌘−</kbd></td><td data-t="ks7">Cover größer / kleiner</td></tr>
-            <tr><td><kbd>esc</kbd></td><td data-t="ks12">Suche leeren, dann schließen</td></tr>
-            <tr><td><kbd>⌘←</kbd> / <kbd>⌘→</kbd></td><td data-t="ks8">Vorheriges / nächstes Regal</td></tr>
-            <tr><td><kbd>⇧⌘R</kbd></td><td data-t="ks9">Zufallsfund: neue Platte ziehen</td></tr>
-            <tr><td><kbd>⌘Z</kbd></td><td data-t="ks10">Herausnehmen rückgängig machen</td></tr>
-          </table>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -742,13 +702,8 @@
       c3p: "The records themselves can always come back from Discogs. <strong>Where they sit on the shelf exists only on your Mac.</strong> That’s why Plattenregal backs up the layout after every change, to a folder of your own such as iCloud Drive if you like. An earlier state comes back with a preview.",
       c4h: "Export",
       c4p: "Your collection, wantlist or sale list as a <strong>CSV file</strong> for Excel and Numbers or a <strong>print-ready PDF list</strong>, in shelf or alphabetical order. Daily, weekly or monthly into a folder if you like.",
-      k5: "Appearance and keyboard shortcuts", h5: "Two designs, quick from the keyboard",
+      k5: "Appearance", h5: "Two designs, light and dark",
       designP: "Under Settings → Appearance you choose between <strong>Modern</strong> with Liquid Glass and <strong>Classic</strong> in petrol, cream and gold, as on this page. Both come in light and dark, in German and English.",
-      tEverywhere: "Everywhere", tPages: "Pages",
-      ks1: "Collection, Wantlist, Shelf, Statistics", ks2: "Search", ks3: "Refresh Page",
-      ks4: "Sync Everything with Discogs", ks5: "Settings", ks6: "Grid / List",
-      ks7: "Larger / Smaller Covers", ks8: "Previous / Next Shelf", ks9: "Random Pick: Draw Another Record",
-      ks10: "Undo Removal", ks11: "Search the shelf, also from other apps", ks12: "Clear the search, then close it",
       k6: "Get started", h6: "From the disk image to your first shelf",
       st1: "<strong>Install.</strong> Open the disk image and drag Plattenregal to the Applications folder. The user guide is inside the app (Help → User Guide), in German and English.",
       st2: "<strong>Allow it once.</strong> Plattenregal is not notarized by Apple. On first launch, click <span class=\"ui\">Open Anyway</span> under <span class=\"ui\">System Settings → Privacy &amp; Security</span>, and from then on it starts like any other app.",
