@@ -6,6 +6,10 @@ Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eig
 
 MIT – siehe [`LICENSE`](LICENSE). Plattenregal nutzt die [Discogs-API](https://www.discogs.com/developers), ist aber kein Produkt von Discogs; jede:r braucht einen eigenen persönlichen Discogs-Token. Plattencover und Daten stammen aus Discogs und gehören den jeweiligen Rechteinhabern – das Repository enthält keine.
 
+## Quellcode
+
+Der Quellcode liegt im privaten GitHub-Repository [`ptrcwrnr/Plattenregal`](https://github.com/ptrcwrnr/Plattenregal); hochgeladen wird nur der Zweig `main`. Nicht im Repository sind `dist/`, `Marketing/` und lokale Git-Sicherungen (`*.bundle`).
+
 ## In Xcode starten
 
 1. `Plattenregal.xcodeproj` öffnen.

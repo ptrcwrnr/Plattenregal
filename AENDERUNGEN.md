@@ -1,3 +1,11 @@
+# Projekt auf GitHub (privat) · 02.11.2026
+
+- **Wunsch:** Das Projekt mit dem eigenen Account auf GitHub stellen, als privates Repository.
+- Vorher geprüft: keine Token, Schlüssel oder Zertifikate im Code und in der Historie; keine Datei über 2,5 MB auf `main` (größte: `Handbuch.pdf`); Cover-Bilder (`Marketing/`) sind ausgeschlossen, Handbuch- und Webseitenbilder zeigen nur die Demo mit gezeichneten Covern.
+- `.gitignore`: lokale Git-Sicherungen (`*.bundle`) ausgeschlossen, damit die 39-MB-Sicherung vom 26.10. nicht hochgeladen wird.
+- GitHub-CLI `gh` installiert und angemeldet (Account `ptrcwrnr`); Repository `ptrcwrnr/Plattenregal` privat angelegt, nur `main` hochgeladen (die lokalen Codex-Zwischenstände unter `refs/codex/` bleiben lokal).
+- README: neuer Abschnitt „Quellcode“.
+
 # DMG 1.0.0 mit dem neuen Handbuch (Seite 9) · 02.11.2026
 
 - `dist/Plattenregal-1.0.0.dmg` neu gebaut (Release `clean`), weiter 1.0.0 (102027); geprüft wie zuvor: Abbild gültig, nur arm64, ab macOS 27.0, Signatur, Berechtigungen, URL-Schema, keine App-Intents-Metadaten, Handbücher identisch mit den neuen PDFs, kein Prüfcode (Gegenprobe im Debug-Build). Demo aus der DMG über `open -n`: Fenster 1219 × 772 pt, keine Fehler, keine Absturzberichte. Debug danach neu gebaut.

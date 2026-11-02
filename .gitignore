@@ -11,3 +11,5 @@ dist/
 Marketing/
 # Persönliche Claude-Code-Einstellungen (lokale Pfade)
 .claude/settings.local.json
+# Lokale Git-Sicherungen (git bundle)
+*.bundle
