@@ -1,3 +1,12 @@
+# Handbuch: Tab „Apple TV“ in der Übersicht der Einstellungen · 02.11.2026
+
+- **Wunsch:** Die fehlende Zeile für den Tab „Apple TV“ in der Tab-Tabelle des Handbuchs ergänzen (bei der Durchsicht der Einstellungen aufgefallen).
+- In `Handbuch/Handbuch.html` und `Handbuch/Handbook.html` steht zwischen „Sicherung“ und „Daten“ – wie in der App – „Apple TV: Plattenregal für Apple TV verbinden, Discogs-Token mitschicken“ bzw. „Connect Plattenregal for Apple TV, send the Discogs token“.
+- Damit Seite 9 der deutschen Fassung nicht in die Fußzeile läuft (mit der zusätzlichen Zeile überlappte „⌘, Einstellungen“ die Fußzeile), sind zwei Zeilen einzeilig: Apple TV wie oben, Regal jetzt „… Fächer sperren, Sortierung und Beschriftung“ – passend zum neuen Kartennamen; Englisch entsprechend „sorting and labeling“.
+- `Plattenregal/Handbuch.pdf` und `Handbook.pdf` mit `Scripts/make-guide.swift` neu erzeugt.
+- Geprüft: beide PDFs weiterhin zehn Seiten; Seite 9 beider Fassungen als Bild angesehen – Tabelle vollständig, nichts überlappt, Abstand zur Fußzeile vorhanden.
+- **Nicht gemacht:** keine neue DMG; die App bekommt die neuen PDFs mit dem nächsten Build.
+
 # Einstellungen übersichtlicher: Starten und Beenden, eine Karte für alle Regale, eindeutige Zeilennamen · 02.11.2026
 
 - **Wunsch:** Die Einstellungen auf Reihenfolge, Darstellung und Einteilung durchsehen und verbessern, wo es sinnvoll ist.
