@@ -30,6 +30,23 @@ extension AllTests {
             }
         }
 
+        /// „Über Plattenregal“: the newest entry is this build's version, the
+        /// others older and earlier, none empty – checked at every new version.
+        @Test func changelogStartsWithThisVersion() throws {
+            let entries = Changelog.entries
+            let newest = try #require(entries.first)
+            #expect(AppVersion(newest.version) == AppVersion.current)
+            for (newer, older) in zip(entries, entries.dropFirst()) {
+                #expect(try #require(AppVersion(newer.version)) > #require(AppVersion(older.version)))
+                #expect(newer.date >= older.date)
+            }
+            for entry in entries {
+                #expect(!entry.changes.isEmpty)
+                #expect(entry.changes.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty })
+                #expect(entry.date < .now.addingTimeInterval(14 * 24 * 60 * 60), "Datum von \(entry.version)")
+            }
+        }
+
         // MARK: GitHub's answer
 
         @Test func releaseIsReadWithItsDMG() throws {

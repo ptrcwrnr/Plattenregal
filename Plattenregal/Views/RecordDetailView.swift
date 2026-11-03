@@ -123,15 +123,16 @@ struct ReleaseHeaderView: View {
     }
 
     /// The rows of the list, only those with a value. Label and catalog
-    /// number belong together, like on the sleeve.
+    /// number belong together, like on the sleeve; each listed once, without
+    /// Discogs' "none" (see `Release.shownLabel`).
     private var details: [(name: String, value: String)] {
-        let label = [release.label.isEmpty ? "" : release.displayLabel, release.catalogNumber]
+        let label = [release.shownLabel, release.shownCatalogNumber]
             .filter { !$0.isEmpty }.joined(separator: " · ")
         let rows: [(String, String?)] = [
             (String(localized: "Label"), label),
             (String(localized: "Jahr"), release.year.map(String.init)),
             (String(localized: "Land"), release.country),
-            (String(localized: "Format"), release.format),
+            (String(localized: "Format"), release.shownFormat),
             (String(localized: "Genre"), release.genres.joined(separator: ", ")),
             (String(localized: "Styles"), release.styles.joined(separator: ", ")),
         ]
@@ -184,7 +185,7 @@ struct RecordPopover: View {
                         .font(AppStyle.sectionTitle).lineLimit(3)
                         .fixedSize(horizontal: false, vertical: true)
                     Grid(alignment: .leading, horizontalSpacing: AppStyle.itemSpacing, verticalSpacing: 3) {
-                        GridRow { label(String(localized: "Label")); Text(release.map { $0.label.isEmpty ? "–" : $0.displayLabel } ?? "–").lineLimit(2) }
+                        GridRow { label(String(localized: "Label")); Text(release.map { $0.shownLabel.isEmpty ? "–" : $0.shownLabel } ?? "–").lineLimit(2) }
                         GridRow { label(String(localized: "Jahr")); Text(release?.year.map(String.init) ?? "–").monospacedDigit() }
                         GridRow { label(String(localized: "Style")); Text(release.map { $0.primaryStyle.isEmpty ? "–" : $0.primaryStyle } ?? "–").lineLimit(1) }
                     }

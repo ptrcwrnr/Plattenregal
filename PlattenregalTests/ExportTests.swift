@@ -32,18 +32,32 @@ extension AllTests {
         }
 
         @Test func releaseValuesAreTidied() {
-            #expect(CollectionExportService.catalogNumber("ASOT018, ASOT018") == "ASOT018")
-            #expect(CollectionExportService.catalogNumber("AQL 010, AQL 010 X") == "AQL 010, AQL 010 X")
-            #expect(CollectionExportService.catalogNumber("none, 1725773, none") == "1725773")
-            #expect(CollectionExportService.catalogNumber("None") == "")
-            #expect(CollectionExportService.catalogNumber("") == "")
-            #expect(CollectionExportService.listedOnce("Dance Division, Epic, Epic") == "Dance Division, Epic")
-            #expect(CollectionExportService.catalogNumber("DOS 202, dos 202") == "DOS 202")
-            #expect(CollectionExportService.format("1 · Vinyl · 12\" · 45 RPM") == "Vinyl · 12\" · 45 RPM")
-            #expect(CollectionExportService.format("2 · Vinyl · LP, 1 · CD · Album") == "2 × Vinyl · LP, CD · Album")
-            #expect(CollectionExportService.format("5 · Vinyl · 12\" · Album, 1 · Box Set") == "5 × Vinyl · 12\" · Album, Box Set")
-            #expect(CollectionExportService.format("") == "")
-            #expect(CollectionExportService.format("Vinyl, LP, Album") == "Vinyl, LP, Album")
+            #expect(DiscogsName.catalogNumber("ASOT018, ASOT018") == "ASOT018")
+            #expect(DiscogsName.catalogNumber("AQL 010, AQL 010 X") == "AQL 010, AQL 010 X")
+            #expect(DiscogsName.catalogNumber("none, 1725773, none") == "1725773")
+            #expect(DiscogsName.catalogNumber("None") == "")
+            #expect(DiscogsName.catalogNumber("") == "")
+            #expect(DiscogsName.listedOnce("Dance Division, Epic, Epic") == "Dance Division, Epic")
+            #expect(DiscogsName.catalogNumber("DOS 202, dos 202") == "DOS 202")
+            #expect(DiscogsName.format("1 · Vinyl · 12\" · 45 RPM") == "Vinyl · 12\" · 45 RPM")
+            #expect(DiscogsName.format("2 · Vinyl · LP, 1 · CD · Album") == "2 × Vinyl · LP, CD · Album")
+            #expect(DiscogsName.format("5 · Vinyl · 12\" · Album, 1 · Box Set") == "5 × Vinyl · 12\" · Album, Box Set")
+            #expect(DiscogsName.format("") == "")
+            #expect(DiscogsName.format("Vinyl, LP, Album") == "Vinyl, LP, Album")
+        }
+
+        @Test func recordCardAndExportShowTheSameTidyValues() {
+            let release = Release(discogsID: 1, artist: "Moby", title: "Play")
+            release.label = "Mute (2), Mute, V2"
+            release.catalogNumber = "none, STUMM 172, STUMM 172"
+            release.format = "1 · Vinyl · LP · Album"
+            #expect(release.shownLabel == "Mute, V2")
+            #expect(release.shownCatalogNumber == "STUMM 172")
+            #expect(release.shownFormat == "Vinyl · LP · Album")
+            // Nothing known: empty, so the card leaves the row out.
+            let bare = Release(discogsID: 2, artist: "", title: "")
+            bare.format = ""; bare.catalogNumber = "none"
+            #expect(bare.shownLabel.isEmpty && bare.shownCatalogNumber.isEmpty && bare.shownFormat.isEmpty)
         }
 
         @Test func locationIsOffByDefaultAndCompact() throws {

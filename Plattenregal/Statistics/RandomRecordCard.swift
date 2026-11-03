@@ -96,9 +96,9 @@ struct RandomRecordCard: View {
             // Same columns as the page grid to the right of the cover.
             LazyVGrid(columns: StatisticsLayout.columns(max(1, columns - coverSpan)), alignment: .leading, spacing: AppStyle.rowSpacing) {
                 detail(String(localized: "Jahr"), release.year.map(String.init))
-                detail(String(localized: "Label"), release.displayLabel)
+                detail(String(localized: "Label"), release.shownLabel)
                 detail(String(localized: "Land"), release.country)
-                detail(String(localized: "Format"), release.format)
+                detail(String(localized: "Format"), release.shownFormat)
                 detail(String(localized: "Tracks"), release.tracks.isEmpty ? nil : "\(release.tracks.count)")
                 detail(String(localized: "Fach"), placement?.location)
             }

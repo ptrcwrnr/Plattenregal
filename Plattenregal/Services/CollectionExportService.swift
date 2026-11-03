@@ -153,33 +153,8 @@ struct CollectionExportService {
     private static func releaseValues(_ release: Release?) -> [String] {
         guard let release else { return Array(repeating: "", count: releaseColumns.count) }
         return [release.displayArtist, release.displayTitle, release.year.map(String.init) ?? "",
-                listedOnce(release.displayLabel), catalogNumber(release.catalogNumber), format(release.format), release.country,
+                release.shownLabel, release.shownCatalogNumber, release.shownFormat, release.country,
                 release.styles.joined(separator: ", ")]
-    }
-
-    /// Two labels of one release often share the number ("ASOT018, ASOT018"); listed once.
-    /// Discogs writes "none" for a release without one.
-    static func catalogNumber(_ raw: String) -> String {
-        listedOnce(raw) { $0.caseInsensitiveCompare("none") != .orderedSame }
-    }
-
-    /// "Positiva, Positiva" (one label with two numbers) → "Positiva"; "DOS 202, dos 202" → "DOS 202".
-    static func listedOnce(_ list: String, keeping keep: (String) -> Bool = { _ in true }) -> String {
-        var seen = Set<String>()
-        return list.components(separatedBy: ", ")
-            .filter { !$0.isEmpty && keep($0) && seen.insert($0.lowercased()).inserted }
-            .joined(separator: ", ")
-    }
-
-    /// Discogs names the quantity first ("1 · Vinyl · 12\""): a single disc goes without it,
-    /// more read as a count ("2 × Vinyl · LP").
-    static func format(_ raw: String) -> String {
-        raw.components(separatedBy: ", ").map { part in
-            guard let dot = part.range(of: " · "), let quantity = Int(part[..<dot.lowerBound]) else { return part }
-            let rest = part[dot.upperBound...]
-            return quantity == 1 ? String(rest) : "\(quantity) × \(rest)"
-        }
-        .joined(separator: ", ")
     }
 
     private static func discogsValues(_ release: Release?) -> [String] {
