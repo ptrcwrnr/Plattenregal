@@ -126,7 +126,7 @@ struct SymbolTile: View {
     }
 }
 
-/// One change in a list of changes: "Was ist neu" in „Über Plattenregal“ and
+/// One change in a list of changes: in „Über Plattenregal“ and
 /// in the update window. Listed with `itemSpacing` between them.
 struct ChangeItem: View {
     let text: AttributedString

@@ -230,7 +230,7 @@ enum AppStyle {
     static let symbolTileSize: CGFloat = 28
     /// The app icon heading „Über Plattenregal“.
     static let aboutIconSize: CGFloat = 72
-    /// A list of changes in a small window ("Was ist neu") scrolls beyond this height.
+    /// A list of changes in a small window („Über Plattenregal“, update window) scrolls beyond this height.
     static let changesMaxHeight: CGFloat = 240
     /// The little chevron of a menu button, the arrow between two places.
     static let indicatorSymbol = Font.caption2.weight(.semibold)

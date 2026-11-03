@@ -150,7 +150,7 @@ struct UpdateView: View {
 
     /// The points of the release notes, as in "Über Plattenregal"; scrolls when long.
     private func whatsNew(_ highlights: [String]) -> some View {
-        // Spaced like "Was ist neu" in „Über Plattenregal“.
+        // Spaced like the changes in „Über Plattenregal“, with a caption.
         VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("Was ist neu").font(AppStyle.captionMark).foregroundStyle(.secondary)
             ScrollView {

@@ -39,36 +39,34 @@ struct AboutView: View {
         .frame(width: Changelog.entries.isEmpty ? 260 : 340)
     }
 
-    /// Newest version first. As tall as its content up to a limit, then it
-    /// scrolls – like the tracklist in a cover's popover.
+    /// Newest version first, without a heading: the version lines say what
+    /// it is. As tall as its content up to a limit, then it scrolls – like
+    /// the tracklist in a cover's popover.
     private var changes: some View {
-        // The same steps as the update window: caption to content and point
-        // to point `itemSpacing`, version line to its points `tightSpacing`,
-        // version to version `sectionSpacing`.
-        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-            Text("Was ist neu").font(AppStyle.captionMark).foregroundStyle(.secondary)
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-                    ForEach(Changelog.entries) { entry in
-                        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                            HStack(alignment: .firstTextBaseline) {
-                                Text("Version \(entry.version)").font(AppStyle.strongCallout).monospacedDigit()
-                                Spacer(minLength: AppStyle.itemSpacing)
-                                Text(entry.date, format: .dateTime.day().month(.abbreviated).year())
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }
-                            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-                                ForEach(entry.changes, id: \.self) { change in ChangeItem(change) }
-                            }
+        // The same steps as the update window: point to point `itemSpacing`,
+        // version line to its points `tightSpacing`, version to version
+        // `sectionSpacing`.
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
+                ForEach(Changelog.entries) { entry in
+                    VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("Version \(entry.version)").font(AppStyle.strongCallout).monospacedDigit()
+                            Spacer(minLength: AppStyle.itemSpacing)
+                            Text(entry.date, format: .dateTime.day().month(.abbreviated).year())
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+                            ForEach(entry.changes, id: \.self) { change in ChangeItem(change) }
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .scrollBounceBehavior(.basedOnSize)
-            .frame(maxHeight: AppStyle.changesMaxHeight)
-            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollBounceBehavior(.basedOnSize)
+        .frame(maxHeight: AppStyle.changesMaxHeight)
+        .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
         .textSelection(.enabled)
     }
@@ -93,6 +91,7 @@ enum Changelog {
                 String(localized: "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein."),
                 String(localized: "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet."),
                 String(localized: "Label, Katalognummer und Format stehen auf der Plattenkarte und im Zufallsfund aufgeräumt: jeder Wert nur einmal, ohne das „none“ von Discogs und ohne „1 ·“ vor dem Format."),
+                String(localized: "Schnelle Klicks auf ein Cover gehen nicht mehr verloren: Jeder Klick öffnet oder schließt das Popover – in Collection, Wantlist und Regal."),
             ]),
             Entry(version: "1.0.1", date: day(2026, 11, 2), changes: [
                 String(localized: "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts."),

@@ -8572,6 +8572,16 @@
         }
       }
     },
+    "Schnelle Klicks auf ein Cover gehen nicht mehr verloren: Jeder Klick öffnet oder schließt das Popover – in Collection, Wantlist und Regal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick clicks on a cover no longer get lost: every click opens or closes the popover – in Collection, Wantlist and Shelf."
+          }
+        }
+      }
+    },
     "Schreibt die unten gewählten Listen regelmäßig in einen Ordner – z. B. in iCloud Drive –, mit Format, Spalten und Reihenfolge von oben. Jede Liste hat ihre eigene Datei, die dabei jedes Mal ersetzt wird." : {
       "localizations" : {
         "en" : {
