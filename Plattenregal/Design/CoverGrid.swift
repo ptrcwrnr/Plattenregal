@@ -20,6 +20,17 @@ enum CoverGrid {
     static func columns(count: Int) -> [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: spacing, alignment: .top), count: count)
     }
+
+    /// Which cover's popover is shown after a click on the cover `clicked`
+    /// while `shown`'s is open – so every click toggles, however fast.
+    /// A single click on the open cover never gets here: AppKit closes the
+    /// popover on its mouse-down and swallows the click. The later clicks of
+    /// a fast series (click count 2 and up) leave the popover open, though,
+    /// and do reach the cover; they close it here. No pause after closing is
+    /// needed: the closing click never reaches the cover to reopen it.
+    static func popover<ID: Equatable>(shown: ID?, afterClickOn clicked: ID) -> ID? {
+        shown == clicked ? nil : clicked
+    }
 }
 
 extension View {

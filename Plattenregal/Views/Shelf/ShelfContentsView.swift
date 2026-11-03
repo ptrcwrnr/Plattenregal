@@ -372,7 +372,10 @@ struct ShelfContentsView: View, Equatable {
             GlassEffectContainer(spacing: 0) {
                 LazyVGrid(columns: CoverGrid.columns(count: columns), alignment: .leading, spacing: CoverGrid.spacing) {
                     ForEach(items) { item in
-                        Button { activate(item.copy) } label: { tile(item) }
+                        Button {
+                            // A click on the tile whose popover is open closes it (`CoverGrid.popover`).
+                            if quickEditID == item.id { quickEditID = nil } else { activate(item.copy) }
+                        } label: { tile(item) }
                             .buttonStyle(.plain)
                             .id(item.id)
                             .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {

@@ -223,7 +223,7 @@ struct WantlistView: View {
                 LazyVGrid(columns: CoverGrid.columns(count: columnCount), alignment: .leading, spacing: CoverGrid.spacing) {
                     ForEach(rows) { item in
                         let entry = item.entry
-                        Button { quickLook = (item.id, .center) } label: {
+                        Button { quickLook = CoverGrid.popover(shown: quickLook?.id, afterClickOn: item.id).map { ($0, .center) } } label: {
                             WantlistCard(entry: entry,
                                          matchedTrack: appliedQuery.isEmpty ? nil : entry.release?.track(matching: appliedQuery))
                         }

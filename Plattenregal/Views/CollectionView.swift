@@ -57,9 +57,6 @@ struct CollectionView: View {
     /// The cover whose right-click menu is open, and where it was clicked.
     @State private var contextMenu: (id: UUID, anchor: UnitPoint)?
     @State private var gridClicks = GridSecondaryClicks<UUID>()
-    /// The popover closes on the mouse-down of a click outside it; if that
-    /// click lands on the same cover, it should stay closed, not reopen.
-    @State private var quickLookDismissed: (id: UUID, at: Date)?
     @Environment(\.openURL) private var openURL
     @State private var error: String?
 
@@ -470,11 +467,10 @@ struct CollectionView: View {
         }
     }
 
-    /// A click on a cover: its popover – unless that very popover was just
-    /// closed by this click.
+    /// A click on a cover opens its popover or, if it is already open,
+    /// closes it (`CoverGrid.popover`).
     private func showQuickLook(_ copy: RecordCopy) {
-        let justClosed = quickLookDismissed.map { $0.id == copy.id && Date().timeIntervalSince($0.at) < 0.4 } ?? false
-        if !justClosed { quickLook = copy.id }
+        quickLook = CoverGrid.popover(shown: quickLook, afterClickOn: copy.id)
     }
 
     private func contextMenuBinding(for id: UUID) -> Binding<Bool> {
@@ -485,14 +481,7 @@ struct CollectionView: View {
     }
 
     private func quickLookBinding(for id: UUID) -> Binding<Bool> {
-        Binding(
-            get: { quickLook == id },
-            set: { presented in
-                guard !presented, quickLook == id else { return }
-                quickLook = nil
-                quickLookDismissed = (id, Date())
-            }
-        )
+        Binding(get: { quickLook == id }, set: { if !$0, quickLook == id { quickLook = nil } })
     }
 
     /// Above the content, right under the toolbar: the grid's covers start
