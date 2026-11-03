@@ -120,22 +120,22 @@
         }
       }
     },
+    "Auf GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On GitHub"
+          }
+        }
+      }
+    },
     "Auf GitHub ist gerade keine Version von Plattenregal veröffentlicht. Versuche es später noch einmal." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No version of Plattenregal is published on GitHub right now. Try again later."
-          }
-        }
-      }
-    },
-    "Auf GitHub öffnen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open on GitHub"
           }
         }
       }

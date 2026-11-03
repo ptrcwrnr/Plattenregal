@@ -1,3 +1,11 @@
+# Update-Fenster: Knöpfe über die ganze Breite, weniger Abstand zur Ampel · 03.11.2026
+
+- **Wunsch:** Ein Knopf links unter dem Text wirkte eingerückt (seine Beschriftung beginnt 12 pt nach dem Rand, der Glasrand ist im Hellen kaum sichtbar). Aus drei Entwürfen gewählt: **Knöpfe über die ganze Breite**; außerdem der Abstand zur Ampel kleiner, alles optisch ausgewogen.
+- **`PrimaryButton` / `SecondaryButton`** bekommen `fillsWidth` (Standard aus): die Beschriftung nimmt die angebotene Breite, das Aussehen bleibt das der App (Glas in Modern, Papier bzw. Gold in Klassisch).
+- **Update-Fenster:** Die Knöpfe teilen sich die Textbreite gleichmäßig – ein breiter Knopf bei „aktuell“ und der Suche, drei bei Fehler und neuer Version – und schließen links und rechts mit dem Text ab. „Auf GitHub öffnen“ heißt „Auf GitHub“ (EN „On GitHub“), damit drei nebeneinander passen; der alte Text ist aus dem Katalog entfernt.
+- **Abstand oben:** unter der Titelleiste (32 pt, mit der Ampel) nur noch `itemSpacing` statt `pagePadding`; der Titel beginnt so 40 pt unter der Fensterkante, seitlich und unten bleibt `pagePadding`. Ein erster Versuch, den Inhalt in den Bereich der Titelleiste zu schieben (`ignoresSafeArea`), ließ unten einen leeren Streifen – das Fenster rechnete die Titelleiste weiter mit; verworfen.
+- **Geprüft:** aktuell (Klassisch), Fehler (Modern hell und dunkel, Englisch), Suche (Modern dunkel), neue Version (Klassisch) per `screencapture`; nachgemessen: links alles bei 24–24,5 pt, rechts enden die Knöpfe am Textrand, unten 24 pt. Zum Aufnehmen musste eine aus Xcode laufende Instanz beendet werden (mit Erlaubnis). 303 Tests bestanden. README (Abschnitt „Updates“, Design-Bausteine). DMG und Marketing-Bild nicht neu.
+
 # Update-Fenster: alles an einer Kante, ohne Symbole, gleiche Abstände · 03.11.2026
 
 - **Wunsch:** Bei „Keine Internetverbindung“ war nicht alles bündig (das Symbol schob den Titel nach rechts); alle Abstände einheitlich nach der Skala; „aktuell“ an die anderen Zustände angleichen; die Symbole über dem Titel weglassen; alle Zustände auf Bündigkeit prüfen. DMG und Marketing-Bild diesmal nicht neu.

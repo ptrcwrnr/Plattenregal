@@ -23,19 +23,24 @@ struct AtelierButtonStyle: ButtonStyle {
 /// light: the accent on dark glass was hard to read.
 struct PrimaryButton: View {
     let title: String
+    /// Takes all the width it's offered – a row of equally wide buttons that
+    /// ends flush with the text above (the update window).
+    var fillsWidth = false
     var action: () -> Void
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorScheme) private var colorScheme
     @ViewBuilder
     var body: some View {
         if AppStyle.isAtelier {
-            Button(title, action: action).buttonStyle(AtelierButtonStyle(primary: true))
+            Button(action: action) { Text(title).frame(maxWidth: fillsWidth ? .infinity : nil) }
+                .buttonStyle(AtelierButtonStyle(primary: true))
         } else {
         // Disabled: no accent, so it dims like every other button instead of
         // looking clickable.
         Button(action: action) {
             Text(title).foregroundStyle(!isEnabled ? AnyShapeStyle(.tertiary)
                                         : colorScheme == .dark ? AnyShapeStyle(.primary) : AnyShapeStyle(AppStyle.accent))
+                .frame(maxWidth: fillsWidth ? .infinity : nil)
         }
             .appGlassButton()
         }
@@ -43,9 +48,11 @@ struct PrimaryButton: View {
 }
 struct SecondaryButton: View {
     let title: String
+    /// See `PrimaryButton.fillsWidth`.
+    var fillsWidth = false
     var action: () -> Void
     var body: some View {
-        Button(title, action: action).appGlassButton()
+        Button(action: action) { Text(title).frame(maxWidth: fillsWidth ? .infinity : nil) }.appGlassButton()
     }
 }
 struct GhostButton: View {

@@ -15,19 +15,21 @@ struct UpdateView: View {
     @State private var downloading: AppVersion?
 
     var body: some View {
-        // Everything starts at one edge. Three steps of spacing only:
+        // Everything starts at one edge; the buttons share the text's width
+        // equally, so they end flush with it on both sides. Three steps of spacing only:
         // `sectionSpacing` between the blocks (head, what's new, note,
         // buttons), `itemSpacing` from a caption to its content and between
         // points, `tightSpacing` from a title to its line.
         VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
             content
-            HStack(spacing: AppStyle.itemSpacing) {
-                actions
-                Spacer(minLength: 0)
-            }
+            HStack(spacing: AppStyle.itemSpacing) { actions }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AppStyle.pagePadding)
+        // Below the (hidden) title bar with the window controls only a small
+        // gap: the controls already stand in the margin, so the gap from them
+        // to the title comes out about as wide as the side margin.
+        .padding(.top, AppStyle.itemSpacing)
+        .padding([.horizontal, .bottom], AppStyle.pagePadding)
         .frame(width: Self.width)
         .animation(AppStyle.standardAnimation, value: checker.state)
         // Opened from the menu while nothing has been asked yet (or a
@@ -64,23 +66,23 @@ struct UpdateView: View {
     private var actions: some View {
         switch checker.state {
         case .idle, .checking:
-            SecondaryButton(title: String(localized: "Abbrechen")) { close() }
+            SecondaryButton(title: String(localized: "Abbrechen"), fillsWidth: true) { close() }
                 .keyboardShortcut(.cancelAction)
         case .upToDate:
-            PrimaryButton(title: String(localized: "Schließen")) { close() }
+            PrimaryButton(title: String(localized: "Schließen"), fillsWidth: true) { close() }
                 .keyboardShortcut(.defaultAction)
         case .available(let release):
-            SecondaryButton(title: String(localized: "Überspringen")) {
+            SecondaryButton(title: String(localized: "Überspringen"), fillsWidth: true) {
                 checker.skip(release)
                 close()
             }
             if downloading == release.version {
-                PrimaryButton(title: String(localized: "Fertig")) { close() }
+                PrimaryButton(title: String(localized: "Fertig"), fillsWidth: true) { close() }
                     .keyboardShortcut(.defaultAction)
             } else {
-                SecondaryButton(title: String(localized: "Später")) { close() }
+                SecondaryButton(title: String(localized: "Später"), fillsWidth: true) { close() }
                     .keyboardShortcut(.cancelAction)
-                PrimaryButton(title: release.downloadURL == nil ? String(localized: "Auf GitHub öffnen") : String(localized: "Herunterladen")) {
+                PrimaryButton(title: release.downloadURL == nil ? String(localized: "Auf GitHub") : String(localized: "Herunterladen"), fillsWidth: true) {
                     checker.download(release)
                     downloading = release.version
                 }
@@ -89,16 +91,16 @@ struct UpdateView: View {
         case .failed:
             // GitHub's page may work where its interface doesn't (too many requests).
             openReleasesPage
-            SecondaryButton(title: String(localized: "Schließen")) { close() }
+            SecondaryButton(title: String(localized: "Schließen"), fillsWidth: true) { close() }
                 .keyboardShortcut(.cancelAction)
-            PrimaryButton(title: String(localized: "Erneut versuchen")) { checker.checkNow() }
+            PrimaryButton(title: String(localized: "Erneut versuchen"), fillsWidth: true) { checker.checkNow() }
                 .keyboardShortcut(.defaultAction)
         }
     }
 
     /// The versions on GitHub in the browser – all notes, older versions.
     private var openReleasesPage: some View {
-        SecondaryButton(title: String(localized: "Auf GitHub öffnen")) {
+        SecondaryButton(title: String(localized: "Auf GitHub"), fillsWidth: true) {
             if !NSWorkspace.shared.open(UpdateService.releasesPageURL) { NSSound.beep() }
         }
     }
