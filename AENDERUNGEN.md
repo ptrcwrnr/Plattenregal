@@ -1,3 +1,11 @@
+# Release 1.0.2: DMG, Webseite, GitHub · 03.11.2026
+
+- **Wunsch:** DMG bauen, Webseite aktualisieren und auf GitHub hochladen.
+- **DMG** `dist/Plattenregal-1.0.2.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), jetzt mit dem Update-Fenster ohne Ampel; 11 MB, SHA-256 `7ceebdc5…4336`, in `dist/Hinweise-1.0.2.md` eingetragen.
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.2 (102029), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen gleich wie in der DMG 1.0.1; keine Debug-Schalter; die Punkte zu schnellen Klicks und Einstellungen enthalten; Handbücher identisch mit dem Repository; App aus der DMG als Demo gestartet, Protokoll „Start · Version 1.0.2 (102029)“.
+- **Webseite** (Version 16 des Artifacts): Version 1.0.2 in beiden Download-Knöpfen und im Fuß, Fußsatz mit GitHub für Updates (beides schon vorbereitet). Neu: Karte „Eine neue Version“ sagt, dass Plattenregal neue Versionen selbst meldet; Karte „Dein Token bleibt bei dir“ sagt „gibt ihn an niemanden weiter“ statt „spricht mit niemandem sonst“ (die App fragt jetzt auch GitHub). Deutsch und Englisch; jeder Textschlüssel hat seine englische Fassung, nirgends mehr „1.0.1“.
+- **GitHub:** Push von `main`, Release **v1.0.2** mit `Plattenregal-1.0.2.dmg` und `Plattenregal.dmg` (gleiche Datei, fester Link der Webseite), Text aus `dist/Hinweise-1.0.2.md` (sechs Punkte auf Deutsch und Englisch). v1.0.1 und v1.0.0 bleiben als ältere Releases.
+
 # Update-Fenster ohne Ampel · 03.11.2026
 
 - **Wunsch:** Die Ampel im Update-Fenster weglassen – jeder Zustand hat ohnehin einen Knopf zum Schließen.
