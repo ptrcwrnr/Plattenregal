@@ -19,13 +19,13 @@ struct UpdateView: View {
             if case .upToDate(let latest) = checker.state {
                 upToDate(latest)
             } else {
-                // Text first, the buttons right under it and grouped on the
-                // right, like a macOS alert – no icon: the text says what it's about.
+                // Text first, the buttons right under it, starting in line
+                // with the text – no icon: the text says what it's about.
                 VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                     content
                     HStack(spacing: AppStyle.itemSpacing) {
-                        Spacer(minLength: 0)
                         actions
+                        Spacer(minLength: 0)
                     }
                     .padding(.top, AppStyle.itemSpacing)
                 }

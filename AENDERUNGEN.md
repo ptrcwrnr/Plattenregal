@@ -1,3 +1,10 @@
+# Hauptknopf im Dunkeln hell, Knöpfe im Update-Fenster links bündig · 03.11.2026
+
+- **Wunsch:** Im dunklen Modus die blaue Schrift der Knöpfe hell, sonst zu schlecht lesbar; im Update-Fenster die Knöpfe links bündig mit dem Text beginnen lassen (außer beim zentrierten „aktuell“).
+- **`PrimaryButton`** (Modern): im dunklen Modus helle Schrift (`.primary`) statt der Akzentfarbe – gilt in der ganzen App; im hellen Modus weiter die Akzentfarbe, Klassisch unverändert gold, ausgeschaltet weiter gedimmt.
+- **Update-Fenster:** Knopfreihe beginnt links bündig mit Titel und Text, Hauptaktion zuletzt (vorher rechts gruppiert); „aktuell“ bleibt zentriert.
+- **Geprüft:** Fehler in Modern dunkel und hell, „aktuell“ in Modern dunkel, Suche in Modern hell, neue Version in Klassisch per `screencapture`; 303 Tests bestanden. README (Abschnitt „Updates“).
+
 # DMG 1.0.2 mit dem fertigen Update-Fenster · 03.11.2026
 
 - `dist/Plattenregal-1.0.2.dmg` neu gebaut (Release `clean`) mit „aktuell“ zentriert, Liste ohne Punkte und ruhiger Fläche; geprüft: `hdiutil verify` gültig, 1.0.2 (102029), arm64, Signatur gültig, Handbücher gleich, keine Debug-Schalter. SHA-256 `462af40c…5051`, in `dist/Hinweise-1.0.2.md` eingetragen; die früheren DMGs von heute sind überholt.

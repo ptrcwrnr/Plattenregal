@@ -19,11 +19,13 @@ struct AtelierButtonStyle: ButtonStyle {
 /// (normal action), Ghost (low-emphasis/secondary action), Icon (compact icon-only).
 /// Primary and Secondary are Liquid Glass; the main action is told apart by
 /// the accent color of its title, like the chosen option of a
-/// `GlassSegmentedPicker` – no filled blue.
+/// `GlassSegmentedPicker` – no filled blue. In dark mode the title stays
+/// light: the accent on dark glass was hard to read.
 struct PrimaryButton: View {
     let title: String
     var action: () -> Void
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.colorScheme) private var colorScheme
     @ViewBuilder
     var body: some View {
         if AppStyle.isAtelier {
@@ -31,7 +33,10 @@ struct PrimaryButton: View {
         } else {
         // Disabled: no accent, so it dims like every other button instead of
         // looking clickable.
-        Button(action: action) { Text(title).foregroundStyle(isEnabled ? AnyShapeStyle(AppStyle.accent) : AnyShapeStyle(.tertiary)) }
+        Button(action: action) {
+            Text(title).foregroundStyle(!isEnabled ? AnyShapeStyle(.tertiary)
+                                        : colorScheme == .dark ? AnyShapeStyle(.primary) : AnyShapeStyle(AppStyle.accent))
+        }
             .appGlassButton()
         }
     }
