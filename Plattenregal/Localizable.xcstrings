@@ -850,16 +850,6 @@
         }
       }
     },
-    "„Nach Updates suchen …“ zeigt verlässlich ein Ergebnis, auch wenn die tägliche Prüfung gerade läuft, und findet „Was ist neu“ in den Hinweisen zur Version genauer." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Check for Updates…” reliably shows a result, even while the daily check is running, and finds “What’s New” in the release notes more precisely."
-          }
-        }
-      }
-    },
     "⌘Q und das Schließen des letzten Fensters lassen Plattenregal ohne Symbol im Dock weiterlaufen; Schallplatte und Kürzel bleiben. Ganz beenden: Rechtsklick auf die Schallplatte oder ⌥⌘Q." : {
       "localizations" : {
         "en" : {
