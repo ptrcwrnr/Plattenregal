@@ -1,3 +1,11 @@
+# Einstellungen-Schließen in 1.0.2, Marketing-Bild und DMG 1.0.2 neu · 03.11.2026
+
+- **Wunsch:** Das Schließen der Einstellungen bei einem Klick daneben gehört noch in 1.0.2 – mit „Was ist neu“, neuer DMG und auf dem Marketing-Bild.
+- **„Was ist neu“ 1.0.2**, sechster Punkt: „Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden.“ (EN „Settings close when you click into the main window beside them, instead of disappearing behind it.“), ebenso in `dist/Hinweise-1.0.2.md` (beide Sprachen).
+- **Marketing-Bild** `post-update-1-0-2` (lokal): sechster Punkt „Einstellungen mit Gespür – Ein Klick ins Hauptfenster, und sie gehen zu.“; die Liste beginnt dafür etwas höher (236 statt 262 px).
+- **DMG** `dist/Plattenregal-1.0.2.dmg` neu (Release nach `clean`), 11 MB, SHA-256 `ccf39604…4499`, in den Hinweisen eingetragen; die vorige DMG von heute ist überholt.
+- **Geprüft:** 303 Tests bestanden. Bild gerendert und angesehen (sechs Punkte, nichts abgeschnitten). DMG: `hdiutil verify` gültig, 1.0.2 (102029), nur arm64, ab macOS 27.0, Signatur gültig, keine Debug-Schalter, beide neuen Punkte (Klicks, Einstellungen) auf Deutsch und Englisch enthalten, Handbücher gleich. **Nicht geprüft:** App aus der DMG gestartet. Release und Webseite nicht veröffentlicht.
+
 # Einstellungen schließen bei einem Klick daneben · 03.11.2026
 
 - **Wunsch:** Das Einstellungsfenster soll wie die Panels zugehen, wenn man daneben klickt; bisher verschwand es hinter dem Hauptfenster und blieb offen.

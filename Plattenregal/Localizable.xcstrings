@@ -190,6 +190,16 @@
         }
       }
     },
+    "Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings close when you click into the main window beside them, instead of disappearing behind it."
+          }
+        }
+      }
+    },
     "Die geladene DMG öffnen, Plattenregal beenden und die neue Version in den Ordner „Programme“ ziehen, die alte ersetzen. Sammlung, Regale, Einstellungen und Token bleiben erhalten. Fragt macOS danach nach dem Schlüsselbund, wähle „Immer erlauben“; eventuell ist „Dennoch öffnen“ unter Systemeinstellungen → Datenschutz & Sicherheit noch einmal nötig." : {
       "localizations" : {
         "en" : {

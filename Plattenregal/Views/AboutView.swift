@@ -92,6 +92,7 @@ enum Changelog {
                 String(localized: "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet."),
                 String(localized: "Label, Katalognummer und Format stehen auf der Plattenkarte und im Zufallsfund aufgeräumt: jeder Wert nur einmal, ohne das „none“ von Discogs und ohne „1 ·“ vor dem Format."),
                 String(localized: "Schnelle Klicks auf ein Cover gehen nicht mehr verloren: Jeder Klick öffnet oder schließt das Popover – in Collection, Wantlist und Regal."),
+                String(localized: "Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden."),
             ]),
             Entry(version: "1.0.1", date: day(2026, 11, 2), changes: [
                 String(localized: "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts."),
