@@ -227,6 +227,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let container {
                 ReleasedInBackground {
                     AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
+                        .closesOnClickElsewhere()
                 }
             } else {
                 // Same situation the main window explains; don't open an empty window.

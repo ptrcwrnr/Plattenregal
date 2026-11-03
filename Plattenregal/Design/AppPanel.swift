@@ -133,3 +133,48 @@ extension View {
         modifier(AppPanelModifier(item: item, onDismiss: onDismiss, alignment: alignment, panel: content))
     }
 }
+
+extension View {
+    /// For a window of its own that should behave like a panel (the
+    /// settings): a click into another window of the app – the main window,
+    /// say – closes it, instead of leaving it open behind that window.
+    /// Its own sheets, alerts, file dialogs and popovers keep it open, as do
+    /// floating panels (the search in the menu bar) and other apps.
+    func closesOnClickElsewhere() -> some View {
+        background(ClickElsewhereCloser())
+    }
+}
+
+private struct ClickElsewhereCloser: NSViewRepresentable {
+    func makeNSView(context: Context) -> Watcher { Watcher() }
+    func updateNSView(_ view: Watcher, context: Context) {}
+
+    final class Watcher: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            NotificationCenter.default.removeObserver(self)
+            guard window != nil else { return }
+            NotificationCenter.default.addObserver(self, selector: #selector(otherWindowBecameKey(_:)),
+                                                   name: NSWindow.didBecomeKeyNotification, object: nil)
+        }
+
+        @objc private func otherWindowBecameKey(_ notification: Notification) {
+            guard let own = window, own.isVisible,
+                  let other = notification.object as? NSWindow, other !== own,
+                  // Only a real window of the app: titled, not a panel.
+                  other.styleMask.contains(.titled), !(other is NSPanel),
+                  !Self.belongs(other, to: own) else { return }
+            own.close()
+        }
+
+        /// A sheet or child window of `own`, however deep.
+        private static func belongs(_ window: NSWindow, to own: NSWindow) -> Bool {
+            var node: NSWindow? = window
+            while let current = node {
+                if current === own { return true }
+                node = current.sheetParent ?? current.parent
+            }
+            return false
+        }
+    }
+}

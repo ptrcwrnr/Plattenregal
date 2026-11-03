@@ -1,3 +1,10 @@
+# Einstellungen schließen bei einem Klick daneben · 03.11.2026
+
+- **Wunsch:** Das Einstellungsfenster soll wie die Panels zugehen, wenn man daneben klickt; bisher verschwand es hinter dem Hauptfenster und blieb offen.
+- **Ursache:** Die Einstellungen sind ein eigenes macOS-Fenster (`Settings`-Szene), die Panels liegen im Hauptfenster über der Seite. Ein Klick ins Hauptfenster machte nur dieses zum aktiven Fenster.
+- **Neu:** `closesOnClickElsewhere()` (`Design/AppPanel.swift`): Wird ein anderes richtiges Fenster der App aktiv (mit Titelleiste, kein `NSPanel`), schließt sich das Fenster. Ausgenommen sind seine eigenen Sheets und Kindfenster (Rückfragen, Dateidialoge, Popover), schwebende Panels wie die Menüleisten-Suche und andere Apps. Nur am Einstellungsfenster, nicht an der Vorschau der Einstellungen im Hauptfenster (`--settings-tab`).
+- **Geprüft:** Debug-Build ohne Warnung, 303 Tests bestanden. In der Demo mit simulierten Klicks und Tastendrücken, Fenster per `CGWindowList` gezählt: Klick in die Einstellungen – bleibt offen; Klick ins Hauptfenster – zu; ⌘, öffnet wieder; ⌥ Leertaste (Suche in der Menüleiste) und Esc darin – bleibt offen; Wechsel zu einer anderen App und zurück – bleibt offen; „Sichern unter …“ im Reiter Daten (Dateidialog) und Abbrechen – bleibt offen; Esc – zu wie bisher. **Nicht geprüft:** Rückfragen als Sheet (etwa „Alles zurücksetzen“), das Popover „Regal umbenennen …“ und Klassisch; „Über Plattenregal“ und das Update-Fenster verhalten sich unverändert. Nicht in der DMG 1.0.2 und nicht in „Was ist neu“.
+
 # Über-Karte ohne „Was ist neu“, 1.0.2 mit schnellen Klicks, Update-Bilder als Text, DMG 1.0.2 · 03.11.2026
 
 - **Wunsch:** In „Über Plattenregal“ die Überschrift „Was ist neu“ weglassen, sonst nichts ändern; die Behebung der schnellen Klicks in „Was ist neu“ von 1.0.2 aufnehmen; die beiden Marketing-Bilder der Updates ohne Bildschirmfoto, die Neuerungen als Text; DMG neu bauen. GitHub prüft der Nutzer vorher selbst.
