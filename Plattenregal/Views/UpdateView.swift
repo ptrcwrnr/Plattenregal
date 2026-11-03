@@ -15,19 +15,17 @@ struct UpdateView: View {
     @State private var downloading: AppVersion?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-            HStack(alignment: .top, spacing: AppStyle.cardPadding) {
-                Image(nsImage: NSApp.applicationIconImage)
-                    .resizable().frame(width: AppStyle.alertIconSize, height: AppStyle.alertIconSize)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                    content
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+        // Text first, the buttons right under it and grouped on the right, like
+        // a macOS alert – no icon: the window's text says what it's about.
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            content
+            HStack(spacing: AppStyle.itemSpacing) {
+                Spacer(minLength: 0)
+                actions
             }
-            // The whole width: three buttons don't fit beside the icon.
-            HStack(spacing: AppStyle.itemSpacing) { actions }
+            .padding(.top, AppStyle.itemSpacing)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppStyle.pagePadding)
         .frame(width: Self.width)
         .animation(AppStyle.standardAnimation, value: checker.state)
@@ -54,10 +52,6 @@ struct UpdateView: View {
                    current > latest
                     ? String(localized: "Du hast Version \(current.description), neuer als die zuletzt veröffentlichte \(latest.description).")
                     : String(localized: "Du hast Version \(current.description), die neueste Version."))
-            if let lastCheck = checker.lastCheck {
-                Text("Geprüft um \(lastCheck.formatted(date: .omitted, time: .shortened))")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
         case .available(let release):
             available(release)
         case .failed(let error):
@@ -70,19 +64,17 @@ struct UpdateView: View {
     private var actions: some View {
         switch checker.state {
         case .idle, .checking:
-            Spacer()
             SecondaryButton(title: String(localized: "Abbrechen")) { close() }
                 .keyboardShortcut(.cancelAction)
         case .upToDate:
-            Spacer()
+            openReleasesPage
             PrimaryButton(title: String(localized: "OK")) { close() }
                 .keyboardShortcut(.defaultAction)
         case .available(let release):
-            GhostButton(title: String(localized: "Diese Version überspringen")) {
+            SecondaryButton(title: String(localized: "Überspringen")) {
                 checker.skip(release)
                 close()
             }
-            Spacer()
             if downloading == release.version {
                 PrimaryButton(title: String(localized: "Fertig")) { close() }
                     .keyboardShortcut(.defaultAction)
@@ -97,14 +89,18 @@ struct UpdateView: View {
             }
         case .failed:
             // GitHub's page may work where its interface doesn't (too many requests).
-            GhostButton(title: String(localized: "Im Browser ansehen")) {
-                if !NSWorkspace.shared.open(UpdateService.releasesPageURL) { NSSound.beep() }
-            }
-            Spacer()
+            openReleasesPage
             SecondaryButton(title: String(localized: "Schließen")) { close() }
                 .keyboardShortcut(.cancelAction)
             PrimaryButton(title: String(localized: "Erneut versuchen")) { checker.checkNow() }
                 .keyboardShortcut(.defaultAction)
+        }
+    }
+
+    /// The versions on GitHub in the browser – all notes, older versions.
+    private var openReleasesPage: some View {
+        SecondaryButton(title: String(localized: "Auf GitHub öffnen")) {
+            if !NSWorkspace.shared.open(UpdateService.releasesPageURL) { NSSound.beep() }
         }
     }
 
@@ -122,10 +118,6 @@ struct UpdateView: View {
                       kind: .info)
         }
         installSteps
-        Link(String(localized: "Alle Hinweise auf GitHub"), destination: release.pageURL)
-            .font(.caption)
-            // Petrol in Klassisch, the chosen accent in Modern – like every other link-like action.
-            .tint(AppStyle.accent)
     }
 
     // MARK: Parts
@@ -153,7 +145,8 @@ struct UpdateView: View {
             parts.append(String(localized: "Veröffentlicht am \(date.formatted(date: .long, time: .omitted))."))
         }
         if let size = release.downloadSize {
-            parts.append(String(localized: "Download: \(size.formatted(.byteCount(style: .file)))."))
+            // Kept together with its size when the line wraps.
+            parts.append(String(localized: "Download:\u{00A0}\(size.formatted(.byteCount(style: .file)))."))
         }
         return parts.joined(separator: " ")
     }

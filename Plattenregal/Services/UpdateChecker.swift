@@ -516,7 +516,7 @@ nonisolated struct GitHubReleaseDTO: Decodable {
 
     // MARK: Skipping and downloading
 
-    /// „Diese Version überspringen“: no more automatic hints until a newer one.
+    /// „Überspringen“: no more automatic hints until a newer one.
     func skip(_ release: AvailableRelease) {
         defaults.set(release.version.description, forKey: Key.skippedVersion)
         announcementPending = false

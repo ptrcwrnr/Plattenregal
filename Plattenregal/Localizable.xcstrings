@@ -110,16 +110,6 @@
         }
       }
     },
-    "Alle Hinweise auf GitHub" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Full Release Notes on GitHub"
-          }
-        }
-      }
-    },
     "Anfrage abgelehnt" : {
       "localizations" : {
         "en" : {
@@ -250,22 +240,12 @@
         }
       }
     },
-    "Diese Version überspringen" : {
+    "Download: %@." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Skip This Version"
-          }
-        }
-      }
-    },
-    "Download: %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download: %@."
+            "value" : "Download: %@."
           }
         }
       }
@@ -356,16 +336,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "For a bug report. Never contains the Discogs token."
-          }
-        }
-      }
-    },
-    "Geprüft um %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checked at %@"
           }
         }
       }
@@ -466,16 +436,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Download"
-          }
-        }
-      }
-    },
-    "Im Browser ansehen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View in Browser"
           }
         }
       }
@@ -826,6 +786,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Last checked: %@"
+          }
+        }
+      }
+    },
+    "Überspringen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
           }
         }
       }

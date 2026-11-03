@@ -1,3 +1,14 @@
+# Update-Fenster neu angeordnet: Hinweis ohne App-Symbol, nur Knöpfe · 03.11.2026
+
+- **Wunsch:** Das Update-Fenster war unschön: „Geprüft um …“ überflüssig, ein einzelnes „OK“ wirkte verloren, blaue Textlinks („Im Browser ansehen“, „Alle Hinweise auf GitHub“, „Diese Version überspringen“) passten nicht zum Stil der App. Aus drei Entwürfen (Hinweis wie macOS, zentriert, Kopf- und Fußleiste) gewählt: **Variante A ohne App-Symbol**.
+- **Aufbau** (`UpdateView`): Titel, Text und gleich darunter die Knöpfe, rechts zusammen, Hauptaktion ganz rechts; Abstände aus der Skala (`rowSpacing`, darüber `itemSpacing`, Rand `pagePadding`). Kein App-Symbol mehr – vorher stand die Knopfreihe unter dem 64 pt hohen Symbol und ließ bei kurzen Texten eine Lücke. `AppStyle.alertIconSize` entfällt. Breite wieder 460 pt.
+- **Nur noch Knöpfe der App** (`SecondaryButton`, `PrimaryButton`; Hauptknopf in Klassisch gold, in Modern mit Akzentschrift wie überall): aktuell „Auf GitHub öffnen“ · „OK“; Fehler „Auf GitHub öffnen“ · „Schließen“ · „Erneut versuchen“; neue Version „Überspringen“ · „Später“ · „Herunterladen“ (danach „Fertig“); Suche „Abbrechen“. Der Link „Alle Hinweise auf GitHub“ entfällt – das Fenster zeigt die Punkte und hat eine eigene Anleitung.
+- **„Geprüft um …“** entfällt im Fenster (die letzte Prüfung steht in den Einstellungen). „Download: 11,3 MB“ bricht nicht mehr zwischen Wort und Größe um (geschütztes Leerzeichen).
+- **Sprachkatalog:** neu „Überspringen“ (EN „Skip“); entfernt „Geprüft um %@“, „Diese Version überspringen“, „Im Browser ansehen“, „Alle Hinweise auf GitHub“. Alle 26 Texte des Fensters mit Englisch (gegen den Build geprüft).
+- **DMG 1.0.2 neu gebaut** mit diesem Fenster (Release `clean`), geprüft wie zuvor (gültig, 1.0.2 (102029), arm64, Signatur, Handbücher gleich, keine Debug-Schalter); neue SHA-256 `3705a2b5…0272`, in `dist/Hinweise-1.0.2.md` eingetragen. Die vorige DMG (`15340b30…`) ist überholt.
+- **Marketing-Bild 1.0.2** mit dem neuen Fenster neu aufgenommen und gerendert (lokal).
+- **Geprüft:** Fenster per `screencapture` angesehen – aktuell und Fehler in Klassisch, neue Version in Klassisch und Modern dunkel; 303 Tests bestanden. README (Abschnitt „Updates“, Design-Bausteine) angepasst.
+
 # Marketing-Bilder zu den Updates 1.0.1 und 1.0.2 · 03.11.2026
 
 - **Wunsch:** Je ein Marketing-Bild für das Update 1.0.1 und 1.0.2 im Stil der vorhandenen Produktbilder.
