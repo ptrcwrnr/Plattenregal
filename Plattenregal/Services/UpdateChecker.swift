@@ -607,7 +607,11 @@ nonisolated struct GitHubReleaseDTO: Decodable {
             }
             return
         }
-        let notes = """
+        // Built as an older version (MARKETING_VERSION=1.0.1 for a picture of
+        // the update): the newest entry of "Was ist neu", as GitHub would offer
+        // it. Otherwise a made-up next version.
+        var version = AppVersion("1.0.3")!
+        var notes = """
             **Neu in 1.0.3**
             - Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt, was neu ist.
             - Fehlermeldungen sagen genauer, was los ist, etwa ohne Internet.
@@ -620,9 +624,18 @@ nonisolated struct GitHubReleaseDTO: Decodable {
             - Error messages say more precisely what’s wrong, for example without internet.
             - Statistics load faster.
             """
-        let release = AvailableRelease(version: AppVersion("1.0.3")!, pageURL: UpdateService.releasesPageURL,
-                                       downloadURL: name == "nodmg" ? nil : URL(string: "https://github.com/ptrcwrnr/Plattenregal/releases/download/v1.0.3/Plattenregal.dmg"),
-                                       downloadSize: name == "nodmg" ? nil : 11_270_713, publishedAt: .now.addingTimeInterval(-2 * 24 * 60 * 60), notes: notes)
+        var published = Date.now.addingTimeInterval(-2 * 24 * 60 * 60)
+        var size: Int? = 11_270_713
+        if let newest = Changelog.entries.first, let newer = AppVersion(newest.version), newer > currentVersion {
+            // Its own date; no size – the DMG isn't known here.
+            version = newer
+            notes = newest.changes.map { "- \($0)" }.joined(separator: "\n")
+            published = newest.date
+            size = nil
+        }
+        let release = AvailableRelease(version: version, pageURL: UpdateService.releasesPageURL,
+                                       downloadURL: name == "nodmg" ? nil : URL(string: "https://github.com/ptrcwrnr/Plattenregal/releases/download/v\(version)/Plattenregal.dmg"),
+                                       downloadSize: name == "nodmg" ? nil : size, publishedAt: published, notes: notes)
         lastCheck = .now
         switch name {
         case "checking": state = .checking

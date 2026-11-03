@@ -1,3 +1,11 @@
+# Marketing-Bilder zu den Updates 1.0.1 und 1.0.2 · 03.11.2026
+
+- **Wunsch:** Je ein Marketing-Bild für das Update 1.0.1 und 1.0.2 im Stil der vorhandenen Produktbilder.
+- **Zwei Beiträge 1080 × 1350** in `Marketing/Produktbilder.html` (lokal, nicht im Repository), gerendert nach `Marketing/Bilder/`: `post-update-1-0-1` (Klassisch auf Petrol mit Schallplatte, Kennzeile „Neu in 1.0.1“, „Die Plattenkarte, aufgeräumt.“, Ausschnitt der neuen Plattenkarte aus der echten Sammlung) und `post-update-1-0-2` (Modern dunkel, „Neu in 1.0.2“, „Neue Versionen kommen von selbst.“, das Update-Fenster mit den echten Punkten von 1.0.2).
+- **Aufnahmen:** `detail.png` neu (`Scripts/marketing-shots.sh detail`, die alte zeigte noch die Karte mit Plaketten und „1 · Vinyl …“); neu `update.png` – Debug-App einmalig mit `MARKETING_VERSION=1.0.1` gebaut, `--preview-update=available` in Modern dunkel, per `screencapture` (mit dem Glas der Knöpfe). Danach wieder normal als 1.0.2 gebaut.
+- **Debug-Vorschau:** `--preview-update=available` nimmt jetzt, wenn die App älter ist als der oberste Eintrag von „Was ist neu“, diese Version samt Punkten und Datum (ohne Größe, die DMG ist dort nicht bekannt); sonst wie bisher die erfundene 1.0.3. Nur im Debug-Build.
+- **Geprüft:** beide Bilder angesehen (Texte, Abstände, unten genug Luft beim Update-Fenster); 303 Tests bestanden. README (Produktbilder, Startargumente).
+
 # DMG und Release 1.0.2 vorbereitet · 03.11.2026
 
 - **Wunsch:** DMG und GitHub-Release für 1.0.2 vorbereiten (veröffentlicht wird erst nach Freigabe).
