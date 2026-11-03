@@ -54,7 +54,9 @@ struct AboutView: View {
                                 Text(entry.date, format: .dateTime.day().month(.abbreviated).year())
                                     .font(.caption).foregroundStyle(.secondary)
                             }
-                            ForEach(entry.changes, id: \.self) { change in BulletPoint(change) }
+                            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+                                ForEach(entry.changes, id: \.self) { change in ChangeItem(change) }
+                            }
                         }
                     }
                 }

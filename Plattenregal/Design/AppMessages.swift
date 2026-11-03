@@ -126,18 +126,16 @@ struct SymbolTile: View {
     }
 }
 
-/// One point of a list of changes: "Was ist neu" in „Über Plattenregal“ and
-/// in the update window.
-struct BulletPoint: View {
+/// One change in a list of changes: "Was ist neu" in „Über Plattenregal“ and
+/// in the update window. Listed with `itemSpacing` between them.
+struct ChangeItem: View {
     let text: AttributedString
     init(_ text: String) { self.text = AttributedString(text) }
     init(_ text: AttributedString) { self.text = text }
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: AppStyle.itemSpacing) {
-            Text(verbatim: "•").foregroundStyle(.tertiary).accessibilityHidden(true)
-            Text(text).fixedSize(horizontal: false, vertical: true)
-        }
-        .font(.callout)
+        // No bullet: each change is its own short paragraph, set apart by
+        // the spacing alone.
+        Text(text).font(.callout).fixedSize(horizontal: false, vertical: true)
     }
 }
 

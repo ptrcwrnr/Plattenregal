@@ -1,3 +1,11 @@
+# „Was ist neu“ ohne Aufzählungspunkte, Anleitung in ruhiger Fläche, „Schließen“ · 03.11.2026
+
+- **Wunsch:** In „Was ist neu“ die Punkte vor jedem Satz weg – überall –, „So aktualisierst du“ in einer ganz dezenten Fläche, bei „aktuell“ „Schließen“ statt „OK“.
+- **`ChangeItem`** ersetzt `BulletPoint`: jede Änderung ein schlichter Absatz ohne „•“, untereinander `itemSpacing` (vorher `tightSpacing` mit Punkt). Gilt in „Über Plattenregal“ und im Update-Fenster.
+- **Neu zentral:** `appQuietNote()` (AppSurfaces) mit `AppStyle.quietFill` – leichte Fläche ohne Rand und Glas in `cardRadius`, Innenabstand `rowSpacing`, etwas schwächer als der Hover, damit sie nicht anklickbar wirkt. Darin steht im Update-Fenster „So aktualisierst du“.
+- **„aktuell“:** Hauptknopf „Schließen“ statt „OK“ (Text gab es schon im Katalog).
+- **Geprüft:** Update-Fenster mit neuer Version in Klassisch hell und Modern dunkel, „Über Plattenregal“ in Klassisch per `screencapture` angesehen; 303 Tests bestanden. README (Design-Bausteine, Abschnitt „Updates“). Der Aufbau von „aktuell“ ist noch offen (drei Entwürfe vorgelegt). DMG 1.0.2 ist damit wieder überholt und wird nach der Entscheidung neu gebaut.
+
 # Update-Fenster neu angeordnet: Hinweis ohne App-Symbol, nur Knöpfe · 03.11.2026
 
 - **Wunsch:** Das Update-Fenster war unschön: „Geprüft um …“ überflüssig, ein einzelnes „OK“ wirkte verloren, blaue Textlinks („Im Browser ansehen“, „Alle Hinweise auf GitHub“, „Diese Version überspringen“) passten nicht zum Stil der App. Aus drei Entwürfen (Hinweis wie macOS, zentriert, Kopf- und Fußleiste) gewählt: **Variante A ohne App-Symbol**.

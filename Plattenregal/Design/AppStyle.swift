@@ -246,6 +246,9 @@ enum AppStyle {
     /// page switch's options, the magnifying glass.
     static var toolbarLabel: AnyShapeStyle { isAtelier ? AnyShapeStyle(AtelierPalette.bandLabel) : AnyShapeStyle(.secondary) }
     static var hoverBackground: Color { isAtelier ? AtelierPalette.ink.opacity(0.05) : Color.primary.opacity(0.05) }
+    /// A quiet note set off from the text around it (see `appQuietNote`):
+    /// fainter than the hover, so it never reads as clickable.
+    static var quietFill: Color { isAtelier ? AtelierPalette.ink.opacity(0.04) : Color.primary.opacity(0.04) }
     /// The accent chosen in the settings (or the system's). Read in `body`,
     /// so views redraw when it changes.
     static var accent: Color { isAtelier ? AtelierPalette.accent : AppPreferences.shared.accent.color }

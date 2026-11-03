@@ -68,7 +68,7 @@ struct UpdateView: View {
                 .keyboardShortcut(.cancelAction)
         case .upToDate:
             openReleasesPage
-            PrimaryButton(title: String(localized: "OK")) { close() }
+            PrimaryButton(title: String(localized: "Schließen")) { close() }
                 .keyboardShortcut(.defaultAction)
         case .available(let release):
             SecondaryButton(title: String(localized: "Überspringen")) {
@@ -157,9 +157,9 @@ struct UpdateView: View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             Text("Was ist neu").font(AppStyle.captionMark).foregroundStyle(.secondary)
             ScrollView {
-                VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+                VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
                     ForEach(Array(highlights.enumerated()), id: \.offset) { _, point in
-                        BulletPoint(Self.markdown(point))
+                        ChangeItem(Self.markdown(point))
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -181,6 +181,8 @@ struct UpdateView: View {
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        // Set off quietly: background help, not part of what's new.
+        .appQuietNote()
     }
 
     /// Bold, code and links of the release notes; plain text if that fails.
