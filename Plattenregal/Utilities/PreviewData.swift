@@ -70,7 +70,9 @@ enum DebugSnapshot {
 
     private static func waitForWindow(name: String, since start: Date) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let window = NSApp.windows.filter(\.isVisible).max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+            // Not the record's tiny window in the menu bar, visible before any other.
+            let window = NSApp.windows.filter { $0.isVisible && $0.frame.width > 200 }
+                .max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
             if let window {
                 // Time for covers and charts to come in.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) { capture(window, name: name, waited: Date.now.timeIntervalSince(start)) }

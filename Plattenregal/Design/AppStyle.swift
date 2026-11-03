@@ -228,6 +228,12 @@ enum AppStyle {
     static let tileSymbol = Font.callout.weight(.semibold)
     /// The tile itself.
     static let symbolTileSize: CGFloat = 28
+    /// The app icon heading „Über Plattenregal“.
+    static let aboutIconSize: CGFloat = 72
+    /// The app icon beside a message, as in the alerts of macOS (the update window).
+    static let alertIconSize: CGFloat = 64
+    /// A list of changes in a small window ("Was ist neu") scrolls beyond this height.
+    static let changesMaxHeight: CGFloat = 240
     /// The little chevron of a menu button, the arrow between two places.
     static let indicatorSymbol = Font.caption2.weight(.semibold)
     /// The glyph in the large round floating button (see `FloatingControls`).

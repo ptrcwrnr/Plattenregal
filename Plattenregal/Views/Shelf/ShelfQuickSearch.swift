@@ -355,11 +355,7 @@ struct QuickSearchPlace {
         if let openSettings { openSettings() } else { AppLog.error("Menüleiste", "Einstellungen ließen sich nicht öffnen") }
     }
     @objc private func menuQuit() { AppLifecycle.shared.quitCompletely() }
-    @objc private func menuShowUpdate() {
-        AppLifecycle.shared.leaveBackground()
-        NSApp.activate()
-        if let open = UpdateChecker.shared.openWindow { open() } else { AppLog.error("Menüleiste", "Update-Fenster ließ sich nicht öffnen") }
-    }
+    @objc private func menuShowUpdate() { UpdateChecker.shared.showAvailableRelease() }
 
     #if DEBUG
     /// --preview-quicksearch-keys=down,up,return: presses these keys in the

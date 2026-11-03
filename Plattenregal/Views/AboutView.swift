@@ -19,7 +19,7 @@ struct AboutView: View {
     var body: some View {
         VStack(spacing: AppStyle.itemSpacing) {
             Image(nsImage: NSApp.applicationIconImage)
-                .resizable().frame(width: 72, height: 72)
+                .resizable().frame(width: AppStyle.aboutIconSize, height: AppStyle.aboutIconSize)
                 .accessibilityHidden(true)
             Text("Plattenregal").font(AppStyle.dialogTitle)
             Text(Self.versionLine)
@@ -54,20 +54,14 @@ struct AboutView: View {
                                 Text(entry.date, format: .dateTime.day().month(.abbreviated).year())
                                     .font(.caption).foregroundStyle(.secondary)
                             }
-                            ForEach(entry.changes, id: \.self) { change in
-                                HStack(alignment: .firstTextBaseline, spacing: AppStyle.itemSpacing) {
-                                    Text(verbatim: "•").foregroundStyle(.tertiary).accessibilityHidden(true)
-                                    Text(change).fixedSize(horizontal: false, vertical: true)
-                                }
-                                .font(.callout)
-                            }
+                            ForEach(entry.changes, id: \.self) { change in BulletPoint(change) }
                         }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .frame(maxHeight: 240)
+            .frame(maxHeight: AppStyle.changesMaxHeight)
             .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

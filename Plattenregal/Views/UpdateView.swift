@@ -18,7 +18,7 @@ struct UpdateView: View {
         VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
             HStack(alignment: .top, spacing: AppStyle.cardPadding) {
                 Image(nsImage: NSApp.applicationIconImage)
-                    .resizable().frame(width: 64, height: 64)
+                    .resizable().frame(width: AppStyle.alertIconSize, height: AppStyle.alertIconSize)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
                     content
@@ -160,22 +160,19 @@ struct UpdateView: View {
 
     /// The points of the release notes, as in "Über Plattenregal"; scrolls when long.
     private func whatsNew(_ highlights: [String]) -> some View {
-        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+        // Spaced like "Was ist neu" in „Über Plattenregal“.
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
             Text("Was ist neu").font(AppStyle.captionMark).foregroundStyle(.secondary)
             ScrollView {
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     ForEach(Array(highlights.enumerated()), id: \.offset) { _, point in
-                        HStack(alignment: .firstTextBaseline, spacing: AppStyle.itemSpacing) {
-                            Text(verbatim: "•").foregroundStyle(.tertiary).accessibilityHidden(true)
-                            Text(Self.markdown(point)).fixedSize(horizontal: false, vertical: true)
-                        }
-                        .font(.callout)
+                        BulletPoint(Self.markdown(point))
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .frame(maxHeight: 200)
+            .frame(maxHeight: AppStyle.changesMaxHeight)
             .fixedSize(horizontal: false, vertical: true)
             .textSelection(.enabled)
         }

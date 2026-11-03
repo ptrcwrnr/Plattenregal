@@ -62,6 +62,15 @@ extension AllTests {
             #expect(noAssets.downloadURL == nil)
         }
 
+        @Test func oddFilesAtTheReleaseDontSpoilTheAnswer() throws {
+            // A file without name or address is passed over, the DMG still found.
+            let release = try UpdateService.release(from: Self.releaseJSON(assets: [
+                ["state": "uploaded", "size": 5], ["name": "Plattenregal.dmg", "state": "uploaded"], Self.asset("Plattenregal.dmg"),
+            ]), response: Self.http(200))
+            #expect(release.downloadURL?.lastPathComponent == "Plattenregal.dmg")
+            #expect(release.downloadSize == 11_270_713)
+        }
+
         @Test func foreignOrMissingPageFallsBackToTheReleasesPage() throws {
             let foreign = try UpdateService.release(from: Self.releaseJSON(page: "https://evil.example/releases"), response: Self.http(200))
             #expect(foreign.pageURL == UpdateService.releasesPageURL)
@@ -192,6 +201,38 @@ extension AllTests {
             #expect(String(UpdateView.markdown("[offen").characters) == "[offen")
         }
 
+        @Test func highlightsFollowTheHeadingNotJustTheRules() {
+            // A rule inside the German part: English is still the list under "New in".
+            let ruled = """
+                **Neu in 1.0.3**
+                - Eins
+
+                ---
+                **Aktualisieren:** laden.
+                - Kein Punkt
+                ---
+                ## New in 1.0.3
+                - One
+                """
+            #expect(ReleaseNotes.highlights(in: ruled, english: false) == ["Eins"])
+            #expect(ReleaseNotes.highlights(in: ruled, english: true) == ["One"])
+            // English first: each language still finds its own list.
+            let swapped = "New in 1.0.3:\n- One\n\n---\n\nNeu in 1.0.3:\n- Eins\n"
+            #expect(ReleaseNotes.highlights(in: swapped, english: false) == ["Eins"])
+            #expect(ReleaseNotes.highlights(in: swapped, english: true) == ["One"])
+            // "Neu installieren" is no heading; the list before it counts.
+            #expect(ReleaseNotes.highlights(in: "- Eins\n\n**Neu installieren:** so.\n- Schritt\n", english: false) == ["Eins"])
+            // Blank lines between points (a loose list), a paragraph inside a point.
+            let loose = "**Neu in 1.0.3**\n\n- Eins\n\n- Zwei\n\n  mit mehr\n\nText danach\n- Nicht mehr\n"
+            #expect(ReleaseNotes.highlights(in: loose, english: false) == ["Eins", "Zwei mit mehr"])
+            // Old Mac line ends.
+            #expect(ReleaseNotes.highlights(in: "- A\r- B", english: false) == ["A", "B"])
+            // The notes of 1.0.0: numbered install steps, no "Neu in" – nothing to show.
+            let first = "Die erste Ausgabe.\n\n**Installieren**\n1. Laden.\n2. Öffnen.\n\n---\n\nThe first release.\n\n**Install**\n1. Download.\n"
+            #expect(ReleaseNotes.highlights(in: first, english: false).isEmpty)
+            #expect(ReleaseNotes.highlights(in: first, english: true).isEmpty)
+        }
+
         // MARK: The check
 
         @Test func manualCheckFindsNewerVersionAndRemembersTheDay() async throws {
@@ -311,6 +352,50 @@ extension AllTests {
                 await automatic.value
                 #expect(requests.withLock { $0 } == 1)
                 #expect(checker.announcedRelease?.version == AppVersion("1.0.3"))
+            }
+        }
+
+        @Test func joinedCheckAsksAgainWhenTheOtherIsCancelled() async throws {
+            try await withDefaults { defaults in
+                let requests = Mutex(0)
+                let service = UpdateService { _ in
+                    let number = requests.withLock { $0 += 1; return $0 }
+                    // The first request hangs until it's cancelled.
+                    if number == 1 { try await Task.sleep(for: .seconds(10)) }
+                    return (Self.releaseJSON(tag: "v1.0.3"), Self.http(200))
+                }
+                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                let automatic = Task { await checker.runAutomaticCheckIfDue() }
+                try await Task.sleep(for: .milliseconds(50))
+                checker.checkNow()
+                try await Task.sleep(for: .milliseconds(50))
+                // The schedule restarts (setting changed): its request ends, the window's check goes on.
+                automatic.cancel()
+                await automatic.value
+                try await Self.waitUntil { checker.state != .checking }
+                #expect(checker.announcedRelease?.version == AppVersion("1.0.3"))
+                #expect(requests.withLock { $0 } == 2)
+            }
+        }
+
+        @Test func automaticCheckSwitchedOffMeanwhileShowsNothing() async throws {
+            try await withDefaults { defaults in
+                final class Switch { var on = true }
+                let setting = Switch()
+                let service = UpdateService { _ in
+                    try await Task.sleep(for: .milliseconds(150))
+                    return (Self.releaseJSON(tag: "v1.0.3"), Self.http(200))
+                }
+                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"),
+                                            automaticChecksEnabled: { setting.on })
+                let automatic = Task { await checker.runAutomaticCheckIfDue() }
+                try await Task.sleep(for: .milliseconds(30))
+                setting.on = false
+                await automatic.value
+                #expect(checker.state == .idle)
+                #expect(checker.announcedRelease == nil)
+                // GitHub did answer: that counts as the day's check.
+                #expect(checker.lastCheck != nil)
             }
         }
 

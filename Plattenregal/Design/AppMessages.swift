@@ -126,6 +126,21 @@ struct SymbolTile: View {
     }
 }
 
+/// One point of a list of changes: "Was ist neu" in „Über Plattenregal“ and
+/// in the update window.
+struct BulletPoint: View {
+    let text: AttributedString
+    init(_ text: String) { self.text = AttributedString(text) }
+    init(_ text: AttributedString) { self.text = text }
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: AppStyle.itemSpacing) {
+            Text(verbatim: "•").foregroundStyle(.tertiary).accessibilityHidden(true)
+            Text(text).fixedSize(horizontal: false, vertical: true)
+        }
+        .font(.callout)
+    }
+}
+
 /// The number of a step in a fine ring – no filled badge: the steps of the
 /// welcome, the moves of the sort check. A step done shows a check instead.
 /// `prominent` draws number and ring in the accent.

@@ -70,7 +70,8 @@ nonisolated enum ReleaseNotes {
     static let maximumCount = 12
 
     static func highlights(in notes: String, english: Bool) -> [String] {
-        let lines = notes.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n")
+        let lines = notes.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
         var parts: [[String]] = [[]]
         for line in lines {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -78,18 +79,37 @@ nonisolated enum ReleaseNotes {
         }
         let filled = parts.filter { $0.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty } }
         guard let first = filled.first else { return [] }
-        let part = english && filled.count > 1 ? filled[1] : first
+        // The list under "Neu in …" / "New in …", wherever the rules are; without
+        // such a heading the first part is German, the second English.
+        let heading = english ? "new in" : "neu in"
+        var part = english && filled.count > 1 ? filled[1] : first
+        var start = 0
+        search: for candidate in filled {
+            for (index, line) in candidate.enumerated() where isHeading(line, heading) {
+                part = candidate
+                start = index + 1
+                break search
+            }
+        }
         var items: [String] = []
-        for line in part {
+        for line in part[start...] {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             if let item = bullet(trimmed) {
                 items.append(item)
-            } else if !items.isEmpty {
-                // An indented line goes on with the point above; anything else ends the list.
-                if !trimmed.isEmpty, line.first == " " || line.first == "\t" { items[items.count - 1] += " " + trimmed } else { break }
+            } else if !items.isEmpty, !trimmed.isEmpty {
+                // An indented line goes on with the point above (also after a
+                // blank line, as Markdown allows); anything else ends the list.
+                guard line.first == " " || line.first == "\t" else { break }
+                items[items.count - 1] += " " + trimmed
             }
         }
         return Array(items.prefix(maximumCount))
+    }
+
+    /// "**Neu in 1.0.2**", "## New in 1.0.2", "Neu in 1.0.2:" – not "Neu installieren".
+    private static func isHeading(_ line: String, _ heading: String) -> Bool {
+        let words = line.trimmingCharacters(in: CharacterSet(charactersIn: "*_#: \t")).lowercased()
+        return words == heading || words.hasPrefix(heading + " ")
     }
 
     private static func bullet(_ line: String) -> String? {
@@ -242,8 +262,10 @@ nonisolated struct UpdateService: Sendable {
         // "latest" never names a draft or a pre-release; if it did, it isn't for everyone yet.
         guard dto.draft != true, dto.prerelease != true else { throw UpdateCheckError.noRelease }
         guard let version = AppVersion(dto.tag_name) else { throw UpdateCheckError.invalidResponse }
-        let assets = (dto.assets ?? []).filter { ($0.state ?? "uploaded") == "uploaded" && gitHubURL($0.browser_download_url) != nil }
-        let lowered = { (asset: GitHubReleaseDTO.Asset) in asset.name.lowercased() }
+        let assets = (dto.assets ?? []).filter {
+            $0.name != nil && ($0.state ?? "uploaded") == "uploaded" && gitHubURL($0.browser_download_url) != nil
+        }
+        let lowered = { (asset: GitHubReleaseDTO.Asset) in (asset.name ?? "").lowercased() }
         let dmg = assets.first { lowered($0) == "plattenregal.dmg" }
             ?? assets.first { lowered($0) == "plattenregal-\(version).dmg" }
             ?? assets.first { lowered($0).hasSuffix(".dmg") }
@@ -280,9 +302,10 @@ nonisolated struct UpdateService: Sendable {
 
 /// The fields of GitHub's release answer that Plattenregal reads.
 nonisolated struct GitHubReleaseDTO: Decodable {
+    /// Lenient: one odd file at the release doesn't spoil the whole answer.
     struct Asset: Decodable {
-        let name: String
-        let browser_download_url: String
+        let name: String?
+        let browser_download_url: String?
         let size: Int?
         let state: String?
     }
@@ -423,7 +446,12 @@ nonisolated struct GitHubReleaseDTO: Decodable {
     /// One request at a time; a second caller waits for the same answer –
     /// unless that request was just cancelled (‚Abbrechen‘, then checking again).
     private func fetchLatest() async -> Result<AvailableRelease, any Error> {
-        if let inFlight, !inFlight.isCancelled { return await inFlight.value }
+        if let inFlight, !inFlight.isCancelled {
+            let result = await inFlight.value
+            // Cancelled for the one who started it (the schedule restarting
+            // after the setting changed), not for this caller: ask anew.
+            guard case .failure(let error) = result, error.isUserCancellation, !Task.isCancelled else { return result }
+        }
         let service = service
         let date = now()
         let task = Task.detached { () -> Result<AvailableRelease, any Error> in
@@ -441,14 +469,14 @@ nonisolated struct GitHubReleaseDTO: Decodable {
         case .success(let release):
             lastCheck = now()
             defaults.set(lastCheck, forKey: Key.lastCheck)
+            // Switched off while the check was under way: nothing to show for it.
+            guard manual || automaticChecksEnabled() else { return }
             let how = manual ? "Von Hand" : "Automatisch"
             if release.version > currentVersion {
                 state = .available(release)
                 AppLog.info("Update", "\(how) geprüft: \(release.version) ist da (installiert \(currentVersion))")
                 if !manual {
-                    if !automaticChecksEnabled() {
-                        // Switched off while the check was under way: no window.
-                    } else if release.version == skippedVersion {
+                    if release.version == skippedVersion {
                         AppLog.info("Update", "\(release.version) wurde übersprungen, kein Hinweis")
                     } else {
                         announcementPending = true
@@ -469,6 +497,20 @@ nonisolated struct GitHubReleaseDTO: Decodable {
             AppLog.warning("Update", "\(manual ? "Prüfung" : "Automatische Prüfung") fehlgeschlagen: \(failure.title) · Technisch: \(String(describing: error))")
             // The automatic check stays quiet: the window keeps what it shows.
             if manual { state = .failed(failure) }
+        }
+    }
+
+    /// „Plattenregal x ist da …“ in the record's menu: the update window in front.
+    func showAvailableRelease() {
+        AppLifecycle.shared.leaveBackground()
+        NSApp.activate()
+        if let openWindow { openWindow(); return }
+        // No window has handed over how to open one yet: the main window does,
+        // and the update window follows once it's up.
+        ShelfQuickSearch.shared.showMainWindow()
+        Task {
+            try? await Task.sleep(for: .seconds(1))
+            if let openWindow { openWindow() } else { AppLog.error("Update", "Update-Fenster ließ sich nicht öffnen") }
         }
     }
 
@@ -539,7 +581,8 @@ nonisolated struct GitHubReleaseDTO: Decodable {
     /// background with only the record in the menu bar (the record's menu
     /// names the update then).
     private func announceIfPossible() {
-        guard announcementPending, announcedRelease != nil else { announcementPending = false; return }
+        // Skipped meanwhile, or the automatic check switched off: the hint that waited stays away.
+        guard announcementPending, announcedRelease != nil, automaticChecksEnabled() else { announcementPending = false; return }
         guard NSApp.isActive, !AppLifecycle.shared.isInBackground, let openWindow else { return }
         announcementPending = false
         openWindow()
