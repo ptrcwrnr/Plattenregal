@@ -1,3 +1,10 @@
+# Update-Fenster ohne Ampel · 03.11.2026
+
+- **Wunsch:** Die Ampel im Update-Fenster weglassen – jeder Zustand hat ohnehin einen Knopf zum Schließen.
+- **Ohne Ampel:** `hidesWindowControls(titleBarHeight:)` (`Design/AppPanel.swift`) blendet Schließen, Minimieren und Zoomen aus und meldet die Höhe der nun leeren Titelleiste (Fensterhöhe minus `contentLayoutRect`). `UpdateView` zieht den Inhalt um diese Höhe hinauf: oben derselbe Rand `pagePadding` wie seitlich und unten (vorher Titelleiste mit Ampel plus `itemSpacing`). Ein erster Versuch mit `.windowStyle(.plain)` nahm auch Hintergrund, Schatten und runde Ecken weg; verworfen. Messen über `safeAreaInsets` ergab innerhalb des Inhalts 0; ebenfalls verworfen.
+- **Esc schließt in jedem Zustand** (`onExitCommand`), auch bei „aktuell“ und „Fertig“, wo kein Knopf das Abbrechen-Kürzel trägt (vorher ging es dort nur über die Ampel oder ⌘W). ⌘W schließt weiter.
+- **Geprüft:** Debug-Build ohne Warnung, 303 Tests bestanden. In der Demo (`--preview-update`): „aktuell“ und „neue Version“ per `screencapture` ohne Schatten nachgemessen – Rand oben, seitlich und unten je 24 pt, keine Ampel; Fensterhöhe beim Öffnen alle 5 ms mitgeschrieben – erscheint gleich in der richtigen Höhe (130 pt), kein Sprung; Esc schließt bei „aktuell“, „neue Version“ und „offline“, ⌘W bei „aktuell“. **Nicht geprüft:** „Fertig“ nach „Herunterladen“ (hätte einen Download angestoßen), Klassisch und dunkel. „Über Plattenregal“ behält seine Ampel (es hat keinen eigenen Schließen-Knopf). Nicht in der DMG 1.0.2.
+
 # Einstellungen-Schließen in 1.0.2, Marketing-Bild und DMG 1.0.2 neu · 03.11.2026
 
 - **Wunsch:** Das Schließen der Einstellungen bei einem Klick daneben gehört noch in 1.0.2 – mit „Was ist neu“, neuer DMG und auf dem Marketing-Bild.

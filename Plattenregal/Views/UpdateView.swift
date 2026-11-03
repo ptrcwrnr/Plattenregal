@@ -13,6 +13,8 @@ struct UpdateView: View {
     @Environment(\.dismissWindow) private var dismissWindow
     /// „Herunterladen“ was clicked: the window says what comes next.
     @State private var downloading: AppVersion?
+    /// Height of the (hidden) title bar above the content.
+    @State private var titleBarHeight: CGFloat = 0
 
     var body: some View {
         // Everything starts at one edge; the buttons share the text's width
@@ -25,11 +27,15 @@ struct UpdateView: View {
             HStack(spacing: AppStyle.itemSpacing) { actions }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        // Below the (hidden) title bar with the window controls only a small
-        // gap: the controls already stand in the margin, so the gap from them
-        // to the title comes out about as wide as the side margin.
-        .padding(.top, AppStyle.itemSpacing)
-        .padding([.horizontal, .bottom], AppStyle.pagePadding)
+        // No window controls (every state has its own button to close), so
+        // the content reaches up into the empty title bar: the same margin
+        // from the window's top edge as from its sides.
+        .padding(AppStyle.pagePadding)
+        .padding(.top, -titleBarHeight)
+        .hidesWindowControls(titleBarHeight: $titleBarHeight)
+        // Without the window controls Esc closes in every state, also where
+        // no button carries the cancel shortcut („aktuell“, „Fertig“).
+        .onExitCommand { close() }
         .frame(width: Self.width)
         .animation(AppStyle.standardAnimation, value: checker.state)
         // Opened from the menu while nothing has been asked yet (or a

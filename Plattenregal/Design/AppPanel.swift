@@ -178,3 +178,38 @@ private struct ClickElsewhereCloser: NSViewRepresentable {
         }
     }
 }
+
+extension View {
+    /// Hides the window's close, minimize and zoom buttons – for a small
+    /// window whose every state has its own button to close (the update
+    /// window). Esc and ⌘W still close it. `titleBarHeight` gets the height
+    /// of the now empty title bar (with `.hiddenTitleBar`), so the content
+    /// can reach up into it.
+    func hidesWindowControls(titleBarHeight: Binding<CGFloat>) -> some View {
+        background(WindowControlsHider(titleBarHeight: titleBarHeight))
+    }
+}
+
+private struct WindowControlsHider: NSViewRepresentable {
+    @Binding var titleBarHeight: CGFloat
+
+    func makeNSView(context: Context) -> HiderView { HiderView() }
+    func updateNSView(_ view: HiderView, context: Context) {
+        view.report = { height in if titleBarHeight != height { titleBarHeight = height } }
+    }
+
+    final class HiderView: NSView {
+        var report: (CGFloat) -> Void = { _ in }
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window else { return }
+            for kind in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
+                window.standardWindowButton(kind)?.isHidden = true
+            }
+            let height = window.frame.height - window.contentLayoutRect.height
+            // Not during the view update that put this view in the window.
+            DispatchQueue.main.async { [report] in report(max(0, height)) }
+        }
+    }
+}
