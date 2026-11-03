@@ -1,3 +1,13 @@
+# Version 1.0.3 (102030): dritte Durchsicht seit 1.0.0, englische Menütexte · 03.11.2026
+
+- **Wunsch:** Alle Änderungen von 1.0.1 bis heute noch einmal auf Robustheit und Randfälle prüfen; die heutigen Korrekturen werden **1.0.3**.
+- **Version 1.0.3 (Build 102030)** in allen vier Build-Einstellungen. „Was ist neu“ in „Über Plattenregal“ mit eigenem Eintrag (DE/EN): aufgeräumte Angaben auf Plattenkarte und Zufallsfund; „Nach Updates suchen …“ zeigt verlässlich ein Ergebnis und findet „Was ist neu“ genauer. Der Eintrag für 1.0.2 (die Update-Prüfung) bleibt. Der Test `changelogStartsWithThisVersion` bestätigt die Zuordnung.
+- **Englische Texte vereinheitlicht:** Die App schreibt Auslassungspunkte im Englischen ohne Leerzeichen („Settings…“). Abweichend waren die neuen Texte „Check for Updates …“, „Plattenregal %@ Is Available …“, „… for the latest version …“ und vier ältere („Connect Apple TV …“, „Enter Token …“, „Search list …“, „Checking the code …“); dazu der englische 1.0.2-Eintrag von „Was ist neu“. Alle angeglichen, ebenso im englischen Handbuch („Check for Updates…“, „Enter Token…“). „Problem at GitHub“ heißt jetzt „Problem with GitHub“.
+- **Handbuch:** beide PDFs mit 1.0.3 neu erzeugt (je 10 Seiten); Titelseite und Seite 3 der englischen Fassung angesehen.
+- **Durchgesehen, ohne Änderung:** alle neuen Texte mit englischer Fassung gelesen (vollständig, keiner ohne Englisch); ruhiger Sprung ins Regal bei Wechsel zu Liste, Abbruch und schnell folgenden Sprüngen (die Abblendung wird immer zurückgenommen); Abstand für „nah“ nach einem Sprung (zählt ab der Platte in der Mitte statt ab der obersten Zeile – betrifft nur, ob kurz gescrollt oder überblendet wird, belassen); Update-Prüfung, Plattenkarte, Standort-Karte, Vorschau-Starts wie in den beiden Durchsichten zuvor.
+- **Tests:** 303 Tests in 20 Suiten bestanden, Build ohne Warnung. Katalog gegen den Build abgeglichen: kein Text ohne Eintrag (6 Treffer waren Reste alter Builds in DerivedData, im Code nicht mehr vorhanden).
+- **Offen für das Release:** DMG und GitHub-Release 1.0.3 (Hinweise mit „**Neu in 1.0.3**“, `---`, „**New in 1.0.3**“), Webseite (steht noch auf 1.0.1, Satz zu GitHub nur im Quelltext).
+
 # Änderungen seit 1.0.0 durchgesehen: Plattenkarte ohne „none“, Prüfung von „Was ist neu“ · 03.11.2026
 
 - **Wunsch:** Alle Änderungen für 1.0.1 und 1.0.2 noch einmal auf Robustheit und Randfälle prüfen und bei Bedarf korrigieren. (Eine 1.0.3 gibt es noch nicht; geprüft wurde alles seit dem Tag `v1.0.0`.)
