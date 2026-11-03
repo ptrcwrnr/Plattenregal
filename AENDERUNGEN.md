@@ -1,3 +1,9 @@
+# DMG 1.0.2 mit dem fertigen Update-Fenster · 03.11.2026
+
+- `dist/Plattenregal-1.0.2.dmg` neu gebaut (Release `clean`) mit „aktuell“ zentriert, Liste ohne Punkte und ruhiger Fläche; geprüft: `hdiutil verify` gültig, 1.0.2 (102029), arm64, Signatur gültig, Handbücher gleich, keine Debug-Schalter. SHA-256 `462af40c…5051`, in `dist/Hinweise-1.0.2.md` eingetragen; die früheren DMGs von heute sind überholt.
+- Marketing-Bild `post-update-1-0-2` mit dem aktuellen Fenster neu aufgenommen und gerendert (lokal).
+- Noch nicht veröffentlicht: Release v1.0.2 und Webseite warten auf Freigabe.
+
 # „Aktuell“ zentriert mit Haken, ruhige Fläche bündig · 03.11.2026
 
 - **Wunsch:** Für „Plattenregal ist aktuell“ Entwurf 3 (zentriert mit Haken, ein Knopf); in der ruhigen Fläche „So aktualisierst du“ soll der Text nicht eingerückt beginnen.
