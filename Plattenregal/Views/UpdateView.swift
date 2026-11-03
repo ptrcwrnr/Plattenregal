@@ -15,17 +15,23 @@ struct UpdateView: View {
     @State private var downloading: AppVersion?
 
     var body: some View {
-        // Text first, the buttons right under it and grouped on the right, like
-        // a macOS alert – no icon: the window's text says what it's about.
-        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            content
-            HStack(spacing: AppStyle.itemSpacing) {
-                Spacer(minLength: 0)
-                actions
+        Group {
+            if case .upToDate(let latest) = checker.state {
+                upToDate(latest)
+            } else {
+                // Text first, the buttons right under it and grouped on the
+                // right, like a macOS alert – no icon: the text says what it's about.
+                VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                    content
+                    HStack(spacing: AppStyle.itemSpacing) {
+                        Spacer(minLength: 0)
+                        actions
+                    }
+                    .padding(.top, AppStyle.itemSpacing)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.top, AppStyle.itemSpacing)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppStyle.pagePadding)
         .frame(width: Self.width)
         .animation(AppStyle.standardAnimation, value: checker.state)
@@ -46,12 +52,8 @@ struct UpdateView: View {
                    String(localized: "Plattenregal fragt bei GitHub nach der neuesten Version …"))
             ProgressView().progressViewStyle(.linear)
                 .accessibilityLabel(String(localized: "Suche nach Updates"))
-        case .upToDate(let latest):
-            let current = checker.currentVersion
-            header(String(localized: "Plattenregal ist aktuell"),
-                   current > latest
-                    ? String(localized: "Du hast Version \(current.description), neuer als die zuletzt veröffentlichte \(latest.description).")
-                    : String(localized: "Du hast Version \(current.description), die neueste Version."))
+        case .upToDate:
+            EmptyView() // its own layout, see `upToDate(_:)`
         case .available(let release):
             available(release)
         case .failed(let error):
@@ -67,9 +69,7 @@ struct UpdateView: View {
             SecondaryButton(title: String(localized: "Abbrechen")) { close() }
                 .keyboardShortcut(.cancelAction)
         case .upToDate:
-            openReleasesPage
-            PrimaryButton(title: String(localized: "Schließen")) { close() }
-                .keyboardShortcut(.defaultAction)
+            EmptyView()
         case .available(let release):
             SecondaryButton(title: String(localized: "Überspringen")) {
                 checker.skip(release)
@@ -105,6 +105,32 @@ struct UpdateView: View {
     }
 
     // MARK: States
+
+    /// Nothing to do: a short, centered confirmation with one button, like a
+    /// done step elsewhere in the app – the tick of `StepNumber`.
+    private func upToDate(_ latest: AppVersion) -> some View {
+        let current = checker.currentVersion
+        return VStack(spacing: AppStyle.itemSpacing) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(AppStyle.statusSymbol).foregroundStyle(AppStyle.successColor)
+                .accessibilityHidden(true)
+            VStack(spacing: AppStyle.tightSpacing) {
+                Text("Plattenregal ist aktuell").font(AppStyle.sectionTitle)
+                Text(current > latest
+                     ? String(localized: "Du hast Version \(current.description), neuer als die zuletzt veröffentlichte \(latest.description).")
+                     : String(localized: "Du hast Version \(current.description), die neueste Version."))
+                    .font(.callout).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
+            .accessibilityElement(children: .combine)
+            PrimaryButton(title: String(localized: "Schließen")) { close() }
+                .keyboardShortcut(.defaultAction)
+                .padding(.top, AppStyle.rowSpacing)
+        }
+        .frame(maxWidth: .infinity)
+    }
 
     @ViewBuilder
     private func available(_ release: AvailableRelease) -> some View {

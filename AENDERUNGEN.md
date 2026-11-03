@@ -1,3 +1,10 @@
+# „Aktuell“ zentriert mit Haken, ruhige Fläche bündig · 03.11.2026
+
+- **Wunsch:** Für „Plattenregal ist aktuell“ Entwurf 3 (zentriert mit Haken, ein Knopf); in der ruhigen Fläche „So aktualisierst du“ soll der Text nicht eingerückt beginnen.
+- **„aktuell“** (`UpdateView.upToDate`): eigener, zentrierter Aufbau – `checkmark.circle.fill` in `statusSymbol` und `successColor` (wie der abgehakte Schritt in `StepNumber`), Titel in `sectionTitle`, Text in Nebentext, darunter nur „Schließen“ (Hauptknopf, Return). „Auf GitHub öffnen“ entfällt dort; die anderen Zustände bleiben wie ein Hinweis mit Knöpfen rechts unter dem Text.
+- **`appQuietNote()`**: Die Fläche reicht jetzt um `rowSpacing` in den Rand hinaus (negativer Innenrand), statt den Text um `rowSpacing` einzurücken – der Text steht bündig mit „Was ist neu“ und dem Titel. Braucht mindestens `rowSpacing` Rand drumherum (im Fenster `pagePadding`).
+- **Geprüft:** „aktuell“ in Klassisch hell und Modern dunkel, neue Version in Klassisch hell per `screencapture` angesehen; 303 Tests bestanden. README (Abschnitt „Updates“, Design-Bausteine).
+
 # „Was ist neu“ ohne Aufzählungspunkte, Anleitung in ruhiger Fläche, „Schließen“ · 03.11.2026
 
 - **Wunsch:** In „Was ist neu“ die Punkte vor jedem Satz weg – überall –, „So aktualisierst du“ in einer ganz dezenten Fläche, bei „aktuell“ „Schließen“ statt „OK“.
