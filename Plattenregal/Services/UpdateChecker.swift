@@ -172,8 +172,6 @@ nonisolated enum UpdateCheckError: LocalizedError, Equatable, Sendable {
         }
     }
 
-    /// No connection at all, as opposed to trouble on the way or at GitHub.
-    var isOffline: Bool { self == .offline }
 }
 
 extension UpdateCheckError: UserFacingError {}

@@ -42,10 +42,13 @@ struct AboutView: View {
     /// Newest version first. As tall as its content up to a limit, then it
     /// scrolls – like the tracklist in a cover's popover.
     private var changes: some View {
-        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+        // The same steps as the update window: caption to content and point
+        // to point `itemSpacing`, version line to its points `tightSpacing`,
+        // version to version `sectionSpacing`.
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("Was ist neu").font(AppStyle.captionMark).foregroundStyle(.secondary)
             ScrollView {
-                VStack(alignment: .leading, spacing: AppStyle.cardPadding) {
+                VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
                     ForEach(Changelog.entries) { entry in
                         VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                             HStack(alignment: .firstTextBaseline) {

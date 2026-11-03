@@ -15,23 +15,18 @@ struct UpdateView: View {
     @State private var downloading: AppVersion?
 
     var body: some View {
-        Group {
-            if case .upToDate(let latest) = checker.state {
-                upToDate(latest)
-            } else {
-                // Text first, the buttons right under it, starting in line
-                // with the text – no icon: the text says what it's about.
-                VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                    content
-                    HStack(spacing: AppStyle.itemSpacing) {
-                        actions
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.top, AppStyle.itemSpacing)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+        // Everything starts at one edge. Three steps of spacing only:
+        // `sectionSpacing` between the blocks (head, what's new, note,
+        // buttons), `itemSpacing` from a caption to its content and between
+        // points, `tightSpacing` from a title to its line.
+        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
+            content
+            HStack(spacing: AppStyle.itemSpacing) {
+                actions
+                Spacer(minLength: 0)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppStyle.pagePadding)
         .frame(width: Self.width)
         .animation(AppStyle.standardAnimation, value: checker.state)
@@ -52,13 +47,16 @@ struct UpdateView: View {
                    String(localized: "Plattenregal fragt bei GitHub nach der neuesten Version …"))
             ProgressView().progressViewStyle(.linear)
                 .accessibilityLabel(String(localized: "Suche nach Updates"))
-        case .upToDate:
-            EmptyView() // its own layout, see `upToDate(_:)`
+        case .upToDate(let latest):
+            let current = checker.currentVersion
+            header(String(localized: "Plattenregal ist aktuell"),
+                   current > latest
+                    ? String(localized: "Du hast Version \(current.description), neuer als die zuletzt veröffentlichte \(latest.description).")
+                    : String(localized: "Du hast Version \(current.description), die neueste Version."))
         case .available(let release):
             available(release)
         case .failed(let error):
-            header(error.title, error.errorDescription ?? ErrorMessages.generic,
-                   systemImage: error.isOffline ? "wifi.slash" : "exclamationmark.triangle")
+            header(error.title, error.errorDescription ?? ErrorMessages.generic)
         }
     }
 
@@ -69,7 +67,8 @@ struct UpdateView: View {
             SecondaryButton(title: String(localized: "Abbrechen")) { close() }
                 .keyboardShortcut(.cancelAction)
         case .upToDate:
-            EmptyView()
+            PrimaryButton(title: String(localized: "Schließen")) { close() }
+                .keyboardShortcut(.defaultAction)
         case .available(let release):
             SecondaryButton(title: String(localized: "Überspringen")) {
                 checker.skip(release)
@@ -106,32 +105,6 @@ struct UpdateView: View {
 
     // MARK: States
 
-    /// Nothing to do: a short, centered confirmation with one button, like a
-    /// done step elsewhere in the app – the tick of `StepNumber`.
-    private func upToDate(_ latest: AppVersion) -> some View {
-        let current = checker.currentVersion
-        return VStack(spacing: AppStyle.itemSpacing) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(AppStyle.statusSymbol).foregroundStyle(AppStyle.successColor)
-                .accessibilityHidden(true)
-            VStack(spacing: AppStyle.tightSpacing) {
-                Text("Plattenregal ist aktuell").font(AppStyle.sectionTitle)
-                Text(current > latest
-                     ? String(localized: "Du hast Version \(current.description), neuer als die zuletzt veröffentlichte \(latest.description).")
-                     : String(localized: "Du hast Version \(current.description), die neueste Version."))
-                    .font(.callout).foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
-            }
-            .accessibilityElement(children: .combine)
-            PrimaryButton(title: String(localized: "Schließen")) { close() }
-                .keyboardShortcut(.defaultAction)
-                .padding(.top, AppStyle.rowSpacing)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
     @ViewBuilder
     private func available(_ release: AvailableRelease) -> some View {
         header(String(localized: "Plattenregal \(release.version.description) ist da"), details(of: release))
@@ -148,15 +121,11 @@ struct UpdateView: View {
 
     // MARK: Parts
 
-    private func header(_ title: String, _ text: String, systemImage: String? = nil) -> some View {
+    /// Title and its line – no symbol: the title says what happened, and
+    /// everything starts at the same edge.
+    private func header(_ title: String, _ text: String) -> some View {
         VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-            HStack(alignment: .firstTextBaseline, spacing: AppStyle.itemSpacing) {
-                if let systemImage {
-                    Image(systemName: systemImage).foregroundStyle(AppStyle.warningColor).accessibilityHidden(true)
-                }
-                Text(title)
-            }
-            .font(AppStyle.sectionTitle)
+            Text(title).font(AppStyle.sectionTitle)
             Text(text).font(.callout).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
@@ -180,7 +149,7 @@ struct UpdateView: View {
     /// The points of the release notes, as in "Über Plattenregal"; scrolls when long.
     private func whatsNew(_ highlights: [String]) -> some View {
         // Spaced like "Was ist neu" in „Über Plattenregal“.
-        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("Was ist neu").font(AppStyle.captionMark).foregroundStyle(.secondary)
             ScrollView {
                 VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
@@ -198,7 +167,7 @@ struct UpdateView: View {
     }
 
     private var installSteps: some View {
-        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
             Text("So aktualisierst du").font(AppStyle.captionMark).foregroundStyle(.secondary)
             // ⌘Q only sends it to the background then, and the Finder can't replace a running app.
             Text(AppLifecycle.shared.keepsRunning
@@ -207,8 +176,6 @@ struct UpdateView: View {
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        // Set off quietly: background help, not part of what's new.
-        .appQuietNote()
     }
 
     /// Bold, code and links of the release notes; plain text if that fails.

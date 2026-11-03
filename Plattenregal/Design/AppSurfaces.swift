@@ -43,19 +43,6 @@ extension View {
         }
     }
 
-    /// A quiet note set off from the text around it – "So aktualisierst du"
-    /// in the update window: a faint fill in the cards' corners, no edge, no
-    /// glass, so it stays in the background of the window. The fill reaches
-    /// out into the margin instead of moving the text in: its text stays in
-    /// line with the text above and below. Needs a margin of at least
-    /// `rowSpacing` around it (the window's `pagePadding`).
-    func appQuietNote() -> some View {
-        padding(AppStyle.rowSpacing)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppStyle.quietFill, in: RoundedRectangle(cornerRadius: AppStyle.cardRadius))
-            .padding(.horizontal, -AppStyle.rowSpacing)
-    }
-
     /// Standard hover feedback (subtle background tint) shared by every interactive
     /// card/row in the app, so hover always looks and animates the same way.
     func appHoverable(_ hovering: Bool, cornerRadius: CGFloat = AppStyle.cardRadius) -> some View {

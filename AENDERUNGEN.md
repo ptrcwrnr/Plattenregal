@@ -1,3 +1,11 @@
+# Update-Fenster: alles an einer Kante, ohne Symbole, gleiche Abstände · 03.11.2026
+
+- **Wunsch:** Bei „Keine Internetverbindung“ war nicht alles bündig (das Symbol schob den Titel nach rechts); alle Abstände einheitlich nach der Skala; „aktuell“ an die anderen Zustände angleichen; die Symbole über dem Titel weglassen; alle Zustände auf Bündigkeit prüfen. DMG und Marketing-Bild diesmal nicht neu.
+- **Ohne Symbole:** Fehler (vorher Symbol vor dem Titel) und „aktuell“ (vorher zentriert mit Haken) haben jetzt denselben Aufbau wie alle Zustände – Titel, Text, Knöpfe an einer Kante; „aktuell“ mit nur „Schließen“. `UpdateCheckError.isOffline` diente nur dem Symbol und ist entfernt.
+- **Drei Abstandsstufen** (`UpdateView`): `sectionSpacing` zwischen den Blöcken (vorher `rowSpacing`, über den Knöpfen zusätzlich `itemSpacing`), `itemSpacing` von „Was ist neu“ / „So aktualisierst du“ zum Inhalt (vorher `rowSpacing` bzw. `tightSpacing`) und zwischen den Punkten, `tightSpacing` vom Titel zur Zeile. „Über Plattenregal“ genauso: „Was ist neu“ zum Inhalt `itemSpacing` (vorher `rowSpacing`), Version zu Version `sectionSpacing` (vorher `cardPadding`).
+- **Bündigkeit nachgemessen** (Aufnahmen per `screencapture`, linke Kante je Textzeile): aktuell, Fehler, Suche und neue Version – Titel, Text, Liste und Anleitungstext bei 24,5 pt, Knöpfe bei 23,5 pt (Rand des Glases). Aus der Linie fiel nur die Fläche hinter „So aktualisierst du“, die 12 pt in den Rand ragte; aus drei Entwürfen gewählt: **ohne Fläche**, nur Überschrift und Text wie bei „Was ist neu“. `appQuietNote()` und `AppStyle.quietFill` werden nirgends mehr gebraucht und sind entfernt. Danach nachgemessen: alles bei 24,5 pt, Knöpfe 24 pt.
+- **Geprüft:** 303 Tests bestanden, Build ohne Warnung. README (Abschnitt „Updates“, Design-Bausteine). DMG und Marketing-Bild bewusst nicht neu gebaut – beide zeigen noch den vorigen Stand des Fensters.
+
 # Hauptknopf im Dunkeln hell, Knöpfe im Update-Fenster links bündig · 03.11.2026
 
 - **Wunsch:** Im dunklen Modus die blaue Schrift der Knöpfe hell, sonst zu schlecht lesbar; im Update-Fenster die Knöpfe links bündig mit dem Text beginnen lassen (außer beim zentrierten „aktuell“).
