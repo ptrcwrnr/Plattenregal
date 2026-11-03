@@ -1,3 +1,12 @@
+# DMG und Release 1.0.2 vorbereitet · 03.11.2026
+
+- **Wunsch:** DMG und GitHub-Release für 1.0.2 vorbereiten (veröffentlicht wird erst nach Freigabe).
+- `dist/Plattenregal-1.0.2.dmg` gebaut (Release `clean`, `Scripts/make-dmg.sh`), 1.0.2 (102029), SHA-256 `15340b30…0111`. Handbuch-PDFs waren schon auf 1.0.2 (unverändert übernommen).
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.2 (102029), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen gleich wie in der DMG 1.0.1; URL-Schema `plattenregal`; Handbücher in der App identisch mit denen im Repository; keine Debug-Schalter (`--preview-…`, `--snapshot=`) im Release; App aus der DMG als Demo gestartet, Protokoll „Start · Version 1.0.2 (102029)“.
+- **Hinweise zum Release** in `dist/Hinweise-1.0.2.md` (nicht im Repository): „Neu in 1.0.2“ mit den vier Punkten aus „Was ist neu“, Aktualisieren (mit ⌥⌘Q für den Hintergrundmodus und dem Hinweis, dass Plattenregal neue Versionen ab jetzt selbst meldet), Neu installieren, `---`, dasselbe auf Englisch, SHA-256. Mit dem Parser der App (`ReleaseNotes`) gegengelesen: je vier Punkte auf Deutsch und Englisch.
+- **Webseite** im Quelltext auf 1.0.2 (Download-Knöpfe oben und unten, Fußtext, de/en); noch nicht veröffentlicht.
+- **Offen:** `gh release create v1.0.2 …` samt `Plattenregal.dmg` und das Veröffentlichen der Webseite – beides nach Freigabe.
+
 # Bleibt 1.0.2 (102029): dritte Durchsicht seit 1.0.0, englische Menütexte · 03.11.2026
 
 - **Wunsch:** Alle Änderungen von 1.0.1 bis heute noch einmal auf Robustheit und Randfälle prüfen. Zuerst sollten die heutigen Korrekturen 1.0.3 werden; da 1.0.2 nie veröffentlicht wurde (zuletzt draußen ist 1.0.1), bleibt es bei **1.0.2** – alles von heute gehört dazu. Der Sprung auf 1.0.3 (102030) ist überall zurückgenommen.
