@@ -1,3 +1,9 @@
+# Webseite auf 1.0.3 · 04.11.2026
+
+- **Wunsch:** Die Webseite nach dem Release 1.0.3 nachziehen.
+- **Geändert** (`Webseite/index.html`, Version 17 des Artifacts): Version 1.0.3 in beiden Download-Knöpfen und im Fuß (Deutsch und Englisch, sechs Stellen, nirgends mehr „1.0.2“). Punkt „Immer bereit“ im Band der Suche: „Nach ⌘Q oder dem roten Knopf läuft Plattenregal ohne Dock-Symbol weiter.“ (EN „After ⌘Q or the red button, Plattenregal keeps running …“). Größe bleibt 11 MB; Bilder und die übrigen 63 Dateien des Artifacts unverändert.
+- **Geprüft:** vor der Änderung die veröffentlichte Fassung mit `Webseite/index.html` verglichen (gleich bis auf das Grundgerüst, das beim Veröffentlichen dazukommt); nach dem Veröffentlichen die Datei des Artifacts gelesen (sechsmal 1.0.3, sonst wie die lokale); die Seite im Browser ohne Anmeldung angesehen: Download-Knopf „Version 1.0.3 · 11 MB · kostenlos“, auf Englisch „Version 1.0.3 · 11 MB · free“ und der neue Satz unter „Always ready“. Der Fuß nur in der Datei geprüft, nicht im Browser.
+
 # Release 1.0.3: DMG und GitHub · 04.11.2026
 
 - **Wunsch:** 1.0.3 mit DMG auf GitHub veröffentlichen.
