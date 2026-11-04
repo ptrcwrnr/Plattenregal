@@ -1,3 +1,11 @@
+# Release 1.0.3: DMG und GitHub · 04.11.2026
+
+- **Wunsch:** 1.0.3 mit DMG auf GitHub veröffentlichen.
+- **Inhalt:** Hinweis zum Umsortieren der Statistik, roter Knopf beendet wie ⌘Q (oder Hintergrund), „Zufällig“ mischt beim Zurückholen neu. Branch `text/statistik-reihenfolge` per Fast-Forward nach `main` übernommen.
+- **DMG** `dist/Plattenregal-1.0.3.dmg` (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB, SHA-256 `16d6fd72…f267e`, in `dist/Hinweise-1.0.3.md` eingetragen. Das Skript hat die Handbücher `Handbuch.pdf`/`Handbook.pdf` für die neue Versionsnummer neu erzeugt; sie sind in diesem Commit.
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.3 (102030), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen gleich wie in der DMG 1.0.2; keine Debug-Schalter im Programm; die drei neuen Texte und der neue Hinweis zu „Zufällig“ mit englischer Fassung enthalten; Handbücher identisch mit dem Repository; App aus der DMG als Demo gestartet, Protokoll „Start · Version 1.0.3 (102030)“, sauber beendet.
+- **GitHub:** Push von `main`, Release **v1.0.3** mit `Plattenregal-1.0.3.dmg` und `Plattenregal.dmg` (gleiche Datei, fester Link der Webseite), Text aus `dist/Hinweise-1.0.3.md` (drei Punkte auf Deutsch und Englisch). Webseite nicht angefasst.
+
 # Roter Knopf beendet wie ⌘Q, Zufällig mischt beim Zurückholen neu · 04.11.2026
 
 - **Wunsch:** Nach ⌘Q oder dem roten Knopf und erneutem Öffnen zeigte „Zufällig“ dieselben Cover. Beim Zurückholen soll immer neu gemischt werden. Außerdem soll der rote Knopf die App wie ⌘Q behandeln: in den Hintergrund, wenn das eingeschaltet ist, sonst ganz beenden, statt sie ohne Fenster im Dock zu lassen. Gehört zu 1.0.3.
