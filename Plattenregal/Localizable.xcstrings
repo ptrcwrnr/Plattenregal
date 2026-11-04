@@ -190,6 +190,26 @@
         }
       }
     },
+    "Der rote Knopf am Fenster beendet Plattenregal jetzt wie ⌘Q, statt die App ohne Fenster im Dock zu lassen – oder schickt sie in den Hintergrund, wenn das eingeschaltet ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The red button on the window now quits Plattenregal like ⌘Q instead of leaving the app in the Dock without a window – or sends it to the background if that is switched on."
+          }
+        }
+      }
+    },
+    "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Random” in collection and wantlist shuffles anew each time you open Plattenregal – also from the background."
+          }
+        }
+      }
+    },
     "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen." : {
       "localizations" : {
         "en" : {
@@ -3317,12 +3337,12 @@
         }
       }
     },
-    "Bei jedem Start neu gemischt – so fällt immer mal wieder etwas anderes ins Auge." : {
+    "Bei jedem Öffnen von Plattenregal neu gemischt – so fällt immer mal wieder etwas anderes ins Auge." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shuffled anew on every launch – so something different catches your eye every now and then."
+            "value" : "Shuffled anew each time you open Plattenregal – so something different catches your eye every now and then."
           }
         }
       }

@@ -88,6 +88,8 @@ enum Changelog {
         [
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),
+                String(localized: "Der rote Knopf am Fenster beendet Plattenregal jetzt wie ⌘Q, statt die App ohne Fenster im Dock zu lassen – oder schickt sie in den Hintergrund, wenn das eingeschaltet ist."),
+                String(localized: "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund."),
             ]),
             Entry(version: "1.0.2", date: day(2026, 11, 3), changes: [
                 String(localized: "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung."),

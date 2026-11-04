@@ -5,7 +5,10 @@ import ServiceManagement
 /// last window close every window and keep the app running with only the
 /// record in the menu bar – no Dock icon, not in ⌘-Tab – so the search there,
 /// ⌥ Leertaste, the automatic export and the backups keep working. The
-/// record's menu (right-click) and ⌥⌘Q quit completely.
+/// record's menu (right-click) and ⌥⌘Q quit completely. Without the
+/// background, closing the last window quits like ⌘Q (no app left in the
+/// Dock without a window). Back from the background, the random order of
+/// collection and wantlist is shuffled anew, as after a real launch.
 ///
 /// Only while the record is in the menu bar: without it there'd be no way
 /// to quit. Never in the demo (a showcase, ended by quitting) and never when
@@ -49,12 +52,14 @@ import ServiceManagement
         guard !started else { return }
         started = true
         let center = NotificationCenter.default
-        // The last window closed by the user: on into the background. Checked
-        // a moment later, when the window is gone from the screen.
+        // The last window closed by the user (red button, ⌘W, Esc): like ⌘Q,
+        // into the background or quit. Checked a moment later, when the window
+        // is gone from the screen. Only a window that was on screen or in the
+        // Dock: one SwiftUI tidies away unseen must not end the app.
         observers.append(center.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { notification in
             let window = notification.object as? NSWindow
             MainActor.assumeIsolated {
-                guard let window, Self.isAppWindow(window) else { return }
+                guard let window, Self.isOpen(window) else { return }
                 AppLifecycle.shared.windowWillClose()
             }
         })
@@ -86,7 +91,7 @@ import ServiceManagement
 
     // MARK: Quitting
 
-    /// ⌘Q („Plattenregal beenden“ in the app menu).
+    /// ⌘Q („Plattenregal beenden“ in the app menu) and closing the last window.
     func quitRequested() {
         if keepsRunning { enterBackground() } else { NSApp.terminate(nil) }
     }
@@ -139,6 +144,9 @@ import ServiceManagement
     /// Dock icon and app menu back – before a window of the app shows.
     func leaveBackground() {
         guard isInBackground else { return }
+        // Before the windows rebuild their content (`ReleasedInBackground`
+        // follows `isInBackground`): coming back counts as opening the app.
+        OverviewOrder.reshuffleAll()
         isInBackground = false
         NSApp.setActivationPolicy(.regular)
         ProcessInfo.processInfo.enableAutomaticTermination(Self.terminationReason)
@@ -157,11 +165,14 @@ import ServiceManagement
         }
     }
 
+    /// Not for windows this class closes itself, and not while the window
+    /// of a launch at login is being hidden.
     private func windowWillClose() {
-        guard !closingWindows, !isInBackground, keepsRunning else { return }
+        guard !closingWindows, !isInBackground, !hidingLaunchWindow, !quittingCompletely else { return }
         DispatchQueue.main.async { [self] in
-            guard !isInBackground, keepsRunning, !NSApp.windows.contains(where: Self.isOpen) else { return }
-            enterBackground()
+            guard !isInBackground, !hidingLaunchWindow, !quittingCompletely, !NSApp.windows.contains(where: Self.isOpen) else { return }
+            AppLog.info("App", keepsRunning ? "Letztes Fenster geschlossen, weiter im Hintergrund" : "Letztes Fenster geschlossen, Plattenregal wird beendet")
+            quitRequested()
         }
     }
 

@@ -237,6 +237,14 @@ extension AllTests {
             #expect(random(items) == shuffled)
             OverviewOrder.reshuffle("collection")
             #expect(random(items) != shuffled)
+            // Back from the background: both pages anew, each stable afterwards.
+            let collection = random(items), wantlist = random(items, "wantlist")
+            OverviewOrder.reshuffleAll()
+            let collectionAfter = random(items), wantlistAfter = random(items, "wantlist")
+            #expect(collectionAfter != collection)
+            #expect(wantlistAfter != wantlist)
+            #expect(random(items) == collectionAfter)
+            #expect(random(items, "wantlist") == wantlistAfter)
             // Newest first; undated last, in alphabetical order.
             let date = { (n: Int) -> Date? in n > 3 ? nil : Date(timeIntervalSince1970: Double(n)) }
             #expect(OverviewOrder.recent.apply([5, 1, 4, 3, 2], scope: "collection", alphabetical: alphabetical, key: { $0 }, added: date) == [3, 2, 1, 4, 5])

@@ -32,7 +32,7 @@ enum OverviewLayout: String, CaseIterable, Identifiable {
 }
 
 /// Order of the collection and wantlist. The random one is shuffled anew on
-/// each launch.
+/// each launch and each return from the background (`AppLifecycle`).
 enum OverviewOrder: String, CaseIterable, Identifiable {
     case alphabetical, random, recent
     var id: Self { self }
@@ -46,16 +46,20 @@ enum OverviewOrder: String, CaseIterable, Identifiable {
     var hint: String {
         switch self {
         case .alphabetical: String(localized: "Nach Interpret, mit dem Alphabet am Rand.")
-        case .random: String(localized: "Bei jedem Start neu gemischt – so fällt immer mal wieder etwas anderes ins Auge.")
+        case .random: String(localized: "Bei jedem Öffnen von Plattenregal neu gemischt – so fällt immer mal wieder etwas anderes ins Auge.")
         case .recent: String(localized: "Zuletzt bei Discogs hinzugefügt zuerst.")
         }
     }
 
-    /// New with each launch and each switch to "Zufällig" in the settings;
-    /// in between the random order stays put. One per page (its storage key):
-    /// shuffling the wantlist must not reorder the collection on its next sync.
+    /// New with each launch, each return from the background and each switch
+    /// to "Zufällig" in the settings; in between the random order stays put.
+    /// One per page (its storage key): shuffling the wantlist must not reorder
+    /// the collection on its next sync.
     @MainActor private static var shuffleSeeds: [String: UInt64] = [:]
     @MainActor static func reshuffle(_ scope: String) { shuffleSeeds[scope] = .random(in: .min ... .max) }
+    /// Every page anew – the app opened again from the background. Each page
+    /// draws its seed the next time it sorts.
+    @MainActor static func reshuffleAll() { shuffleSeeds.removeAll() }
     /// Position of `key` in the current random order of `scope`.
     @MainActor static func shuffleRank(_ key: some Hashable, scope: String) -> Int {
         let seed = shuffleSeeds[scope] ?? {

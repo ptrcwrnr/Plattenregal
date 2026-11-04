@@ -1,10 +1,10 @@
 import SwiftUI
 import SwiftData
 
-/// With a single `Window` scene macOS would quit the app when that window
-/// closes; like before, it keeps running (automatic export, tracklist
-/// download, backups) and the Dock or the Fenster menu brings the window back –
-/// or, running in the background (`AppLifecycle`), the record in the menu bar.
+/// Closing the last window is handled by `AppLifecycle`, not by AppKit: into
+/// the background while that is switched on (the record in the menu bar brings
+/// the window back), else it quits like ⌘Q. AppKit's own rule would also
+/// count the search panel and miss the background.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     /// The record in the menu bar and ⌥ Leertaste (see `ShelfQuickSearch`) –
