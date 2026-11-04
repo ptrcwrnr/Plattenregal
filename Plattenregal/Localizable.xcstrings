@@ -190,6 +190,16 @@
         }
       }
     },
+    "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings now say exactly how to rearrange the statistics sections: grab a section by its title and drag it onto another."
+          }
+        }
+      }
+    },
     "Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden." : {
       "localizations" : {
         "en" : {
@@ -2377,12 +2387,12 @@
         }
       }
     },
-    "Abschnitte lassen sich auf der Statistikseite per Drag & Drop umsortieren." : {
+    "Auf der Statistikseite einen Bereich am Titel greifen und auf einen anderen ziehen. „Zurücksetzen“ stellt die ursprüngliche Reihenfolge wieder her." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sections can be rearranged by drag and drop on the statistics page."
+            "value" : "On the statistics page, grab a section by its title and drag it onto another. “Reset” restores the original order."
           }
         }
       }
@@ -8322,12 +8332,12 @@
         }
       }
     },
-    "Reihenfolge der Abschnitte" : {
+    "Reihenfolge der Bereiche" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Order of the sections"
+            "value" : "Order of sections"
           }
         }
       }

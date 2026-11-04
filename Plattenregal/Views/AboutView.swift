@@ -86,6 +86,9 @@ enum Changelog {
 
     static var entries: [Entry] {
         [
+            Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
+                String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),
+            ]),
             Entry(version: "1.0.2", date: day(2026, 11, 3), changes: [
                 String(localized: "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung."),
                 String(localized: "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein."),

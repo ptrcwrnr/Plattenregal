@@ -108,8 +108,8 @@ struct AppearanceSettingsView: View {
                 }
             }
             SettingsCard(title: String(localized: "Statistik")) {
-                SettingsRow(title: String(localized: "Reihenfolge der Abschnitte"),
-                            hint: String(localized: "Abschnitte lassen sich auf der Statistikseite per Drag & Drop umsortieren.")) {
+                SettingsRow(title: String(localized: "Reihenfolge der Bereiche"),
+                            hint: String(localized: "Auf der Statistikseite einen Bereich am Titel greifen und auf einen anderen ziehen. „Zurücksetzen“ stellt die ursprüngliche Reihenfolge wieder her.")) {
                     SecondaryButton(title: String(localized: "Zurücksetzen")) { statisticsOrder = "" }
                         .disabled(StatisticsSection.ordered(from: statisticsOrder) == StatisticsSection.allCases)
                 }

@@ -1,3 +1,12 @@
+# 1.0.3 begonnen: Hinweis zum Umsortieren der Statistik · 04.11.2026
+
+- **Wunsch:** In Einstellungen → Darstellung → Statistik stand nur, die Abschnitte ließen sich „per Drag & Drop umsortieren“ – wie, war nicht zu erkennen. Prüfen, ob es das gibt, und dann den Text klarer fassen.
+- **Befund:** Das Umsortieren ist eingebaut (`StatisticsMovableArea`, `StatisticsView.moveSection`): einen Bereich am Titel greifen und auf einen anderen ziehen; der Ziel-Bereich bekommt einen Rahmen, die Reihenfolge wird gespeichert (`statisticsSectionOrder`). Es fehlte nur ein klarer Hinweis, und die Einstellungen sagten „Abschnitte“, die Statistikseite „Bereiche“.
+- **Neu:** Zeilentitel „Reihenfolge der Bereiche“ (EN „Order of sections“), Hinweis „Auf der Statistikseite einen Bereich am Titel greifen und auf einen anderen ziehen. „Zurücksetzen“ stellt die ursprüngliche Reihenfolge wieder her.“ (EN „On the statistics page, grab a section by its title and drag it onto another. “Reset” restores the original order.“). Die alten Einträge im Sprachkatalog sind ersetzt, nicht doppelt.
+- **Version 1.0.3 (Build 102030)** in allen vier Build-Einstellungen, „Was ist neu“ mit einem Punkt dazu (Deutsch und Englisch). **Nicht veröffentlicht:** keine DMG, kein GitHub-Release, Webseite unverändert – weitere Änderungen sammeln sich für 1.0.3.
+- STATISTIK.md: Umsortieren auf der Seite, Zurücksetzen in den Einstellungen. README: Projektstand 1.0.3, noch nicht veröffentlicht.
+- **Geprüft:** Debug-Build, 303 Tests bestanden (auch `changelogStartsWithThisVersion`). Im gebauten Programm: Version 1.0.3 (102030), beide neuen Texte samt englischer Fassung vorhanden, kein „Abschnitte“ mehr. **Nicht geprüft:** die Karte „Statistik“ als Bild (sie liegt unterhalb des Schnappschusses von `--settings-tab=Darstellung`) und das Ziehen selbst in der laufenden App, vor allem, ob das Ziehen des obersten Titels nach unten zugleich „Herunterziehen zum Aktualisieren“ auslöst. Nebenbei: Die Vorschau `--preview-update=available` zeigt mit einem 1.0.3-Build weiterhin die erfundene Version 1.0.3, also keine neuere – nur Debug, unverändert.
+
 # Release 1.0.2: DMG, Webseite, GitHub · 03.11.2026
 
 - **Wunsch:** DMG bauen, Webseite aktualisieren und auf GitHub hochladen.
