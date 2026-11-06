@@ -1,3 +1,8 @@
+# DMG 1.0.4 nach der zweiten Durchsicht neu gebaut · 06.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 430 553 Bytes), SHA-256 `1bdb1c7f…06f5e8`, in `dist/Hinweise-1.0.4.md` eingetragen; die DMG von vorhin ist überholt. Handbücher unverändert (gleich wie im Repository).
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.4 (102031), nur arm64, ab macOS 27.0, Signatur gültig; Berechtigungen wie 1.0.3 ohne `network.server`, Widget gleich; kein `NSLocalNetworkUsageDescription`; keine Debug-Schalter und kein Text der Debug-Vorschau im Programm; aus der DMG als Demo gestartet („Start · Version 1.0.4 (102031)“) und sauber beendet. Nicht veröffentlicht.
+
 # Zweite, gründliche Durchsicht von 1.0.4: Doppeltes und Übersehenes · 06.11.2026
 
 - **Wunsch:** Den Code von heute noch einmal gründlich prüfen – auf unnötige Mehrarbeit, Fehler und Randfälle; alles soll robust und sinnvoll sein. (Die Durchsicht davor hatte vor allem den Diff auf Fehler gelesen.)
