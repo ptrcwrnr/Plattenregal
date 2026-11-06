@@ -1,3 +1,9 @@
+# DMG 1.0.4 ohne „Als Nächstes“ in „Sortierung prüfen“ neu gebaut · 06.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 443 503 Bytes), SHA-256 `fbdbef57…6545d715`, in `dist/Hinweise-1.0.4.md` eingetragen; die DMG von 19:26 ist überholt. Handbücher unverändert übernommen.
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.4 (102031), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); kein `network.server`, kein `NSLocalNetworkUsageDescription`; keine Debug-Schalter; Handbücher identisch mit dem Repository; aus der DMG als Demo gestartet („Start · Version 1.0.4 (102031)“) und sauber beendet. Nicht veröffentlicht.
+- **Weiter vorgemerkt:** README und Handbuch für „Sortierung prüfen“, Webseitenbild `sortcheck`.
+
 # „Sortierung prüfen“: ohne Plakette „Als Nächstes“ · 06.11.2026
 
 - **Wunsch:** Die Plakette „Als Nächstes“ aus den Schritten nehmen.
