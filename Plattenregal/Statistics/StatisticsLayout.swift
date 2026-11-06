@@ -12,6 +12,20 @@ enum StatisticsSection: String, CaseIterable, Identifiable {
         var seen: Set<StatisticsSection> = []
         return (saved + allCases).filter { seen.insert($0).inserted }
     }
+    /// `sections` with `source` dropped onto `target`: dragged down it lands
+    /// below the target, dragged up above it – also onto a direct neighbour.
+    /// `nil` when nothing would change.
+    static func moving(_ source: StatisticsSection, onto target: StatisticsSection,
+                       in sections: [StatisticsSection]) -> [StatisticsSection]? {
+        guard source != target, let sourceIndex = sections.firstIndex(of: source),
+              let targetIndex = sections.firstIndex(of: target) else { return nil }
+        var moved = sections
+        moved.remove(at: sourceIndex)
+        // Index of the target after the removal; below the source it moved up by one.
+        let targetAfter = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex
+        moved.insert(source, at: sourceIndex < targetIndex ? targetAfter + 1 : targetAfter)
+        return moved
+    }
     var title: String {
         switch self {
         case .overview: String(localized: "Deine Sammlung")

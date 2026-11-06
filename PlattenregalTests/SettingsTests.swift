@@ -476,6 +476,23 @@ extension AllTests {
             #expect(StatisticsSection.ordered(from: "overview,unknown") == StatisticsSection.allCases)
             #expect(StatisticsSection.ordered(from: "recent").first == .recent)
         }
+        /// Dropped onto a section below it lands after it, onto one above
+        /// before it – also onto the direct neighbour (that used to do nothing).
+        @Test func statisticsSectionMovesOntoEveryOtherSection() {
+            let order: [StatisticsSection] = [.overview, .highlights, .valueHistory, .sound]
+            #expect(StatisticsSection.moving(.overview, onto: .highlights, in: order) == [.highlights, .overview, .valueHistory, .sound])
+            #expect(StatisticsSection.moving(.overview, onto: .sound, in: order) == [.highlights, .valueHistory, .sound, .overview])
+            #expect(StatisticsSection.moving(.highlights, onto: .overview, in: order) == [.highlights, .overview, .valueHistory, .sound])
+            #expect(StatisticsSection.moving(.sound, onto: .highlights, in: order) == [.overview, .sound, .highlights, .valueHistory])
+            #expect(StatisticsSection.moving(.highlights, onto: .valueHistory, in: order) == [.overview, .valueHistory, .highlights, .sound])
+            #expect(StatisticsSection.moving(.sound, onto: .sound, in: order) == nil)
+            #expect(StatisticsSection.moving(.labels, onto: .sound, in: order) == nil)
+            // Every pair changes the order and keeps every section once.
+            for source in order { for target in order where target != source {
+                let moved = StatisticsSection.moving(source, onto: target, in: order)
+                #expect(moved != order && moved?.sorted(by: { $0.rawValue < $1.rawValue }) == order.sorted(by: { $0.rawValue < $1.rawValue }))
+            } }
+        }
 
         /// Covers unused for long go, and past the limit the least recently used ones.
         @Test func coverCacheDropsOldAndLeastRecentlyUsedFiles() throws {

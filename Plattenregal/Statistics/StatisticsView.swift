@@ -217,12 +217,7 @@ struct StatisticsView: View {
         let prefix = "plattenregal-statistics:"
         guard payload.hasPrefix(prefix),
               let source = StatisticsSection(rawValue: String(payload.dropFirst(prefix.count))),
-              source != target else { return false }
-        var sections = orderedSections
-        guard let sourceIndex = sections.firstIndex(of: source) else { return false }
-        sections.remove(at: sourceIndex)
-        guard let targetIndex = sections.firstIndex(of: target) else { return false }
-        sections.insert(source, at: sourceIndex < targetIndex ? targetIndex + 1 : targetIndex)
+              let sections = StatisticsSection.moving(source, onto: target, in: orderedSections) else { return false }
         savedSectionOrder = sections.map(\.rawValue).joined(separator: ",")
         return true
     }

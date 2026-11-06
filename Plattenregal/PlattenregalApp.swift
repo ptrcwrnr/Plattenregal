@@ -134,8 +134,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     var body: some Scene {
         // One main window: a second one (⌘N) would load and compute every
-        // page again. `Window` drops "Neues Fenster"; closed, it comes back
-        // from the Dock or the Fenster menu.
+        // page again. `Window` drops "Neues Fenster". Closed as the last
+        // window, the app goes to the background or quits (`AppLifecycle`);
+        // otherwise it comes back from the Fenster menu.
         Window("Plattenregal", id: DemoMode.mainWindowID) {
             if let container, Self.previewsSettings {
                 AppSettingsView().appAppearance().modelContainer(container).defaultAppStorage(AppDefaults.store)
