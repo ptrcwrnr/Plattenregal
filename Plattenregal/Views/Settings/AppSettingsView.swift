@@ -52,12 +52,14 @@ struct AppSettingsView: View {
             case .shortcuts: String(localized: "Tastenkürzel")
             }
         }
+        /// The tabs in the switch: Apple TV only while it is available (`AppleTVLink.isAvailable`).
+        static var shown: [Tab] { allCases.filter { $0 != .appleTV || AppleTVLink.isAvailable } }
     }
     @State private var tab: Tab = {
         #if DEBUG
         // Screenshots of a tab without clicking there: --settings-tab=Regal
         if let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--settings-tab=") }),
-           let tab = Tab(rawValue: String(raw.dropFirst("--settings-tab=".count))) { return tab }
+           let tab = Tab(rawValue: String(raw.dropFirst("--settings-tab=".count))), Tab.shown.contains(tab) { return tab }
         #endif
         return SettingsRequest.shared.take() ?? .general
     }()
@@ -89,8 +91,8 @@ struct AppSettingsView: View {
             .transition(AppStyle.pageTransition)
         }
         // Tall enough for "Allgemein" without a gap below, longer tabs scroll.
-        // Wide enough for all ten tabs in the toolbar's switch; with fewer
-        // room the toolbar drops the whole switch.
+        // Wide enough for all ten tabs in the toolbar's switch (nine while
+        // Apple TV is off); with less room the toolbar drops the whole switch.
         .frame(width: 860, height: 510)
         // Only the area switch in the title bar: no window buttons next to
         // it. Esc and ⌘W close the window instead.
@@ -125,7 +127,7 @@ struct AppSettingsView: View {
         .background { SignatureToolbarAppearance() }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                GlassSegmentedPicker(selection: $tab, options: Tab.allCases, glass: false) { Text($0.title) }
+                GlassSegmentedPicker(selection: $tab, options: Tab.shown, glass: false) { Text($0.title) }
                     .toolbarBar()
                     .accessibilityLabel("Bereich")
             }

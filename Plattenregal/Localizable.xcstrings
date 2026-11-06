@@ -200,6 +200,26 @@
         }
       }
     },
+    "Einen Bereich der Statistik auf den direkt darunter liegenden zu ziehen, verschiebt ihn jetzt auch – vorher blieb dann alles, wie es war." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dragging a statistics section onto the one directly below it now moves it too – before, everything stayed as it was."
+          }
+        }
+      }
+    },
+    "Plattenregal nimmt keine Verbindungen aus dem Netzwerk mehr an; die Einstellungen für Apple TV sind dafür vorerst ausgeblendet. Discogs und die Suche nach Updates funktionieren wie bisher." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal no longer accepts connections from the network; the Apple TV settings are hidden for now. Discogs and checking for updates work as before."
+          }
+        }
+      }
+    },
     "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
       "localizations" : {
         "en" : {
