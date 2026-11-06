@@ -56,7 +56,7 @@ struct GeneralSettingsView: View {
             }
             SettingsCard(title: String(localized: "Menüleiste")) {
                 SettingsRow(title: String(localized: "Suche in der Menüleiste"),
-                            hint: String(localized: "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen. Ein Klick auf einen Treffer hält ihn fest.")) {
+                            hint: String(localized: "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen.")) {
                     Toggle("Suche in der Menüleiste", isOn: $preferences.menuBarSearch).labelsHidden().toggleStyle(.switch)
                 }
                 Divider()
@@ -85,6 +85,12 @@ struct GeneralSettingsView: View {
                 SettingsRow(title: String(localized: "Position der Suche"), hint: preferences.quickSearchPosition.hint) {
                     GlassSegmentedPicker(selection: $preferences.quickSearchPosition, options: QuickSearchPosition.allCases) { Text($0.title) }
                         .accessibilityLabel(String(localized: "Position der Suche"))
+                }
+                .disabled(!preferences.menuBarSearch && !preferences.quickSearchHotKey)
+                Divider()
+                SettingsRow(title: String(localized: "Klick auf einen Treffer"), hint: preferences.quickSearchClick.hint) {
+                    GlassSegmentedPicker(selection: $preferences.quickSearchClick, options: QuickSearchClick.allCases) { Text($0.title) }
+                        .accessibilityLabel(String(localized: "Klick auf einen Treffer"))
                 }
                 .disabled(!preferences.menuBarSearch && !preferences.quickSearchHotKey)
             }

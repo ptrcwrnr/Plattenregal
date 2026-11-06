@@ -18,6 +18,7 @@ import SwiftUI
         static let quickSearchHotKey = "quickSearchHotKey"
         static let quickSearchLook = "quickSearchLook"
         static let quickSearchPosition = "quickSearchPosition"
+        static let quickSearchClick = "quickSearchClick"
         static let keepsRunningInBackground = "keepsRunningInBackground"
         static let updateCheckInterval = "updateCheckInterval"
         /// Up to 1.0.3: the switch for a check once a day. Read while no
@@ -50,6 +51,8 @@ import SwiftUI
     var quickSearchLook: QuickSearchLook { didSet { store(quickSearchLook.rawValue, Key.quickSearchLook) } }
     /// Where that search opens. At the top in the middle by default.
     var quickSearchPosition: QuickSearchPosition { didSet { store(quickSearchPosition.rawValue, Key.quickSearchPosition) } }
+    /// What a click on a match in that search does. Holds it by default.
+    var quickSearchClick: QuickSearchClick { didSet { store(quickSearchClick.rawValue, Key.quickSearchClick) } }
     /// ⌘Q and closing the last window keep the app running with only the
     /// record in the menu bar (see `AppLifecycle`). On by default.
     var keepsRunningInBackground: Bool {
@@ -86,6 +89,7 @@ import SwiftUI
         quickSearchHotKey = defaults.object(forKey: Key.quickSearchHotKey) == nil || defaults.bool(forKey: Key.quickSearchHotKey)
         quickSearchLook = defaults.string(forKey: Key.quickSearchLook).flatMap(QuickSearchLook.init) ?? .darkGlass
         quickSearchPosition = defaults.string(forKey: Key.quickSearchPosition).flatMap(QuickSearchPosition.init) ?? .center
+        quickSearchClick = defaults.string(forKey: Key.quickSearchClick).flatMap(QuickSearchClick.init) ?? .hold
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
         updateCheckInterval = Self.storedUpdateCheckInterval(in: defaults)
         language = languageAtLaunch
@@ -108,6 +112,7 @@ import SwiftUI
         quickSearchHotKey = true
         quickSearchLook = .darkGlass
         quickSearchPosition = .center
+        quickSearchClick = .hold
         keepsRunningInBackground = true
         updateCheckInterval = .weekly
         // The demo's settings are its own; the language is the real app's.

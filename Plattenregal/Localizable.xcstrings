@@ -1020,12 +1020,112 @@
         }
       }
     },
-    "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen. Ein Klick auf einen Treffer hält ihn fest." : {
+    "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature. Click a match to hold it."
+            "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature."
+          }
+        }
+      }
+    },
+    "Klick auf einen Treffer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click on a Match"
+          }
+        }
+      }
+    },
+    "Markieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark"
+          }
+        }
+      }
+    },
+    "In der App" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the App"
+          }
+        }
+      }
+    },
+    "Auf Discogs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On Discogs"
+          }
+        }
+      }
+    },
+    "Ein Klick hält den Treffer fest, das Regal darunter bleibt stehen; ein zweiter Klick lässt ihn los." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A click holds the match and the rack below stays put; a second click lets it go."
+          }
+        }
+      }
+    },
+    "Ein Klick schließt die Suche und zeigt die Platte in Plattenregal auf der Regalseite." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A click closes the search and shows the record on the shelf page of Plattenregal."
+          }
+        }
+      }
+    },
+    "Ein Klick schließt die Suche und öffnet die Platte im Browser auf Discogs." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A click closes the search and opens the record on Discogs in your browser."
+          }
+        }
+      }
+    },
+    "Klicken, um die Platte in Plattenregal zu zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to show the record in Plattenregal"
+          }
+        }
+      }
+    },
+    "Klicken, um die Platte auf Discogs zu öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to open the record on Discogs"
+          }
+        }
+      }
+    },
+    "Was ein Klick auf einen Treffer in der Suche in der Menüleiste tut, wählst du jetzt unter Einstellungen → Allgemein: markieren wie bisher, die Platte in der App zeigen oder sie auf Discogs öffnen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You now choose what a click on a match in the menu bar search does under Settings → General: mark it as before, show the record in the app or open it on Discogs."
           }
         }
       }

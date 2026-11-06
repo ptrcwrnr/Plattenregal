@@ -81,6 +81,38 @@ enum QuickSearchPosition: String, CaseIterable, Identifiable {
     }
 }
 
+/// What a click on a match in the search in the menu bar does (and ↩ on
+/// the highlighted one): hold it, so the rack below stays put while one
+/// walks to the shelf – the default –, show it on the shelf page of the
+/// app, or open it on Discogs. The latter two close the search.
+enum QuickSearchClick: String, CaseIterable, Identifiable {
+    case hold, showInApp, discogs
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .hold: String(localized: "Markieren")
+        case .showInApp: String(localized: "In der App")
+        case .discogs: String(localized: "Auf Discogs")
+        }
+    }
+    /// Always shown, so the row keeps its height when switching.
+    var hint: String {
+        switch self {
+        case .hold: String(localized: "Ein Klick hält den Treffer fest, das Regal darunter bleibt stehen; ein zweiter Klick lässt ihn los.")
+        case .showInApp: String(localized: "Ein Klick schließt die Suche und zeigt die Platte in Plattenregal auf der Regalseite.")
+        case .discogs: String(localized: "Ein Klick schließt die Suche und öffnet die Platte im Browser auf Discogs.")
+        }
+    }
+    /// Tooltip of a match.
+    func help(pinned: Bool) -> String {
+        switch self {
+        case .hold: pinned ? String(localized: "Klicken, um die Platte wieder loszulassen") : String(localized: "Klicken, um die Platte festzuhalten")
+        case .showInApp: String(localized: "Klicken, um die Platte in Plattenregal zu zeigen")
+        case .discogs: String(localized: "Klicken, um die Platte auf Discogs zu öffnen")
+        }
+    }
+}
+
 /// The app's own accent, or the one set in the macOS settings.
 enum AccentChoice: String, CaseIterable, Identifiable {
     case system, blue, purple, pink, red, orange, yellow, green, graphite

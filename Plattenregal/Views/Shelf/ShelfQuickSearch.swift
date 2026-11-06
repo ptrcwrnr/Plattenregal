@@ -470,11 +470,27 @@ struct QuickSearchPlace {
 
     /// Closes the panel and shows the record in the main window, on the
     /// shelf page with the card "Hier steht …" or "Einsortieren …" – for the
-    /// widget; the search itself doesn't lead into the app.
+    /// widget, and for a click in the search when set so (`QuickSearchClick`).
     func showInShelf(_ copy: RecordCopy) {
         close()
         pendingCopy = copy.id
         showMainWindow()
+    }
+
+    /// A click on a match or ↩, as set under Einstellungen → Allgemein →
+    /// Menüleiste. Without a Discogs page (the demo's sample records) the
+    /// match is held instead.
+    func choose(_ copy: RecordCopy) {
+        switch AppPreferences.shared.quickSearchClick {
+        case .hold:
+            model?.togglePin(copy)
+        case .showInApp:
+            showInShelf(copy)
+        case .discogs:
+            guard let url = copy.release?.sourceURL else { model?.togglePin(copy); return }
+            close()
+            NSWorkspace.shared.open(url)
+        }
     }
 
     /// The main window in front, from the Dock or anew when it was closed –
@@ -502,6 +518,7 @@ struct QuickSearchPlace {
         panel.identifier = NSUserInterfaceItemIdentifier(Self.windowID)
         panel.delegate = self
         let view = ShelfQuickSearchView(model: model, presence: presence, close: { [weak self] in self?.close() },
+                                        choose: { [weak self] copy in self?.choose(copy) },
                                         resize: { [weak self, weak panel] height in
                                             guard let self, let panel else { return }
                                             position(panel, height: height)
@@ -583,13 +600,15 @@ final class QuickSearchPanel: NSPanel {
 }
 
 /// Search field, the matches, and the rack with the place of the
-/// highlighted one. ↑ ↓ or the pointer pick, a click or ↩ holds the pick
-/// (again: lets go), Esc clears the field and then closes. Nothing here
-/// opens the main window – the search only tells where a record is.
+/// highlighted one. ↑ ↓ or the pointer pick; a click or ↩ does what is set
+/// (`QuickSearchClick`): hold the pick (again: let go), show it in the app
+/// or open it on Discogs. Esc clears the field and then closes.
 struct ShelfQuickSearchView: View {
     @Bindable var model: ShelfQuickSearchModel
     let presence: QuickSearchPresence
     let close: () -> Void
+    /// A click on a match or ↩ on the highlighted one (`QuickSearchClick`).
+    let choose: (RecordCopy) -> Void
     /// The panel follows the content's height.
     let resize: (CGFloat) -> Void
     @FocusState private var focused: Bool
@@ -645,7 +664,7 @@ struct ShelfQuickSearchView: View {
                 .focused($focused)
                 .onKeyPress(.downArrow) { model.move(1); return .handled }
                 .onKeyPress(.upArrow) { model.move(-1); return .handled }
-                .onSubmit { if let copy = model.highlightedCopy { model.togglePin(copy) } }
+                .onSubmit { if let copy = model.highlightedCopy { choose(copy) } }
                 .onKeyPress(.escape) {
                     if model.text.isEmpty { close() } else { model.text = "" }
                     return .handled
@@ -689,7 +708,7 @@ struct ShelfQuickSearchView: View {
 
     private func row(_ copy: RecordCopy, placeable: Bool, missing: Set<UUID>, highlighted: UUID?, pinned: UUID?) -> some View {
         let isPinned = pinned == copy.id
-        return Button { model.togglePin(copy) } label: {
+        return Button { choose(copy) } label: {
             SearchResultRow(copy: copy, labels: model.labels, missing: missing.contains(copy.id),
                             placeable: placeable, highlighted: highlighted == copy.id, pinned: isPinned,
                             shelfCount: copy.shelf.map(model.recordCount(in:)))
@@ -698,7 +717,7 @@ struct ShelfQuickSearchView: View {
         // The pointer picks the match the rack shows, like the arrow keys –
         // unless a click holds one.
         .onHover { if $0 { model.hover(copy) } }
-        .help(isPinned ? String(localized: "Klicken, um die Platte wieder loszulassen") : String(localized: "Klicken, um die Platte festzuhalten"))
+        .help(AppPreferences.shared.quickSearchClick.help(pinned: isPinned))
         .accessibilityAddTraits(isPinned ? .isSelected : [])
     }
 }

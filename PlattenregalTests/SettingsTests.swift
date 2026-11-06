@@ -119,6 +119,28 @@ extension AllTests {
             }
         }
 
+        /// A click on a match in the search in the menu bar holds it unless
+        /// chosen otherwise; the choice is kept, reset brings the hold back,
+        /// an unknown stored value falls back to it.
+        @Test func quickSearchClickHoldsByDefaultAndPersists() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.quickSearchClick == .hold)
+                #expect(QuickSearchClick.allCases == [.hold, .showInApp, .discogs])
+                for click in QuickSearchClick.allCases {
+                    preferences.quickSearchClick = click
+                    #expect(AppPreferences(defaults: defaults).quickSearchClick == click)
+                }
+                preferences.reset()
+                #expect(AppPreferences(defaults: defaults).quickSearchClick == .hold)
+                defaults.set("open", forKey: AppPreferences.Key.quickSearchClick)
+                #expect(AppPreferences(defaults: defaults).quickSearchClick == .hold)
+                // Holding names letting go on a held match; the others never do.
+                #expect(QuickSearchClick.hold.help(pinned: true) != QuickSearchClick.hold.help(pinned: false))
+                #expect(QuickSearchClick.discogs.help(pinned: true) == QuickSearchClick.discogs.help(pinned: false))
+            }
+        }
+
         /// Dark glass draws the panel dark, light glass and white light – in
         /// light and dark mode alike.
         @Test func quickSearchLookSetsThePanelsAppearance() {
