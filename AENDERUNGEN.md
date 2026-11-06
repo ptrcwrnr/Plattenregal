@@ -1,3 +1,8 @@
+# „Was ist neu“ 1.0.4: achter Punkt zum Einsortieren · 06.11.2026
+
+- **Neu:** Punkt zum Einsortieren ins gezeigte Regal, ins best passende Fach und zur mitziehenden Karte in `Changelog.entries` (Deutsch, Englisch im Sprachkatalog) und in `dist/Hinweise-1.0.4.md` (beide Sprachen).
+- **Geprüft:** 311 Tests bestanden; der Bereich „Was ist neu“ scrollt (`AppStyle.changesMaxHeight`), acht Punkte passen.
+
 # Regal: Beschriftung je Regal, bestes Fach, Karte zieht mit · 06.11.2026
 
 - **Wunsch:** Die drei Vorschläge aus der Durchsicht übernehmen, robust und gründlich; am Ende alle Logik im Bereich Regal auf unnötige Mehrarbeit prüfen.

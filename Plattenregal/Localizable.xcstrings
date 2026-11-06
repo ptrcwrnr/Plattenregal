@@ -210,6 +210,16 @@
         }
       }
     },
+    "Beim Einsortieren schlägt Plattenregal jetzt einen Platz im gerade gezeigten Regal vor – im Fach, in das die Platte alphabetisch am besten passt. Ein Fach mit Platten quer durchs Alphabet zieht nicht mehr jede neue Platte an. Wechselst du das Regal, zieht die Karte mit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When placing a record, Plattenregal now suggests a spot in the cabinet shown – in the compartment it fits best alphabetically. A compartment holding records from all over the alphabet no longer draws in every new record. Switch cabinets and the card follows."
+          }
+        }
+      }
+    },
     "Plattenregal nimmt keine Verbindungen aus dem Netzwerk mehr an; die Einstellungen für Apple TV sind dafür vorerst ausgeblendet. Discogs und die Suche nach Updates funktionieren wie bisher." : {
       "localizations" : {
         "en" : {
