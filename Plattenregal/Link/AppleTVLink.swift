@@ -19,8 +19,9 @@ import SystemConfiguration
     static let shared = AppleTVLink()
 
     /// Switched off for now (since 1.0.4): no tab in the settings, no service
-    /// on the network, and the app has no permission for incoming connections.
-    /// Pairings stay stored. Back on, the project also needs
+    /// on the network (`PlattenregalApp` doesn't attach it), and the app has
+    /// no permission for incoming connections. Pairings stay stored. Back on,
+    /// the project also needs
     /// `ENABLE_INCOMING_NETWORK_CONNECTIONS` and
     /// `INFOPLIST_KEY_NSLocalNetworkUsageDescription` again.
     static let isAvailable = false
@@ -96,7 +97,6 @@ import SystemConfiguration
 
     /// At launch, with the real collection (never the demo's).
     func attach(_ container: ModelContainer) {
-        guard Self.isAvailable else { return }
         self.container = container
         updateListener()
     }

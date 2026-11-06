@@ -103,6 +103,11 @@ enum QuickSearchClick: String, CaseIterable, Identifiable {
         case .discogs: String(localized: "Ein Klick schließt die Suche und öffnet die Platte im Browser auf Discogs.")
         }
     }
+    /// What a click does for a record: Discogs only with a Discogs page
+    /// (none for the demo's sample records), else the match is held.
+    func resolved(hasDiscogsPage: Bool) -> QuickSearchClick {
+        self == .discogs && !hasDiscogsPage ? .hold : self
+    }
     /// Tooltip of a match.
     func help(pinned: Bool) -> String {
         switch self {

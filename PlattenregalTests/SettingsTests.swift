@@ -170,6 +170,10 @@ extension AllTests {
                 // Holding names letting go on a held match; the others never do.
                 #expect(QuickSearchClick.hold.help(pinned: true) != QuickSearchClick.hold.help(pinned: false))
                 #expect(QuickSearchClick.discogs.help(pinned: true) == QuickSearchClick.discogs.help(pinned: false))
+                // Without a Discogs page (the demo) a click holds instead – and says so.
+                #expect(QuickSearchClick.discogs.resolved(hasDiscogsPage: false) == .hold)
+                #expect(QuickSearchClick.discogs.resolved(hasDiscogsPage: true) == .discogs)
+                #expect(QuickSearchClick.showInApp.resolved(hasDiscogsPage: false) == .showInApp)
             }
         }
 

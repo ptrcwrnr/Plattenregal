@@ -481,13 +481,14 @@ struct QuickSearchPlace {
     /// Menüleiste. Without a Discogs page (the demo's sample records) the
     /// match is held instead.
     func choose(_ copy: RecordCopy) {
-        switch AppPreferences.shared.quickSearchClick {
+        let url = copy.release?.sourceURL
+        switch AppPreferences.shared.quickSearchClick.resolved(hasDiscogsPage: url != nil) {
         case .hold:
             model?.togglePin(copy)
         case .showInApp:
             showInShelf(copy)
         case .discogs:
-            guard let url = copy.release?.sourceURL else { model?.togglePin(copy); return }
+            guard let url else { return }
             close()
             NSWorkspace.shared.open(url)
         }
@@ -717,7 +718,7 @@ struct ShelfQuickSearchView: View {
         // The pointer picks the match the rack shows, like the arrow keys –
         // unless a click holds one.
         .onHover { if $0 { model.hover(copy) } }
-        .help(AppPreferences.shared.quickSearchClick.help(pinned: isPinned))
+        .help(AppPreferences.shared.quickSearchClick.resolved(hasDiscogsPage: copy.release?.sourceURL != nil).help(pinned: isPinned))
         .accessibilityAddTraits(isPinned ? .isSelected : [])
     }
 }

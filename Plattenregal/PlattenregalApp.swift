@@ -107,7 +107,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Offers the collection to paired Apple TVs – never the demo's, and
             // not from a test run, whose in-memory store would answer in the
             // real Mac's name.
-            if let container, !DemoMode.isActive, ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+            // Switched off for now (`AppleTVLink.isAvailable`): not even made.
+            if AppleTVLink.isAvailable, let container, !DemoMode.isActive, ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
                 AppleTVLink.shared.attach(container)
             }
         }

@@ -1,3 +1,12 @@
+# Durchsicht der Änderungen für 1.0.4 · 06.11.2026
+
+- **Wunsch:** Alle Änderungen seit 1.0.3 auf unnötige Mehrarbeit, Fehler und Randfälle prüfen, danach die DMG ausgeben.
+- **Gelesen:** der gesamte Code-Diff seit `5e53122` (veröffentlichte 1.0.3): Apple TV/Netz, Update-Intervall samt Übernahme, Menü der Schallplatte, Ladekreis, Klick in der Suche, Rubriknamen, Umsortieren der Statistik. Kein Fehler gefunden; zwei Unstimmigkeiten bereinigt:
+  - **Apple TV:** `AppleTVLink.shared` wurde beim Start trotz abgeschalteter Funktion angelegt (und schrieb beim ersten Mal `appleTVMacID`). Jetzt prüft `PlattenregalApp` `AppleTVLink.isAvailable` vor dem Anlegen; `attach` braucht keine eigene Prüfung mehr.
+  - **Suche, „Auf Discogs“ ohne Discogs-Seite (Demo):** Der Klick hielt den Treffer fest, der Tooltip versprach „auf Discogs öffnen“. `QuickSearchClick.resolved(hasDiscogsPage:)` entscheidet an einer Stelle für Klick und Tooltip; Test ergänzt.
+- **Bewusst so gelassen:** Startseiten-Auswahl nimmt mit `ViewThatFits` bis zu 480 pt (mit Standardnamen unverändert, im Bild geprüft); der Platzhalter der Suche kürzt einen sehr langen Namen mit „…“; die Fensterbreite der Einstellungen bleibt für zehn Reiter.
+- **Geprüft:** Debug-Build ohne Warnung, 307 Tests bestanden.
+
 # Rubriken frei benennen, höchstens 12 Zeichen · 06.11.2026
 
 - **Wunsch:** Die Rubriken (Collection, Wantlist, Regal, Statistik) frei benennen, mit einer Höchstzahl an Zeichen, damit der Umschalter in der Toolbar nicht kaputt geht.
