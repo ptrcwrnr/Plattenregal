@@ -319,7 +319,6 @@ private struct ShelfOrderStrip: View {
             }
             .background(RoundedRectangle(cornerRadius: AppStyle.rowRadius).fill(AppStyle.hoverBackground))
             .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.borderColor, lineWidth: AppStyle.borderWidth))
-            .animation(AppStyle.standardAnimation, value: marks)
             // The list below says the same in words.
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(inOrder

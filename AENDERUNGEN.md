@@ -1,3 +1,12 @@
+# Durchsicht „Sortierung prüfen“: Robustheit und Mehrarbeit · 06.11.2026
+
+- **Wunsch:** Die Änderungen am Fenster auf Robustheit und unnötige Mehrarbeit prüfen.
+- **Durchgesehen ohne Fund:** Platte während eines Abgleichs gelöscht (Markierung entfällt, Schritt fehlt), alles abgehakt (kein Bogen, keine Plakette, Hauptknopf), ein Fach mit sehr vielen Platten (Striche entfallen unter 3 pt), Menü beim Wechsel zu „Jahr“ und zurück (bleibt sichtbar, solange eine andere Reihenfolge gewählt ist), Fehler beim Übernehmen (Hinweis im Fenster), Bedienungshilfe der Skala.
+- **Mehrarbeit entfernt:** `ShelfSortCheck.sortedCopies` baute bei jedem Abhaken (das Fenster prüft dabei neu) jeden Sortierschlüssel aus den Plattendaten neu und las jede ID; jetzt Schlüssel aus `ShelfSortKeys` wie beim Einsortieren und bei den Fachnamen – so können Prüfung und Einsortieren auch nicht mehr auseinanderlaufen –, die ID nur bei Gleichstand. Eine wirkungslose Animation an der Skala (`Canvas` animiert nicht) entfernt.
+- **Bewusst gelassen:** Das Protokoll (`logCheck`) prüft beim Öffnen und beim Wechsel der Reihenfolge noch einmal selbst – zwei Ereignisse, nicht jedes Neuzeichnen.
+- **Tests (312, alle bestanden):** neu `sortCheckFollowsChangedRecordsLikeSortingIn` (Umbenennung durch den Abgleich erreicht die Prüfung sofort, danach stimmen Prüfung und Einsortieren überein). Hinweis: `sortCheckByYearWithinArtist` setzt das Jahr ohne Meldung an die App und besteht nur, weil der Schlüssel für „Jahr“ vorher nicht abgefragt war – in der App meldet jeder Abgleich seine Änderungen.
+- **Geprüft:** Debug-Build ohne Warnung; Demo-Schnappschuss (Klassisch) mit allen Schritten abgehakt.
+
 # „Sortierung prüfen“: „Schließen“ statt „Fertig“, wenn nichts umzustellen ist · 06.11.2026
 
 - **Wunsch:** Bei nichts zum Umstellen derselbe Knopf „Schließen“ wie beim Umstellen.

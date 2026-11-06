@@ -171,6 +171,31 @@ extension AllTests.LibraryTests {
         try service.sortAlphabetically(shelves[0], by: .title)
         #expect(ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title).isEmpty)
     }
+    /// The check takes its keys from `ShelfSortKeys`, like sorting in: a sync
+    /// that renames an artist must reach it at once, and both agree.
+    @Test func sortCheckFollowsChangedRecordsLikeSortingIn() throws {
+        let (container, shelves, service) = try fixture(); let context = container.mainContext
+        let air = try add(service, shelves[0], "Air")
+        let can = try add(service, shelves[0], "Can")
+        #expect(ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title).isEmpty)
+
+        // The sync renames "Can" to "Aaron": now it stands wrongly behind "Air".
+        can.release?.artist = "Aaron"
+        try context.save()
+        LibraryChanges.shared.syncDidCommit()
+        let steps = ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title)
+        #expect(steps.count == 1)
+        // Either of the two may move; one move puts them in order.
+        let moved = try #require(steps.first?.copy.id)
+        #expect(moved == air.id || moved == can.id)
+        #expect(ShelfSortCheck.sortedCopies(shelves[0].copies, by: .title).map(\.id) == [can.id, air.id])
+        // Sorted as the check says, sorting in agrees: "Abba" goes between the two.
+        try service.sortAlphabetically(shelves[0], by: .title)
+        #expect(service.ordered(shelves[0]).map(\.id) == [can.id, air.id])
+        #expect(ShelfSortCheck.steps(service.ordered(shelves[0]), by: .title).isEmpty)
+        let loose = try service.insert(release: Release(artist: "Abba", title: "Gold"), shelf: nil)
+        #expect(AlphabeticalPlacement.position(for: loose, in: shelves[0]) == 2)
+    }
     /// Two copies of one album: either order is right, whatever their IDs.
     @Test func sortCheckKeepsEqualRecordsInPlace() throws {
         for _ in 0..<8 {
