@@ -1,3 +1,8 @@
+# DMG 1.0.4 mit dem neuen Einsortieren neu gebaut · 06.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 438 200 Bytes), SHA-256 `a133537b…a106292`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch der achte Punkt); die DMG von heute Vormittag ist überholt. Handbücher vom Skript unverändert übernommen (schon neu im Repository).
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.4 (102031), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen wie 1.0.3 ohne `network.server`, Widget unverändert; kein `NSLocalNetworkUsageDescription`; keine Debug-Schalter (auch kein `--preview-cabinet`) im Programm; neuer Text von „Was ist neu“ in beiden Sprachen enthalten; Handbücher in der App identisch mit dem Repository; aus der DMG als Demo gestartet („Start · Version 1.0.4 (102031)“) und sauber beendet. Nicht veröffentlicht.
+
 # „Was ist neu“ 1.0.4: achter Punkt zum Einsortieren · 06.11.2026
 
 - **Neu:** Punkt zum Einsortieren ins gezeigte Regal, ins best passende Fach und zur mitziehenden Karte in `Changelog.entries` (Deutsch, Englisch im Sprachkatalog) und in `dist/Hinweise-1.0.4.md` (beide Sprachen).
