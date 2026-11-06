@@ -1,3 +1,8 @@
+# „Was ist neu“ 1.0.4: neunter Punkt zu „Sortierung prüfen“ · 06.11.2026
+
+- **Neu:** Punkt zum neu angeordneten „Sortierung prüfen“ (Leiste des Fachs, „Platz … herausnehmen → hinter …“, Reihenfolge im Menü, Haken wenn alles stimmt) in `Changelog.entries`, Englisch im Sprachkatalog, beide Sprachen in `dist/Hinweise-1.0.4.md`.
+- **Geprüft:** 312 Tests bestanden; der Build hat den neuen Katalogeintrag als übersetzt übernommen.
+
 # Durchsicht „Sortierung prüfen“: Robustheit und Mehrarbeit · 06.11.2026
 
 - **Wunsch:** Die Änderungen am Fenster auf Robustheit und unnötige Mehrarbeit prüfen.

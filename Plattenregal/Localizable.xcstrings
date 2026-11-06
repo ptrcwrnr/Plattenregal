@@ -2341,6 +2341,16 @@
         }
       }
     },
+    "„Sortierung prüfen“ ist aufgeräumt: Eine Leiste zeigt das Fach von links nach rechts mit den Platten, die umziehen, jeder Schritt sagt „Platz 64 herausnehmen → hinter …“, und die Reihenfolge wählst du oben im Menü. Steht alles richtig, genügt ein Haken." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Check Order” is tidier: a strip shows the compartment from left to right with the records that move, each step reads “Take out position 64 → behind …”, and you pick the order from the menu at the top. If everything is in place, a check mark is all you see."
+          }
+        }
+      }
+    },
     "Beim Herunterziehen zum Aktualisieren erscheint der Ring jetzt unterhalb der Toolbar statt halb dahinter." : {
       "localizations" : {
         "en" : {

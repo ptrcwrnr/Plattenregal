@@ -95,6 +95,7 @@ enum Changelog {
                 String(localized: "Beim Herunterziehen zum Aktualisieren erscheint der Ring jetzt unterhalb der Toolbar statt halb dahinter."),
                 String(localized: "Einen Bereich der Statistik auf den direkt darunter liegenden zu ziehen, verschiebt ihn jetzt auch – vorher blieb dann alles, wie es war."),
                 String(localized: "Beim Einsortieren schlägt Plattenregal jetzt einen Platz im gerade gezeigten Regal vor – im Fach, in das die Platte alphabetisch am besten passt. Ein Fach mit Platten quer durchs Alphabet zieht nicht mehr jede neue Platte an. Wechselst du das Regal, zieht die Karte mit."),
+                String(localized: "„Sortierung prüfen“ ist aufgeräumt: Eine Leiste zeigt das Fach von links nach rechts mit den Platten, die umziehen, jeder Schritt sagt „Platz 64 herausnehmen → hinter …“, und die Reihenfolge wählst du oben im Menü. Steht alles richtig, genügt ein Haken."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),
