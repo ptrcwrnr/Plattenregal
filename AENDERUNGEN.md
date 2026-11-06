@@ -1,3 +1,9 @@
+# DMG 1.0.4 mit dem neuen „Sortierung prüfen“ neu gebaut · 06.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 444 635 Bytes), SHA-256 `29232337…88e7d600`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch der neunte Punkt); die DMG vom Nachmittag ist überholt. Die alte DMG war noch eingehängt (nichts darauf geöffnet) und wurde vor dem Bau ausgeworfen. Handbücher unverändert übernommen.
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.4 (102031), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen wie zuletzt (ohne `network.server`); kein `NSLocalNetworkUsageDescription`; keine Debug-Schalter; neue englische Texte enthalten; Handbücher identisch mit dem Repository; aus der DMG als Demo gestartet („Start · Version 1.0.4 (102031)“) und sauber beendet. Nicht veröffentlicht.
+- **Weiter vorgemerkt:** README und Handbuch für „Sortierung prüfen“, Webseitenbild `sortcheck`.
+
 # „Was ist neu“ 1.0.4: neunter Punkt zu „Sortierung prüfen“ · 06.11.2026
 
 - **Neu:** Punkt zum neu angeordneten „Sortierung prüfen“ (Leiste des Fachs, „Platz … herausnehmen → hinter …“, Reihenfolge im Menü, Haken wenn alles stimmt) in `Changelog.entries`, Englisch im Sprachkatalog, beide Sprachen in `dist/Hinweise-1.0.4.md`.
