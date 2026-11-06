@@ -2,10 +2,16 @@ import SwiftUI
 import AppKit
 
 extension View {
-    func appAppearance() -> some View { modifier(AppAppearanceModifier()) }
+    /// `windowBackground: false` for content that brings its own surface in
+    /// a transparent window (the search in the menu bar): the paper designs
+    /// would otherwise fill the whole window, the room for the shadow too.
+    func appAppearance(windowBackground: Bool = true) -> some View {
+        modifier(AppAppearanceModifier(windowBackground: windowBackground))
+    }
 }
 
 private struct AppAppearanceModifier: ViewModifier {
+    let windowBackground: Bool
     func body(content: Content) -> some View {
         let isAtelier = AppStyle.isAtelier
         content.font(.body).fontDesign(.rounded).controlSize(.regular)
@@ -18,7 +24,7 @@ private struct AppAppearanceModifier: ViewModifier {
                 if isAtelier { style = AnyShapeStyle(AtelierPalette.surface) }
             }
             .background {
-                if AppStyle.isAtelier { AtelierPalette.paper.ignoresSafeArea() }
+                if windowBackground && AppStyle.isAtelier { AtelierPalette.paper.ignoresSafeArea() }
             }
             .onAppear { AppPreferences.shared.applyAppearance() }
     }

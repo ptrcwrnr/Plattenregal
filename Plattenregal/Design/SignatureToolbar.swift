@@ -1,28 +1,57 @@
 import SwiftUI
 import AppKit
 
+extension View {
+    /// The toolbar's look in every design, for a window's root view (main
+    /// window, settings): the preferences from a background leaf and, in
+    /// Klassisch and Vinyl, the colored band drawn over the page.
+    func signatureToolbar() -> some View {
+        background { SignatureToolbarAppearance() }
+            .overlay { PaperToolbarBand() }
+    }
+}
+
 /// Toolbar preferences from a small background leaf, so switching designs
 /// never changes the page hierarchy. Scheme and visibility are always set,
 /// never left out: a window opened in Klassisch otherwise keeps its dark
 /// toolbar after switching to Modern (gray glass, light labels on the light
-/// bar) and its bar with the line under it. Modern hides the bar like the
-/// settings window, so the ambient background runs on under the toolbar.
+/// bar).
+///
+/// SwiftUI's own toolbar background stays hidden in every design. Shown in
+/// a color (`toolbarBackground(_:for:)`, as Klassisch had it), it stopped
+/// the window from being dragged by its toolbar on every page whose scroll
+/// view carries a drag gesture – Collection, Wantlist and Statistik with
+/// their pull to refresh –, only the shelf page could still be moved. The
+/// paper designs draw their band themselves instead (`PaperToolbarBand`).
 struct SignatureToolbarAppearance: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        Group {
+        Color.clear.frame(width: 0, height: 0)
+            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+            .toolbarColorScheme(AppStyle.isAtelier ? .dark : scheme, for: .windowToolbar)
+            .background { FullScreenToolbarBackground() }
+    }
+}
+
+/// Klassisch's petrol band (Vinyl's graphite) under the toolbar, as high as
+/// the toolbar takes from the top. Drawn over the page, so what scrolls up
+/// disappears beneath it as under an opaque bar; it takes no clicks, so the
+/// toolbar's empty parts still move the window. Nothing in Modern.
+private struct PaperToolbarBand: View {
+    var body: some View {
+        // The height is read outside: inside, `ignoresSafeArea` reports no
+        // safe area at all (as in `AmbientGlow`).
+        GeometryReader { outer in
             if AppStyle.isAtelier {
-                Color.clear.frame(width: 0, height: 0)
-                    .toolbarBackground(AtelierPalette.petrol, for: .windowToolbar)
-                    .toolbarBackgroundVisibility(.visible, for: .windowToolbar)
-            } else {
-                Color.clear.frame(width: 0, height: 0)
-                    .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+                AtelierPalette.petrol
+                    .frame(height: outer.safeAreaInsets.top)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .ignoresSafeArea()
             }
         }
-        .toolbarColorScheme(AppStyle.isAtelier ? .dark : scheme, for: .windowToolbar)
-        .background { FullScreenToolbarBackground() }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

@@ -524,7 +524,8 @@ struct QuickSearchPlace {
                                             guard let self, let panel else { return }
                                             position(panel, height: height)
                                         })
-            .appPageEnvironment(container.mainContext)
+            // The panel is transparent around its surface, for the shadow.
+            .appPageEnvironment(container.mainContext, windowBackground: false)
         let hosting = NSHostingView(rootView: view)
         hosting.sizingOptions = []
         panel.contentView = hosting

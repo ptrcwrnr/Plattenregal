@@ -121,10 +121,9 @@ struct AppSettingsView: View {
             tab = next
         }
         #endif
-        // No separator line under the toolbar, not even on hover.
-        // Klassisch shows its petrol toolbar instead (see `SignatureToolbarAppearance`).
-        .toolbarBackgroundVisibility(AppStyle.isAtelier ? .visible : .hidden, for: .windowToolbar)
-        .background { SignatureToolbarAppearance() }
+        // No separator line under the toolbar, not even on hover; Klassisch
+        // and Vinyl draw their band instead (see `SignatureToolbarAppearance`).
+        .signatureToolbar()
         .toolbar {
             ToolbarItem(placement: .principal) {
                 GlassSegmentedPicker(selection: $tab, options: Tab.shown, glass: false) { Text($0.title) }

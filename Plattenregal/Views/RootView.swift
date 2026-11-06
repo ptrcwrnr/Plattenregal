@@ -139,7 +139,7 @@ struct RootView: View {
                 // The bar brings its own background (see `toolbarBar`).
                 .sharedBackgroundVisibility(.hidden)
             }
-            .background { SignatureToolbarAppearance() }
+            .signatureToolbar()
             .background(pageShortcuts)
             .background(GlobalShortcuts(selection: destination))
             .background { AmbientGlow() }

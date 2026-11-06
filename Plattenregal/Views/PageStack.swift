@@ -138,8 +138,8 @@ private struct PageHost<Content: View>: View {
 extension View {
     /// What every page of a `PageStack` needs from the app around it: the
     /// app's look, its settings store and the database.
-    func appPageEnvironment(_ context: ModelContext) -> some View {
-        appAppearance()
+    func appPageEnvironment(_ context: ModelContext, windowBackground: Bool = true) -> some View {
+        appAppearance(windowBackground: windowBackground)
             .defaultAppStorage(AppDefaults.store)
             .modelContext(context)
     }
