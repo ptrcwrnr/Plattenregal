@@ -8542,26 +8542,6 @@
         }
       }
     },
-    "Reihenfolge der Collection" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Order of the collection"
-          }
-        }
-      }
-    },
-    "Reihenfolge der Wantlist" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Order of the wantlist"
-          }
-        }
-      }
-    },
     "Reihenfolge übernehmen" : {
       "localizations" : {
         "en" : {

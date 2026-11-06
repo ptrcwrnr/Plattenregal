@@ -643,19 +643,18 @@ nonisolated enum UpdateCheckInterval: String, CaseIterable, Identifiable, Sendab
         // Built as an older version (MARKETING_VERSION=1.0.1 for a picture of
         // the update): the newest entry of "Was ist neu", as GitHub would offer
         // it. Otherwise a made-up next version.
-        var version = AppVersion("1.0.3")!
+        // One step past this build, so it always counts as newer.
+        var version = AppVersion((currentVersion.parts.dropLast() + [(currentVersion.parts.last ?? 0) + 1]).map(String.init).joined(separator: "."))!
         var notes = """
-            **Neu in 1.0.3**
-            - Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt, was neu ist.
+            **Neu in \(version)**
+            - Eine erfundene Neuerung, nur für die Vorschau des Update-Fensters.
             - Fehlermeldungen sagen genauer, was los ist, etwa ohne Internet.
-            - Die Statistik lädt schneller.
 
             ---
 
-            **New in 1.0.3**
-            - Plattenregal checks for a new version once a day and shows what’s new.
+            **New in \(version)**
+            - A made-up change, only for the preview of the update window.
             - Error messages say more precisely what’s wrong, for example without internet.
-            - Statistics load faster.
             """
         var published = Date.now.addingTimeInterval(-2 * 24 * 60 * 60)
         var size: Int? = 11_270_713

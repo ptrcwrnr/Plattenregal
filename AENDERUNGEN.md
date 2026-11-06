@@ -1,3 +1,16 @@
+# Zweite, gründliche Durchsicht von 1.0.4: Doppeltes und Übersehenes · 06.11.2026
+
+- **Wunsch:** Den Code von heute noch einmal gründlich prüfen – auf unnötige Mehrarbeit, Fehler und Randfälle; alles soll robust und sinnvoll sein. (Die Durchsicht davor hatte vor allem den Diff auf Fehler gelesen.)
+- **Diesmal:** jede geänderte Stelle mit ihrer Umgebung gelesen, alle Verwendungen der Rubriknamen gesucht (Exporte und Dateinamen nutzen sie bewusst nicht), Anfragen an Einstellungs-Reiter (nur Discogs und Listen, nie Apple TV), „Einstellungen zurücksetzen“ mit offenen Namensfeldern, Reste der täglichen Prüfung.
+- **Bereinigt:**
+  - `StatisticsSection.moving` nutzt `Array.move(fromOffsets:toOffset:)` statt eigener Index-Rechnung (gleiches Ergebnis, Test unverändert grün).
+  - Die Bedingung „keine Suche“ (weder Schallplatte noch Kürzel) stand dreimal in `GeneralSettingsView`, jetzt einmal als `searchOff`.
+  - Bedienungshilfe-Texte der Reihenfolge in Darstellung nennen die eigenen Namen wie der sichtbare Titel; die zwei alten Texte sind aus dem Sprachkatalog entfernt.
+  - „Was ist neu“ 1.0.4 in derselben Reihenfolge wie die Release-Hinweise (Neuerungen zuerst).
+  - Debug-Vorschau des Update-Fensters (`--preview-update=available`): die erfundene Version war fest 1.0.3 und mit 1.0.4 nicht mehr neuer; jetzt immer eine Stufe über dem Build, Text ohne „einmal am Tag“.
+- **Bewusst gelassen:** `PageNames.shown` kürzt noch einmal, obwohl gespeicherte Namen schon gekürzt sind – schützt vor von Hand geänderten Einstellungen. `AppleTVSettingsView`, `TVLink` und die Texte dazu bleiben im Projekt, damit Apple TV mit einem Schalter zurückkommt.
+- **Geprüft:** Debug-Build ohne Warnung, 307 Tests bestanden; Vorschau des Update-Fensters in der Demo zeigt „Plattenregal 1.0.5 ist da“.
+
 # DMG 1.0.4 gebaut und geprüft · 06.11.2026
 
 - **Wunsch:** Nach der Durchsicht die DMG ausgeben.

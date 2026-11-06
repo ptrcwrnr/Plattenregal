@@ -88,20 +88,20 @@ struct GeneralSettingsView: View {
                     GlassSegmentedPicker(selection: $preferences.quickSearchLook, options: QuickSearchLook.allCases) { Text($0.title) }
                         .accessibilityLabel(String(localized: "Aussehen der Suche"))
                 }
-                .disabled(AppStyle.isAtelier || (!preferences.menuBarSearch && !preferences.quickSearchHotKey))
+                .disabled(AppStyle.isAtelier || searchOff)
                 Divider()
                 // Applies to the record and the shortcut alike; without both there is no search.
                 SettingsRow(title: String(localized: "Position der Suche"), hint: preferences.quickSearchPosition.hint) {
                     GlassSegmentedPicker(selection: $preferences.quickSearchPosition, options: QuickSearchPosition.allCases) { Text($0.title) }
                         .accessibilityLabel(String(localized: "Position der Suche"))
                 }
-                .disabled(!preferences.menuBarSearch && !preferences.quickSearchHotKey)
+                .disabled(searchOff)
                 Divider()
                 SettingsRow(title: String(localized: "Klick auf einen Treffer"), hint: preferences.quickSearchClick.hint) {
                     GlassSegmentedPicker(selection: $preferences.quickSearchClick, options: QuickSearchClick.allCases) { Text($0.title) }
                         .accessibilityLabel(String(localized: "Klick auf einen Treffer"))
                 }
-                .disabled(!preferences.menuBarSearch && !preferences.quickSearchHotKey)
+                .disabled(searchOff)
             }
             SettingsCard(title: String(localized: "Updates")) {
                 SettingsRow(title: String(localized: "Automatisch nach Updates suchen"),
@@ -142,6 +142,9 @@ struct GeneralSettingsView: View {
     }
 
     /// What the last check said, and when.
+    /// Neither the record nor the shortcut: there is no search, its choices rest.
+    private var searchOff: Bool { !preferences.menuBarSearch && !preferences.quickSearchHotKey }
+
     private var updateHint: String {
         if case .available(let release) = updates.state {
             return String(localized: "Version \(release.version.description) ist da.")

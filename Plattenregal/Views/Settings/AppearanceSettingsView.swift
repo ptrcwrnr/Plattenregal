@@ -98,14 +98,14 @@ struct AppearanceSettingsView: View {
                 Divider()
                 SettingsRow(title: String(localized: "Reihenfolge \(Destination.collection.title)"), hint: collectionOrder.hint) {
                     GlassSegmentedPicker(selection: order($collectionOrder, scope: DisplaySettings.collectionOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
-                        .accessibilityLabel("Reihenfolge der Collection")
+                        .accessibilityLabel(String(localized: "Reihenfolge \(Destination.collection.title)"))
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Ansicht \(Destination.wantlist.title)")) { OverviewLayoutPicker(selection: $wantlistLayout) }
                 Divider()
                 SettingsRow(title: String(localized: "Reihenfolge \(Destination.wantlist.title)"), hint: wantlistOrder.hint) {
                     GlassSegmentedPicker(selection: order($wantlistOrder, scope: DisplaySettings.wantlistOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
-                        .accessibilityLabel("Reihenfolge der Wantlist")
+                        .accessibilityLabel(String(localized: "Reihenfolge \(Destination.wantlist.title)"))
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Covergröße im Raster"),
