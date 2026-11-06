@@ -1,3 +1,9 @@
+# „Sortierung prüfen“: ohne Plakette „Als Nächstes“ · 06.11.2026
+
+- **Wunsch:** Die Plakette „Als Nächstes“ aus den Schritten nehmen.
+- **Umgesetzt:** `SortStepRow` zeigt sie nicht mehr; der nächste Schritt bleibt an seiner Nummer in der Akzentfarbe (`StepNumber(prominent:)`) und am Bogen in der Leiste erkennbar. Der Text bleibt im Sprachkatalog, „Noch nicht einsortiert“ nutzt ihn weiter. „Was ist neu“ erwähnte die Plakette nicht.
+- **Geprüft:** Debug-Build ohne Warnung, 312 Tests bestanden; Demo-Schnappschuss (Klassisch) mit offener Umstellung.
+
 # DMG 1.0.4 mit dem neuen „Sortierung prüfen“ neu gebaut · 06.11.2026
 
 - **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 444 635 Bytes), SHA-256 `29232337…88e7d600`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch der neunte Punkt); die DMG vom Nachmittag ist überholt. Die alte DMG war noch eingehängt (nichts darauf geöffnet) und wurde vor dem Bau ausgeworfen. Handbücher unverändert übernommen.

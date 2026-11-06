@@ -207,8 +207,9 @@ struct ShelfSortCheckView: View {
 
 /// One move: the record with its cover, then what to do at the shelf –
 /// take it out at its place, put it behind the record shown (or at the very
-/// front, before it). The next open move carries "Als Nächstes" like the
-/// next record in "Noch nicht einsortiert"; a click ticks a move off.
+/// front, before it). The next open move shows by its number in the accent
+/// (and by the arc in the strip above), without a tag of its own; a click
+/// ticks a move off.
 private struct SortStepRow: View {
     let number: Int
     let step: ShelfSortCheck.Step
@@ -240,7 +241,6 @@ private struct SortStepRow: View {
                     .font(.callout)
                 }
                 Spacer(minLength: 0)
-                if current { StatusTag(text: String(localized: "Als Nächstes"), color: AppStyle.accent) }
             }
             .padding(.horizontal, AppStyle.itemSpacing)
             .padding(.vertical, AppStyle.itemSpacing)
