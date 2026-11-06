@@ -10,7 +10,7 @@ import SwiftData
 final class ShelfAssignmentSession: Identifiable {
     let id = UUID()
     /// `nil`: "Einsortieren" from the round button – every record without a
-    /// shelf, each to its own alphabetical place in the rack.
+    /// shelf, each to its own alphabetical place in the cabinet shown.
     let shelf: Shelf?
     var isRackWide: Bool { shelf == nil }
     /// Shelves in use, taken with the candidates (rack-wide places).
@@ -33,9 +33,9 @@ final class ShelfAssignmentSession: Identifiable {
     /// The row under the pointer; the target card tells where it would go.
     private(set) var hoveredID: UUID?
     var error: String?
-    /// Rack-wide: where the page stands – the open compartment and the
-    /// cabinet shown. At a shelf boundary they decide which of the two
-    /// fitting shelves a record goes to (see `AlphabeticalPlacement.preferredIndex`).
+    /// Where the page stands – the open compartment and the cabinet shown.
+    /// Records are sorted into the cabinet shown; at a boundary between two
+    /// of its compartments the open one decides (see `AlphabeticalPlacement.preferredIndex`).
     private let openShelf: UUID?
     private let shownCabinet: UUID?
 
@@ -64,7 +64,7 @@ final class ShelfAssignmentSession: Identifiable {
 
     /// Where `copy` goes: its alphabetical place among the records of this
     /// shelf, and the two it would stand between. Rack-wide its place in the
-    /// whole rack – between two shelves the end of the first. `nil` while no
+    /// cabinet shown – between two compartments the preferred one. `nil` while no
     /// shelf holds records yet.
     func spot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
         guard let shelf else { return rackSpot(for: copy) }
@@ -92,9 +92,9 @@ final class ShelfAssignmentSession: Identifiable {
         placeCache[copy.id] = .some(spot)
         return spot
     }
-    /// Its place in the whole rack; at a shelf boundary the preferred side.
+    /// Its place in the cabinet shown; at a compartment boundary the preferred side.
     private func rackSpot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
-        let spots = AlphabeticalPlacement.spots(for: copy, in: shelves)
+        let spots = AlphabeticalPlacement.spots(for: copy, in: shelves, cabinet: shownCabinet)
         guard !spots.isEmpty else { return nil }
         return spots[AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf, cabinet: shownCabinet)]
     }
@@ -121,7 +121,7 @@ final class ShelfAssignmentSession: Identifiable {
             let available = ShelfAssignmentPresentation.candidates(copies, owner: owner, excluding: excluded)
             missing = Set(try context.fetch(FetchDescriptor<MissingCopyMark>()).map(\.copyID))
             shelves = Shelf.inUse(try context.fetch(FetchDescriptor<Shelf>()))
-            let fits = AlphabeticalPlacement.fittingShelves(for: available, in: shelves)
+            let fits = AlphabeticalPlacement.fittingShelves(for: available, in: shelves, cabinet: shownCabinet)
             for copy in available {
                 guard let other = fits[copy.id], !other.isEmpty else { continue }
                 if let shelf, other.contains(where: { $0.id == shelf.id }) { continue }

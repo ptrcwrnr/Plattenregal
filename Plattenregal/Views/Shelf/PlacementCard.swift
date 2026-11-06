@@ -16,9 +16,10 @@ struct Placement {
     /// on this page, so there is no spot to show.
     let putAwayIn: String?
 
-    /// `openShelf` and `cabinet`: where the page stands; at a shelf boundary
-    /// they pick which of the two fitting shelves comes first (see
-    /// `AlphabeticalPlacement.preferredIndex`).
+    /// `openShelf` and `cabinet`: where the page stands. A record without a
+    /// shelf is sorted into the cabinet shown (`AlphabeticalPlacement.spots`);
+    /// at a boundary between two of its compartments the open one comes
+    /// first (see `AlphabeticalPlacement.preferredIndex`).
     init(copy: RecordCopy, shelves: [Shelf], openShelf: UUID? = nil, cabinet: UUID? = nil) {
         self.copy = copy
         found = copy.shelf != nil
@@ -30,7 +31,7 @@ struct Placement {
         putAwayIn = nil
         spots = found
             ? AlphabeticalPlacement.current(for: copy, in: shelves).map { [$0] } ?? []
-            : AlphabeticalPlacement.spots(for: copy, in: shelves)
+            : AlphabeticalPlacement.spots(for: copy, in: shelves, cabinet: cabinet)
         chosen = AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf, cabinet: cabinet)
     }
     var spot: AlphabeticalPlacement.Spot? { spots.indices.contains(chosen) ? spots[chosen] : nil }

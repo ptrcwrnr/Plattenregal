@@ -6,8 +6,8 @@ import Testing
 extension AllTests {
     /// Sorting in at a boundary between two cabinets, and the "Verlauf".
     @MainActor struct ShelfHistoryTests {
-        /// The rack of the report from 23.10.2026: one alphabet over two
-        /// cabinets – KALLAX ends with "Various", EKET starts with "Yakooza".
+        /// The rack of the report from 23.10.2026: KALLAX ends with
+        /// "Various", EKET starts with "Yakooza".
         private struct Rack {
             let container: ModelContainer
             let positions: PositionService
@@ -37,50 +37,79 @@ extension AllTests {
             try rack.positions.insert(release: Release(artist: artist, title: title), shelf: nil)
         }
 
-        // MARK: Shelf boundary
+        // MARK: Sorting into the cabinet shown
 
-        @Test func boundaryGoesToTheSideWithTheSameArtist() throws {
+        @Test func recordsGoIntoTheCabinetShown() throws {
             let rack = try rack()
             let cocaine = try loose(rack, "Yakooza", "Cocaine (Remixes)")
-            let spots = AlphabeticalPlacement.spots(for: cocaine, in: rack.inUse)
-            #expect(spots.map(\.shelf.id) == [rack.kallax.id, rack.eket.id])
-            // Even with KALLAX open: the other Yakooza stands in EKET.
-            #expect(AlphabeticalPlacement.preferredIndex(spots, for: cocaine, openShelf: rack.kallax.id, cabinet: rack.kallax.cabinet?.id) == 1)
+            // KALLAX shown: its end, though the other Yakooza stands in EKET.
+            let inKallax = AlphabeticalPlacement.spots(for: cocaine, in: rack.inUse, cabinet: rack.kallax.cabinet?.id)
+            #expect(inKallax.map(\.shelf.id) == [rack.kallax.id] && inKallax.map(\.position) == [3])
+            // EKET shown: at its start, before "Yakooza – Stronger".
+            let inEket = AlphabeticalPlacement.spots(for: cocaine, in: rack.inUse, cabinet: rack.eket.cabinet?.id)
+            #expect(inEket.map(\.shelf.id) == [rack.eket.id] && inEket.map(\.position) == [1])
+            #expect(inEket[0].before == nil && inEket[0].after?.release?.title == "Stronger")
+            // No cabinet shown (search in the menu bar, widget): the first one, as the shelf page opens.
+            #expect(AlphabeticalPlacement.spots(for: cocaine, in: rack.inUse).map(\.shelf.id) == [rack.kallax.id])
+            #expect(AlphabeticalPlacement.fittingShelves(for: [cocaine], in: rack.inUse)[cocaine.id]?.map(\.id) == [rack.kallax.id])
+            #expect(AlphabeticalPlacement.fittingShelves(for: [cocaine], in: rack.inUse, cabinet: rack.eket.cabinet?.id)[cocaine.id]?.map(\.id) == [rack.eket.id])
 
-            // The round button's "Einsortieren" puts it there.
-            let session = ShelfAssignmentSession(shelf: nil, openShelf: rack.kallax.id, shownCabinet: rack.kallax.cabinet?.id)
+            // The round button's "Einsortieren" and the placement card agree.
+            let placement = Placement(copy: cocaine, shelves: rack.inUse, openShelf: rack.eket.id, cabinet: rack.eket.cabinet?.id)
+            #expect(placement.spots.count == 1 && placement.spot?.shelf.id == rack.eket.id)
+            let session = ShelfAssignmentSession(shelf: nil, openShelf: rack.eket.id, shownCabinet: rack.eket.cabinet?.id)
             session.load(rack.context, owner: "Demo", labels: ShelfLabels())
             session.add(cocaine, in: rack.context)
             #expect(cocaine.shelf?.id == rack.eket.id && cocaine.positionInShelf == 1)
         }
 
-        @Test func boundaryWithoutArtistFollowsTheOpenShelfThenTheShownCabinet() throws {
+        /// The report from 06.11.2026: EKET held records from "Agoria" to
+        /// "Zombie Nation", so as one run with KALLAX it covered every name
+        /// and took every new record – "Elektrochemie LK" too, though KALLAX
+        /// has a compartment "De – Ev".
+        @Test func aCabinetFromAToZNoLongerTakesEveryRecord() throws {
             let rack = try rack()
-            let voigt = try loose(rack, "Wolfgang Voigt", "Ampère")
-            let spots = AlphabeticalPlacement.spots(for: voigt, in: rack.inUse)
-            #expect(spots.count == 2)
-            #expect(AlphabeticalPlacement.preferredIndex(spots, for: voigt) == 0)
-            #expect(AlphabeticalPlacement.preferredIndex(spots, for: voigt, cabinet: rack.eket.cabinet?.id) == 1)
-            #expect(AlphabeticalPlacement.preferredIndex(spots, for: voigt, cabinet: rack.kallax.cabinet?.id) == 0)
-            // The open compartment counts before the cabinet shown.
-            #expect(AlphabeticalPlacement.preferredIndex(spots, for: voigt, openShelf: rack.kallax.id, cabinet: rack.eket.cabinet?.id) == 0)
-
-            // In EKET, "Einsortieren" and the placement card both pick EKET.
-            let placement = Placement(copy: voigt, shelves: rack.inUse, openShelf: rack.eket.id, cabinet: rack.eket.cabinet?.id)
-            #expect(placement.spot?.shelf.id == rack.eket.id)
-            let session = ShelfAssignmentSession(shelf: nil, openShelf: rack.eket.id, shownCabinet: rack.eket.cabinet?.id)
-            session.load(rack.context, owner: "Demo", labels: ShelfLabels())
-            session.add(voigt, in: rack.context)
-            #expect(voigt.shelf?.id == rack.eket.id && voigt.positionInShelf == 1)
+            for (artist, title) in [("Agoria", "Code 1026"), ("DJ Hitch Hiker", "Cabal"), ("Johannes Heil", "From Within")] {
+                try rack.positions.insert(release: Release(artist: artist, title: title), shelf: rack.eket, position: 1)
+            }
+            let first = try #require(rack.kallax.cabinet)
+            // KALLAX: Abba, DJ 7ranceport, Evensloped, Various.
+            let dj = try rack.positions.insert(release: Release(artist: "DJ 7ranceport", title: "Trance"), shelf: rack.kallax, position: 2)
+            let even = try rack.positions.insert(release: Release(artist: "Evensloped", title: "Sky"), shelf: rack.kallax, position: 3)
+            let schall = try loose(rack, "Elektrochemie LK, Thomas Schumacher", "Schall (Revisited)")
+            let spots = AlphabeticalPlacement.spots(for: schall, in: rack.inUse, cabinet: first.id)
+            #expect(spots.map(\.shelf.id) == [rack.kallax.id] && spots.map(\.position) == [3])
+            #expect(spots.first?.before?.id == dj.id && spots.first?.after?.id == even.id)
+            #expect(AlphabeticalPlacement.spots(for: schall, in: rack.inUse).map(\.shelf.id) == [rack.kallax.id])
+            // Only with EKET shown does it go there, by EKET's own order.
+            #expect(AlphabeticalPlacement.spots(for: schall, in: rack.inUse, cabinet: rack.eket.cabinet?.id).map(\.shelf.id) == [rack.eket.id])
         }
 
-        @Test func recordInsideOneShelfStaysThereWhateverIsOpen() throws {
+        @Test func boundaryInsideACabinetFollowsTheArtistThenTheOpenCompartment() throws {
             let rack = try rack()
+            let cabinet = try #require(rack.kallax.cabinet)
+            let next = cabinet.orderedShelves[1]
+            try rack.positions.insert(release: Release(artist: "Yakooza", title: "Stronger"), shelf: next, position: 1)
+            let cocaine = try loose(rack, "Yakooza", "Cocaine (Remixes)")
+            let spots = AlphabeticalPlacement.spots(for: cocaine, in: rack.inUse, cabinet: cabinet.id)
+            #expect(spots.map(\.shelf.id) == [rack.kallax.id, next.id])
+            // Even with the first compartment open: the other Yakooza stands in the next.
+            #expect(AlphabeticalPlacement.preferredIndex(spots, for: cocaine, openShelf: rack.kallax.id, cabinet: cabinet.id) == 1)
+
+            let voigt = try loose(rack, "Wolfgang Voigt", "Ampère")
+            let between = AlphabeticalPlacement.spots(for: voigt, in: rack.inUse, cabinet: cabinet.id)
+            #expect(between.map(\.shelf.id) == [rack.kallax.id, next.id])
+            #expect(AlphabeticalPlacement.preferredIndex(between, for: voigt) == 0)
+            #expect(AlphabeticalPlacement.preferredIndex(between, for: voigt, openShelf: next.id) == 1)
+        }
+
+        @Test func anEmptyCabinetShownFallsBackToTheFirstWithRecords() throws {
+            let rack = try rack()
+            let cabinets = CabinetService(context: rack.context)
+            let empty = try cabinets.add(name: "Leer", columns: 1, rows: 1)
             let beck = try loose(rack, "Beck", "Odelay")
-            let session = ShelfAssignmentSession(shelf: nil, openShelf: rack.eket.id, shownCabinet: rack.eket.cabinet?.id)
-            session.load(rack.context, owner: "Demo", labels: ShelfLabels())
-            session.add(beck, in: rack.context)
-            #expect(beck.shelf?.id == rack.kallax.id && beck.positionInShelf == 2)
+            let spots = AlphabeticalPlacement.spots(for: beck, in: rack.inUse, cabinet: empty.id)
+            #expect(spots.map(\.shelf.id) == [rack.kallax.id] && spots.map(\.position) == [2])
         }
 
         // MARK: History
