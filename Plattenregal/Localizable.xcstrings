@@ -380,12 +380,52 @@
         }
       }
     },
-    "Fragt einmal am Tag bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
+    "Nie" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Asks GitHub once a day whether there is a new version and shows it. Nothing about you or your collection is sent."
+            "value" : "Never"
+          }
+        }
+      }
+    },
+    "Plattenregal sucht nicht von selbst. „Jetzt prüfen“ fragt sofort bei GitHub nach." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal doesn’t look by itself. “Check Now” asks GitHub right away."
+          }
+        }
+      }
+    },
+    "Fragt einmal in der Woche bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asks GitHub once a week whether there is a new version and shows it. Nothing about you or your collection is sent."
+          }
+        }
+      }
+    },
+    "Fragt einmal im Monat bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asks GitHub once a month whether there is a new version and shows it. Nothing about you or your collection is sent."
+          }
+        }
+      }
+    },
+    "Wie oft Plattenregal nach Updates sucht, wählst du jetzt unter Einstellungen → Allgemein: wöchentlich, monatlich oder nie. Hattest du die tägliche Suche eingeschaltet, sucht Plattenregal jetzt wöchentlich." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You now choose how often Plattenregal looks for updates under Settings → General: weekly, monthly or never. If you had the daily check on, Plattenregal now looks weekly."
           }
         }
       }

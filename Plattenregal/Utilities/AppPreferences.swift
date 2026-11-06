@@ -19,6 +19,9 @@ import SwiftUI
         static let quickSearchLook = "quickSearchLook"
         static let quickSearchPosition = "quickSearchPosition"
         static let keepsRunningInBackground = "keepsRunningInBackground"
+        static let updateCheckInterval = "updateCheckInterval"
+        /// Up to 1.0.3: the switch for a check once a day. Read while no
+        /// `updateCheckInterval` is stored, removed with the first change.
         static let automaticUpdateChecks = "automaticUpdateChecks"
     }
 
@@ -52,10 +55,11 @@ import SwiftUI
     var keepsRunningInBackground: Bool {
         didSet { defaults.set(keepsRunningInBackground, forKey: Key.keepsRunningInBackground) }
     }
-    /// Once a day ask GitHub for a newer version (`UpdateChecker`). On by default.
-    var automaticUpdateChecks: Bool {
+    /// How often to ask GitHub for a newer version (`UpdateChecker`). Weekly by default.
+    var updateCheckInterval: UpdateCheckInterval {
         didSet {
-            defaults.set(automaticUpdateChecks, forKey: Key.automaticUpdateChecks)
+            store(updateCheckInterval.rawValue, Key.updateCheckInterval)
+            defaults.removeObject(forKey: Key.automaticUpdateChecks)
             UpdateChecker.shared.automaticChecksChanged()
         }
     }
@@ -83,7 +87,7 @@ import SwiftUI
         quickSearchLook = defaults.string(forKey: Key.quickSearchLook).flatMap(QuickSearchLook.init) ?? .darkGlass
         quickSearchPosition = defaults.string(forKey: Key.quickSearchPosition).flatMap(QuickSearchPosition.init) ?? .center
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
-        automaticUpdateChecks = defaults.object(forKey: Key.automaticUpdateChecks) == nil || defaults.bool(forKey: Key.automaticUpdateChecks)
+        updateCheckInterval = Self.storedUpdateCheckInterval(in: defaults)
         language = languageAtLaunch
     }
 
@@ -105,9 +109,22 @@ import SwiftUI
         quickSearchLook = .darkGlass
         quickSearchPosition = .center
         keepsRunningInBackground = true
-        automaticUpdateChecks = true
+        updateCheckInterval = .weekly
         // The demo's settings are its own; the language is the real app's.
         if !DemoMode.isActive { language = .system }
+    }
+
+    /// The stored choice; else the switch of 1.0.3 and earlier: off stays off
+    /// (never), on – the daily check – becomes weekly. Only read here, so a
+    /// launch argument is never stored; the first change stores the choice
+    /// and drops the old switch. `bool(forKey:)` also reads "NO" from a
+    /// launch argument.
+    private static func storedUpdateCheckInterval(in defaults: UserDefaults) -> UpdateCheckInterval {
+        if let raw = defaults.string(forKey: Key.updateCheckInterval), let interval = UpdateCheckInterval(rawValue: raw) {
+            return interval
+        }
+        let switchedOff = defaults.object(forKey: Key.automaticUpdateChecks) != nil && !defaults.bool(forKey: Key.automaticUpdateChecks)
+        return switchedOff ? .never : .weekly
     }
 
     private func store(_ value: String, _ key: String) {

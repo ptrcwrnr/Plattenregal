@@ -92,10 +92,11 @@ struct GeneralSettingsView: View {
                 SettingsRow(title: String(localized: "Automatisch nach Updates suchen"),
                             hint: DemoMode.isActive
                                 ? String(localized: "In der Demo sucht Plattenregal nicht von selbst nach Updates.")
-                                : String(localized: "Fragt einmal am Tag bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen.")) {
+                                : preferences.updateCheckInterval.hint) {
                     // The demo never checks on its own, whatever the setting says.
-                    Toggle("Automatisch nach Updates suchen", isOn: DemoMode.isActive ? .constant(false) : $preferences.automaticUpdateChecks)
-                        .labelsHidden().toggleStyle(.switch)
+                    GlassSegmentedPicker(selection: DemoMode.isActive ? .constant(.never) : $preferences.updateCheckInterval,
+                                         options: UpdateCheckInterval.allCases) { Text($0.title) }
+                        .accessibilityLabel(String(localized: "Automatisch nach Updates suchen"))
                 }
                 .disabled(DemoMode.isActive)
                 Divider()

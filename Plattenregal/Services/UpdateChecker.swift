@@ -316,10 +316,43 @@ nonisolated struct GitHubReleaseDTO: Decodable {
     let assets: [Asset]?
 }
 
+// MARK: - How often
+
+/// How often Plattenregal asks GitHub by itself (Einstellungen → Allgemein →
+/// Updates); weekly by default. Up to 1.0.3 it was a switch for once a day:
+/// on became weekly, off became never (see `AppPreferences`).
+nonisolated enum UpdateCheckInterval: String, CaseIterable, Identifiable, Sendable {
+    case never, weekly, monthly
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .never: String(localized: "Nie")
+        case .weekly: String(localized: "Wöchentlich")
+        case .monthly: String(localized: "Monatlich")
+        }
+    }
+    var hint: String {
+        switch self {
+        case .never: String(localized: "Plattenregal sucht nicht von selbst. „Jetzt prüfen“ fragt sofort bei GitHub nach.")
+        case .weekly: String(localized: "Fragt einmal in der Woche bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen.")
+        case .monthly: String(localized: "Fragt einmal im Monat bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen.")
+        }
+    }
+    /// When the next automatic check is due after the last one; `nil` for never.
+    /// By the calendar: a week is seven days, a month the same day next month.
+    func next(after lastCheck: Date, calendar: Calendar = .current) -> Date? {
+        switch self {
+        case .never: nil
+        case .weekly: calendar.date(byAdding: .day, value: 7, to: lastCheck)
+        case .monthly: calendar.date(byAdding: .month, value: 1, to: lastCheck)
+        }
+    }
+}
+
 // MARK: - The check in the app
 
 /// "Nach Updates suchen …": on request from the app menu or the settings, and
-/// – unless switched off – on its own once a day. A newer version opens the
+/// – as often as set (`UpdateCheckInterval`) – on its own. A newer version opens the
 /// update window (`UpdateView`); downloading and installing stay with the
 /// user: the browser loads the DMG, the new app is dragged to „Programme“.
 ///
@@ -342,9 +375,8 @@ nonisolated struct GitHubReleaseDTO: Decodable {
         static let skippedVersion = "updateSkippedVersion"
     }
 
-    /// One check a day; the schedule looks every hour whether one is due, so
-    /// a failed check is tried again an hour later.
-    static let checkInterval: TimeInterval = 24 * 60 * 60
+    /// The schedule looks every hour whether a check is due
+    /// (`UpdateCheckInterval`), so a failed check is tried again an hour later.
     static let scheduleStep: Duration = .seconds(60 * 60)
     /// After launching, so the check doesn't compete with opening the collection.
     static let launchDelay: Duration = .seconds(10)
@@ -362,7 +394,7 @@ nonisolated struct GitHubReleaseDTO: Decodable {
 
     @ObservationIgnored private let service: UpdateService
     @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let automaticChecksEnabled: () -> Bool
+    @ObservationIgnored private let interval: () -> UpdateCheckInterval
     @ObservationIgnored private let now: () -> Date
     @ObservationIgnored private var inFlight: Task<Result<AvailableRelease, any Error>, Never>?
     @ObservationIgnored private var manualCheck: Task<Void, Never>?
@@ -374,14 +406,14 @@ nonisolated struct GitHubReleaseDTO: Decodable {
 
     init(service: UpdateService = UpdateService(), defaults: UserDefaults = AppDefaults.store,
          currentVersion: AppVersion? = .current,
-         automaticChecksEnabled: @escaping () -> Bool = { AppPreferences.shared.automaticUpdateChecks },
+         interval: @escaping () -> UpdateCheckInterval = { AppPreferences.shared.updateCheckInterval },
          now: @escaping () -> Date = { .now }) {
         self.service = service
         self.defaults = defaults
         // Without a readable version every release counts as newer – better
         // than never offering one.
         self.currentVersion = currentVersion ?? AppVersion("0")!
-        self.automaticChecksEnabled = automaticChecksEnabled
+        self.interval = interval
         self.now = now
         lastCheck = defaults.object(forKey: Key.lastCheck) as? Date
     }
@@ -428,11 +460,14 @@ nonisolated struct GitHubReleaseDTO: Decodable {
 
     /// Whether the automatic check should ask GitHub now.
     func isAutomaticCheckDue() -> Bool {
-        guard automaticChecksEnabled() else { return false }
+        let interval = interval()
+        guard interval != .never else { return false }
         guard let lastCheck else { return true }
-        let elapsed = now().timeIntervalSince(lastCheck)
+        let now = now()
         // A date in the future: the clock was wrong or set back – check.
-        return elapsed < 0 || elapsed >= Self.checkInterval
+        if now < lastCheck { return true }
+        guard let next = interval.next(after: lastCheck) else { return false }
+        return now >= next
     }
 
     /// One automatic check, if due. Errors only go to the protocol.
@@ -468,7 +503,7 @@ nonisolated struct GitHubReleaseDTO: Decodable {
             lastCheck = now()
             defaults.set(lastCheck, forKey: Key.lastCheck)
             // Switched off while the check was under way: nothing to show for it.
-            guard manual || automaticChecksEnabled() else { return }
+            guard manual || interval() != .never else { return }
             let how = manual ? "Von Hand" : "Automatisch"
             if release.version > currentVersion {
                 state = .available(release)
@@ -580,7 +615,7 @@ nonisolated struct GitHubReleaseDTO: Decodable {
     /// names the update then).
     private func announceIfPossible() {
         // Skipped meanwhile, or the automatic check switched off: the hint that waited stays away.
-        guard announcementPending, announcedRelease != nil, automaticChecksEnabled() else { announcementPending = false; return }
+        guard announcementPending, announcedRelease != nil, interval() != .never else { announcementPending = false; return }
         guard NSApp.isActive, !AppLifecycle.shared.isInBackground, let openWindow else { return }
         announcementPending = false
         openWindow()

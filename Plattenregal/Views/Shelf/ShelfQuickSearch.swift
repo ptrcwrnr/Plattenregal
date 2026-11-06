@@ -333,7 +333,7 @@ struct QuickSearchPlace {
         menu.addItem(.separator())
         add(String(localized: "Plattenregal öffnen"), #selector(menuOpenMainWindow))
         add(String(localized: "Einstellungen …"), #selector(menuOpenSettings))
-        // Found by the daily check while running here in the background.
+        // Found by the automatic check while running here in the background.
         if let release = UpdateChecker.shared.announcedRelease {
             add(String(localized: "Plattenregal \(release.version.description) ist da …"), #selector(menuShowUpdate))
         }

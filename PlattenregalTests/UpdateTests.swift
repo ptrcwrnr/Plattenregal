@@ -5,7 +5,7 @@ import Synchronization
 
 extension AllTests {
     /// „Nach Updates suchen“: version numbers, GitHub's answers and failures,
-    /// the release notes, and when the daily check asks.
+    /// the release notes, and when the automatic check asks.
     @MainActor struct UpdateTests {
         // MARK: Version numbers
 
@@ -256,7 +256,7 @@ extension AllTests {
             try await withDefaults { defaults in
                 let clock = TestClock()
                 let checker = UpdateChecker(service: Self.answering(tag: "v1.0.3"), defaults: defaults,
-                                            currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true }, now: { clock.now })
+                                            currentVersion: AppVersion("1.0.2"), interval: { .weekly }, now: { clock.now })
                 #expect(checker.lastCheck == nil)
                 checker.checkNow()
                 #expect(checker.state == .checking)
@@ -278,7 +278,7 @@ extension AllTests {
             try await withDefaults { defaults in
                 for (installed, published) in [("1.0.2", "v1.0.2"), ("1.0.3", "v1.0.2"), ("1.1", "1.1.0")] {
                     let checker = UpdateChecker(service: Self.answering(tag: published), defaults: defaults,
-                                                currentVersion: AppVersion(installed), automaticChecksEnabled: { true })
+                                                currentVersion: AppVersion(installed), interval: { .weekly })
                     checker.checkNow()
                     try await Self.waitUntil { checker.state != .checking }
                     #expect(checker.state == .upToDate(latest: try #require(AppVersion(published))), "\(installed) / \(published)")
@@ -292,7 +292,7 @@ extension AllTests {
                 let earlier = Date(timeIntervalSince1970: 1_790_000_000)
                 defaults.set(earlier, forKey: UpdateChecker.Key.lastCheck)
                 let checker = UpdateChecker(service: UpdateService { _ in throw URLError(.notConnectedToInternet) }, defaults: defaults,
-                                            currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                                            currentVersion: AppVersion("1.0.2"), interval: { .weekly })
                 checker.checkNow()
                 try await Self.waitUntil { checker.state != .checking }
                 #expect(checker.state == .failed(.offline))
@@ -303,7 +303,7 @@ extension AllTests {
         @Test func automaticCheckStaysQuietOnFailure() async throws {
             try await withDefaults { defaults in
                 let checker = UpdateChecker(service: UpdateService { _ in throw URLError(.timedOut) }, defaults: defaults,
-                                            currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                                            currentVersion: AppVersion("1.0.2"), interval: { .weekly })
                 await checker.runAutomaticCheckIfDue()
                 #expect(checker.state == .idle)
                 #expect(checker.lastCheck == nil)
@@ -316,39 +316,65 @@ extension AllTests {
             try await withDefaults { defaults in
                 defaults.set("1.0.3", forKey: UpdateChecker.Key.skippedVersion)
                 let skipped = UpdateChecker(service: Self.answering(tag: "v1.0.3"), defaults: defaults,
-                                            currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                                            currentVersion: AppVersion("1.0.2"), interval: { .weekly })
                 await skipped.runAutomaticCheckIfDue()
                 #expect(skipped.announcedRelease == nil)
-                // A version newer than the skipped one is named again (a day later).
+                // A version newer than the skipped one is named again (at the next check).
                 defaults.removeObject(forKey: UpdateChecker.Key.lastCheck)
                 let newer = UpdateChecker(service: Self.answering(tag: "v1.0.4"), defaults: defaults,
-                                          currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                                          currentVersion: AppVersion("1.0.2"), interval: { .weekly })
                 #expect(newer.isAutomaticCheckDue())
                 await newer.runAutomaticCheckIfDue()
                 #expect(newer.announcedRelease?.version == AppVersion("1.0.4"))
             }
         }
 
-        @Test func automaticCheckIsDueOnceADay() throws {
+        @Test func automaticCheckIsDueAfterAWeekOrAMonth() throws {
             try withDefaults { defaults in
                 let clock = TestClock()
-                var enabled = true
+                var interval = UpdateCheckInterval.weekly
                 let checker = UpdateChecker(service: Self.answering(tag: "v1.0.2"), defaults: defaults, currentVersion: AppVersion("1.0.2"),
-                                            automaticChecksEnabled: { enabled }, now: { clock.now })
+                                            interval: { interval }, now: { clock.now })
+                let calendar = Calendar.current
+                let ago = { (component: Calendar.Component, value: Int) in calendar.date(byAdding: component, value: -value, to: clock.now)! }
+                @MainActor func lastCheck(_ date: Date) {
+                    defaults.set(date, forKey: UpdateChecker.Key.lastCheck)
+                    checker.automaticChecksChanged()
+                }
                 #expect(checker.isAutomaticCheckDue())
-                defaults.set(clock.now.addingTimeInterval(-60 * 60), forKey: UpdateChecker.Key.lastCheck)
-                checker.automaticChecksChanged()
+                // Weekly: not after six days, after seven.
+                lastCheck(ago(.day, 6))
                 #expect(!checker.isAutomaticCheckDue())
-                defaults.set(clock.now.addingTimeInterval(-UpdateChecker.checkInterval), forKey: UpdateChecker.Key.lastCheck)
-                checker.automaticChecksChanged()
+                lastCheck(ago(.day, 7))
                 #expect(checker.isAutomaticCheckDue())
-                // A day in the future: the clock was set back – check rather than wait.
-                defaults.set(clock.now.addingTimeInterval(60 * 60), forKey: UpdateChecker.Key.lastCheck)
-                checker.automaticChecksChanged()
+                // Monthly: a week isn't enough, a calendar month is.
+                interval = .monthly
+                #expect(!checker.isAutomaticCheckDue())
+                lastCheck(ago(.month, 1))
                 #expect(checker.isAutomaticCheckDue())
-                enabled = false
+                // In the future: the clock was set back – check rather than wait.
+                lastCheck(clock.now.addingTimeInterval(60 * 60))
+                #expect(checker.isAutomaticCheckDue())
+                // Never: not even without any check so far.
+                interval = .never
+                #expect(!checker.isAutomaticCheckDue())
+                defaults.removeObject(forKey: UpdateChecker.Key.lastCheck)
+                checker.automaticChecksChanged()
                 #expect(!checker.isAutomaticCheckDue())
             }
+        }
+
+        @Test func updateIntervalsFollowTheCalendar() throws {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = try #require(TimeZone(identifier: "Europe/Berlin"))
+            let date = { (y: Int, m: Int, d: Int) in calendar.date(from: DateComponents(year: y, month: m, day: d, hour: 9))! }
+            #expect(UpdateCheckInterval.never.next(after: date(2026, 1, 31), calendar: calendar) == nil)
+            #expect(UpdateCheckInterval.weekly.next(after: date(2026, 3, 25), calendar: calendar) == date(2026, 4, 1))
+            // Over the change to summer time: still 9 o'clock, a week later.
+            #expect(UpdateCheckInterval.weekly.next(after: date(2026, 3, 27), calendar: calendar) == date(2026, 4, 3))
+            #expect(UpdateCheckInterval.monthly.next(after: date(2026, 11, 6), calendar: calendar) == date(2026, 12, 6))
+            // The 31st into a shorter month: its last day.
+            #expect(UpdateCheckInterval.monthly.next(after: date(2026, 1, 31), calendar: calendar) == date(2026, 2, 28))
         }
 
         @Test func concurrentChecksAskGitHubOnce() async throws {
@@ -359,8 +385,8 @@ extension AllTests {
                     try await Task.sleep(for: .milliseconds(200))
                     return (Self.releaseJSON(tag: "v1.0.3"), Self.http(200))
                 }
-                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
-                // The daily check is asking; "Nach Updates suchen" joins it.
+                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"), interval: { .weekly })
+                // The automatic check is asking; "Nach Updates suchen" joins it.
                 let automatic = Task { await checker.runAutomaticCheckIfDue() }
                 try await Task.sleep(for: .milliseconds(50))
                 checker.checkNow()
@@ -381,7 +407,7 @@ extension AllTests {
                     if number == 1 { try await Task.sleep(for: .seconds(10)) }
                     return (Self.releaseJSON(tag: "v1.0.3"), Self.http(200))
                 }
-                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"), interval: { .weekly })
                 let automatic = Task { await checker.runAutomaticCheckIfDue() }
                 try await Task.sleep(for: .milliseconds(50))
                 checker.checkNow()
@@ -404,14 +430,14 @@ extension AllTests {
                     return (Self.releaseJSON(tag: "v1.0.3"), Self.http(200))
                 }
                 let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"),
-                                            automaticChecksEnabled: { setting.on })
+                                            interval: { setting.on ? .weekly : .never })
                 let automatic = Task { await checker.runAutomaticCheckIfDue() }
                 try await Task.sleep(for: .milliseconds(30))
                 setting.on = false
                 await automatic.value
                 #expect(checker.state == .idle)
                 #expect(checker.announcedRelease == nil)
-                // GitHub did answer: that counts as the day's check.
+                // GitHub did answer: that counts as the check.
                 #expect(checker.lastCheck != nil)
             }
         }
@@ -422,7 +448,7 @@ extension AllTests {
                     try await Task.sleep(for: .seconds(5))
                     return (Self.releaseJSON(tag: "v1.0.3"), Self.http(200))
                 }
-                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                let checker = UpdateChecker(service: service, defaults: defaults, currentVersion: AppVersion("1.0.2"), interval: { .weekly })
                 checker.checkNow()
                 checker.cancelCheck()
                 #expect(checker.state == .idle)
@@ -431,7 +457,7 @@ extension AllTests {
                 #expect(checker.lastCheck == nil)
                 // A new check after cancelling works as usual.
                 let answering = UpdateChecker(service: Self.answering(tag: "v1.0.3"), defaults: defaults,
-                                              currentVersion: AppVersion("1.0.2"), automaticChecksEnabled: { true })
+                                              currentVersion: AppVersion("1.0.2"), interval: { .weekly })
                 // Cancelled and asked again at once: the new check doesn't take the cancelled answer.
                 answering.checkNow()
                 answering.cancelCheck()
@@ -441,17 +467,35 @@ extension AllTests {
             }
         }
 
-        @Test func automaticChecksAreOnByDefaultAndPersist() throws {
+        @Test func updateIntervalIsWeeklyByDefaultPersistsAndTakesOverTheOldSwitch() throws {
             try withDefaults { defaults in
                 let preferences = AppPreferences(defaults: defaults)
-                #expect(preferences.automaticUpdateChecks)
-                preferences.automaticUpdateChecks = false
-                #expect(!AppPreferences(defaults: defaults).automaticUpdateChecks)
+                #expect(preferences.updateCheckInterval == .weekly)
+                preferences.updateCheckInterval = .monthly
+                #expect(AppPreferences(defaults: defaults).updateCheckInterval == .monthly)
+                preferences.updateCheckInterval = .never
+                #expect(AppPreferences(defaults: defaults).updateCheckInterval == .never)
                 preferences.reset()
-                #expect(AppPreferences(defaults: defaults).automaticUpdateChecks)
+                #expect(AppPreferences(defaults: defaults).updateCheckInterval == .weekly)
+                // The switch of 1.0.3: off stays off, on (once a day) becomes weekly.
+                defaults.removeObject(forKey: AppPreferences.Key.updateCheckInterval)
+                defaults.set(false, forKey: AppPreferences.Key.automaticUpdateChecks)
+                let old = AppPreferences(defaults: defaults)
+                #expect(old.updateCheckInterval == .never)
+                // Only read: nothing written until the first change.
+                #expect(defaults.object(forKey: AppPreferences.Key.updateCheckInterval) == nil)
+                defaults.set(true, forKey: AppPreferences.Key.automaticUpdateChecks)
+                #expect(AppPreferences(defaults: defaults).updateCheckInterval == .weekly)
                 // "-automaticUpdateChecks NO" from a launch argument arrives as text.
                 defaults.set("NO", forKey: AppPreferences.Key.automaticUpdateChecks)
-                #expect(!AppPreferences(defaults: defaults).automaticUpdateChecks)
+                #expect(AppPreferences(defaults: defaults).updateCheckInterval == .never)
+                // The first change stores the choice and drops the old switch.
+                old.updateCheckInterval = .monthly
+                #expect(defaults.object(forKey: AppPreferences.Key.automaticUpdateChecks) == nil)
+                #expect(AppPreferences(defaults: defaults).updateCheckInterval == .monthly)
+                // An unknown stored value: the default.
+                defaults.set("hourly", forKey: AppPreferences.Key.updateCheckInterval)
+                #expect(AppPreferences(defaults: defaults).updateCheckInterval == .weekly)
             }
         }
 
