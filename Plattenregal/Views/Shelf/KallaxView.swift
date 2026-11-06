@@ -381,7 +381,8 @@ struct KallaxView: View {
         // "Platte hinzufügen" for the selected compartment,
         // --preview-place=Artist the placement card of that artist's record
         // (with --preview-cabinet=Name it then switches to that cabinet),
-        // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment,
+        // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment
+        // (--preview-sortcheck=sorted: of the first one in order),
         // --preview-sortin "Einsortieren" of the round button,
         // --preview-history the "Verlauf".
         .task {
@@ -402,9 +403,14 @@ struct KallaxView: View {
                 startAssignment(nil)
             } else if arguments.contains("--preview-history") {
                 openHistory()
-            } else if arguments.contains("--preview-sortcheck") {
-                let shelves = cabinets.flatMap(\.shelves)
-                if let shelf = shelves.first(where: { !ShelfSortCheck.steps(PositionService.inShelfOrder($0.copies), by: .current).isEmpty }) {
+            } else if arguments.contains("--preview-sortcheck") || arguments.contains("--preview-sortcheck=sorted") {
+                // "=sorted": the first compartment in order instead, for "Alle … Platten stehen richtig".
+                let sorted = arguments.contains("--preview-sortcheck=sorted")
+                let shelves = cabinets.flatMap(\.orderedShelves)
+                if let shelf = shelves.first(where: { shelf in
+                    let steps = ShelfSortCheck.steps(PositionService.inShelfOrder(shelf.copies), by: .current)
+                    return sorted ? shelf.copies.count > 1 && steps.isEmpty : !steps.isEmpty
+                }) {
                     requests.panel = .sortCheck(ShelfSortCheckRequest(shelf: shelf))
                 }
             }

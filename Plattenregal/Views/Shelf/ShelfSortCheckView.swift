@@ -11,12 +11,18 @@ struct ShelfSortCheckRequest: Identifiable {
 /// and, where records are out of place, lists the moves at the shelf one by
 /// one – each only refers to records that already stand right. Once they
 /// are done, "Reihenfolge übernehmen" stores the new order.
+///
+/// Laid out for the shelf in front of you: a quiet head with the order as a
+/// menu, the compartment as a strip from left to right with the records to
+/// move, then the moves themselves – where to take a record out, where it
+/// goes – and the buttons at the foot, as on the placement card.
 struct ShelfSortCheckView: View {
     let shelf: Shelf
     let rangeLabel: String?
     /// Closes the panel once the new order is saved: left open, it would
     /// only say "Alles in Ordnung", and the next click on the shelf page
-    /// would merely close it instead of reaching a compartment.
+    /// would merely close it instead of reaching a compartment. Also
+    /// "Schließen" and "Fertig".
     let close: () -> Void
     @Environment(\.modelContext) private var context
     @AppStorage(ShelfSecondaryOrder.key) private var savedOrder = ShelfSecondaryOrder.title
@@ -25,54 +31,29 @@ struct ShelfSortCheckView: View {
     @State private var done: Set<UUID> = []
     @State private var error: String?
 
+    /// The panel's width: a move's target ("hinter Artist – Title") on one line.
+    private static let width: CGFloat = 560
+    /// The list of moves scrolls beyond this; the head and foot stay.
+    private static let listMaxHeight: CGFloat = 360
+
     private var gone: Bool { shelf.isDeleted || shelf.modelContext == nil }
 
     var body: some View {
         // A sync may be removing records meanwhile: never read a deleted one.
         let copies = gone ? [] : PositionService.inShelfOrder(shelf.copies.filter { !$0.isDeleted && $0.modelContext != nil })
         let steps = ShelfSortCheck.steps(copies, by: order)
-        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                Text("Sortierung prüfen").font(AppStyle.dialogTitle)
-                Text("\(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")) · \(AppStyle.records(copies.count)) · Plätze von links gezählt")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            VStack(alignment: .trailing, spacing: AppStyle.tightSpacing) {
-                HStack(spacing: AppStyle.rowSpacing) {
-                    Text("Nach Interpret, bei gleichem Interpreten nach").font(.callout).foregroundStyle(.secondary)
-                    Spacer(minLength: 0)
-                    GlassSegmentedPicker(selection: $order, options: ShelfSecondaryOrder.allCases, small: true) { Text($0.title) }
-                        .accessibilityLabel("Bei gleichem Interpreten nach")
-                }
-                // Said where it arises instead of next to the button.
-                if order != savedOrder && !steps.isEmpty {
-                    Text("Übernimmt „\(order.title)“ auch für Platzsuche und Hinzufügen in allen Fächern.")
-                        .font(.caption).foregroundStyle(AppStyle.accent)
-                        .transition(.opacity)
-                }
-            }
+        VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
+            header(count: copies.count, unsorted: !steps.isEmpty)
             if steps.isEmpty {
                 inOrder(count: copies.count)
             } else {
-                summary(steps)
-                ScrollView {
-                    VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                        let current = steps.first { !done.contains($0.id) }?.id
-                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                            SortStepRow(number: index + 1, step: step, done: done.contains(step.id), current: step.id == current) {
-                                if done.contains(step.id) { done.remove(step.id) } else { done.insert(step.id) }
-                            }
-                        }
-                    }
-                }
-                .frame(maxHeight: 360)
-                .fixedSize(horizontal: false, vertical: true)
-                footer(steps)
+                moves(steps, in: copies)
             }
             if let error { AppBanner(message: error, kind: .error).transition(AppStyle.funnelTransition()) }
+            footer(steps)
         }
         .padding(AppStyle.pagePadding)
-        .frame(width: 560)
+        .frame(width: Self.width)
         .animation(AppStyle.standardAnimation, value: order)
         .animation(AppStyle.standardAnimation, value: error)
         // Another order is another list of moves.
@@ -89,20 +70,46 @@ struct ShelfSortCheckView: View {
         }
     }
 
-    private func inOrder(count: Int) -> some View {
-        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            HStack(spacing: AppStyle.rowSpacing) {
-                Image(systemName: "checkmark.circle.fill").font(AppStyle.statusSymbol).foregroundStyle(AppStyle.successColor)
+    /// Title and compartment; the order for one artist's records as a menu
+    /// beside them – set once, rarely changed, so it no longer takes a row
+    /// of its own above the result.
+    private func header(count: Int, unsorted: Bool) -> some View {
+        VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
+            HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
                 VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                    Text("Alles in Ordnung").font(.headline)
-                    Text(count < 2 ? String(localized: "Zu wenige Platten, um etwas zu prüfen.") : String(localized: "Alle \(count) Platten stehen in der richtigen Reihenfolge."))
+                    Text("Sortierung prüfen").font(AppStyle.dialogTitle)
+                    Text("\(rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach")) · \(AppStyle.records(count))")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: AppStyle.itemSpacing)
+                GlassMenuPicker(title: String(localized: "Bei gleichem Interpreten nach"), selection: $order,
+                                current: Self.orderTitle(order)) {
+                    ForEach(ShelfSecondaryOrder.allCases) { Text(Self.orderTitle($0)).tag($0) }
+                }
+                .help("Immer nach Interpret; bei gleichem Interpreten nach Titel, Jahr oder Label")
             }
-            .padding(.horizontal, AppStyle.cardPadding)
-            .padding(.vertical, AppStyle.rowSpacing)
-            .accentGlassCard()
+            // Said where it arises instead of next to the button.
+            if order != savedOrder && unsorted {
+                Text("Übernimmt „\(order.title)“ auch für Platzsuche und Hinzufügen in allen Fächern.")
+                    .font(.caption).foregroundStyle(AppStyle.accent)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    /// "Interpret, dann Titel": the whole order in the menu's few words.
+    private static func orderTitle(_ order: ShelfSecondaryOrder) -> String {
+        String(localized: "Interpret, dann \(order.title)")
+    }
+
+    /// Nothing to move: one plain sentence – no card and no symbol for a
+    /// single line. With another order chosen, the offer to keep it.
+    private func inOrder(count: Int) -> some View {
+        VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+            Text(count < 2 ? String(localized: "Zu wenige Platten, um etwas zu prüfen.") : String(localized: "Alle \(count) Platten stehen in der richtigen Reihenfolge."))
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
             if order != savedOrder {
                 HStack(spacing: AppStyle.rowSpacing) {
                     Text("Beim Einsortieren gilt bisher „\(savedOrder.title)“.").font(.caption).foregroundStyle(.secondary)
@@ -116,45 +123,60 @@ struct ShelfSortCheckView: View {
         }
     }
 
-    /// What is left to move: count, progress, and once everything is ticked
-    /// off "Alles umgestellt" – then the button below turns into the main action.
-    private func summary(_ steps: [ShelfSortCheck.Step]) -> some View {
+    /// What is left, the strip of the compartment and the list of moves.
+    private func moves(_ steps: [ShelfSortCheck.Step], in copies: [RecordCopy]) -> some View {
         let finished = steps.filter { done.contains($0.id) }.count
-        let complete = finished == steps.count
+        let current = steps.first { !done.contains($0.id) }?.id
         return VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            HStack(spacing: AppStyle.rowSpacing) {
-                Image(systemName: complete ? "checkmark.circle.fill" : "arrow.left.arrow.right")
-                    .font(AppStyle.statusSymbol)
-                    .foregroundStyle(complete ? AppStyle.successColor : AppStyle.accent)
-                    .contentTransition(.symbolEffect(.replace))
-                    .frame(width: 26)
-                Text(complete ? String(localized: "Alles umgestellt")
-                     : steps.count == 1 ? String(localized: "1 Platte umstellen") : String(localized: "\(steps.count) Platten umstellen"))
-                    .font(.headline)
-                Spacer(minLength: AppStyle.itemSpacing)
-                Text("\(finished) von \(steps.count)")
-                    .font(AppStyle.rowTitle).monospacedDigit()
-                    .foregroundStyle(complete ? AppStyle.successColor : AppStyle.accent)
-                    .contentTransition(.numericText())
+            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+                HStack(spacing: AppStyle.rowSpacing) {
+                    Text(finished == steps.count ? String(localized: "Alles umgestellt")
+                         : String(localized: "\(steps.count) von \(copies.count) Platten umstellen"))
+                        .font(AppStyle.rowTitle)
+                        .contentTransition(.opacity)
+                    Spacer(minLength: AppStyle.itemSpacing)
+                    Text("\(finished) von \(steps.count) erledigt")
+                        .font(.callout).monospacedDigit()
+                        .foregroundStyle(finished == steps.count ? AppStyle.successColor : AppStyle.accent)
+                        .contentTransition(.numericText())
+                }
+                ShelfOrderStrip(count: copies.count, marks: ShelfOrderStrip.marks(for: steps, in: copies, done: done, current: current))
             }
-            SortProgressBar(fraction: Double(finished) / Double(max(steps.count, 1)), complete: complete)
+            .animation(AppStyle.standardAnimation, value: finished)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Divider()
+                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                        SortStepRow(number: index + 1, step: step, done: done.contains(step.id), current: step.id == current) {
+                            if done.contains(step.id) { done.remove(step.id) } else { done.insert(step.id) }
+                        }
+                        Divider()
+                    }
+                }
+            }
+            .frame(maxHeight: Self.listMaxHeight)
+            .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, AppStyle.cardPadding)
-        .padding(.vertical, AppStyle.rowSpacing)
-        .accentGlassCard()
-        .animation(AppStyle.standardAnimation, value: finished)
     }
 
-    /// Only the button: a quiet one while moves are open, the main action
-    /// once all are ticked off. Saving early stays possible.
+    /// As on the placement card: a way out, and the action – quiet while
+    /// moves are open, the main one once all are ticked off (saving early
+    /// stays possible). Nothing to move: only "Fertig".
     private func footer(_ steps: [ShelfSortCheck.Step]) -> some View {
         let complete = steps.allSatisfy { done.contains($0.id) }
-        return HStack {
+        return HStack(spacing: AppStyle.itemSpacing) {
             Spacer(minLength: 0)
-            if complete {
-                PrimaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
+            if steps.isEmpty {
+                PrimaryButton(title: String(localized: "Fertig"), action: close)
+                    .keyboardShortcut(.defaultAction)
             } else {
-                SecondaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
+                SecondaryButton(title: String(localized: "Schließen"), action: close)
+                if complete {
+                    PrimaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
+                        .keyboardShortcut(.defaultAction)
+                } else {
+                    SecondaryButton(title: String(localized: "Reihenfolge übernehmen")) { apply() }
+                }
             }
         }
         .animation(AppStyle.standardAnimation, value: complete)
@@ -184,13 +206,15 @@ struct ShelfSortCheckView: View {
     }
 }
 
-/// One move: the record with its cover and where it stands now, then where
-/// it goes – behind the record shown (or at the very front, before it).
+/// One move: the record with its cover, then what to do at the shelf –
+/// take it out at its place, put it behind the record shown (or at the very
+/// front, before it). The next open move carries "Als Nächstes" like the
+/// next record in "Noch nicht einsortiert"; a click ticks a move off.
 private struct SortStepRow: View {
     let number: Int
     let step: ShelfSortCheck.Step
     let done: Bool
-    /// The next open move: framed like every selection (gold in Klassisch).
+    /// The next open move.
     let current: Bool
     let toggle: () -> Void
     @State private var hovering = false
@@ -199,41 +223,38 @@ private struct SortStepRow: View {
         let release = step.copy.release
         Button(action: toggle) {
             HStack(spacing: AppStyle.rowSpacing) {
-                StepNumber(number: number, done: done)
+                StepNumber(number: number, done: done, prominent: current)
                 CoverView(url: release?.shownCoverURL, size: 40)
                 VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
                     Text("\(release?.displayArtist ?? "—") – \(release?.displayTitle ?? "—")")
                         .font(AppStyle.rowTitle).lineLimit(1).truncationMode(.middle)
-                    // Where it goes is what matters at the shelf: in the text's
-                    // own color, only the current place muted.
+                    // What matters at the shelf, in the text's own color;
+                    // only where it stands now is muted.
                     HStack(spacing: AppStyle.tightSpacing) {
-                        Text("Platz \(step.position)").monospacedDigit().foregroundStyle(.secondary)
+                        Text("Platz \(step.position) herausnehmen").monospacedDigit().foregroundStyle(.secondary)
                         Image(systemName: "arrow.right").font(AppStyle.indicatorSymbol).foregroundStyle(.secondary)
                         if let neighbour = step.before ?? step.after {
-                            CoverView(url: neighbour.release?.shownCoverURL, size: 16)
                             Text(target(neighbour)).lineLimit(1).truncationMode(.middle)
                         }
                     }
-                    .font(.caption)
+                    .font(.callout)
                 }
                 Spacer(minLength: 0)
+                if current { StatusTag(text: String(localized: "Als Nächstes"), color: AppStyle.accent) }
             }
-            .padding(.horizontal, AppStyle.itemSpacing).frame(minHeight: AssignmentRowMetrics.height)
+            .padding(.horizontal, AppStyle.itemSpacing)
+            .padding(.vertical, AppStyle.itemSpacing)
+            .frame(minHeight: AssignmentRowMetrics.height)
             .opacity(done ? 0.45 : 1)
             .contentShape(Rectangle())
-            .appHoverable(hovering && !current, cornerRadius: AppStyle.rowRadius)
-            .background {
-                if current {
-                    RoundedRectangle(cornerRadius: AppStyle.rowRadius).fill(AppStyle.selectedBackground)
-                        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.selectedBorder, lineWidth: AppStyle.selectionLineWidth))
-                }
-            }
+            .appHoverable(hovering, cornerRadius: AppStyle.rowRadius)
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .animation(AppStyle.quickAnimation, value: done)
         .animation(AppStyle.standardAnimation, value: current)
         .help(done ? "Doch noch nicht umgestellt" : "Als umgestellt abhaken")
+        .accessibilityAddTraits(done ? .isSelected : [])
     }
 
     /// "hinter **Artist** – Title" (or "ganz vorn, vor …"): the artist in bold.
@@ -245,19 +266,101 @@ private struct SortStepRow: View {
     }
 }
 
-/// Thin bar under the count: the accent filling up, green when complete.
-private struct SortProgressBar: View {
-    let fraction: Double
-    let complete: Bool
+/// The compartment from left to right, one tick per place, as you stand in
+/// front of it: where the records to move stand now, and for the next move
+/// also where it goes – joined by an arc. Moves ticked off show at their
+/// new place. Gives the rough direction at the shelf ("far right") before
+/// the exact place in the list.
+private struct ShelfOrderStrip: View {
+    /// One record to move: its place now (0-based) and the gap it goes into
+    /// (0 = before the first record, `count` = behind the last one).
+    struct Mark: Equatable {
+        let from: Int
+        let gap: Int
+        let done: Bool
+        let current: Bool
+    }
+
+    let count: Int
+    let marks: [Mark]
+
+    // Drawn geometry of the strip itself.
+    private static let height: CGFloat = 32
+    private static let inset: CGFloat = 4
+    /// Room above the marks for the arc of the next move.
+    private static let arcRoom: CGFloat = 10
+    /// Below this width per place the ticks would merge into a gray band.
+    private static let minimumTickSpacing: CGFloat = 3
+
+    /// Places from the current order: `copies` as they stand, the moves in
+    /// the order of their target places (`ShelfSortCheck.steps`).
+    static func marks(for steps: [ShelfSortCheck.Step], in copies: [RecordCopy], done: Set<UUID>, current: UUID?) -> [Mark] {
+        let index = Dictionary(copies.enumerated().map { ($1.id, $0) }, uniquingKeysWith: { a, _ in a })
+        return steps.compactMap { step in
+            guard let from = index[step.copy.id] else { return nil }
+            let gap = step.before.flatMap { index[$0.id] }.map { $0 + 1 } ?? step.after.flatMap { index[$0.id] } ?? 0
+            return Mark(from: from, gap: gap, done: done.contains(step.id), current: step.id == current)
+        }
+    }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                Capsule().fill(AppStyle.borderColor)
-                Capsule().fill(complete ? AppStyle.successColor : AppStyle.accent)
-                    .frame(width: geometry.size.width * fraction)
+        VStack(spacing: AppStyle.hairSpacing) {
+            Canvas { context, size in draw(in: &context, size: size) }
+                .frame(height: Self.height)
+                .background(RoundedRectangle(cornerRadius: AppStyle.rowRadius).fill(AppStyle.hoverBackground))
+                .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.borderColor, lineWidth: AppStyle.borderWidth))
+            HStack {
+                Text("Platz 1 · links")
+                Spacer(minLength: AppStyle.itemSpacing)
+                Text("rechts · Platz \(count)")
+            }
+            .font(.caption2).monospacedDigit().foregroundStyle(.secondary)
+        }
+        .animation(AppStyle.standardAnimation, value: marks)
+        // The list below says the same in words.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "Fach mit \(count) Plätzen von links nach rechts, \(marks.filter { !$0.done }.count) Platten zum Umstellen markiert"))
+    }
+
+    private func draw(in context: inout GraphicsContext, size: CGSize) {
+        guard count > 0 else { return }
+        let width = size.width - 2 * Self.inset
+        let slot = width / CGFloat(count)
+        let top = Self.inset + Self.arcRoom, bottom = size.height - Self.inset
+        func center(_ place: Int) -> CGFloat { Self.inset + (CGFloat(place) + 0.5) * slot }
+        func edge(_ gap: Int) -> CGFloat { Self.inset + CGFloat(min(max(gap, 0), count)) * slot }
+        func bar(at x: CGFloat, width barWidth: CGFloat, from y: CGFloat = top) -> Path {
+            Path(roundedRect: CGRect(x: x - barWidth / 2, y: y, width: barWidth, height: bottom - y), cornerRadius: barWidth / 2)
+        }
+        let markWidth = min(max(slot - 1, 2), 4)
+
+        // Every place a short tick at the foot, while they stay apart.
+        if slot >= Self.minimumTickSpacing {
+            var ticks = Path()
+            for place in 1..<count {
+                let x = edge(place)
+                ticks.move(to: CGPoint(x: x, y: bottom - 6))
+                ticks.addLine(to: CGPoint(x: x, y: bottom))
+            }
+            context.stroke(ticks, with: .color(AppStyle.borderColor), lineWidth: AppStyle.hairlineWidth * 2)
+        }
+        // Open moves where they stand, quiet; done ones at their new place.
+        for mark in marks where !mark.current {
+            if mark.done {
+                context.fill(bar(at: edge(mark.gap), width: 2), with: .color(AppStyle.successColor))
+            } else {
+                context.fill(bar(at: center(mark.from), width: markWidth), with: .style(.secondary.opacity(0.6)))
             }
         }
-        .frame(height: 4)
+        // The next move: where it stands, where it goes and the arc between.
+        if let mark = marks.first(where: \.current) {
+            let from = center(mark.from), to = edge(mark.gap)
+            var arc = Path()
+            arc.move(to: CGPoint(x: from, y: top))
+            arc.addQuadCurve(to: CGPoint(x: to, y: top), control: CGPoint(x: (from + to) / 2, y: Self.inset - Self.arcRoom / 2))
+            context.stroke(arc, with: .color(AppStyle.accent), style: StrokeStyle(lineWidth: AppStyle.selectionLineWidth, lineCap: .round))
+            context.fill(bar(at: to, width: 2), with: .color(AppStyle.accent.opacity(0.6)))
+            context.fill(bar(at: from, width: max(markWidth, 3)), with: .color(AppStyle.accent))
+        }
     }
 }

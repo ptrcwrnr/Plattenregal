@@ -1,3 +1,10 @@
+# „Sortierung prüfen“ neu angeordnet (Zwischenstand) · 06.11.2026
+
+- **Wunsch:** Das Fenster schöner, passender und sinnvoller anordnen; der Zustand „nichts zu sortieren“ ohne grünes Symbol.
+- **Neu:** Kopf mit Titel, „Fach … · N Platten“ und dem Menü „Interpret, dann Titel/Jahr/Label“ (`GlassMenuPicker`) statt eigener Zeile. Statuszeile „N von M Platten umstellen · x von N erledigt“ und darunter die **Fachleiste** (`ShelfOrderStrip`): alle Plätze von links nach rechts, offene Umstellungen markiert, die nächste mit Bogen zum Ziel, erledigte am neuen Platz. Schritte als Liste mit Trennlinien, zweite Zeile „Platz 64 herausnehmen → hinter …“ in `.callout`, die nächste mit „Als Nächstes“ (`StatusTag`) wie in „Noch nicht einsortiert“. Fußzeile „Schließen“ + „Reihenfolge übernehmen“ (Hauptknopf erst, wenn alles abgehakt ist). Nichts zu sortieren: ein Satz ohne Karte und Symbol, dazu „Fertig“. Debug-Schalter `--preview-sortcheck=sorted`.
+- **Geprüft:** Debug-Build ohne Warnung, 311 Tests bestanden.
+- **Offen:** Ansicht in der Demo nicht angesehen (Bild); englische Fassungen der neuen Texte („Interpret, dann %@“, „Platz %lld herausnehmen“, „%lld von %lld Platten umstellen“, „%lld von %lld erledigt“, „Platz 1 · links“, „rechts · Platz %lld“, „Fertig“, „Schließen“, Bedienungshilfe der Fachleiste) fehlen noch im Sprachkatalog, alte Texte nicht entfernt; README und Handbuch nicht angepasst; Bild `sortcheck` der Webseite nicht erneuert.
+
 # DMG 1.0.4 mit dem neuen Einsortieren neu gebaut · 06.11.2026
 
 - **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 438 200 Bytes), SHA-256 `a133537b…a106292`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch der achte Punkt); die DMG von heute Vormittag ist überholt. Handbücher vom Skript unverändert übernommen (schon neu im Repository).
