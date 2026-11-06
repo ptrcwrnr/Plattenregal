@@ -22,7 +22,7 @@ struct ShelfSortCheckView: View {
     /// Closes the panel once the new order is saved: left open, it would
     /// only say "Alles in Ordnung", and the next click on the shelf page
     /// would merely close it instead of reaching a compartment. Also
-    /// "Schließen" and "Fertig".
+    /// "Schließen".
     let close: () -> Void
     @Environment(\.modelContext) private var context
     @AppStorage(ShelfSecondaryOrder.key) private var savedOrder = ShelfSecondaryOrder.title
@@ -158,13 +158,15 @@ struct ShelfSortCheckView: View {
 
     /// As on the placement card: a way out, and the action – quiet while
     /// moves are open, the main one once all are ticked off (saving early
-    /// stays possible). Nothing to move: only "Fertig".
+    /// stays possible). Nothing to move: only "Schließen".
     private func footer(_ steps: [ShelfSortCheck.Step]) -> some View {
         let complete = steps.allSatisfy { done.contains($0.id) }
         return HStack(spacing: AppStyle.itemSpacing) {
             Spacer(minLength: 0)
+            // "Schließen" in both states, the same button; with nothing to
+            // move ↩ closes too.
             if steps.isEmpty {
-                PrimaryButton(title: String(localized: "Fertig"), action: close)
+                SecondaryButton(title: String(localized: "Schließen"), action: close)
                     .keyboardShortcut(.defaultAction)
             } else {
                 SecondaryButton(title: String(localized: "Schließen"), action: close)

@@ -1,3 +1,9 @@
+# „Sortierung prüfen“: „Schließen“ statt „Fertig“, wenn nichts umzustellen ist · 06.11.2026
+
+- **Wunsch:** Bei nichts zum Umstellen derselbe Knopf „Schließen“ wie beim Umstellen.
+- **Umgesetzt:** `SecondaryButton` „Schließen“ (↩ schließt dabei weiterhin); „Fertig“ bleibt im Sprachkatalog, das Update-Fenster und Apple TV nutzen es.
+- **Geprüft:** 311 Tests bestanden; Demo-Schnappschuss (Klassisch) des sortierten Fachs.
+
 # „Sortierung prüfen“: Skala statt Zähler, fertiger Zustand mit Haken, Englisch · 06.11.2026
 
 - **Wunsch:** Bei offenen Umstellungen die Zähler („0 von 2 erledigt“, „2 von 82 Platten umstellen“) und die Beschriftung unter der Skala („Platz 1 · links“, „rechts · Platz 82“) weglassen, die Skala so hoch wie eine Zeile der Platten. Nichts umzustellen: statt des Satzes die Skala mit grünem Haken im Kreis in der Mitte, ohne Sortiermenü. Englische Texte eintragen, alte entfernen.
