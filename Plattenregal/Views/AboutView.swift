@@ -90,6 +90,7 @@ enum Changelog {
                 String(localized: "Einen Bereich der Statistik auf den direkt darunter liegenden zu ziehen, verschiebt ihn jetzt auch – vorher blieb dann alles, wie es war."),
                 String(localized: "Plattenregal nimmt keine Verbindungen aus dem Netzwerk mehr an; die Einstellungen für Apple TV sind dafür vorerst ausgeblendet. Discogs und die Suche nach Updates funktionieren wie bisher."),
                 String(localized: "Wie oft Plattenregal nach Updates sucht, wählst du jetzt unter Einstellungen → Allgemein: wöchentlich, monatlich oder nie. Hattest du die tägliche Suche eingeschaltet, sucht Plattenregal jetzt wöchentlich."),
+                String(localized: "Im Menü der Schallplatte in der Menüleiste heißt es jetzt „Plattenregal beenden“ statt „Plattenregal ganz beenden“, und „Einstellungen …“ ist dort weggefallen – die Einstellungen öffnest du im Hauptfenster mit ⌘,."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),

@@ -220,6 +220,16 @@
         }
       }
     },
+    "Im Menü der Schallplatte in der Menüleiste heißt es jetzt „Plattenregal beenden“ statt „Plattenregal ganz beenden“, und „Einstellungen …“ ist dort weggefallen – die Einstellungen öffnest du im Hauptfenster mit ⌘,." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record’s menu in the menu bar now says “Quit Plattenregal” instead of “Quit Plattenregal Completely”, and “Settings…” is gone from it – open the settings in the main window with ⌘,."
+          }
+        }
+      }
+    },
     "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
       "localizations" : {
         "en" : {
@@ -1006,16 +1016,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature. Click a match to hold it."
-          }
-        }
-      }
-    },
-    "Einstellungen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings…"
           }
         }
       }

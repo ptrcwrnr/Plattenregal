@@ -219,8 +219,6 @@ struct QuickSearchPlace {
     private(set) var showsStatusItem = false
     /// Opens the main window when it was closed; set by the windows' content (`ReleasedInBackground`).
     @ObservationIgnored var openMainWindow: (() -> Void)?
-    /// Opens the settings, for the record's menu; set with `openMainWindow`.
-    @ObservationIgnored var openSettings: (() -> Void)?
 
     /// The store to search; set at launch (see `PlattenregalApp`). Without
     /// one (the database couldn't be opened) the search stays off.
@@ -318,8 +316,9 @@ struct QuickSearchPlace {
         toggle()
     }
 
-    /// The record's menu: the search, the main window, the settings and
-    /// quitting – the one way to quit while the app runs in the background.
+    /// The record's menu: the search, the main window and quitting – the one
+    /// way to quit while the app runs in the background. Quitting here always
+    /// quits completely; the settings are in the main window (⌘,).
     private func showMenu() {
         guard let statusItem else { return }
         close()
@@ -332,14 +331,12 @@ struct QuickSearchPlace {
         add(String(localized: "Im Regal suchen"), #selector(menuSearch))
         menu.addItem(.separator())
         add(String(localized: "Plattenregal öffnen"), #selector(menuOpenMainWindow))
-        add(String(localized: "Einstellungen …"), #selector(menuOpenSettings))
         // Found by the automatic check while running here in the background.
         if let release = UpdateChecker.shared.announcedRelease {
             add(String(localized: "Plattenregal \(release.version.description) ist da …"), #selector(menuShowUpdate))
         }
         menu.addItem(.separator())
-        add(AppLifecycle.shared.keepsRunning ? String(localized: "Plattenregal ganz beenden") : String(localized: "Plattenregal beenden"),
-            #selector(menuQuit))
+        add(String(localized: "Plattenregal beenden"), #selector(menuQuit))
         // Attached for this one click only: a left click keeps opening the search.
         statusItem.menu = menu
         statusItem.button?.performClick(nil)
@@ -349,11 +346,6 @@ struct QuickSearchPlace {
     // After the menu has closed, so the panel can take the keyboard.
     @objc private func menuSearch() { DispatchQueue.main.async { self.open() } }
     @objc private func menuOpenMainWindow() { showMainWindow() }
-    @objc private func menuOpenSettings() {
-        AppLifecycle.shared.leaveBackground()
-        NSApp.activate()
-        if let openSettings { openSettings() } else { AppLog.error("Menüleiste", "Einstellungen ließen sich nicht öffnen") }
-    }
     @objc private func menuQuit() { AppLifecycle.shared.quitCompletely() }
     @objc private func menuShowUpdate() { UpdateChecker.shared.showAvailableRelease() }
 
@@ -364,7 +356,7 @@ struct QuickSearchPlace {
     /// (as the record or ⌥ Leertaste would), `type:abc` (types letters),
     /// `closemain` / `minimizemain` (the main window closed or in the Dock),
     /// `menubar` / `hotkey` / `background` (switch the settings), `quit` (⌘Q),
-    /// `quitall` (the record's „ganz beenden“), `openmain` / `settings` (the
+    /// `quitall` (the record's „Plattenregal beenden“), `openmain` (the
     /// record's menu), `loginon` / `loginoff` („Bei der Anmeldung öffnen“),
     /// `wait` (nothing) and `dumpwindows` (writes the state and every window
     /// to the protocol, category „Prüfung“).
@@ -382,7 +374,6 @@ struct QuickSearchPlace {
                 if key == "quit" { AppLifecycle.shared.quitRequested(); return }
                 if key == "quitall" { menuQuit(); return }
                 if key == "openmain" { menuOpenMainWindow(); return }
-                if key == "settings" { menuOpenSettings(); return }
                 if key == "loginon" || key == "loginoff" {
                     LoginItem.shared.set(key == "loginon")
                     AppLog.info("Prüfung", "Anmeldeobjekt: Status \(LoginItem.shared.status.rawValue), an \(LoginItem.shared.isOn), abgelehnt \(LoginItem.shared.failed)")

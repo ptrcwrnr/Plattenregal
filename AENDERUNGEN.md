@@ -1,3 +1,10 @@
+# Menü der Schallplatte: ohne Einstellungen, „Plattenregal beenden“ · 06.11.2026
+
+- **Wunsch:** Im Rechtsklick-Menü der Schallplatte in der Menüleiste „Einstellungen …“ entfernen und „Plattenregal ganz beenden“ ohne das Wort „ganz“.
+- **Neu** (`ShelfQuickSearch.showMenu`): Das Menü hat „Im Regal suchen“, „Plattenregal öffnen“, gegebenenfalls „Plattenregal x ist da …“ und „Plattenregal beenden“ – dieser Punkt beendet wie bisher immer ganz (`quitCompletely`), mit und ohne Hintergrund. Entfernt mit dem Menüpunkt: seine Aktion `menuOpenSettings`, die nur dafür übergebene `ShelfQuickSearch.openSettings` (samt `@Environment(\.openSettings)` in `ReleasedInBackground`) und der Debug-Prüfbefehl `settings`. Der Text „Einstellungen …“ ist aus dem Sprachkatalog entfernt (nirgends mehr verwendet). Im App-Menü bleibt „Plattenregal ganz beenden“ (⌥⌘Q), denn dort heißt ⌘Q schon „Plattenregal beenden“; auch der Hinweis in den Einstellungen und die Liste der Tastenkürzel bleiben.
+- **„Was ist neu“ 1.0.4:** vierter Punkt (Deutsch und Englisch). README (Hintergrund, Prüfbefehle).
+- **Geprüft:** Debug-Build ohne Warnung, 305 Tests bestanden. In der Demo mit `--demo-background` per echtem Rechtsklick auf die Schallplatte: Menü „Im Regal suchen · Plattenregal öffnen · Plattenregal beenden“ (als Bild angesehen); Klick auf „Plattenregal beenden“ beendet den Prozess trotz eingeschaltetem Hintergrund („Beendet“ im Protokoll). **Nicht geprüft:** das Menü mit „Plattenregal x ist da …“ (braucht eine neuere Version auf GitHub), Englisch.
+
 # Update-Prüfung: Nie, wöchentlich oder monatlich · 06.11.2026
 
 - **Wunsch:** Unter Einstellungen → Allgemein → Updates wählen, wie oft geprüft wird: Nie, wöchentlich, monatlich – „Täglich“ entfällt.
