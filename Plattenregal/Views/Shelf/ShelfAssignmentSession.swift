@@ -68,11 +68,7 @@ final class ShelfAssignmentSession: Identifiable {
     /// shelf holds records yet.
     func spot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
         guard let shelf else { return rackSpot(for: copy) }
-        let items = PositionService.inShelfOrder(shelf.copies, excluding: copy.id)
-        let position = AlphabeticalPlacement.position(for: copy, in: shelf)
-        return AlphabeticalPlacement.Spot(shelf: shelf, position: position,
-                                          before: position > 1 ? items[position - 2] : nil,
-                                          after: position <= items.count ? items[position - 1] : nil)
+        return AlphabeticalPlacement.spot(for: copy, in: shelf)
     }
 
     /// Where an added `copy` stands now and between which records.
@@ -96,7 +92,7 @@ final class ShelfAssignmentSession: Identifiable {
     private func rackSpot(for copy: RecordCopy) -> AlphabeticalPlacement.Spot? {
         let spots = AlphabeticalPlacement.spots(for: copy, in: shelves, cabinet: shownCabinet)
         guard !spots.isEmpty else { return nil }
-        return spots[AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf, cabinet: shownCabinet)]
+        return spots[AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf)]
     }
     @ObservationIgnored private var placeCache: [UUID: AlphabeticalPlacement.Spot?] = [:]
 

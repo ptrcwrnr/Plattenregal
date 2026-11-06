@@ -32,7 +32,7 @@ struct Placement {
         spots = found
             ? AlphabeticalPlacement.current(for: copy, in: shelves).map { [$0] } ?? []
             : AlphabeticalPlacement.spots(for: copy, in: shelves, cabinet: cabinet)
-        chosen = AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf, cabinet: cabinet)
+        chosen = AlphabeticalPlacement.preferredIndex(spots, for: copy, openShelf: openShelf)
     }
     var spot: AlphabeticalPlacement.Spot? { spots.indices.contains(chosen) ? spots[chosen] : nil }
 }

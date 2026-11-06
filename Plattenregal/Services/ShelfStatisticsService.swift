@@ -159,9 +159,10 @@ enum ShelfRangeLabels {
             for shelf in shelves where !shelf.isReserved { result.labels[shelf.id] = shelf.numberText }
             return result
         }
-        // Cabinets in use form one alphabetical run; an inactive one (records
-        // put away) has a run of its own, so it never splits the others' ranges.
-        let groups = Dictionary(grouping: shelves) { $0.isInUse ? nil : $0.cabinet?.id }
+        // Every cabinet is an alphabet of its own, as when sorting in
+        // (`AlphabeticalPlacement.spots`): a compartment of another cabinet
+        // never shortens or lengthens the letters here.
+        let groups = Dictionary(grouping: shelves) { $0.cabinet?.id }
         for group in groups.values { result.labels.merge(rangeLabels(for: group, ends: ends)) { a, _ in a } }
         return result
     }

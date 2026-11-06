@@ -379,7 +379,8 @@ struct KallaxView: View {
         #if DEBUG
         // Screenshots without clicking: --preview-add opens
         // "Platte hinzufügen" for the selected compartment,
-        // --preview-place=Artist the placement card of that artist's record,
+        // --preview-place=Artist the placement card of that artist's record
+        // (with --preview-cabinet=Name it then switches to that cabinet),
         // --preview-sortcheck "Sortierung prüfen" of the first unsorted compartment,
         // --preview-sortin "Einsortieren" of the round button,
         // --preview-history the "Verlauf".
@@ -392,6 +393,11 @@ struct KallaxView: View {
             } else if let raw = arguments.first(where: { $0.hasPrefix("--preview-place=") }) {
                 let artist = String(raw.dropFirst("--preview-place=".count))
                 if let copy = allCopies.first(where: { $0.release?.artist == artist }) { startPlacement(copy, opensShelf: true) }
+                if let raw = arguments.first(where: { $0.hasPrefix("--preview-cabinet=") }),
+                   let cabinet = activeCabinets.first(where: { $0.name == String(raw.dropFirst("--preview-cabinet=".count)) }) {
+                    try? await Task.sleep(for: .seconds(1.5))
+                    show(cabinet)
+                }
             } else if arguments.contains("--preview-sortin") {
                 startAssignment(nil)
             } else if arguments.contains("--preview-history") {
@@ -722,10 +728,14 @@ struct KallaxView: View {
 
     private func selectShelf(_ shelf: Shelf) {
         searchQuery = ""; focusCopy = nil; pendingPlacement = nil
-        // Picking the other fitting shelf switches the spot; any other shelf ends the placement.
+        // Picking the other fitting shelf switches the spot; another cabinet
+        // takes a record without a place along (see `following`); any other
+        // shelf ends the placement.
         if let placement {
             if let index = placement.spots.firstIndex(where: { $0.shelf.id == shelf.id }) {
                 self.placement?.chosen = index
+            } else if let moved = following(placement, into: shelf) {
+                moveCard { self.placement = moved }
             } else {
                 cancelPlacement()
             }
@@ -738,6 +748,23 @@ struct KallaxView: View {
             focusCopy = placement.copy
             focusRevision += 1
         }
+    }
+
+    /// A record without a place follows into another cabinet: sorting in
+    /// goes to the cabinet shown, so its card names the place there, with
+    /// the cabinet's start compartment `shelf` open. `nil` for a record that
+    /// stands somewhere (its place doesn't change), within the same cabinet,
+    /// and when the cabinet holds no record yet – the place would then lie
+    /// in a cabinet not shown.
+    private func following(_ placement: Placement, into shelf: Shelf) -> Placement? {
+        let copy = placement.copy
+        guard !placement.found, placement.putAwayIn == nil, !copy.isDeleted, copy.modelContext != nil, copy.shelf == nil,
+              let cabinet = shelf.cabinet?.id, cabinet != shownCabinet?.id else { return nil }
+        var moved = Placement(copy: copy, shelves: shelves, openShelf: shelf.id, cabinet: cabinet)
+        guard moved.spot?.shelf.cabinet?.id == cabinet else { return nil }
+        moved.excluded = placement.excluded
+        moved.missing = placement.missing
+        return moved
     }
 
     /// After a copy's place changed from the compartment contents: follow it

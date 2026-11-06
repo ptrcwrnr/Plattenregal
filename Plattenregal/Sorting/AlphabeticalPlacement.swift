@@ -20,61 +20,47 @@ enum AlphabeticalPlacement {
     /// Where `copy` belongs inside `shelf` by artist, then title — the same
     /// order the shelves are sorted by. 1-based; after the last record if it
     /// sorts behind everything already there.
-    static func position(for copy: RecordCopy, in shelf: Shelf) -> Int {
+    static func position(for copy: RecordCopy, in shelf: Shelf) -> Int { spot(for: copy, in: shelf).position }
+
+    /// Its place in `shelf` and the records it would stand between there; at
+    /// either end of the shelf `previous` or `next` (from the shelves around it).
+    static func spot(for copy: RecordCopy, in shelf: Shelf, previous: RecordCopy? = nil, next: RecordCopy? = nil) -> Spot {
         let items = ordered(shelf, excluding: copy.id)
         let target = key(copy)
         let index = items.firstIndex { key($0).localizedStandardCompare(target) == .orderedDescending } ?? items.count
-        return index + 1
+        return Spot(shelf: shelf, position: index + 1,
+                    before: index > 0 ? items[index - 1] : previous,
+                    after: index < items.count ? items[index] : next)
     }
 
     /// Where `copy` belongs in one cabinet: the one shown (`cabinet`, see
     /// `sortingShelves`). Each cabinet is an alphabet of its own – with the
     /// whole rack as one run, a compartment holding records from A to Z (a
     /// small second cabinet) covered every name and took every new record.
-    /// Inside the cabinet, compartments follow each other in the alphabetical
-    /// run of their contents (as in `ShelfRangeLabels`), not by their place in
-    /// the furniture. Usually one spot; two when the record falls between two
+    /// Inside the cabinet the compartment where the record fits closest
+    /// (`fits`): usually one spot; two when the record falls between two
     /// compartments — the end of the one and the start of the next fit
     /// equally, and only the person at the shelf can tell which has room.
     /// Empty when no compartment holds records yet.
     static func spots(for copy: RecordCopy, in shelves: [Shelf], cabinet: UUID? = nil) -> [Spot] {
-        // Usually a record without a shelf: then no shelf holds it, and the
-        // records of all shelves needn't be checked against it.
-        let excluded = copy.shelf == nil ? nil : copy.id
-        let runs = runs(of: sortingShelves(shelves, cabinet: cabinet, excluding: excluded), excluding: excluded)
-        guard let lastRun = runs.last else { return [] }
-        // Only the one or two shelves the record ends up beside are put in order.
-        func items(_ run: Run) -> [RecordCopy] { ordered(run.shelf, excluding: excluded) }
-
+        // Usually a record without a shelf; a placed one leaves itself out of its own.
+        let excluded = copy.shelf == nil ? nil : copy
+        let index = index(of: sortingShelves(shelves, cabinet: cabinet, excluding: excluded), excluding: excluded)
         let target = key(copy)
-        guard let index = runs.firstIndex(where: { target.localizedStandardCompare($0.last) != .orderedDescending }) else {
-            let last = items(lastRun)
-            return [Spot(shelf: lastRun.shelf, position: last.count + 1, before: last.last, after: nil)]
-        }
-        let run = runs[index]
-        let runItems = items(run)
-        if target.localizedStandardCompare(run.first) == .orderedAscending {
-            let previous = index > 0 ? items(runs[index - 1]) : []
-            let start = Spot(shelf: run.shelf, position: 1, before: previous.last, after: runItems.first)
-            guard index > 0 else { return [start] }
-            let end = Spot(shelf: runs[index - 1].shelf, position: previous.count + 1, before: previous.last, after: runItems.first)
-            return [end, start]
-        }
-        let position = position(for: copy, in: run.shelf)
-        return [Spot(
-            shelf: run.shelf,
-            position: position,
-            before: position > 1 ? runItems[position - 2] : nil,
-            after: position <= runItems.count ? runItems[position - 1] : nil
-        )]
+        // The records just before and after it in the whole cabinet: the
+        // neighbours at the edge of a compartment.
+        let split = upperBound(index.keys, target)
+        let previous = split > 0 ? index.copies[split - 1] : nil
+        let next = split < index.copies.count ? index.copies[split] : nil
+        return fits(target, in: index).map { spot(for: copy, in: index.columns[$0].shelf, previous: previous, next: next) }
     }
 
     /// Which of `spots(for:in:)` to take when nobody chose. Two spots only at
     /// a boundary between two compartments of one cabinet, where the end of
     /// one and the start of the next fit equally. Then, in this order: the
     /// side where the same artist already stands next to it, the compartment
-    /// that is open, a compartment of the cabinet shown, else the first.
-    static func preferredIndex(_ spots: [Spot], for copy: RecordCopy, openShelf: UUID? = nil, cabinet: UUID? = nil) -> Int {
+    /// that is open, else the first.
+    static func preferredIndex(_ spots: [Spot], for copy: RecordCopy, openShelf: UUID? = nil) -> Int {
         guard spots.count > 1 else { return 0 }
         // `[end of the earlier shelf, start of the later one]`; both name the
         // same two records: `before` ends the earlier shelf, `after` starts the later.
@@ -86,7 +72,6 @@ enum AlphabeticalPlacement {
         if besideAfter && !besideBefore { return 1 }
         if besideBefore && !besideAfter { return 0 }
         if let openShelf, let index = spots.firstIndex(where: { $0.shelf.id == openShelf }) { return index }
-        if let cabinet, let index = spots.firstIndex(where: { $0.shelf.cabinet?.id == cabinet }) { return index }
         return 0
     }
 
@@ -99,22 +84,11 @@ enum AlphabeticalPlacement {
     /// The shelves each of `copies` (without a shelf) fits alphabetically,
     /// by copy ID – the shelves of `spots`, for many records in one go.
     static func fittingShelves(for copies: [RecordCopy], in shelves: [Shelf], cabinet: UUID? = nil) -> [UUID: [Shelf]] {
-        let runs = runs(of: sortingShelves(shelves, cabinet: cabinet, excluding: nil), excluding: nil)
-        guard let lastRun = runs.last else { return [:] }
+        let index = index(of: sortingShelves(shelves, cabinet: cabinet, excluding: nil), excluding: nil)
+        guard !index.columns.isEmpty else { return [:] }
         var result: [UUID: [Shelf]] = [:]
         for copy in copies {
-            let target = key(copy)
-            guard let index = runs.firstIndex(where: { target.localizedStandardCompare($0.last) != .orderedDescending }) else {
-                result[copy.id] = [lastRun.shelf]
-                continue
-            }
-            let run = runs[index]
-            // Between two shelves: the end of the one fits as well as the start of the next.
-            if index > 0 && target.localizedStandardCompare(run.first) == .orderedAscending {
-                result[copy.id] = [runs[index - 1].shelf, run.shelf]
-            } else {
-                result[copy.id] = [run.shelf]
-            }
+            result[copy.id] = fits(key(copy), in: index).map { index.columns[$0].shelf }
         }
         return result
     }
@@ -126,18 +100,18 @@ enum AlphabeticalPlacement {
     static func current(for copy: RecordCopy, in shelves: [Shelf]) -> Spot? {
         guard let shelf = copy.shelf else { return nil }
         let items = ordered(shelf, excluding: copy.id)
-        let index = min(max(copy.positionInShelf - 1, 0), items.count)
+        let slot = min(max(copy.positionInShelf - 1, 0), items.count)
         // The copy itself counts here, so a shelf holding only this copy keeps its place in the run.
         let cabinet = shelf.cabinet?.id
-        let runs = runs(of: shelves.filter { $0.cabinet?.id == cabinet }, excluding: nil)
+        let runs = index(of: shelves.filter { $0.cabinet?.id == cabinet }, excluding: nil).columns
         let runIndex = runs.firstIndex { $0.shelf.id == shelf.id }
         let previous = runIndex.flatMap { $0 > 0 ? ordered(runs[$0 - 1].shelf, excluding: nil).last : nil }
         let next = runIndex.flatMap { $0 + 1 < runs.count ? ordered(runs[$0 + 1].shelf, excluding: nil).first : nil }
         return Spot(
             shelf: shelf,
-            position: index + 1,
-            before: index > 0 ? items[index - 1] : previous,
-            after: index < items.count ? items[index] : next
+            position: slot + 1,
+            before: slot > 0 ? items[slot - 1] : previous,
+            after: slot < items.count ? items[slot] : next
         )
     }
 
@@ -146,37 +120,135 @@ enum AlphabeticalPlacement {
     /// rack's order that does – what the shelf page shows when nothing is
     /// chosen, and the answer where no cabinet is shown (search in the menu
     /// bar, widget). Empty when no compartment holds a record.
-    private static func sortingShelves(_ shelves: [Shelf], cabinet: UUID?, excluding id: UUID?) -> [Shelf] {
-        let occupied = shelves.filter { !$0.isReserved && $0.copies.contains { $0.id != id } }
+    private static func sortingShelves(_ shelves: [Shelf], cabinet: UUID?, excluding copy: RecordCopy?) -> [Shelf] {
+        let own = copy?.shelf?.persistentModelID
+        // A shelf holding only the copy left out counts as empty.
+        func holdsRecords(_ shelf: Shelf) -> Bool {
+            !shelf.isReserved && shelf.copies.count > (shelf.persistentModelID == own ? 1 : 0)
+        }
+        let occupied = shelves.filter(holdsRecords)
         let shown = cabinet.flatMap { cabinet in occupied.first { $0.cabinet?.id == cabinet } }
         guard let pick = shown ?? occupied.min(by: { $0.readingOrder.lexicographicallyPrecedes($1.readingOrder) }) else { return [] }
         let chosen = pick.cabinet?.id
         return shelves.filter { $0.cabinet?.id == chosen }
     }
 
-    private struct Run { let shelf: Shelf; let first: String; let last: String }
-
-    /// Occupied, unreserved shelves in the alphabetical order of their
-    /// contents. Only their ends: callers put just the shelves they need in
-    /// order – sorting every shelf was most of opening "Platte hinzufügen".
-    private static func runs(of shelves: [Shelf], excluding id: UUID?) -> [Run] {
-        shelves.compactMap { shelf -> Run? in
-            guard !shelf.isReserved else { return nil }
-            let copies = id.map { id in shelf.copies.filter { $0.id != id } } ?? shelf.copies
-            // Only the ends matter: one pass instead of sorting every key.
-            let keys = copies.map(key)
-            guard let first = keys.min(by: ascending), let last = keys.max(by: ascending) else { return nil }
-            return Run(shelf: shelf, first: first, last: last)
+    /// Which compartments `target` fits best, in the order of the run. For
+    /// each compartment the place it would take there, between its records
+    /// `lower` and `upper`; it fits the worse the more records of other
+    /// compartments sort between those two – they would have to stand
+    /// there too. In a tidy cabinet one compartment fits with none between,
+    /// or two at a boundary (the end of one, the start of the next). A
+    /// compartment that holds records from all over the alphabet (a mixed
+    /// box, records put in by hand) then never takes a record that has a
+    /// closer place: before, the first compartment whose range covered the
+    /// name took it, and a compartment from A to Z took every one.
+    private static func fits(_ target: String, in index: Index) -> [Int] {
+        let split = upperBound(index.keys, target)
+        var best: [Int] = [], fewest = Int.max
+        for (number, column) in index.columns.enumerated() {
+            let place = upperBound(column.keys, target)
+            // Records of the whole cabinet in (lower, target] and (target, upper).
+            var between = 0
+            if place > 0 { between += split - upperBound(index.keys, column.keys[place - 1]) }
+            if place < column.keys.count { between += lowerBound(index.keys, column.keys[place]) - split }
+            if between < fewest { fewest = between; best = [number] }
+            else if between == fewest { best.append(number) }
         }
-        // Same start in two shelves (one artist and title across both): the
-        // end decides, then the place in the rack, so the run never flips.
-        .sorted { a, b in
-            let first = a.first.localizedStandardCompare(b.first)
+        return best
+    }
+
+    /// One compartment's records sorted by their keys.
+    private struct Column { let shelf: Shelf; let keys: [String]; let copies: [RecordCopy] }
+
+    /// The compartments of one cabinet in the alphabetical run of their
+    /// contents (as in `ShelfRangeLabels`), and all their records in one
+    /// sorted list.
+    private struct Index { let columns: [Column]; let keys: [String]; let copies: [RecordCopy] }
+
+    /// Sorted compartments, kept while their records and keys stay the same:
+    /// every tile in "Noch nicht einsortiert" asks for its place, and sorting
+    /// a cabinet each time took milliseconds per record. After sorting in one
+    /// record only its compartment is sorted again. Per cabinet, as the shelf
+    /// page (cabinet shown) and the widget (first cabinet) may ask in turn.
+    private static var columns: [ObjectIdentifier: (fingerprint: Int, column: Column)] = [:]
+    private static var indexes: [UUID?: (fingerprint: Int, index: Index)] = [:]
+
+    /// The occupied, unreserved compartments of `shelves` – `excluded` (a
+    /// placed copy looking for its place) left out of its own, uncached.
+    private static func index(of shelves: [Shelf], excluding excluded: RecordCopy?) -> Index {
+        let version = LibraryChanges.shared.libraryVersion, order = ShelfSecondaryOrder.current
+        var kept: [ObjectIdentifier: (fingerprint: Int, column: Column)] = [:]
+        var built: [Column] = []
+        var whole = Hasher()
+        // Only its own shelf can hold it: no other record's ID is read.
+        let own = excluded?.shelf?.persistentModelID
+        let id = excluded?.id
+        for shelf in shelves where !shelf.isReserved {
+            let leavesOut = own != nil && shelf.persistentModelID == own
+            let copies = leavesOut ? shelf.copies.filter { $0.id != id } : shelf.copies
+            guard !copies.isEmpty else { continue }
+            // Which records, by identity – no property read – and the state their keys come from.
+            var hasher = Hasher()
+            hasher.combine(version); hasher.combine(order); hasher.combine(copies.count)
+            var sum = 0
+            for copy in copies { sum &+= ObjectIdentifier(copy).hashValue }
+            hasher.combine(sum)
+            let fingerprint = hasher.finalize()
+            let object = ObjectIdentifier(shelf)
+            let column: Column
+            if !leavesOut, let entry = columns[object], entry.fingerprint == fingerprint {
+                column = entry.column
+            } else {
+                let sorted = copies.map { (key: key($0), copy: $0) }.sorted { ascending($0.key, $1.key) }
+                column = Column(shelf: shelf, keys: sorted.map(\.key), copies: sorted.map(\.copy))
+            }
+            if !leavesOut { kept[object] = (fingerprint, column) }
+            whole.combine(object); whole.combine(fingerprint); whole.combine(leavesOut)
+            built.append(column)
+        }
+        // A deleted compartment (reset, cabinet made smaller) doesn't linger.
+        columns.merge(kept) { _, new in new }
+        columns = columns.filter { !$0.value.column.shelf.isDeleted && $0.value.column.shelf.modelContext != nil }
+        indexes = indexes.filter { $0.value.index.columns.allSatisfy { !$0.shelf.isDeleted && $0.shelf.modelContext != nil } }
+
+        let fingerprint = whole.finalize()
+        let cabinet = built.first?.shelf.cabinet?.id
+        if excluded == nil, let kept = indexes[cabinet], kept.fingerprint == fingerprint { return kept.index }
+        // Same start in two compartments (one artist and title across both):
+        // the end decides, then the place in the rack, so the run never flips.
+        let run = built.sorted { a, b in
+            let first = a.keys[0].localizedStandardCompare(b.keys[0])
             if first != .orderedSame { return first == .orderedAscending }
-            let last = a.last.localizedStandardCompare(b.last)
+            let last = a.keys[a.keys.count - 1].localizedStandardCompare(b.keys[b.keys.count - 1])
             if last != .orderedSame { return last == .orderedAscending }
             return a.shelf.readingOrder.lexicographicallyPrecedes(b.shelf.readingOrder)
         }
+        // The compartments are sorted already: merging them is a few comparisons per record.
+        let all = run.flatMap { zip($0.keys, $0.copies).map { (key: $0, copy: $1) } }.sorted { ascending($0.key, $1.key) }
+        let index = Index(columns: run, keys: all.map(\.key), copies: all.map(\.copy))
+        if excluded == nil { indexes[cabinet] = (fingerprint, index) }
+        return index
+    }
+
+    /// The first index whose key sorts after `key`.
+    private static func upperBound(_ keys: [String], _ key: String) -> Int {
+        var low = 0, high = keys.count
+        while low < high {
+            let mid = (low + high) / 2
+            if key.localizedStandardCompare(keys[mid]) == .orderedAscending { high = mid } else { low = mid + 1 }
+        }
+        return low
+    }
+
+    /// The first index whose key doesn't sort before `key`.
+    private static func lowerBound(_ keys: [String], _ key: String) -> Int {
+        var low = 0, high = keys.count
+        while low < high {
+            let mid = (low + high) / 2
+            if keys[mid].localizedStandardCompare(key) == .orderedAscending { low = mid + 1 } else { high = mid }
+        }
+        return low
     }
 
     private static func ordered(_ shelf: Shelf, excluding id: UUID?) -> [RecordCopy] {

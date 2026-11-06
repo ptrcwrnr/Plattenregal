@@ -94,13 +94,109 @@ extension AllTests {
             let spots = AlphabeticalPlacement.spots(for: cocaine, in: rack.inUse, cabinet: cabinet.id)
             #expect(spots.map(\.shelf.id) == [rack.kallax.id, next.id])
             // Even with the first compartment open: the other Yakooza stands in the next.
-            #expect(AlphabeticalPlacement.preferredIndex(spots, for: cocaine, openShelf: rack.kallax.id, cabinet: cabinet.id) == 1)
+            #expect(AlphabeticalPlacement.preferredIndex(spots, for: cocaine, openShelf: rack.kallax.id) == 1)
 
             let voigt = try loose(rack, "Wolfgang Voigt", "Ampère")
             let between = AlphabeticalPlacement.spots(for: voigt, in: rack.inUse, cabinet: cabinet.id)
             #expect(between.map(\.shelf.id) == [rack.kallax.id, next.id])
             #expect(AlphabeticalPlacement.preferredIndex(between, for: voigt) == 0)
             #expect(AlphabeticalPlacement.preferredIndex(between, for: voigt, openShelf: next.id) == 1)
+        }
+
+        /// Inside one cabinet a compartment may hold records from all over
+        /// the alphabet too (put in by hand). It covered every name between
+        /// its ends and took them all; now the compartment where the record
+        /// fits with nothing between its neighbours wins.
+        @Test func aMixedCompartmentDoesNotTakeRecordsThatFitCloserElsewhere() throws {
+            let rack = try rack()
+            let cabinet = try #require(rack.kallax.cabinet)
+            // KALLAX: compartment 1 "Abba … Various", compartment 2 "DJ 7ranceport … Evensloped".
+            let second = cabinet.orderedShelves[1]
+            let dj = try rack.positions.insert(release: Release(artist: "DJ 7ranceport", title: "Trance"), shelf: second, position: 1)
+            let even = try rack.positions.insert(release: Release(artist: "Evensloped", title: "Sky"), shelf: second, position: 2)
+            let abba = try #require(rack.kallax.copies.first { $0.release?.artist == "Abba" })
+            let various = try #require(rack.kallax.copies.first { $0.release?.artist == "Various" })
+
+            let schall = try loose(rack, "Elektrochemie LK, Thomas Schumacher", "Schall (Revisited)")
+            let inside = AlphabeticalPlacement.spots(for: schall, in: rack.inUse, cabinet: cabinet.id)
+            #expect(inside.map(\.shelf.id) == [second.id] && inside.map(\.position) == [2])
+            #expect(inside.first?.before?.id == dj.id && inside.first?.after?.id == even.id)
+
+            // Before "DJ": the start of compartment 2, its left neighbour the record before it in the cabinet.
+            let beck = try loose(rack, "Beck", "Odelay")
+            let start = AlphabeticalPlacement.spots(for: beck, in: rack.inUse, cabinet: cabinet.id)
+            #expect(start.map(\.shelf.id) == [second.id] && start.map(\.position) == [1])
+            #expect(start.first?.before?.id == abba.id && start.first?.after?.id == dj.id)
+
+            // Behind everything: the end of compartment 1, after "Various".
+            let zappa = try loose(rack, "Zappa", "Hot Rats")
+            let end = AlphabeticalPlacement.spots(for: zappa, in: rack.inUse, cabinet: cabinet.id)
+            #expect(end.map(\.shelf.id) == [rack.kallax.id] && end.map(\.position) == [3])
+            #expect(end.first?.before?.id == various.id && end.first?.after == nil)
+
+            // Many at once ("Noch nicht einsortiert", widget): the same compartments.
+            let batch = [schall, beck, zappa]
+            let fitting = AlphabeticalPlacement.fittingShelves(for: batch, in: rack.inUse, cabinet: cabinet.id)
+            for copy in batch {
+                #expect(fitting[copy.id]?.map(\.id) == AlphabeticalPlacement.spots(for: copy, in: rack.inUse, cabinet: cabinet.id).map(\.shelf.id))
+            }
+        }
+
+        /// The sorted compartments are kept between calls; a record put in or
+        /// taken out, or new record data, must show at once.
+        @Test func keptCompartmentsFollowEveryChange() throws {
+            let rack = try rack()
+            let cabinet = try #require(rack.kallax.cabinet)
+            let beck = try loose(rack, "Beck", "Odelay")
+            #expect(AlphabeticalPlacement.spots(for: beck, in: rack.inUse, cabinet: cabinet.id).first?.position == 2)
+
+            let bach = try rack.positions.insert(release: Release(artist: "Bach", title: "Goldberg"), shelf: rack.kallax, position: 2)
+            let afterInsert = AlphabeticalPlacement.spots(for: beck, in: rack.inUse, cabinet: cabinet.id)
+            #expect(afterInsert.first?.position == 3 && afterInsert.first?.before?.id == bach.id)
+
+            try rack.positions.unplace(bach)
+            let afterRemoval = AlphabeticalPlacement.spots(for: beck, in: rack.inUse, cabinet: cabinet.id)
+            #expect(afterRemoval.first?.position == 2 && afterRemoval.first?.before?.release?.artist == "Abba")
+
+            // A sync renames "Abba" to "Zz Top": Beck now comes first.
+            let abba = try #require(rack.kallax.copies.first { $0.release?.artist == "Abba" })
+            abba.release?.artist = "Zz Top"
+            try rack.context.save()
+            LibraryChanges.shared.syncDidCommit()
+            let renamed = AlphabeticalPlacement.spots(for: beck, in: rack.inUse, cabinet: cabinet.id)
+            #expect(renamed.first?.position == 1 && renamed.first?.before == nil)
+
+            // A placed record alone in its compartment leaves itself out: that
+            // compartment counts as empty, its place is among the others.
+            let second = cabinet.orderedShelves[1]
+            let solo = try rack.positions.insert(release: Release(artist: "Moloko", title: "Statues"), shelf: second, position: 1)
+            let again = AlphabeticalPlacement.spots(for: solo, in: rack.inUse, cabinet: cabinet.id)
+            #expect(again.map(\.shelf.id) == [rack.kallax.id])
+            // KALLAX stands "Zz Top", "Various" since the renaming: Moloko goes first.
+            #expect(again.first?.position == 1 && again.first?.before == nil && again.first?.after?.release?.artist == "Zz Top")
+            #expect(AlphabeticalPlacement.current(for: solo, in: rack.inUse)?.shelf.id == second.id)
+        }
+
+        /// Labels are letters of one cabinet's alphabet: the jazz compartment
+        /// in the hallway (as in the demo) no longer shapes the living room's.
+        @Test func labelsComeFromEachCabinetAlone() throws {
+            let rack = try rack()
+            let cabinet = try #require(rack.kallax.cabinet)
+            try rack.positions.unplace(rack.kallax.copies)
+            try rack.positions.unplace(rack.eket.copies)
+            let first = cabinet.orderedShelves[0], second = cabinet.orderedShelves[1]
+            for (artist, shelf) in [("Daft Punk", first), ("Depeche Mode", first), ("Dj Koze", second), ("Juno Reactor", second)] {
+                try rack.positions.insert(release: Release(artist: artist, title: "Album"), shelf: shelf, position: shelf.copies.count + 1)
+            }
+            for artist in ["Dave Brubeck", "Miles Davis"] {
+                try rack.positions.insert(release: Release(artist: artist, title: "Album"), shelf: rack.eket, position: rack.eket.copies.count + 1)
+            }
+            let all = try rack.context.fetch(FetchDescriptor<Shelf>())
+            let labels = ShelfRangeLabels.compute(for: all)
+            // As one run, "Dave Brubeck" stood between them: "Da – De" and "D – J".
+            #expect(labels[first.id] == "Da – De")
+            #expect(labels[second.id] == "Dj – J")
+            #expect(labels[rack.eket.id] == "D – M")
         }
 
         @Test func anEmptyCabinetShownFallsBackToTheFirstWithRecords() throws {
