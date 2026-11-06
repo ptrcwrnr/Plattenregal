@@ -43,7 +43,9 @@ struct ShelfSortCheckView: View {
         let copies = gone ? [] : PositionService.inShelfOrder(shelf.copies.filter { !$0.isDeleted && $0.modelContext != nil })
         let steps = ShelfSortCheck.steps(copies, by: order)
         VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-            header(count: copies.count, unsorted: !steps.isEmpty)
+            // Nothing to move: the order only matters once another was chosen
+            // (to go back or keep it), so the menu stays then.
+            header(count: copies.count, unsorted: !steps.isEmpty, showsOrder: !steps.isEmpty || order != savedOrder)
             if steps.isEmpty {
                 inOrder(count: copies.count)
             } else {
@@ -73,7 +75,7 @@ struct ShelfSortCheckView: View {
     /// Title and compartment; the order for one artist's records as a menu
     /// beside them – set once, rarely changed, so it no longer takes a row
     /// of its own above the result.
-    private func header(count: Int, unsorted: Bool) -> some View {
+    private func header(count: Int, unsorted: Bool, showsOrder: Bool) -> some View {
         VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
             HStack(alignment: .top, spacing: AppStyle.rowSpacing) {
                 VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
@@ -82,11 +84,14 @@ struct ShelfSortCheckView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: AppStyle.itemSpacing)
-                GlassMenuPicker(title: String(localized: "Bei gleichem Interpreten nach"), selection: $order,
-                                current: Self.orderTitle(order)) {
-                    ForEach(ShelfSecondaryOrder.allCases) { Text(Self.orderTitle($0)).tag($0) }
+                if showsOrder {
+                    GlassMenuPicker(title: String(localized: "Bei gleichem Interpreten nach"), selection: $order,
+                                    current: Self.orderTitle(order)) {
+                        ForEach(ShelfSecondaryOrder.allCases) { Text(Self.orderTitle($0)).tag($0) }
+                    }
+                    .help("Immer nach Interpret; bei gleichem Interpreten nach Titel, Jahr oder Label")
+                    .transition(.opacity)
                 }
-                .help("Immer nach Interpret; bei gleichem Interpreten nach Titel, Jahr oder Label")
             }
             // Said where it arises instead of next to the button.
             if order != savedOrder && unsorted {
@@ -103,13 +108,19 @@ struct ShelfSortCheckView: View {
         String(localized: "Interpret, dann \(order.title)")
     }
 
-    /// Nothing to move: one plain sentence – no card and no symbol for a
-    /// single line. With another order chosen, the offer to keep it.
+    /// Nothing to move: the strip of the compartment with the check in its
+    /// middle – the same strip that marks the moves otherwise. Too few
+    /// records for a check: one sentence. With another order chosen, the
+    /// offer to keep it.
     private func inOrder(count: Int) -> some View {
         VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            Text(count < 2 ? String(localized: "Zu wenige Platten, um etwas zu prüfen.") : String(localized: "Alle \(count) Platten stehen in der richtigen Reihenfolge."))
-                .font(.body)
-                .fixedSize(horizontal: false, vertical: true)
+            if count < 2 {
+                Text("Zu wenige Platten, um etwas zu prüfen.")
+                    .font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                ShelfOrderStrip(count: count, marks: [], inOrder: true)
+            }
             if order != savedOrder {
                 HStack(spacing: AppStyle.rowSpacing) {
                     Text("Beim Einsortieren gilt bisher „\(savedOrder.title)“.").font(.caption).foregroundStyle(.secondary)
@@ -123,26 +134,12 @@ struct ShelfSortCheckView: View {
         }
     }
 
-    /// What is left, the strip of the compartment and the list of moves.
+    /// The strip of the compartment and the list of moves – the numbers and
+    /// ticks of the list say what is left, no count above it.
     private func moves(_ steps: [ShelfSortCheck.Step], in copies: [RecordCopy]) -> some View {
-        let finished = steps.filter { done.contains($0.id) }.count
         let current = steps.first { !done.contains($0.id) }?.id
         return VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-            VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
-                HStack(spacing: AppStyle.rowSpacing) {
-                    Text(finished == steps.count ? String(localized: "Alles umgestellt")
-                         : String(localized: "\(steps.count) von \(copies.count) Platten umstellen"))
-                        .font(AppStyle.rowTitle)
-                        .contentTransition(.opacity)
-                    Spacer(minLength: AppStyle.itemSpacing)
-                    Text("\(finished) von \(steps.count) erledigt")
-                        .font(.callout).monospacedDigit()
-                        .foregroundStyle(finished == steps.count ? AppStyle.successColor : AppStyle.accent)
-                        .contentTransition(.numericText())
-                }
-                ShelfOrderStrip(count: copies.count, marks: ShelfOrderStrip.marks(for: steps, in: copies, done: done, current: current))
-            }
-            .animation(AppStyle.standardAnimation, value: finished)
+            ShelfOrderStrip(count: copies.count, marks: ShelfOrderStrip.marks(for: steps, in: copies, done: done, current: current))
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     Divider()
@@ -234,7 +231,8 @@ private struct SortStepRow: View {
                         Text("Platz \(step.position) herausnehmen").monospacedDigit().foregroundStyle(.secondary)
                         Image(systemName: "arrow.right").font(AppStyle.indicatorSymbol).foregroundStyle(.secondary)
                         if let neighbour = step.before ?? step.after {
-                            Text(target(neighbour)).lineLimit(1).truncationMode(.middle)
+                            // Cut at the end: the artist in bold is what you look for.
+                            Text(target(neighbour)).lineLimit(1).truncationMode(.tail)
                         }
                     }
                     .font(.callout)
@@ -270,7 +268,8 @@ private struct SortStepRow: View {
 /// front of it: where the records to move stand now, and for the next move
 /// also where it goes – joined by an arc. Moves ticked off show at their
 /// new place. Gives the rough direction at the shelf ("far right") before
-/// the exact place in the list.
+/// the exact place in the list. All in order (`inOrder`): the check in the
+/// middle instead of marks. As tall as a row of the moves below.
 private struct ShelfOrderStrip: View {
     /// One record to move: its place now (0-based) and the gap it goes into
     /// (0 = before the first record, `count` = behind the last one).
@@ -283,12 +282,13 @@ private struct ShelfOrderStrip: View {
 
     let count: Int
     let marks: [Mark]
+    var inOrder = false
 
     // Drawn geometry of the strip itself.
-    private static let height: CGFloat = 32
-    private static let inset: CGFloat = 4
+    private static let inset: CGFloat = 6
     /// Room above the marks for the arc of the next move.
-    private static let arcRoom: CGFloat = 10
+    private static let arcRoom: CGFloat = 14
+    private static let tickHeight: CGFloat = 8
     /// Below this width per place the ticks would merge into a gray band.
     private static let minimumTickSpacing: CGFloat = 3
 
@@ -304,22 +304,25 @@ private struct ShelfOrderStrip: View {
     }
 
     var body: some View {
-        VStack(spacing: AppStyle.hairSpacing) {
-            Canvas { context, size in draw(in: &context, size: size) }
-                .frame(height: Self.height)
-                .background(RoundedRectangle(cornerRadius: AppStyle.rowRadius).fill(AppStyle.hoverBackground))
-                .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.borderColor, lineWidth: AppStyle.borderWidth))
-            HStack {
-                Text("Platz 1 · links")
-                Spacer(minLength: AppStyle.itemSpacing)
-                Text("rechts · Platz \(count)")
+        Canvas { context, size in draw(in: &context, size: size) }
+            .frame(height: AssignmentRowMetrics.height)
+            .overlay {
+                if inOrder {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(AppStyle.statusSymbol)
+                        .foregroundStyle(AppStyle.successColor)
+                        // Lifted off the ticks behind it.
+                        .background(Circle().fill(.background).padding(-AppStyle.hairSpacing))
+                }
             }
-            .font(.caption2).monospacedDigit().foregroundStyle(.secondary)
-        }
-        .animation(AppStyle.standardAnimation, value: marks)
-        // The list below says the same in words.
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "Fach mit \(count) Plätzen von links nach rechts, \(marks.filter { !$0.done }.count) Platten zum Umstellen markiert"))
+            .background(RoundedRectangle(cornerRadius: AppStyle.rowRadius).fill(AppStyle.hoverBackground))
+            .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AppStyle.borderColor, lineWidth: AppStyle.borderWidth))
+            .animation(AppStyle.standardAnimation, value: marks)
+            // The list below says the same in words.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(inOrder
+                ? String(localized: "Alle \(count) Platten stehen in der richtigen Reihenfolge.")
+                : String(localized: "Fach mit \(count) Plätzen von links nach rechts, \(marks.filter { !$0.done }.count) Platten zum Umstellen markiert"))
     }
 
     private func draw(in context: inout GraphicsContext, size: CGSize) {
@@ -339,7 +342,7 @@ private struct ShelfOrderStrip: View {
             var ticks = Path()
             for place in 1..<count {
                 let x = edge(place)
-                ticks.move(to: CGPoint(x: x, y: bottom - 6))
+                ticks.move(to: CGPoint(x: x, y: bottom - Self.tickHeight))
                 ticks.addLine(to: CGPoint(x: x, y: bottom))
             }
             context.stroke(ticks, with: .color(AppStyle.borderColor), lineWidth: AppStyle.hairlineWidth * 2)

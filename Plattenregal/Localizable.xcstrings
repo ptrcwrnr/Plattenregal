@@ -110,1406 +110,6 @@
         }
       }
     },
-    "Anfrage abgelehnt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Request Refused"
-          }
-        }
-      }
-    },
-    "Auf GitHub" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On GitHub"
-          }
-        }
-      }
-    },
-    "Auf GitHub ist gerade keine Version von Plattenregal veröffentlicht. Versuche es später noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No version of Plattenregal is published on GitHub right now. Try again later."
-          }
-        }
-      }
-    },
-    "Automatisch nach Updates suchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check for Updates Automatically"
-          }
-        }
-      }
-    },
-    "Bei GitHub gibt es gerade ein Problem (Fehler %lld). Versuche es später noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub is having a problem right now (error %lld). Try again later."
-          }
-        }
-      }
-    },
-    "Der Mac ist gerade nicht mit dem Internet verbunden. Prüfe WLAN oder Kabel und versuche es noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This Mac isn’t connected to the internet right now. Check Wi-Fi or the cable and try again."
-          }
-        }
-      }
-    },
-    "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The location on the record card reads well in dark mode and no longer has a blue cast."
-          }
-        }
-      }
-    },
-    "Die DMG wird in deinem Browser geladen. Öffne sie danach und ersetze Plattenregal wie unten beschrieben." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your browser is downloading the DMG. Then open it and replace Plattenregal as described below."
-          }
-        }
-      }
-    },
-    "Der rote Knopf am Fenster beendet Plattenregal jetzt wie ⌘Q, statt die App ohne Fenster im Dock zu lassen – oder schickt sie in den Hintergrund, wenn das eingeschaltet ist." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The red button on the window now quits Plattenregal like ⌘Q instead of leaving the app in the Dock without a window – or sends it to the background if that is switched on."
-          }
-        }
-      }
-    },
-    "Einen Bereich der Statistik auf den direkt darunter liegenden zu ziehen, verschiebt ihn jetzt auch – vorher blieb dann alles, wie es war." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dragging a statistics section onto the one directly below it now moves it too – before, everything stayed as it was."
-          }
-        }
-      }
-    },
-    "Beim Einsortieren schlägt Plattenregal jetzt einen Platz im gerade gezeigten Regal vor – im Fach, in das die Platte alphabetisch am besten passt. Ein Fach mit Platten quer durchs Alphabet zieht nicht mehr jede neue Platte an. Wechselst du das Regal, zieht die Karte mit." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When placing a record, Plattenregal now suggests a spot in the cabinet shown – in the compartment it fits best alphabetically. A compartment holding records from all over the alphabet no longer draws in every new record. Switch cabinets and the card follows."
-          }
-        }
-      }
-    },
-    "Plattenregal nimmt keine Verbindungen aus dem Netzwerk mehr an; die Einstellungen für Apple TV sind dafür vorerst ausgeblendet. Discogs und die Suche nach Updates funktionieren wie bisher." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal no longer accepts connections from the network; the Apple TV settings are hidden for now. Discogs and checking for updates work as before."
-          }
-        }
-      }
-    },
-    "Im Menü der Schallplatte in der Menüleiste heißt es jetzt „Plattenregal beenden“ statt „Plattenregal ganz beenden“, und „Einstellungen …“ ist dort weggefallen – die Einstellungen öffnest du im Hauptfenster mit ⌘,." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The record’s menu in the menu bar now says “Quit Plattenregal” instead of “Quit Plattenregal Completely”, and “Settings…” is gone from it – open the settings in the main window with ⌘,."
-          }
-        }
-      }
-    },
-    "Beim Herunterziehen zum Aktualisieren erscheint der Ring jetzt unterhalb der Toolbar statt halb dahinter." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When you pull down to refresh, the ring now appears below the toolbar instead of half behind it."
-          }
-        }
-      }
-    },
-    "Rubriken" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sections"
-          }
-        }
-      }
-    },
-    "Eigene Namen für die Rubriken oben im Fenster, höchstens %lld Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your own names for the sections at the top of the window, %lld characters at most. An empty field gives the section its original name back."
-          }
-        }
-      }
-    },
-    "Name der Rubrik %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name of the %@ section"
-          }
-        }
-      }
-    },
-    "%@ und %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ and %2$@"
-          }
-        }
-      }
-    },
-    "Ansicht %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ view"
-          }
-        }
-      }
-    },
-    "Reihenfolge %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ order"
-          }
-        }
-      }
-    },
-    "Fach und Position vergibst du in der Rubrik „%@“." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You assign compartment and position in the “%@” section."
-          }
-        }
-      }
-    },
-    "Die Rubriken oben im Fenster lassen sich umbenennen: Einstellungen → Darstellung → Rubriken, höchstens zwölf Zeichen je Name." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can rename the sections at the top of the window: Settings → Appearance → Sections, twelve characters at most per name."
-          }
-        }
-      }
-    },
-    "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Random” in collection and wantlist shuffles anew each time you open Plattenregal – also from the background."
-          }
-        }
-      }
-    },
-    "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings now say exactly how to rearrange the statistics sections: grab a section by its title and drag it onto another."
-          }
-        }
-      }
-    },
-    "Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings close when you click into the main window beside them, instead of disappearing behind it."
-          }
-        }
-      }
-    },
-    "Die geladene DMG öffnen, Plattenregal beenden und die neue Version in den Ordner „Programme“ ziehen, die alte ersetzen. Sammlung, Regale, Einstellungen und Token bleiben erhalten. Fragt macOS danach nach dem Schlüsselbund, wähle „Immer erlauben“; eventuell ist „Dennoch öffnen“ unter Systemeinstellungen → Datenschutz & Sicherheit noch einmal nötig." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open the downloaded DMG, quit Plattenregal and drag the new version to the Applications folder, replacing the old one. Your collection, shelves, settings and token stay. If macOS then asks about the keychain, choose “Always Allow”; “Open Anyway” under System Settings → Privacy & Security may be needed once more."
-          }
-        }
-      }
-    },
-    "Die geladene DMG öffnen, Plattenregal ganz beenden (⌥⌘Q) und die neue Version in den Ordner „Programme“ ziehen, die alte ersetzen. Sammlung, Regale, Einstellungen und Token bleiben erhalten. Fragt macOS danach nach dem Schlüsselbund, wähle „Immer erlauben“; eventuell ist „Dennoch öffnen“ unter Systemeinstellungen → Datenschutz & Sicherheit noch einmal nötig." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open the downloaded DMG, quit Plattenregal completely (⌥⌘Q) and drag the new version to the Applications folder, replacing the old one. Your collection, shelves, settings and token stay. If macOS then asks about the keychain, choose “Always Allow”; “Open Anyway” under System Settings → Privacy & Security may be needed once more."
-          }
-        }
-      }
-    },
-    "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The record card is tidier: the details as a calm list, styles without badges and “Open on Discogs” at the top right."
-          }
-        }
-      }
-    },
-    "Die Seite der Version ist im Browser geöffnet. Lade dort die DMG und ersetze Plattenregal wie unten beschrieben." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The version’s page is open in your browser. Download the DMG there and replace Plattenregal as described below."
-          }
-        }
-      }
-    },
-    "Die sichere Verbindung zu GitHub ließ sich nicht aufbauen. Prüfe, ob Datum und Uhrzeit des Macs stimmen. In manchen Netzen, etwa im WLAN eines Hotels, musst du dich zuerst im Browser anmelden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A secure connection to GitHub couldn’t be established. Check that the Mac’s date and time are correct. Some networks, such as hotel Wi-Fi, require you to sign in in your browser first."
-          }
-        }
-      }
-    },
-    "Download: %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download: %@."
-          }
-        }
-      }
-    },
-    "Du hast Version %@, die neueste Version." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You have version %@, the latest version."
-          }
-        }
-      }
-    },
-    "Du hast Version %@, neuer als die zuletzt veröffentlichte %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You have version %1$@, newer than the last published %2$@."
-          }
-        }
-      }
-    },
-    "Du hast Version %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You have version %@."
-          }
-        }
-      }
-    },
-    "Erneut versuchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try Again"
-          }
-        }
-      }
-    },
-    "Erscheint oben in der Mitte des Bildschirms, bei einer Notch direkt darunter." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appears at the top center of the screen, right below the notch if there is one."
-          }
-        }
-      }
-    },
-    "Erscheint oben rechts in der Ecke des Bildschirms, so nah am Rand wie an der Menüleiste." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appears in the top right corner of the screen, as close to the edge as to the menu bar."
-          }
-        }
-      }
-    },
-    "Fach „%@“ · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compartment “%1$@” · %2$@"
-          }
-        }
-      }
-    },
-    "Nie" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Never"
-          }
-        }
-      }
-    },
-    "Plattenregal sucht nicht von selbst. „Jetzt prüfen“ fragt sofort bei GitHub nach." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal doesn’t look by itself. “Check Now” asks GitHub right away."
-          }
-        }
-      }
-    },
-    "Fragt einmal in der Woche bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Asks GitHub once a week whether there is a new version and shows it. Nothing about you or your collection is sent."
-          }
-        }
-      }
-    },
-    "Fragt einmal im Monat bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Asks GitHub once a month whether there is a new version and shows it. Nothing about you or your collection is sent."
-          }
-        }
-      }
-    },
-    "Wie oft Plattenregal nach Updates sucht, wählst du jetzt unter Einstellungen → Allgemein: wöchentlich, monatlich oder nie. Hattest du die tägliche Suche eingeschaltet, sucht Plattenregal jetzt wöchentlich." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You now choose how often Plattenregal looks for updates under Settings → General: weekly, monthly or never. If you had the daily check on, Plattenregal now looks weekly."
-          }
-        }
-      }
-    },
-    "Für einen Fehlerbericht. Enthält nie den Discogs-Token." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For a bug report. Never contains the Discogs token."
-          }
-        }
-      }
-    },
-    "Gerade zu viele Anfragen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Too Many Requests"
-          }
-        }
-      }
-    },
-    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in ein paar Minuten noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub has received too many requests from your network. Try again in a few minutes."
-          }
-        }
-      }
-    },
-    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in etwa %lld Minuten noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub has received too many requests from your network. Try again in about %lld minutes."
-          }
-        }
-      }
-    },
-    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in etwa einer Minute noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub has received too many requests from your network. Try again in about a minute."
-          }
-        }
-      }
-    },
-    "GitHub hat die Anfrage abgelehnt (Fehler %lld). Versuche es später noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub refused the request (error %lld). Try again later."
-          }
-        }
-      }
-    },
-    "GitHub hat eine Antwort geschickt, mit der Plattenregal nichts anfangen kann. Verlangt dein Netzwerk eine Anmeldung, etwa im WLAN eines Hotels, melde dich zuerst im Browser an. Sonst versuche es später noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub sent a reply Plattenregal can’t make sense of. If your network requires you to sign in, such as hotel Wi-Fi, sign in in your browser first. Otherwise try again later."
-          }
-        }
-      }
-    },
-    "GitHub hat nicht rechtzeitig geantwortet. Vielleicht ist die Verbindung gerade langsam – versuche es gleich noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub didn’t answer in time. The connection may be slow right now – try again in a moment."
-          }
-        }
-      }
-    },
-    "GitHub ist nicht erreichbar" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub Can’t Be Reached"
-          }
-        }
-      }
-    },
-    "GitHub, wo die Versionen von Plattenregal liegen, ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es später noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GitHub, where the versions of Plattenregal are kept, can’t be reached right now. Check your internet connection and try again later."
-          }
-        }
-      }
-    },
-    "Herunterladen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download"
-          }
-        }
-      }
-    },
-    "In der Demo sucht Plattenregal nicht von selbst nach Updates." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In the demo, Plattenregal doesn’t check for updates on its own."
-          }
-        }
-      }
-    },
-    "Jetzt prüfen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check Now"
-          }
-        }
-      }
-    },
-    "Keine Antwort von GitHub" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Answer from GitHub"
-          }
-        }
-      }
-    },
-    "Keine Internetverbindung" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Internet Connection"
-          }
-        }
-      }
-    },
-    "Keine sichere Verbindung" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Secure Connection"
-          }
-        }
-      }
-    },
-    "Keine Version gefunden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Version Found"
-          }
-        }
-      }
-    },
-    "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If the check fails, Plattenregal says why, for example without internet or when GitHub isn’t answering."
-          }
-        }
-      }
-    },
-    "Klicken, um die Platte festzuhalten" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click to hold this record"
-          }
-        }
-      }
-    },
-    "Klicken, um die Platte wieder loszulassen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click to let go of this record"
-          }
-        }
-      }
-    },
-    "Label, Katalognummer und Format stehen auf der Plattenkarte und im Zufallsfund aufgeräumt: jeder Wert nur einmal, ohne das „none“ von Discogs und ohne „1 ·“ vor dem Format." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Label, catalog number and format on the record card and in the random find are tidier: each value only once, without Discogs’ “none” and without “1 ·” before the format."
-          }
-        }
-      }
-    },
-    "Nach Updates suchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checking for Updates"
-          }
-        }
-      }
-    },
-    "Nach Updates suchen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check for Updates…"
-          }
-        }
-      }
-    },
-    "Noch nicht geprüft." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not checked yet."
-          }
-        }
-      }
-    },
-    "Oben mittig" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top Center"
-          }
-        }
-      }
-    },
-    "Oben rechts" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top Right"
-          }
-        }
-      }
-    },
-    "Plattenregal %@ ist da" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal %@ Is Available"
-          }
-        }
-      }
-    },
-    "Plattenregal %@ ist da …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal %@ Is Available…"
-          }
-        }
-      }
-    },
-    "Plattenregal fragt bei GitHub nach der neuesten Version …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal is asking GitHub for the latest version…"
-          }
-        }
-      }
-    },
-    "Plattenregal ist aktuell" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal Is Up to Date"
-          }
-        }
-      }
-    },
-    "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal checks for a new version once a day and then shows what’s new – with the download and short instructions."
-          }
-        }
-      }
-    },
-    "Pos. %lld von %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pos. %1$lld of %2$lld"
-          }
-        }
-      }
-    },
-    "Position der Suche" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search Position"
-          }
-        }
-      }
-    },
-    "Problem bei GitHub" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Problem with GitHub"
-          }
-        }
-      }
-    },
-    "Protokoll weitergeben" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share Log"
-          }
-        }
-      }
-    },
-    "Schließen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
-          }
-        }
-      }
-    },
-    "So aktualisierst du" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How to Update"
-          }
-        }
-      }
-    },
-    "Softwareaktualisierung" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Software Update"
-          }
-        }
-      }
-    },
-    "Suche nach Updates" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checking for updates"
-          }
-        }
-      }
-    },
-    "Unerwartete Antwort" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unexpected Reply"
-          }
-        }
-      }
-    },
-    "Updates" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updates"
-          }
-        }
-      }
-    },
-    "Version %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version %@"
-          }
-        }
-      }
-    },
-    "Version %@ ist da." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version %@ is available."
-          }
-        }
-      }
-    },
-    "Veröffentlicht am %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Published on %@."
-          }
-        }
-      }
-    },
-    "Was ist neu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What’s New"
-          }
-        }
-      }
-    },
-    "Zuletzt geprüft: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last checked: %@"
-          }
-        }
-      }
-    },
-    "Überspringen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skip"
-          }
-        }
-      }
-    },
-    "„Im Regal anzeigen“ kommt ruhig bei der Platte an, statt hastig durch das Fach zu scrollen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Show on Shelf” now arrives calmly at the record instead of rushing through the compartment."
-          }
-        }
-      }
-    },
-    "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Check for Updates…” in the Plattenregal menu checks right away; turn it on or off and check by hand under Settings → General."
-          }
-        }
-      }
-    },
-    "⌘Q und das Schließen des letzten Fensters lassen Plattenregal ohne Symbol im Dock weiterlaufen; Schallplatte und Kürzel bleiben. Ganz beenden: Rechtsklick auf die Schallplatte oder ⌥⌘Q." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘Q and closing the last window keep Plattenregal running without a Dock icon; the record and the shortcut stay. To quit completely: right-click the record or press ⌥⌘Q."
-          }
-        }
-      }
-    },
-    "⌥ Leertaste" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌥ Space"
-          }
-        }
-      }
-    },
-    "Auch aus anderen Apps" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "From Other Apps Too"
-          }
-        }
-      }
-    },
-    "Aussehen der Suche" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search Appearance"
-          }
-        }
-      }
-    },
-    "Bei der Anmeldung öffnen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open at Login"
-          }
-        }
-      }
-    },
-    "Deckend weiß, nichts scheint durch." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solid white, nothing shows through."
-          }
-        }
-      }
-    },
-    "Dunkel getönt, liest sich über jedem Hintergrundbild gut." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tinted dark, reads well over any wallpaper."
-          }
-        }
-      }
-    },
-    "Dunkles Glas" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dark Glass"
-          }
-        }
-      }
-    },
-    "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature."
-          }
-        }
-      }
-    },
-    "Klick auf einen Treffer" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click on a Match"
-          }
-        }
-      }
-    },
-    "Markieren" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mark"
-          }
-        }
-      }
-    },
-    "In der App" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In the App"
-          }
-        }
-      }
-    },
-    "Auf Discogs" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On Discogs"
-          }
-        }
-      }
-    },
-    "Ein Klick hält den Treffer fest, das Regal darunter bleibt stehen; ein zweiter Klick lässt ihn los." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A click holds the match and the rack below stays put; a second click lets it go."
-          }
-        }
-      }
-    },
-    "Ein Klick schließt die Suche und zeigt die Platte in Plattenregal auf der Regalseite." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A click closes the search and shows the record on the shelf page of Plattenregal."
-          }
-        }
-      }
-    },
-    "Ein Klick schließt die Suche und öffnet die Platte im Browser auf Discogs." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A click closes the search and opens the record on Discogs in your browser."
-          }
-        }
-      }
-    },
-    "Klicken, um die Platte in Plattenregal zu zeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click to show the record in Plattenregal"
-          }
-        }
-      }
-    },
-    "Klicken, um die Platte auf Discogs zu öffnen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click to open the record on Discogs"
-          }
-        }
-      }
-    },
-    "Was ein Klick auf einen Treffer in der Suche in der Menüleiste tut, wählst du jetzt unter Einstellungen → Allgemein: markieren wie bisher, die Platte in der App zeigen oder sie auf Discogs öffnen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You now choose what a click on a match in the menu bar search does under Settings → General: mark it as before, show the record in the app or open it on Discogs."
-          }
-        }
-      }
-    },
-    "Freigabe in macOS" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Approval in macOS"
-          }
-        }
-      }
-    },
-    "Gehört in" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Belongs in"
-          }
-        }
-      }
-    },
-    "Geht nur mit der Schallplatte in der Menüleiste – über sie lässt sich Plattenregal dann ganz beenden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Only with the record in the menu bar – that’s where you can then quit Plattenregal completely."
-          }
-        }
-      }
-    },
-    "Gezeichnete Cover" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drawn covers"
-          }
-        }
-      }
-    },
-    "Hell getönt, das Hintergrundbild schimmert durch." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tinted light, the wallpaper shimmers through."
-          }
-        }
-      }
-    },
-    "Helles Glas" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Light Glass"
-          }
-        }
-      }
-    },
-    "Im Design Klassisch erscheint die Suche auf Papier." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In the Classic design the search appears on paper."
-          }
-        }
-      }
-    },
-    "Im Hintergrund weiterlaufen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep Running in the Background"
-          }
-        }
-      }
-    },
-    "Im Regal suchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search the Shelf"
-          }
-        }
-      }
-    },
-    "Im Regal suchen (Menüleiste)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search the Shelf (Menu Bar)"
-          }
-        }
-      }
-    },
-    "In der Demo beendet ⌘Q Plattenregal wie gewohnt." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In the demo, ⌘Q quits Plattenregal as usual."
-          }
-        }
-      }
-    },
-    "In der Demo sind die Cover immer gezeichnet." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In the demo, covers are always drawn."
-          }
-        }
-      }
-    },
-    "Jeden Tag eine Platte aus deiner Sammlung – und wo sie im Regal steht." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A record from your collection every day – and where it stands on the shelf."
-          }
-        }
-      }
-    },
-    "Kürzel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shortcut"
-          }
-        }
-      }
-    },
-    "Kürzel %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shortcut %@"
-          }
-        }
-      }
-    },
-    "macOS hat %@ nicht angenommen, das Kürzel ist deshalb aus." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS didn't accept %@, so the shortcut is off."
-          }
-        }
-      }
-    },
-    "macOS hat die Änderung nicht angenommen. Unter Systemeinstellungen → Allgemein → Anmeldeobjekte lässt sich Plattenregal auch von Hand eintragen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS didn’t accept the change. You can also add Plattenregal by hand in System Settings → General → Login Items."
-          }
-        }
-      }
-    },
-    "macOS wartet auf deine Freigabe unter Systemeinstellungen → Allgemein → Anmeldeobjekte." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS is waiting for your approval in System Settings → General → Login Items."
-          }
-        }
-      }
-    },
-    "Menüleiste" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menu Bar"
-          }
-        }
-      }
-    },
-    "Noch keine Platten in deiner Collection." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No records in your collection yet."
-          }
-        }
-      }
-    },
-    "Öffne Plattenregal einmal, dann liegt hier jeden Tag eine Platte aus deiner Sammlung." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Plattenregal once, and a record from your collection will be here every day."
-          }
-        }
-      }
-    },
-    "Öffnet die Suche von überall, auch wenn gerade eine andere App vorn ist. Nutzt eine andere App %@ ebenfalls, reagiert nur eine von beiden – dann hier ausschalten." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens the search from anywhere, even while another app is in front. If another app uses %@ as well, only one of them responds – then switch it off here."
-          }
-        }
-      }
-    },
-    "Platte des Tages" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Record of the Day"
-          }
-        }
-      }
-    },
-    "Plattenregal beenden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quit Plattenregal"
-          }
-        }
-      }
-    },
-    "Plattenregal ganz beenden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quit Plattenregal Completely"
-          }
-        }
-      }
-    },
-    "Plattenregal öffnen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Plattenregal"
-          }
-        }
-      }
-    },
-    "Startet Plattenregal beim Anmelden am Mac, ohne Fenster: nur mit der Schallplatte in der Menüleiste." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Starts Plattenregal when you log in to your Mac, without a window: just the record in the menu bar."
-          }
-        }
-      }
-    },
-    "Startet Plattenregal beim Anmelden am Mac." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Starts Plattenregal when you log in to your Mac."
-          }
-        }
-      }
-    },
-    "Statt der Bilder von Discogs bunte Cover mit Interpret und Titel, wie in der Demo." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Colorful covers with artist and title instead of the Discogs images, as in the demo."
-          }
-        }
-      }
-    },
     "„%@ – %@“" : {
       "localizations" : {
         "de" : {
@@ -1602,6 +202,26 @@
         }
       }
     },
+    "„Im Regal anzeigen“ kommt ruhig bei der Platte an, statt hastig durch das Fach zu scrollen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Show on Shelf” now arrives calmly at the record instead of rushing through the compartment."
+          }
+        }
+      }
+    },
+    "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Check for Updates…” in the Plattenregal menu checks right away; turn it on or off and check by hand under Settings → General."
+          }
+        }
+      }
+    },
     "„Rückgängig“ stellt eine Platte wieder dorthin, wo sie vorher stand" : {
       "localizations" : {
         "en" : {
@@ -1618,6 +238,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“Found Again”"
+          }
+        }
+      }
+    },
+    "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Random” in collection and wantlist shuffles anew each time you open Plattenregal – also from the background."
           }
         }
       }
@@ -1693,22 +323,6 @@
       },
       "shouldTranslate" : false
     },
-    "%@ · %@ · Plätze von links gezählt" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@ · Plätze von links gezählt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · %@ · positions counted from the left"
-          }
-        }
-      }
-    },
     "%@ · %@ · Stand %@" : {
       "localizations" : {
         "de" : {
@@ -1755,6 +369,16 @@
         }
       },
       "shouldTranslate" : false
+    },
+    "%@ durchsuchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search %@"
+          }
+        }
+      }
     },
     "%@ Fächer · %@ eingeräumt%@" : {
       "localizations" : {
@@ -1882,6 +506,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ records"
+          }
+        }
+      }
+    },
+    "%@ und %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ and %2$@"
           }
         }
       }
@@ -2239,16 +873,6 @@
         }
       }
     },
-    "%lld Platten umstellen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move %lld records"
-          }
-        }
-      }
-    },
     "%lld Platten werden wieder einsortiert." : {
       "localizations" : {
         "de" : {
@@ -2517,6 +1141,26 @@
         }
       }
     },
+    "⌘Q und das Schließen des letzten Fensters lassen Plattenregal ohne Symbol im Dock weiterlaufen; Schallplatte und Kürzel bleiben. Ganz beenden: Rechtsklick auf die Schallplatte oder ⌥⌘Q." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘Q and closing the last window keep Plattenregal running without a Dock icon; the record and the shortcut stay. To quit completely: right-click the record or press ⌥⌘Q."
+          }
+        }
+      }
+    },
+    "⌥ Leertaste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ Space"
+          }
+        }
+      }
+    },
     "⌥⌘R holt alle Platten. Neue Platten trägst du bei Discogs ein, beim nächsten Abgleich sind sie hier." : {
       "localizations" : {
         "en" : {
@@ -2573,16 +1217,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 record"
-          }
-        }
-      }
-    },
-    "1 Platte umstellen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move 1 record"
           }
         }
       }
@@ -2663,16 +1297,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sync"
-          }
-        }
-      }
-    },
-    "Auf der Statistikseite einen Bereich am Titel greifen und auf einen anderen ziehen. „Zurücksetzen“ stellt die ursprüngliche Reihenfolge wieder her." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On the statistics page, grab a section by its title and drag it onto another. “Reset” restores the original order."
           }
         }
       }
@@ -2937,16 +1561,6 @@
         }
       }
     },
-    "Alles in Ordnung" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All in order"
-          }
-        }
-      }
-    },
     "Alles löschen" : {
       "localizations" : {
         "en" : {
@@ -2973,16 +1587,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sync Everything"
-          }
-        }
-      }
-    },
-    "Alles umgestellt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All moved"
           }
         }
       }
@@ -3167,6 +1771,16 @@
         }
       }
     },
+    "Anfrage abgelehnt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request Refused"
+          }
+        }
+      }
+    },
     "ans Ende" : {
       "localizations" : {
         "en" : {
@@ -3193,6 +1807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View"
+          }
+        }
+      }
+    },
+    "Ansicht %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ view"
           }
         }
       }
@@ -3247,6 +1871,16 @@
         }
       }
     },
+    "Auch aus anderen Apps" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From Other Apps Too"
+          }
+        }
+      }
+    },
     "Auch die Regale werden auf den Stand der Sicherung gebracht – Anzahl, Größe und Namen." : {
       "localizations" : {
         "en" : {
@@ -3277,12 +1911,32 @@
         }
       }
     },
+    "Auf der Statistikseite einen Bereich am Titel greifen und auf einen anderen ziehen. „Zurücksetzen“ stellt die ursprüngliche Reihenfolge wieder her." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the statistics page, grab a section by its title and drag it onto another. “Reset” restores the original order."
+          }
+        }
+      }
+    },
     "Auf die Suchliste setzen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add to Search List"
+          }
+        }
+      }
+    },
+    "Auf Discogs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On Discogs"
           }
         }
       }
@@ -3303,6 +1957,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "At a glance"
+          }
+        }
+      }
+    },
+    "Auf GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On GitHub"
+          }
+        }
+      }
+    },
+    "Auf GitHub ist gerade keine Version von Plattenregal veröffentlicht. Versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No version of Plattenregal is published on GitHub right now. Try again later."
           }
         }
       }
@@ -3437,12 +2111,32 @@
         }
       }
     },
+    "Aussehen der Suche" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Appearance"
+          }
+        }
+      }
+    },
     "Automatisch exportieren" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export automatically"
+          }
+        }
+      }
+    },
+    "Automatisch nach Updates suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates Automatically"
           }
         }
       }
@@ -3547,6 +2241,16 @@
         }
       }
     },
+    "Bei der Anmeldung öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open at Login"
+          }
+        }
+      }
+    },
     "Bei Discogs gibt es gerade ein Problem (Fehler %lld). Versuche es später noch einmal." : {
       "localizations" : {
         "en" : {
@@ -3563,6 +2267,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discogs has no tracklist for this record."
+          }
+        }
+      }
+    },
+    "Bei GitHub gibt es gerade ein Problem (Fehler %lld). Versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub is having a problem right now (error %lld). Try again later."
           }
         }
       }
@@ -3613,6 +2327,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not found while placing – right-click → “Found Again” once it turns up"
+          }
+        }
+      }
+    },
+    "Beim Einsortieren schlägt Plattenregal jetzt einen Platz im gerade gezeigten Regal vor – im Fach, in das die Platte alphabetisch am besten passt. Ein Fach mit Platten quer durchs Alphabet zieht nicht mehr jede neue Platte an. Wechselst du das Regal, zieht die Karte mit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When placing a record, Plattenregal now suggests a spot in the cabinet shown – in the compartment it fits best alphabetically. A compartment holding records from all over the alphabet no longer draws in every new record. Switch cabinets and the card follows."
+          }
+        }
+      }
+    },
+    "Beim Herunterziehen zum Aktualisieren erscheint der Ring jetzt unterhalb der Toolbar statt halb dahinter." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you pull down to refresh, the ring now appears below the toolbar instead of half behind it."
           }
         }
       }
@@ -3723,16 +2457,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collection"
-          }
-        }
-      }
-    },
-    "%@ durchsuchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search %@"
           }
         }
       }
@@ -4013,6 +2737,16 @@
         }
       }
     },
+    "Deckend weiß, nichts scheint durch." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solid white, nothing shows through."
+          }
+        }
+      }
+    },
     "Deine Collection kommt von Discogs. Trage deinen persönlichen Discogs-Token ein – danach synchronisiert Plattenregal deine Sammlung. Eine Sicherung deiner Fach-Belegung stellst du anschließend unter „Sicherung“ wieder her." : {
       "localizations" : {
         "en" : {
@@ -4253,12 +2987,42 @@
         }
       }
     },
+    "Der Mac ist gerade nicht mit dem Internet verbunden. Prüfe WLAN oder Kabel und versuche es noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Mac isn’t connected to the internet right now. Check Wi-Fi or the cable and try again."
+          }
+        }
+      }
+    },
     "Der nächste Export folgt in Kürze." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The next export follows shortly."
+          }
+        }
+      }
+    },
+    "Der rote Knopf am Fenster beendet Plattenregal jetzt wie ⌘Q, statt die App ohne Fenster im Dock zu lassen – oder schickt sie in den Hintergrund, wenn das eingeschaltet ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The red button on the window now quits Plattenregal like ⌘Q instead of leaving the app in the Dock without a window – or sends it to the background if that is switched on."
+          }
+        }
+      }
+    },
+    "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The location on the record card reads well in dark mode and no longer has a blue cast."
           }
         }
       }
@@ -4523,12 +3287,62 @@
         }
       }
     },
+    "Die DMG wird in deinem Browser geladen. Öffne sie danach und ersetze Plattenregal wie unten beschrieben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your browser is downloading the DMG. Then open it and replace Plattenregal as described below."
+          }
+        }
+      }
+    },
+    "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings now say exactly how to rearrange the statistics sections: grab a section by its title and drag it onto another."
+          }
+        }
+      }
+    },
+    "Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings close when you click into the main window beside them, instead of disappearing behind it."
+          }
+        }
+      }
+    },
     "Die Fächer behalten ihre Reihenfolge von links oben. Fallen Fächer weg, müssen sie leer sein – gesperrte verlieren dabei Sperre und Namen." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The compartments keep their order from the top left. If compartments are dropped, they must be empty – locked ones lose their lock and name."
+          }
+        }
+      }
+    },
+    "Die geladene DMG öffnen, Plattenregal beenden und die neue Version in den Ordner „Programme“ ziehen, die alte ersetzen. Sammlung, Regale, Einstellungen und Token bleiben erhalten. Fragt macOS danach nach dem Schlüsselbund, wähle „Immer erlauben“; eventuell ist „Dennoch öffnen“ unter Systemeinstellungen → Datenschutz & Sicherheit noch einmal nötig." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the downloaded DMG, quit Plattenregal and drag the new version to the Applications folder, replacing the old one. Your collection, shelves, settings and token stay. If macOS then asks about the keychain, choose “Always Allow”; “Open Anyway” under System Settings → Privacy & Security may be needed once more."
+          }
+        }
+      }
+    },
+    "Die geladene DMG öffnen, Plattenregal ganz beenden (⌥⌘Q) und die neue Version in den Ordner „Programme“ ziehen, die alte ersetzen. Sammlung, Regale, Einstellungen und Token bleiben erhalten. Fragt macOS danach nach dem Schlüsselbund, wähle „Immer erlauben“; eventuell ist „Dennoch öffnen“ unter Systemeinstellungen → Datenschutz & Sicherheit noch einmal nötig." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the downloaded DMG, quit Plattenregal completely (⌥⌘Q) and drag the new version to the Applications folder, replacing the old one. Your collection, shelves, settings and token stay. If macOS then asks about the keychain, choose “Always Allow”; “Open Anyway” under System Settings → Privacy & Security may be needed once more."
           }
         }
       }
@@ -4693,6 +3507,26 @@
         }
       }
     },
+    "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record card is tidier: the details as a calm list, styles without badges and “Open on Discogs” at the top right."
+          }
+        }
+      }
+    },
+    "Die Rubriken oben im Fenster lassen sich umbenennen: Einstellungen → Darstellung → Rubriken, höchstens zwölf Zeichen je Name." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can rename the sections at the top of the window: Settings → Appearance → Sections, twelve characters at most per name."
+          }
+        }
+      }
+    },
     "Die Sammlung ist aktualisiert, nur der Sammlungswert konnte nicht geladen werden. " : {
       "localizations" : {
         "en" : {
@@ -4703,12 +3537,32 @@
         }
       }
     },
+    "Die Seite der Version ist im Browser geöffnet. Lade dort die DMG und ersetze Plattenregal wie unten beschrieben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The version’s page is open in your browser. Download the DMG there and replace Plattenregal as described below."
+          }
+        }
+      }
+    },
     "Die Seite, mit der das Hauptfenster startet." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "The page the main window starts with."
+          }
+        }
+      }
+    },
+    "Die sichere Verbindung zu GitHub ließ sich nicht aufbauen. Prüfe, ob Datum und Uhrzeit des Macs stimmen. In manchen Netzen, etwa im WLAN eines Hotels, musst du dich zuerst im Browser anmelden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A secure connection to GitHub couldn’t be established. Check that the Mac’s date and time are correct. Some networks, such as hotel Wi-Fi, require you to sign in in your browser first."
           }
         }
       }
@@ -5093,6 +3947,16 @@
         }
       }
     },
+    "Download: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download: %@."
+          }
+        }
+      }
+    },
     "Druckfertige Liste im A4-Querformat: Interpret, Titel, Jahr, Label, Katalognummer und Format." : {
       "localizations" : {
         "en" : {
@@ -5113,12 +3977,62 @@
         }
       }
     },
+    "Du hast Version %@, die neueste Version." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have version %@, the latest version."
+          }
+        }
+      }
+    },
+    "Du hast Version %@, neuer als die zuletzt veröffentlichte %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have version %1$@, newer than the last published %2$@."
+          }
+        }
+      }
+    },
+    "Du hast Version %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have version %@."
+          }
+        }
+      }
+    },
     "Dunkel" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dark"
+          }
+        }
+      }
+    },
+    "Dunkel getönt, liest sich über jedem Hintergrundbild gut." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tinted dark, reads well over any wallpaper."
+          }
+        }
+      }
+    },
+    "Dunkles Glas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark Glass"
           }
         }
       }
@@ -5153,12 +4067,52 @@
         }
       }
     },
+    "Eigene Namen für die Rubriken oben im Fenster, höchstens %lld Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your own names for the sections at the top of the window, %lld characters at most. An empty field gives the section its original name back."
+          }
+        }
+      }
+    },
     "Ein Fach mit Platten lässt sich nicht sperren. Nimm die Platten zuerst heraus." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A compartment with records can’t be locked. Take the records out first."
+          }
+        }
+      }
+    },
+    "Ein Klick hält den Treffer fest, das Regal darunter bleibt stehen; ein zweiter Klick lässt ihn los." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A click holds the match and the rack below stays put; a second click lets it go."
+          }
+        }
+      }
+    },
+    "Ein Klick schließt die Suche und öffnet die Platte im Browser auf Discogs." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A click closes the search and opens the record on Discogs in your browser."
+          }
+        }
+      }
+    },
+    "Ein Klick schließt die Suche und zeigt die Platte in Plattenregal auf der Regalseite." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A click closes the search and shows the record on the shelf page of Plattenregal."
           }
         }
       }
@@ -5189,6 +4143,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "One record on the shelf is no longer in your Discogs collection."
+          }
+        }
+      }
+    },
+    "Eine Schallplatte oben in der Menüleiste. Ein Klick öffnet die Suche im Regal: Treffer mit ihrem Fach, darunter das Regal im Kleinen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature."
+          }
+        }
+      }
+    },
+    "Einen Bereich der Statistik auf den direkt darunter liegenden zu ziehen, verschiebt ihn jetzt auch – vorher blieb dann alles, wie es war." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dragging a statistics section onto the one directly below it now moves it too – before, everything stayed as it was."
           }
         }
       }
@@ -5233,22 +4207,22 @@
         }
       }
     },
-    "Einsortieren schließen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close Placing"
-          }
-        }
-      }
-    },
     "Einsortieren – noch nicht einsortierte Platten und wohin sie gehören" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Placing – records not placed yet and where they belong"
+          }
+        }
+      }
+    },
+    "Einsortieren schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Placing"
           }
         }
       }
@@ -5379,6 +4353,16 @@
         }
       }
     },
+    "Erneut versuchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        }
+      }
+    },
     "Erscheint auf der Regalseite und in den Einstellungen." : {
       "localizations" : {
         "en" : {
@@ -5395,6 +4379,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appears on the shelf under the lock and as the compartment’s title."
+          }
+        }
+      }
+    },
+    "Erscheint oben in der Mitte des Bildschirms, bei einer Notch direkt darunter." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears at the top center of the screen, right below the notch if there is one."
+          }
+        }
+      }
+    },
+    "Erscheint oben rechts in der Ecke des Bildschirms, so nah am Rand wie an der Menüleiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears in the top right corner of the screen, as close to the edge as to the menu bar."
           }
         }
       }
@@ -5575,6 +4579,16 @@
         }
       }
     },
+    "Fach „%@“ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartment “%1$@” · %2$@"
+          }
+        }
+      }
+    },
     "Fach „%@“ · %@ · %@ im Fach" : {
       "localizations" : {
         "de" : {
@@ -5641,12 +4655,38 @@
         }
       }
     },
+    "Fach mit %lld Plätzen von links nach rechts, %lld Platten zum Umstellen markiert" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fach mit %1$lld Plätzen von links nach rechts, %2$lld Platten zum Umstellen markiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartment with %1$lld positions from left to right, %2$lld records to move marked"
+          }
+        }
+      }
+    },
     "Fach sperren" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lock Compartment"
+          }
+        }
+      }
+    },
+    "Fach und Position vergibst du in der Rubrik „%@“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You assign compartment and position in the “%@” section."
           }
         }
       }
@@ -5761,6 +4801,36 @@
         }
       }
     },
+    "Fragt einmal im Monat bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asks GitHub once a month whether there is a new version and shows it. Nothing about you or your collection is sent."
+          }
+        }
+      }
+    },
+    "Fragt einmal in der Woche bei GitHub nach, ob es eine neue Version gibt, und zeigt sie dann. Dabei wird nichts über dich oder deine Sammlung übertragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asks GitHub once a week whether there is a new version and shows it. Nothing about you or your collection is sent."
+          }
+        }
+      }
+    },
+    "Freigabe in macOS" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approval in macOS"
+          }
+        }
+      }
+    },
     "Für den Sammlungswert fehlt der Discogs-Token. Trage ihn in den Einstellungen ein." : {
       "localizations" : {
         "en" : {
@@ -5777,6 +4847,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "There are no snapshots for this period yet."
+          }
+        }
+      }
+    },
+    "Für einen Fehlerbericht. Enthält nie den Discogs-Token." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For a bug report. Never contains the Discogs token."
           }
         }
       }
@@ -5861,12 +4941,32 @@
         }
       }
     },
+    "Gehört in" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belongs in"
+          }
+        }
+      }
+    },
     "Gehört in „%@“" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Belongs in “%@”"
+          }
+        }
+      }
+    },
+    "Geht nur mit der Schallplatte in der Menüleiste – über sie lässt sich Plattenregal dann ganz beenden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only with the record in the menu bar – that’s where you can then quit Plattenregal completely."
           }
         }
       }
@@ -5931,6 +5031,16 @@
         }
       }
     },
+    "Gerade zu viele Anfragen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too Many Requests"
+          }
+        }
+      }
+    },
     "Gespeichert als „%@“." : {
       "localizations" : {
         "en" : {
@@ -5991,6 +5101,26 @@
         }
       }
     },
+    "Gezeichnete Cover" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drawn covers"
+          }
+        }
+      }
+    },
+    "Gilt für alle Regale." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applies to all shelves."
+          }
+        }
+      }
+    },
     "Gilt nur für das Design „Modern“." : {
       "localizations" : {
         "en" : {
@@ -6007,6 +5137,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Applies only to Plattenregal, regardless of macOS."
+          }
+        }
+      }
+    },
+    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in ein paar Minuten noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub has received too many requests from your network. Try again in a few minutes."
+          }
+        }
+      }
+    },
+    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in etwa %lld Minuten noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub has received too many requests from your network. Try again in about %lld minutes."
+          }
+        }
+      }
+    },
+    "GitHub hat aus deinem Netzwerk gerade zu viele Anfragen bekommen. Versuche es in etwa einer Minute noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub has received too many requests from your network. Try again in about a minute."
+          }
+        }
+      }
+    },
+    "GitHub hat die Anfrage abgelehnt (Fehler %lld). Versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub refused the request (error %lld). Try again later."
+          }
+        }
+      }
+    },
+    "GitHub hat eine Antwort geschickt, mit der Plattenregal nichts anfangen kann. Verlangt dein Netzwerk eine Anmeldung, etwa im WLAN eines Hotels, melde dich zuerst im Browser an. Sonst versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub sent a reply Plattenregal can’t make sense of. If your network requires you to sign in, such as hotel Wi-Fi, sign in in your browser first. Otherwise try again later."
+          }
+        }
+      }
+    },
+    "GitHub hat nicht rechtzeitig geantwortet. Vielleicht ist die Verbindung gerade langsam – versuche es gleich noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub didn’t answer in time. The connection may be slow right now – try again in a moment."
+          }
+        }
+      }
+    },
+    "GitHub ist nicht erreichbar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub Can’t Be Reached"
+          }
+        }
+      }
+    },
+    "GitHub, wo die Versionen von Plattenregal liegen, ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub, where the versions of Plattenregal are kept, can’t be reached right now. Check your internet connection and try again later."
           }
         }
       }
@@ -6152,6 +5362,26 @@
         }
       }
     },
+    "Hell getönt, das Hintergrundbild schimmert durch." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tinted light, the wallpaper shimmers through."
+          }
+        }
+      }
+    },
+    "Helles Glas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light Glass"
+          }
+        }
+      }
+    },
     "Herausgenommen aus „%@“" : {
       "localizations" : {
         "en" : {
@@ -6168,6 +5398,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Undo Removal"
+          }
+        }
+      }
+    },
+    "Herunterladen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
           }
         }
       }
@@ -6332,12 +5572,42 @@
         }
       }
     },
+    "Im Design Klassisch erscheint die Suche auf Papier." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Classic design the search appears on paper."
+          }
+        }
+      }
+    },
     "Im Finder zeigen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show in Finder"
+          }
+        }
+      }
+    },
+    "Im Hintergrund weiterlaufen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Running in the Background"
+          }
+        }
+      }
+    },
+    "Im Menü der Schallplatte in der Menüleiste heißt es jetzt „Plattenregal beenden“ statt „Plattenregal ganz beenden“, und „Einstellungen …“ ist dort weggefallen – die Einstellungen öffnest du im Hauptfenster mit ⌘,." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The record’s menu in the menu bar now says “Quit Plattenregal” instead of “Quit Plattenregal Completely”, and “Settings…” is gone from it – open the settings in the main window with ⌘,."
           }
         }
       }
@@ -6358,6 +5628,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show on Shelf"
+          }
+        }
+      }
+    },
+    "Im Regal suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search the Shelf"
+          }
+        }
+      }
+    },
+    "Im Regal suchen (Menüleiste)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search the Shelf (Menu Bar)"
           }
         }
       }
@@ -6392,6 +5682,16 @@
         }
       }
     },
+    "Immer nach Interpret; bei gleichem Interpreten nach Titel, Jahr oder Label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always by artist; for the same artist by title, year or label"
+          }
+        }
+      }
+    },
     "Immer zuerst nach Interpret. %@ Gilt für Platzsuche, Hinzufügen, „Sortierung prüfen“ und die alphabetische Collection." : {
       "localizations" : {
         "en" : {
@@ -6412,6 +5712,26 @@
         }
       }
     },
+    "In der App" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the App"
+          }
+        }
+      }
+    },
+    "In der Demo beendet ⌘Q Plattenregal wie gewohnt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the demo, ⌘Q quits Plattenregal as usual."
+          }
+        }
+      }
+    },
     "In der Demo ist die Verbindung zum Apple TV aus – die Beispielsammlung soll nicht auf deinen Fernseher." : {
       "localizations" : {
         "en" : {
@@ -6428,6 +5748,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In the demo, the collection is kept in memory only."
+          }
+        }
+      }
+    },
+    "In der Demo sind die Cover immer gezeichnet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the demo, covers are always drawn."
+          }
+        }
+      }
+    },
+    "In der Demo sucht Plattenregal nicht von selbst nach Updates." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the demo, Plattenregal doesn’t check for updates on its own."
           }
         }
       }
@@ -6512,6 +5852,16 @@
         }
       }
     },
+    "Interpret, dann %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artist, then %@"
+          }
+        }
+      }
+    },
     "Interpret, Titel, Jahr, Label, Katalognummer, Format, Land und Stile sind immer enthalten." : {
       "localizations" : {
         "en" : {
@@ -6592,6 +5942,16 @@
         }
       }
     },
+    "Jeden Tag eine Platte aus deiner Sammlung – und wo sie im Regal steht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A record from your collection every day – and where it stands on the shelf."
+          }
+        }
+      }
+    },
     "Jetzt exportieren" : {
       "localizations" : {
         "en" : {
@@ -6608,6 +5968,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restart Now"
+          }
+        }
+      }
+    },
+    "Jetzt prüfen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Now"
           }
         }
       }
@@ -6662,12 +6032,32 @@
         }
       }
     },
+    "Keine Antwort von GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Answer from GitHub"
+          }
+        }
+      }
+    },
     "Keine Einträge" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No entries"
+          }
+        }
+      }
+    },
+    "Keine Internetverbindung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Internet Connection"
           }
         }
       }
@@ -6722,6 +6112,16 @@
         }
       }
     },
+    "Keine sichere Verbindung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Secure Connection"
+          }
+        }
+      }
+    },
     "Keine Treffer" : {
       "localizations" : {
         "en" : {
@@ -6742,12 +6142,32 @@
         }
       }
     },
+    "Keine Version gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Version Found"
+          }
+        }
+      }
+    },
     "Klangbild" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sound profile"
+          }
+        }
+      }
+    },
+    "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If the check fails, Plattenregal says why, for example without internet or when GitHub isn’t answering."
           }
         }
       }
@@ -6779,6 +6199,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Small"
+          }
+        }
+      }
+    },
+    "Klick auf einen Treffer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click on a Match"
           }
         }
       }
@@ -6823,6 +6253,46 @@
         }
       }
     },
+    "Klicken, um die Platte auf Discogs zu öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to open the record on Discogs"
+          }
+        }
+      }
+    },
+    "Klicken, um die Platte festzuhalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to hold this record"
+          }
+        }
+      }
+    },
+    "Klicken, um die Platte in Plattenregal zu zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to show the record in Plattenregal"
+          }
+        }
+      }
+    },
+    "Klicken, um die Platte wieder loszulassen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to let go of this record"
+          }
+        }
+      }
+    },
     "Komma" : {
       "localizations" : {
         "en" : {
@@ -6853,12 +6323,42 @@
         }
       }
     },
+    "Kürzel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shortcut"
+          }
+        }
+      }
+    },
+    "Kürzel %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shortcut %@"
+          }
+        }
+      }
+    },
     "Label" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Label"
+          }
+        }
+      }
+    },
+    "Label, Katalognummer und Format stehen auf der Plattenkarte und im Zufallsfund aufgeräumt: jeder Wert nur einmal, ohne das „none“ von Discogs und ohne „1 ·“ vor dem Format." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Label, catalog number and format on the record card and in the random find are tidier: each value only once, without Discogs’ “none” and without “1 ·” before the format."
           }
         }
       }
@@ -7023,6 +6523,46 @@
         }
       }
     },
+    "macOS hat %@ nicht angenommen, das Kürzel ist deshalb aus." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS didn't accept %@, so the shortcut is off."
+          }
+        }
+      }
+    },
+    "macOS hat die Änderung nicht angenommen. Unter Systemeinstellungen → Allgemein → Anmeldeobjekte lässt sich Plattenregal auch von Hand eintragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS didn’t accept the change. You can also add Plattenregal by hand in System Settings → General → Login Items."
+          }
+        }
+      }
+    },
+    "macOS wartet auf deine Freigabe unter Systemeinstellungen → Allgemein → Anmeldeobjekte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS is waiting for your approval in System Settings → General → Login Items."
+          }
+        }
+      }
+    },
+    "Markieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark"
+          }
+        }
+      }
+    },
     "Markierung aufheben" : {
       "localizations" : {
         "en" : {
@@ -7099,6 +6639,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More than half of the records from the backup are missing. If the collection isn’t fully synced yet, cancel and sync first."
+          }
+        }
+      }
+    },
+    "Menüleiste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu Bar"
           }
         }
       }
@@ -7254,22 +6804,32 @@
         }
       }
     },
-    "Nach Interpret, bei gleichem Interpreten nach" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "By artist, for the same artist by"
-          }
-        }
-      }
-    },
     "Nach Interpret, mit dem Alphabet am Rand." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "By artist, with the alphabet at the edge."
+          }
+        }
+      }
+    },
+    "Nach Updates suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking for Updates"
+          }
+        }
+      }
+    },
+    "Nach Updates suchen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
           }
         }
       }
@@ -7310,6 +6870,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
+          }
+        }
+      }
+    },
+    "Name der Rubrik %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name of the %@ section"
           }
         }
       }
@@ -7484,6 +7054,16 @@
         }
       }
     },
+    "Nie" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
+          }
+        }
+      }
+    },
     "Niedrig" : {
       "localizations" : {
         "en" : {
@@ -7604,6 +7184,16 @@
         }
       }
     },
+    "Noch keine Platten in deiner Collection." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records in your collection yet."
+          }
+        }
+      }
+    },
     "Noch keine Platten in diesem Fach." : {
       "localizations" : {
         "en" : {
@@ -7704,6 +7294,16 @@
         }
       }
     },
+    "Noch nicht geprüft." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked yet."
+          }
+        }
+      }
+    },
     "noch nicht synchronisiert" : {
       "localizations" : {
         "en" : {
@@ -7784,6 +7384,26 @@
         }
       }
     },
+    "Oben mittig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top Center"
+          }
+        }
+      }
+    },
+    "Oben rechts" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top Right"
+          }
+        }
+      }
+    },
     "Öffne auf dem Apple TV Plattenregal → Einstellungen → „Mit Mac verbinden …“ und wähle „%@“." : {
       "localizations" : {
         "en" : {
@@ -7794,12 +7414,32 @@
         }
       }
     },
+    "Öffne Plattenregal einmal, dann liegt hier jeden Tag eine Platte aus deiner Sammlung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Plattenregal once, and a record from your collection will be here every day."
+          }
+        }
+      }
+    },
     "Öffnet das Video auf YouTube" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens the video on YouTube"
+          }
+        }
+      }
+    },
+    "Öffnet die Suche von überall, auch wenn gerade eine andere App vorn ist. Nutzt eine andere App %@ ebenfalls, reagiert nur eine von beiden – dann hier ausschalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the search from anywhere, even while another app is in front. If another app uses %@ as well, only one of them responds – then switch it off here."
           }
         }
       }
@@ -7960,6 +7600,16 @@
         }
       }
     },
+    "Platte des Tages" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record of the Day"
+          }
+        }
+      }
+    },
     "Platte hinzufügen" : {
       "localizations" : {
         "en" : {
@@ -8046,6 +7696,36 @@
         }
       }
     },
+    "Plattenregal %@ ist da" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal %@ Is Available"
+          }
+        }
+      }
+    },
+    "Plattenregal %@ ist da …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal %@ Is Available…"
+          }
+        }
+      }
+    },
+    "Plattenregal beenden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Plattenregal"
+          }
+        }
+      }
+    },
     "Plattenregal Belegung %@%@" : {
       "localizations" : {
         "de" : {
@@ -8062,12 +7742,42 @@
         }
       }
     },
+    "Plattenregal fragt bei GitHub nach der neuesten Version …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal is asking GitHub for the latest version…"
+          }
+        }
+      }
+    },
     "Plattenregal für Apple TV zeigt Collection, Wantlist, Statistik und das Regal auf dem Fernseher. Discogs-Token und Belegung holt es von hier – im Heimnetz und verschlüsselt, solange Plattenregal am Mac geöffnet ist." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plattenregal for Apple TV shows your collection, wantlist, statistics and shelf on the TV. It gets the Discogs token and the shelf layout from here – over your home network, encrypted, while Plattenregal is open on the Mac."
+          }
+        }
+      }
+    },
+    "Plattenregal ganz beenden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Plattenregal Completely"
+          }
+        }
+      }
+    },
+    "Plattenregal ist aktuell" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal Is Up to Date"
           }
         }
       }
@@ -8182,6 +7892,26 @@
         }
       }
     },
+    "Plattenregal nimmt keine Verbindungen aus dem Netzwerk mehr an; die Einstellungen für Apple TV sind dafür vorerst ausgeblendet. Discogs und die Suche nach Updates funktionieren wie bisher." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal no longer accepts connections from the network; the Apple TV settings are hidden for now. Discogs and checking for updates work as before."
+          }
+        }
+      }
+    },
+    "Plattenregal öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Plattenregal"
+          }
+        }
+      }
+    },
     "Plattenregal Protokoll %@.log" : {
       "localizations" : {
         "en" : {
@@ -8202,12 +7932,32 @@
         }
       }
     },
-    "Platz %lld" : {
+    "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Position %lld"
+            "value" : "Plattenregal checks for a new version once a day and then shows what’s new – with the download and short instructions."
+          }
+        }
+      }
+    },
+    "Plattenregal sucht nicht von selbst. „Jetzt prüfen“ fragt sofort bei GitHub nach." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plattenregal doesn’t look by itself. “Check Now” asks GitHub right away."
+          }
+        }
+      }
+    },
+    "Platz %lld herausnehmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take out position %lld"
           }
         }
       }
@@ -8258,6 +8008,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pos."
+          }
+        }
+      }
+    },
+    "Pos. %lld von %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pos. %1$lld of %2$lld"
           }
         }
       }
@@ -8332,6 +8092,16 @@
         }
       }
     },
+    "Position der Suche" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Position"
+          }
+        }
+      }
+    },
     "Position unter den Reitern der Regalseite." : {
       "localizations" : {
         "en" : {
@@ -8352,6 +8122,16 @@
         }
       }
     },
+    "Problem bei GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problem with GitHub"
+          }
+        }
+      }
+    },
     "Protokoll" : {
       "localizations" : {
         "en" : {
@@ -8368,6 +8148,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show Log in Finder"
+          }
+        }
+      }
+    },
+    "Protokoll weitergeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Log"
           }
         }
       }
@@ -8542,6 +8332,16 @@
         }
       }
     },
+    "Reihenfolge %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ order"
+          }
+        }
+      }
+    },
     "Reihenfolge der Bereiche" : {
       "localizations" : {
         "en" : {
@@ -8638,6 +8438,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Section"
+          }
+        }
+      }
+    },
+    "Rubriken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sections"
           }
         }
       }
@@ -8758,6 +8568,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Records in the collection"
+          }
+        }
+      }
+    },
+    "Schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
           }
         }
       }
@@ -8922,6 +8742,16 @@
         }
       }
     },
+    "So aktualisierst du" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to Update"
+          }
+        }
+      }
+    },
     "So klein geht es gerade nicht: In den Fächern, die wegfallen würden, %@. Nimm sie zuerst heraus oder wähle eine größere Variante." : {
       "localizations" : {
         "en" : {
@@ -8942,12 +8772,32 @@
         }
       }
     },
+    "Softwareaktualisierung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Software Update"
+          }
+        }
+      }
+    },
     "Sortierung prüfen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Check Order"
+          }
+        }
+      }
+    },
+    "Sortierung und Beschriftung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sorting and Labeling"
           }
         }
       }
@@ -9158,6 +9008,26 @@
         }
       }
     },
+    "Startet Plattenregal beim Anmelden am Mac, ohne Fenster: nur mit der Schallplatte in der Menüleiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts Plattenregal when you log in to your Mac, without a window: just the record in the menu bar."
+          }
+        }
+      }
+    },
+    "Startet Plattenregal beim Anmelden am Mac." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts Plattenregal when you log in to your Mac."
+          }
+        }
+      }
+    },
     "Startseite" : {
       "localizations" : {
         "en" : {
@@ -9174,6 +9044,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Statistics"
+          }
+        }
+      }
+    },
+    "Statt der Bilder von Discogs bunte Cover mit Interpret und Titel, wie in der Demo." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colorful covers with artist and title instead of the Discogs images, as in the demo."
           }
         }
       }
@@ -9314,6 +9194,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear Search"
+          }
+        }
+      }
+    },
+    "Suche nach Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking for updates"
           }
         }
       }
@@ -9718,6 +9608,16 @@
         }
       }
     },
+    "Überspringen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        }
+      }
+    },
     "Umgestellt in „%@“" : {
       "localizations" : {
         "en" : {
@@ -9754,6 +9654,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unknown artist"
+          }
+        }
+      }
+    },
+    "Unerwartete Antwort" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unexpected Reply"
+          }
+        }
+      }
+    },
+    "Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updates"
           }
         }
       }
@@ -9848,16 +9768,6 @@
         }
       }
     },
-    "Verlauf schließen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close History"
-          }
-        }
-      }
-    },
     "Verlauf – zuletzt einsortiert, verschoben, herausgenommen" : {
       "localizations" : {
         "en" : {
@@ -9878,6 +9788,16 @@
         }
       }
     },
+    "Verlauf schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close History"
+          }
+        }
+      }
+    },
     "Verlauf: Einsortiertes und Verschobenes rückgängig machen" : {
       "localizations" : {
         "en" : {
@@ -9888,12 +9808,32 @@
         }
       }
     },
+    "Veröffentlicht am %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Published on %@."
+          }
+        }
+      }
+    },
     "Verringern" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Decrease"
+          }
+        }
+      }
+    },
+    "Version %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@"
           }
         }
       }
@@ -9910,6 +9850,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Version %@ (%@)"
+          }
+        }
+      }
+    },
+    "Version %@ ist da." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ is available."
           }
         }
       }
@@ -10114,6 +10064,26 @@
         }
       }
     },
+    "Was ein Klick auf einen Treffer in der Suche in der Menüleiste tut, wählst du jetzt unter Einstellungen → Allgemein: markieren wie bisher, die Platte in der App zeigen oder sie auf Discogs öffnen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You now choose what a click on a match in the menu bar search does under Settings → General: mark it as before, show the record in the app or open it on Discogs."
+          }
+        }
+      }
+    },
+    "Was ist neu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What’s New"
+          }
+        }
+      }
+    },
     "Was ist passiert?" : {
       "localizations" : {
         "en" : {
@@ -10180,26 +10150,6 @@
         }
       }
     },
-    "Gilt für alle Regale." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Applies to all shelves."
-          }
-        }
-      }
-    },
-    "Sortierung und Beschriftung" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sorting and Labeling"
-          }
-        }
-      }
-    },
     "Wie eine neue Installation. Sicherungen der Belegung bleiben erhalten." : {
       "localizations" : {
         "en" : {
@@ -10216,6 +10166,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As on the shelf"
+          }
+        }
+      }
+    },
+    "Wie oft Plattenregal nach Updates sucht, wählst du jetzt unter Einstellungen → Allgemein: wöchentlich, monatlich oder nie. Hattest du die tägliche Suche eingeschaltet, sucht Plattenregal jetzt wöchentlich." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You now choose how often Plattenregal looks for updates under Settings → General: weekly, monthly or never. If you had the daily check on, Plattenregal now looks weekly."
           }
         }
       }
@@ -10552,6 +10512,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Most recently added on Discogs first."
+          }
+        }
+      }
+    },
+    "Zuletzt geprüft: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last checked: %@"
           }
         }
       }
