@@ -11,13 +11,15 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
         // Read here, so switching the design updates the header right away;
         // AppKit draws it on its own and would keep the old look until the
         // next scroll or resize.
-        anchor.atelier = AppStyle.isAtelier
+        anchor.design = AppPreferences.shared.signatureDesign
         anchor.install()
     }
 
     final class Anchor: NSView {
-        var atelier = AppStyle.isAtelier {
-            didSet { if atelier != oldValue { nearbyTable()?.headerView?.needsDisplay = true } }
+        /// The design itself, not only paper or glass: Klassisch and Vinyl
+        /// paint the band in different colors.
+        var design = AppPreferences.shared.signatureDesign {
+            didSet { if design != oldValue { nearbyTable()?.headerView?.needsDisplay = true } }
         }
         override func viewDidMoveToWindow() { install() }
 
@@ -72,7 +74,7 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
                 NSColor(AtelierPalette.petrol).setFill()
                 bounds.fill()
             }
-            let titleColor = atelier ? NSColor(AtelierPalette.toolbarSelection) : NSColor.labelColor
+            let titleColor = atelier ? NSColor(AtelierPalette.bandInk) : NSColor.labelColor
             let secondaryTitleColor = atelier ? titleColor.withAlphaComponent(0.8) : NSColor.secondaryLabelColor
             let dividerColor = atelier ? titleColor.withAlphaComponent(0.18) : NSColor.separatorColor
             let sortKey = table.sortDescriptors.first

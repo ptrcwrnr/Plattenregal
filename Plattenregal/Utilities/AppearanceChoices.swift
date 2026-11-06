@@ -171,21 +171,31 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
 /// (Liquid Glass) was the only, unnamed design, "atelier" for Klassisch.
 enum SignatureDesign: String, CaseIterable, Identifiable {
     // Klassisch first: the settings list the designs in this order.
-    case atelier, liquidGlass = "none"
+    case atelier, liquidGlass = "none", vinyl
     var id: Self { self }
     var title: String {
         switch self {
         case .liquidGlass: String(localized: "Modern")
         case .atelier: String(localized: "Klassisch")
+        case .vinyl: String(localized: "Vinyl")
         }
     }
-    /// Accent and ambient color only exist in Modern; Klassisch brings its own.
+    /// Klassisch and Vinyl: matte paper instead of glass, built the same way.
+    var isPaper: Bool { self != .liquidGlass }
+    /// The colors of a paper design; Modern has none (it takes the system's
+    /// and the chosen accent), Klassisch's stand in.
+    var paperColors: ClassicColors { self == .vinyl ? .vinyl : .klassisch }
+    /// Vinyl has dark colors only, so the whole app shows itself dark –
+    /// menus, fields and sheets included – whatever the mode says.
+    var isAlwaysDark: Bool { self == .vinyl }
+    /// Accent and ambient color only exist in Modern; the others bring their own.
     var usesColorChoices: Bool { self == .liquidGlass }
     /// Not translated, so the protocol reads the same in every language.
     var logName: String {
         switch self {
         case .liquidGlass: "Modern"
         case .atelier: "Klassisch"
+        case .vinyl: "Vinyl"
         }
     }
 }

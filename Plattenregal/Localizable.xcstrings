@@ -10667,6 +10667,46 @@
           }
         }
       }
+    },
+    "Vinyl" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vinyl"
+          }
+        }
+      }
+    },
+    "Kühles Graphit mit hellblauen Akzenten, immer dunkel. Matte Flächen statt Glas." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cool graphite with light blue accents, always dark. Matte surfaces instead of glass."
+          }
+        }
+      }
+    },
+    "Das Design „Vinyl“ ist immer dunkel." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Vinyl design is always dark."
+          }
+        }
+      }
+    },
+    "Im Design Vinyl erscheint die Suche auf Graphit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Vinyl design the search appears on graphite."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

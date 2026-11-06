@@ -64,7 +64,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Before anything reads settings: the demo gets fresh ones of its own.
         DemoMode.prepare()
         AppLog.startSession(details: "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)" + (DemoMode.isActive ? " · Demo" : "")
-                                + (AppPreferences.shared.signatureDesign == .atelier ? " · Design Klassisch" : ""),
+                                + (AppPreferences.shared.signatureDesign == .liquidGlass ? "" : " · Design \(AppPreferences.shared.signatureDesign.logName)"),
                             version: "\(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         FocusRings.disableGlobally()
         // Settings only older versions wrote (window sizes of every former

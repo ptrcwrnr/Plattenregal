@@ -79,10 +79,12 @@ struct GeneralSettingsView: View {
                     Toggle("Kürzel", isOn: $preferences.quickSearchHotKey).labelsHidden().toggleStyle(.switch)
                 }
                 Divider()
-                // Only Modern has a choice; Klassisch shows its paper. Without
-                // the record and the shortcut there is no search to show.
+                // Only Modern has a choice; Klassisch and Vinyl show their paper.
+                // Without the record and the shortcut there is no search to show.
                 SettingsRow(title: String(localized: "Aussehen der Suche"),
-                            hint: AppStyle.isAtelier
+                            hint: preferences.signatureDesign == .vinyl
+                                ? String(localized: "Im Design Vinyl erscheint die Suche auf Graphit.")
+                                : AppStyle.isAtelier
                                 ? String(localized: "Im Design Klassisch erscheint die Suche auf Papier.")
                                 : preferences.quickSearchLook.hint) {
                     GlassSegmentedPicker(selection: $preferences.quickSearchLook, options: QuickSearchLook.allCases) { Text($0.title) }

@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Testing
 @testable import Plattenregal
@@ -240,6 +241,9 @@ extension AllTests {
                 preferences.signatureDesign = .atelier
                 #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "atelier")
                 #expect(AppPreferences(defaults: defaults).signatureDesign == .atelier)
+                preferences.signatureDesign = .vinyl
+                #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "vinyl")
+                #expect(AppPreferences(defaults: defaults).signatureDesign == .vinyl)
                 preferences.signatureDesign = .liquidGlass
                 #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == "none")
                 #expect(AppPreferences(defaults: defaults).signatureDesign == .liquidGlass)
@@ -253,7 +257,8 @@ extension AllTests {
                 defaults.set("purple", forKey: AppPreferences.Key.accent)
                 defaults.set("yellow", forKey: AppPreferences.Key.ambient)
                 let preferences = AppPreferences(defaults: defaults)
-                for design in [SignatureDesign.atelier, .liquidGlass] {
+                // Vinyl shows itself dark but leaves the chosen mode stored.
+                for design in [SignatureDesign.atelier, .vinyl, .liquidGlass] {
                     preferences.signatureDesign = design
                     #expect(preferences.startPage == .shelf)
                     #expect(preferences.appearance == .dark)
@@ -273,10 +278,31 @@ extension AllTests {
         }
 
         @Test func designsKeepTheirStoredValuesUnderTheNewNames() {
-            #expect(SignatureDesign.allCases.map(\.logName) == ["Klassisch", "Modern"])
+            #expect(SignatureDesign.allCases.map(\.logName) == ["Klassisch", "Modern", "Vinyl"])
             // The stored values from before the renaming stay readable.
             #expect(SignatureDesign(rawValue: "none") == .liquidGlass)
             #expect(SignatureDesign(rawValue: "atelier") == .atelier)
+        }
+
+        /// Vinyl is Klassisch's build in its own colors: paper instead of
+        /// glass, no accent or ambient choice, and always dark.
+        @Test func vinylIsAPaperDesignWithItsOwnColorsAndAlwaysDark() throws {
+            #expect(SignatureDesign.allCases.filter(\.isPaper) == [.atelier, .vinyl])
+            #expect(SignatureDesign.allCases.filter(\.isAlwaysDark) == [.vinyl])
+            #expect(SignatureDesign.allCases.filter(\.usesColorChoices) == [.liquidGlass])
+            #expect(SignatureDesign.vinyl.paperColors.paper != SignatureDesign.atelier.paperColors.paper)
+            #expect(SignatureDesign.liquidGlass.paperColors.paper == SignatureDesign.atelier.paperColors.paper)
+            try withSignatureDefaults { defaults in
+                defaults.set("light", forKey: AppPreferences.Key.appearance)
+                let preferences = AppPreferences(defaults: defaults)
+                let before = NSApplication.shared.appearance
+                defer { NSApplication.shared.appearance = before }
+                preferences.signatureDesign = .vinyl
+                #expect(NSApplication.shared.appearance?.name == .darkAqua)
+                #expect(preferences.appearance == .light)
+                preferences.signatureDesign = .atelier
+                #expect(NSApplication.shared.appearance?.name == .aqua)
+            }
         }
 
         @Test func overviewOrderShufflesStablyAndSortsNewestFirst() {

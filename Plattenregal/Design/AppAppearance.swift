@@ -43,7 +43,7 @@ struct AmbientGlow: View {
 
     private func glow(toolbarHeight: CGFloat) -> some View {
         GeometryReader { geometry in
-            if preferences.signatureDesign == .atelier {
+            if preferences.signatureDesign.isPaper {
                 // Petrol under the toolbar too, as high as the toolbar takes
                 // from the top. In the window it lies hidden beneath the
                 // petrol bar. On first entering full screen macOS shows the

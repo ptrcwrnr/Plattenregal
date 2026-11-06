@@ -35,7 +35,12 @@ import SwiftUI
     var appearance: AppearanceMode { didSet { store(appearance.rawValue, Key.appearance); applyAppearance() } }
     var accent: AccentChoice { didSet { store(accent.rawValue, Key.accent) } }
     var ambient: AmbientChoice { didSet { store(ambient.rawValue, Key.ambient) } }
-    var signatureDesign: SignatureDesign { didSet { store(signatureDesign.rawValue, Key.signatureDesign) } }
+    var signatureDesign: SignatureDesign {
+        didSet {
+            store(signatureDesign.rawValue, Key.signatureDesign)
+            if signatureDesign.isAlwaysDark != oldValue.isAlwaysDark { applyAppearance() }
+        }
+    }
     var language: AppLanguage { didSet { AppLanguage.store(language) } }
     /// Drawn covers as in the demo (colour, artist, title) instead of the
     /// Discogs images. Off by default.
@@ -101,8 +106,9 @@ import SwiftUI
     }
 
     /// Light or dark for every window, including sheets and the settings.
+    /// Vinyl is always dark; the chosen mode stays stored for the others.
     func applyAppearance() {
-        NSApplication.shared.appearance = appearance.appearance
+        NSApplication.shared.appearance = signatureDesign.isAlwaysDark ? NSAppearance(named: .darkAqua) : appearance.appearance
     }
 
     /// Back to the defaults (used by "Einstellungen zurücksetzen").

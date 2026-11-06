@@ -248,7 +248,9 @@ enum AppStyle {
 
     // MARK: Colors
     // All dynamic/system-based so Light and Dark mode stay correct automatically.
-    static var isAtelier: Bool { AppPreferences.shared.signatureDesign == .atelier }
+    /// Klassisch or Vinyl: matte paper and a colored toolbar band instead of
+    /// glass. Both are built the same way; `AtelierPalette` holds their colors.
+    static var isAtelier: Bool { AppPreferences.shared.signatureDesign.isPaper }
     /// Labels and symbols on the toolbar's bar that aren't chosen: the
     /// page switch's options, the magnifying glass.
     static var toolbarLabel: AnyShapeStyle { isAtelier ? AnyShapeStyle(AtelierPalette.bandLabel) : AnyShapeStyle(.secondary) }
@@ -358,4 +360,9 @@ private struct FunnelEffect: ViewModifier {
             .scaleEffect(x: 1 - 0.12 * progress, y: 1 - 0.45 * progress, anchor: anchor)
             .opacity(1 - progress)
     }
+}
+
+/// The paper design's colors follow the design chosen in the settings.
+extension AtelierPalette {
+    static var colors: ClassicColors { AppPreferences.shared.signatureDesign.paperColors }
 }

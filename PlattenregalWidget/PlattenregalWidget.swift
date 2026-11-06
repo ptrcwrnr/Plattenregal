@@ -9,6 +9,11 @@ struct PlattenregalWidgetBundle: WidgetBundle {
     }
 }
 
+/// The widget always shows Klassisch, whatever design the app has.
+extension AtelierPalette {
+    static var colors: ClassicColors { .klassisch }
+}
+
 /// „Platte des Tages“: one record from the collection a day, from what the
 /// app last wrote (`RecordOfTheDay`).
 struct RecordOfTheDayWidget: Widget {

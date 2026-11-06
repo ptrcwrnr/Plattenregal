@@ -87,7 +87,7 @@ struct FloatingControls: View {
             Image(systemName: "ellipsis")
                 .font(AppStyle.floatingSymbol)
                 .rotationEffect(.degrees(expanded ? 90 : 0))
-                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.toolbarSelection) : AnyShapeStyle(.primary))
+                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.bandInk) : AnyShapeStyle(.primary))
                 .frame(width: AppStyle.floatingButtonSize, height: AppStyle.floatingButtonSize)
                 .floatingCircle(prominent: true)
                 .contentShape(Circle())
@@ -109,7 +109,7 @@ struct FloatingControls: View {
         } label: {
             Image(systemName: button.systemImage)
                 .font(AppStyle.floatingSymbol)
-                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.toolbarSelection) : AnyShapeStyle(.primary))
+                .foregroundStyle(AppStyle.isAtelier ? AnyShapeStyle(AtelierPalette.bandInk) : AnyShapeStyle(.primary))
                 .frame(width: AppStyle.floatingButtonSize, height: AppStyle.floatingButtonSize)
                 .floatingCircle(prominent: true, selected: isOpen)
                 .contentShape(Circle())

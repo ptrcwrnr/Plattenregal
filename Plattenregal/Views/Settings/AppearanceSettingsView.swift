@@ -42,9 +42,14 @@ struct AppearanceSettingsView: View {
                 }
             }
             SettingsCard(title: String(localized: "Erscheinungsbild")) {
-                SettingsRow(title: String(localized: "Modus"), hint: preferences.appearance.hint) {
+                SettingsRow(title: String(localized: "Modus"),
+                            hint: preferences.signatureDesign.isAlwaysDark
+                                ? String(localized: "Das Design „Vinyl“ ist immer dunkel.")
+                                : preferences.appearance.hint) {
                     GlassSegmentedPicker(selection: $preferences.appearance, options: AppearanceMode.allCases) { Text($0.title) }
                         .accessibilityLabel("Modus")
+                        .disabled(preferences.signatureDesign.isAlwaysDark)
+                        .opacity(preferences.signatureDesign.isAlwaysDark ? 0.4 : 1)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Akzentfarbe"), hint: colorHint) {
@@ -132,7 +137,7 @@ struct AppearanceSettingsView: View {
     }
 }
 
-/// Both choices share one selection. The preview is purely decorative and
+/// All choices share one selection. The preview is purely decorative and
 /// shows the design's surfaces without inventing any collection contents.
 private struct SignatureDesignOption: View {
     let design: SignatureDesign
@@ -140,14 +145,25 @@ private struct SignatureDesignOption: View {
     let action: () -> Void
     @State private var preferences = AppPreferences.shared
 
-    /// Klassisch: petrol, paper, gold. Modern: the chosen accent, the window
-    /// and the chosen ambient color (the window again when it is off).
+    /// Klassisch and Vinyl: band, paper, highlight – in their own colors,
+    /// whichever design is in use. Modern: the chosen accent, the window and
+    /// the chosen ambient color (the window again when it is off).
     private var swatches: [Color] {
         switch design {
-        case .atelier: [AtelierPalette.petrol, AtelierPalette.paper, AtelierPalette.gold]
+        case .atelier, .vinyl:
+            let colors = design.paperColors
+            return [colors.petrol, colors.paper, colors.gold]
         case .liquidGlass:
-            [preferences.accent.color, Color(nsColor: .windowBackgroundColor),
-             preferences.ambient.color ?? Color(nsColor: .windowBackgroundColor)]
+            return [preferences.accent.color, Color(nsColor: .windowBackgroundColor),
+                    preferences.ambient.color ?? Color(nsColor: .windowBackgroundColor)]
+        }
+    }
+
+    private var description: String {
+        switch design {
+        case .atelier: String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Papierflächen statt Glas.")
+        case .liquidGlass: String(localized: "Glas wie in macOS, mit deiner Akzent- und Ambient-Farbe.")
+        case .vinyl: String(localized: "Kühles Graphit mit hellblauen Akzenten, immer dunkel. Matte Flächen statt Glas.")
         }
     }
 
@@ -157,16 +173,14 @@ private struct SignatureDesignOption: View {
                 Group {
                     switch design {
                     case .liquidGlass: LiquidGlassDesignPreview()
-                    case .atelier: AtelierDesignPreview()
+                    case .atelier, .vinyl: AtelierDesignPreview(colors: design.paperColors)
                     }
                 }
                 .frame(width: 112, height: 72)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text(design.title).font(.headline)
                         .foregroundStyle(.primary)
-                    Text(design == .atelier
-                         ? String(localized: "Petrol, Creme und Gold – inspiriert vom App-Icon. Matte Papierflächen statt Glas.")
-                         : String(localized: "Glas wie in macOS, mit deiner Akzent- und Ambient-Farbe."))
+                    Text(description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -174,7 +188,7 @@ private struct SignatureDesignOption: View {
                         ForEach(Array(swatches.enumerated()), id: \.offset) { _, color in
                             Circle().fill(color)
                                 .frame(width: 12, height: 12)
-                                .overlay(Circle().strokeBorder(design == .atelier ? AtelierPalette.border : Color.primary.opacity(0.15), lineWidth: AppStyle.hairlineWidth))
+                                .overlay(Circle().strokeBorder(design.isPaper ? design.paperColors.border : Color.primary.opacity(0.15), lineWidth: AppStyle.hairlineWidth))
                         }
                     }
                     .padding(.top, AppStyle.hairSpacing)
@@ -241,43 +255,46 @@ private struct LiquidGlassDesignPreview: View {
     }
 }
 
+/// Klassisch or Vinyl in miniature, in that design's own colors.
 private struct AtelierDesignPreview: View {
+    let colors: ClassicColors
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 5) {
-                Circle().fill(AtelierPalette.gold).frame(width: 8, height: 8)
+                Circle().fill(colors.gold).frame(width: 8, height: 8)
                 Spacer(minLength: 0)
                 ForEach(0..<3) { index in
-                    Capsule().fill(index == 0 ? AtelierPalette.toolbarSelection : Color.white.opacity(0.4))
+                    Capsule().fill(index == 0 ? colors.toolbarSelection : Color.white.opacity(0.4))
                         .frame(width: 10, height: 3)
                 }
             }
             .padding(.horizontal, 9)
             .frame(height: 18)
-            .background(AtelierPalette.petrol)
+            .background(colors.petrol)
             VStack(alignment: .leading, spacing: 7) {
-                Capsule().fill(AtelierPalette.ink).frame(width: 42, height: 4)
+                Capsule().fill(colors.ink).frame(width: 42, height: 4)
                 HStack(spacing: 5) {
                     ForEach(0..<3) { _ in
                         RoundedRectangle(cornerRadius: 3)
-                            .fill(AtelierPalette.soft)
+                            .fill(colors.soft)
                             .overlay {
-                                Circle().fill(AtelierPalette.petrol)
+                                Circle().fill(colors.petrol)
                                     .padding(4)
-                                    .overlay(Circle().fill(AtelierPalette.gold).frame(width: 4, height: 4))
+                                    .overlay(Circle().fill(colors.gold).frame(width: 4, height: 4))
                             }
                     }
                 }
                 .frame(height: 22)
-                Capsule().fill(AtelierPalette.muted.opacity(0.4)).frame(width: 54, height: 3)
+                Capsule().fill(colors.muted.opacity(0.4)).frame(width: 54, height: 3)
                 Spacer(minLength: 0)
             }
             .padding(9)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(AtelierPalette.paper)
+            .background(colors.paper)
         }
         .clipShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
-        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(AtelierPalette.border, lineWidth: AppStyle.hairlineWidth))
+        .overlay(RoundedRectangle(cornerRadius: AppStyle.rowRadius).strokeBorder(colors.border, lineWidth: AppStyle.hairlineWidth))
         .accessibilityHidden(true)
     }
 }
