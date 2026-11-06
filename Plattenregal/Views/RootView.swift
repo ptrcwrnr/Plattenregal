@@ -8,7 +8,11 @@ enum Destination: String, CaseIterable, Identifiable {
     case shelf = "Regal"
     case statistics = "Statistik"
     var id: String { rawValue }
-    var title: String {
+    /// The name everywhere in the app: the user's own (Einstellungen →
+    /// Darstellung → Rubriken, `PageNames`), else `defaultTitle`.
+    var title: String { PageNames.shown(AppPreferences.shared.pageNames[rawValue]) ?? defaultTitle }
+    /// The app's own name, in the language of the app.
+    var defaultTitle: String {
         switch self {
         case .collection: String(localized: "Collection")
         case .wantlist: String(localized: "Wantlist")

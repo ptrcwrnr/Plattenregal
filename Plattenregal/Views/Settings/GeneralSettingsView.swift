@@ -32,8 +32,17 @@ struct GeneralSettingsView: View {
             // in the menu bar below keeps only its own choices.
             SettingsCard(title: String(localized: "Starten und Beenden")) {
                 SettingsRow(title: String(localized: "Beim Öffnen zeigen"), hint: String(localized: "Die Seite, mit der das Hauptfenster startet.")) {
-                    GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
-                        .accessibilityLabel("Startseite")
+                    // Long page names of one's own (`PageNames`) don't fit as a
+                    // switch beside the title: then a menu with the same choices.
+                    ViewThatFits(in: .horizontal) {
+                        GlassSegmentedPicker(selection: $preferences.startPage, options: StartPage.allCases) { Text($0.title) }
+                        GlassMenuPicker(title: String(localized: "Startseite"), selection: $preferences.startPage,
+                                        current: preferences.startPage.title) {
+                            ForEach(StartPage.allCases) { Text($0.title).tag($0) }
+                        }
+                    }
+                    .frame(maxWidth: AppStyle.settingsControlMaxWidth, alignment: .trailing)
+                    .accessibilityLabel("Startseite")
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Bei der Anmeldung öffnen"), hint: loginHint) {

@@ -19,6 +19,7 @@ import SwiftUI
         static let quickSearchLook = "quickSearchLook"
         static let quickSearchPosition = "quickSearchPosition"
         static let quickSearchClick = "quickSearchClick"
+        static let pageNames = "pageNames"
         static let keepsRunningInBackground = "keepsRunningInBackground"
         static let updateCheckInterval = "updateCheckInterval"
         /// Up to 1.0.3: the switch for a check once a day. Read while no
@@ -51,6 +52,9 @@ import SwiftUI
     var quickSearchLook: QuickSearchLook { didSet { store(quickSearchLook.rawValue, Key.quickSearchLook) } }
     /// Where that search opens. At the top in the middle by default.
     var quickSearchPosition: QuickSearchPosition { didSet { store(quickSearchPosition.rawValue, Key.quickSearchPosition) } }
+    /// The user's own page names by `Destination.rawValue` (see `PageNames`);
+    /// a page without one keeps its own name.
+    var pageNames: [String: String] { didSet { defaults.set(pageNames, forKey: Key.pageNames) } }
     /// What a click on a match in that search does. Holds it by default.
     var quickSearchClick: QuickSearchClick { didSet { store(quickSearchClick.rawValue, Key.quickSearchClick) } }
     /// ⌘Q and closing the last window keep the app running with only the
@@ -90,6 +94,7 @@ import SwiftUI
         quickSearchLook = defaults.string(forKey: Key.quickSearchLook).flatMap(QuickSearchLook.init) ?? .darkGlass
         quickSearchPosition = defaults.string(forKey: Key.quickSearchPosition).flatMap(QuickSearchPosition.init) ?? .center
         quickSearchClick = defaults.string(forKey: Key.quickSearchClick).flatMap(QuickSearchClick.init) ?? .hold
+        pageNames = defaults.dictionary(forKey: Key.pageNames)?.compactMapValues { $0 as? String } ?? [:]
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
         updateCheckInterval = Self.storedUpdateCheckInterval(in: defaults)
         language = languageAtLaunch
@@ -113,6 +118,7 @@ import SwiftUI
         quickSearchLook = .darkGlass
         quickSearchPosition = .center
         quickSearchClick = .hold
+        pageNames = [:]
         keepsRunningInBackground = true
         updateCheckInterval = .weekly
         // The demo's settings are its own; the language is the real app's.
@@ -130,6 +136,13 @@ import SwiftUI
         }
         let switchedOff = defaults.object(forKey: Key.automaticUpdateChecks) != nil && !defaults.bool(forKey: Key.automaticUpdateChecks)
         return switchedOff ? .never : .weekly
+    }
+
+    /// Sets a page's own name as typed (`PageNames.limited`); an empty one
+    /// gives the page its own name back.
+    func setPageName(_ name: String, for page: Destination) {
+        let limited = PageNames.limited(name)
+        if limited.isEmpty { pageNames[page.rawValue] = nil } else { pageNames[page.rawValue] = limited }
     }
 
     private func store(_ value: String, _ key: String) {

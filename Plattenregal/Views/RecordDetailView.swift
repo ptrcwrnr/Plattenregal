@@ -56,7 +56,7 @@ struct RecordDetailView: View {
           Divider()
           SettingsRow(title: String(localized: "Ohne Regalplatz"), hint: excluded
                       ? String(localized: "Die Platte bekommt kein Fach und zählt nicht zu den Platten, die noch einsortiert werden müssen.")
-                      : String(localized: "Fach und Position vergibst du in der Rubrik Regal.")) {
+                      : String(localized: "Fach und Position vergibst du in der Rubrik „\(Destination.shelf.title)“.")) {
               Toggle("Ohne Regalplatz", isOn: Binding(get: { excluded }, set: setExcluded))
                   .labelsHidden().toggleStyle(.switch)
           }

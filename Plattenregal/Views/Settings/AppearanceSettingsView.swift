@@ -82,19 +82,28 @@ struct AppearanceSettingsView: View {
                 }
             }
             // Everything about how the two overview pages show their records,
+            SettingsCard(title: String(localized: "Rubriken"),
+                         subtitle: String(localized: "Eigene Namen für die Rubriken oben im Fenster, höchstens \(PageNames.maxLength) Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück.")) {
+                ForEach(Destination.allCases) { page in
+                    if page != Destination.allCases.first { Divider() }
+                    SettingsRow(title: page.defaultTitle) {
+                        PageNameField(page: page)
+                    }
+                }
+            }
             // in one place: grid or list, order, cover size.
-            SettingsCard(title: String(localized: "Collection und Wantlist"),
+            SettingsCard(title: String(localized: "\(Destination.collection.title) und \(Destination.wantlist.title)"),
                          subtitle: String(localized: "Raster oder Liste auch direkt auf der Seite über den runden Knopf unten rechts, die Covergröße mit ⌘+ und ⌘−.")) {
-                SettingsRow(title: String(localized: "Ansicht Collection")) { OverviewLayoutPicker(selection: $collectionLayout) }
+                SettingsRow(title: String(localized: "Ansicht \(Destination.collection.title)")) { OverviewLayoutPicker(selection: $collectionLayout) }
                 Divider()
-                SettingsRow(title: String(localized: "Reihenfolge Collection"), hint: collectionOrder.hint) {
+                SettingsRow(title: String(localized: "Reihenfolge \(Destination.collection.title)"), hint: collectionOrder.hint) {
                     GlassSegmentedPicker(selection: order($collectionOrder, scope: DisplaySettings.collectionOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Reihenfolge der Collection")
                 }
                 Divider()
-                SettingsRow(title: String(localized: "Ansicht Wantlist")) { OverviewLayoutPicker(selection: $wantlistLayout) }
+                SettingsRow(title: String(localized: "Ansicht \(Destination.wantlist.title)")) { OverviewLayoutPicker(selection: $wantlistLayout) }
                 Divider()
-                SettingsRow(title: String(localized: "Reihenfolge Wantlist"), hint: wantlistOrder.hint) {
+                SettingsRow(title: String(localized: "Reihenfolge \(Destination.wantlist.title)"), hint: wantlistOrder.hint) {
                     GlassSegmentedPicker(selection: order($wantlistOrder, scope: DisplaySettings.wantlistOrderKey), options: OverviewOrder.allCases) { Text($0.title) }
                         .accessibilityLabel("Reihenfolge der Wantlist")
                 }
@@ -107,7 +116,7 @@ struct AppearanceSettingsView: View {
                     .accessibilityLabel("Mindestgröße der Cover")
                 }
             }
-            SettingsCard(title: String(localized: "Statistik")) {
+            SettingsCard(title: Destination.statistics.title) {
                 SettingsRow(title: String(localized: "Reihenfolge der Bereiche"),
                             hint: String(localized: "Auf der Statistikseite einen Bereich am Titel greifen und auf einen anderen ziehen. „Zurücksetzen“ stellt die ursprüngliche Reihenfolge wieder her.")) {
                     SecondaryButton(title: String(localized: "Zurücksetzen")) { statisticsOrder = "" }
@@ -308,5 +317,35 @@ private struct ColorSwatch: View {
         .help(title)
         .accessibilityLabel(title)
         .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
+/// A page's own name as typed; empty shows the app's name as placeholder.
+/// The field itself stops at `PageNames.maxLength` characters: a binding
+/// that only shortens what it stores leaves the extra letters standing in
+/// the field.
+private struct PageNameField: View {
+    let page: Destination
+    @State private var text: String
+
+    init(page: Destination) {
+        self.page = page
+        _text = State(initialValue: AppPreferences.shared.pageNames[page.rawValue] ?? "")
+    }
+
+    var body: some View {
+        GlassTextField(placeholder: page.defaultTitle, text: $text)
+            .frame(width: AppStyle.nameFieldWidth)
+            .accessibilityLabel(String(localized: "Name der Rubrik \(page.defaultTitle)"))
+            .onChange(of: text) { _, typed in
+                let limited = PageNames.limited(typed)
+                // Cut back first; the shortened text comes round again and is stored then.
+                guard limited == typed else { text = limited; return }
+                AppPreferences.shared.setPageName(limited, for: page)
+            }
+            // Changed elsewhere ("Einstellungen zurücksetzen"): the field follows.
+            .onChange(of: AppPreferences.shared.pageNames[page.rawValue] ?? "") { _, stored in
+                if stored != text { text = stored }
+            }
     }
 }

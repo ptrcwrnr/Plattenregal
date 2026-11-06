@@ -4,14 +4,8 @@ import SwiftUI
 enum StartPage: String, CaseIterable, Identifiable {
     case collection, wantlist, shelf, statistics
     var id: Self { self }
-    var title: String {
-        switch self {
-        case .collection: String(localized: "Collection")
-        case .wantlist: String(localized: "Wantlist")
-        case .statistics: String(localized: "Statistik")
-        case .shelf: String(localized: "Regal")
-        }
-    }
+    /// The page's name, the user's own if given (see `Destination.title`).
+    var title: String { destination.title }
     var destination: Destination {
         switch self {
         case .collection: .collection
@@ -29,6 +23,28 @@ enum OverviewLayout: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String { self == .grid ? String(localized: "Raster") : String(localized: "Liste") }
     var systemImage: String { self == .grid ? "square.grid.2x2" : "list.bullet" }
+}
+
+/// Names of their own for the pages (Einstellungen → Darstellung →
+/// Rubriken). Short enough that the switch in the toolbar keeps its shape
+/// in a window of the minimum width, also with four long names.
+enum PageNames {
+    /// Letters at most, spaces included (counted as the user sees them).
+    static let maxLength = 12
+
+    /// What the field keeps while typing: no line breaks, at most
+    /// `maxLength` characters. Spaces stay, so a name can have one inside.
+    static func limited(_ text: String) -> String {
+        String(text.filter { !$0.isNewline }.prefix(maxLength))
+    }
+
+    /// The name to show for a stored one: trimmed and limited; `nil` when
+    /// nothing is left, so the page keeps its own name.
+    static func shown(_ stored: String?) -> String? {
+        guard let stored else { return nil }
+        let name = limited(stored).trimmingCharacters(in: .whitespaces)
+        return name.isEmpty ? nil : name
+    }
 }
 
 /// Order of the collection and wantlist. The random one is shuffled anew on

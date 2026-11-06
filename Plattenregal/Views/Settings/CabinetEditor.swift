@@ -216,6 +216,6 @@ private struct CabinetNameField: View {
     let submit: () -> Void
     var body: some View {
         GlassTextField(placeholder: placeholder, text: $text, onSubmit: submit)
-            .frame(width: 220)
+            .frame(width: AppStyle.nameFieldWidth)
     }
 }

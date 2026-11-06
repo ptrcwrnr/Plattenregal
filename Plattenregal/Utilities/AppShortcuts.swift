@@ -22,10 +22,17 @@ enum AppShortcuts {
         let title: String
         var id: String { keys }
     }
+    /// `id` stays the same when a page has a name of its own (`PageNames`) –
+    /// two pages may even share one.
     struct Group: Identifiable {
+        let id: String
         let title: String
         let entries: [Entry]
-        var id: String { title }
+        init(id: String? = nil, title: String, entries: [Entry]) {
+            self.id = id ?? title
+            self.title = title
+            self.entries = entries
+        }
     }
 
     static var groups: [Group] {
@@ -34,7 +41,7 @@ enum AppShortcuts {
                 Entry(keys: GlobalHotKey.quickSearch.title, title: String(localized: "Im Regal suchen (Menüleiste)")),
             ]),
             Group(title: String(localized: "Überall"), entries: [
-                Entry(keys: "⌘1 – ⌘4", title: String(localized: "Collection, Wantlist, Regal, Statistik")),
+                Entry(keys: "⌘1 – ⌘4", title: Destination.allCases.map(\.title).joined(separator: ", ")),
                 Entry(keys: "⌘F", title: String(localized: "Suchen")),
                 Entry(keys: "⌘R", title: String(localized: "Seite aktualisieren")),
                 Entry(keys: "⌥⌘R", title: String(localized: "Alles mit Discogs synchronisieren")),
@@ -43,18 +50,18 @@ enum AppShortcuts {
                 // ⌘Q keeps it running in the background while that is switched on (`AppLifecycle`).
                 Entry(keys: "⌥⌘Q", title: String(localized: "Plattenregal ganz beenden")),
             ]),
-            Group(title: String(localized: "Collection und Wantlist"), entries: [
+            Group(id: "overview", title: String(localized: "\(Destination.collection.title) und \(Destination.wantlist.title)"), entries: [
                 Entry(keys: "⌥⌘1 / ⌥⌘2", title: String(localized: "Raster / Liste")),
                 Entry(keys: "⌘+ / ⌘−", title: String(localized: "Cover größer / kleiner")),
                 Entry(keys: "⌘0", title: String(localized: "Cover in Standardgröße")),
                 Entry(keys: "esc", title: String(localized: "Suche leeren, dann schließen")),
             ]),
-            Group(title: String(localized: "Regal"), entries: [
+            Group(id: "shelf", title: Destination.shelf.title, entries: [
                 Entry(keys: "⌘← / ⌘→", title: String(localized: "Vorheriges / nächstes Regal")),
                 Entry(keys: "⌘Z", title: String(localized: "Herausnehmen rückgängig machen")),
                 Entry(keys: "⌘Y", title: String(localized: "Verlauf: Einsortiertes und Verschobenes rückgängig machen")),
             ]),
-            Group(title: String(localized: "Statistik"), entries: [
+            Group(id: "statistics", title: Destination.statistics.title, entries: [
                 Entry(keys: "⇧⌘R", title: String(localized: "Zufallsfund: neue Platte ziehen")),
             ]),
             Group(title: String(localized: "Einstellungen"), entries: [

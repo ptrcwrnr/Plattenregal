@@ -240,6 +240,86 @@
         }
       }
     },
+    "Rubriken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sections"
+          }
+        }
+      }
+    },
+    "Eigene Namen für die Rubriken oben im Fenster, höchstens %lld Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your own names for the sections at the top of the window, %lld characters at most. An empty field gives the section its original name back."
+          }
+        }
+      }
+    },
+    "Name der Rubrik %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name of the %@ section"
+          }
+        }
+      }
+    },
+    "%@ und %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ and %2$@"
+          }
+        }
+      }
+    },
+    "Ansicht %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ view"
+          }
+        }
+      }
+    },
+    "Reihenfolge %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ order"
+          }
+        }
+      }
+    },
+    "Fach und Position vergibst du in der Rubrik „%@“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You assign compartment and position in the “%@” section."
+          }
+        }
+      }
+    },
+    "Die Rubriken oben im Fenster lassen sich umbenennen: Einstellungen → Darstellung → Rubriken, höchstens zwölf Zeichen je Name." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can rename the sections at the top of the window: Settings → Appearance → Sections, twelve characters at most per name."
+          }
+        }
+      }
+    },
     "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
       "localizations" : {
         "en" : {
@@ -3107,32 +3187,12 @@
         }
       }
     },
-    "Ansicht Collection" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collection view"
-          }
-        }
-      }
-    },
     "Ansicht der Fachinhalte" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compartment contents view"
-          }
-        }
-      }
-    },
-    "Ansicht Wantlist" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wantlist view"
           }
         }
       }
@@ -3657,22 +3717,12 @@
         }
       }
     },
-    "Collection durchsuchen" : {
+    "%@ durchsuchen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search collection"
-          }
-        }
-      }
-    },
-    "Collection und Wantlist" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collection and wantlist"
+            "value" : "Search %@"
           }
         }
       }
@@ -3693,16 +3743,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading collection"
-          }
-        }
-      }
-    },
-    "Collection, Wantlist, Regal, Statistik" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collection, Wantlist, Shelf, Statistics"
           }
         }
       }
@@ -5597,16 +5637,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lock Compartment"
-          }
-        }
-      }
-    },
-    "Fach und Position vergibst du in der Rubrik Regal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You assign compartment and position in the Shelf section."
           }
         }
       }
@@ -8432,16 +8462,6 @@
         }
       }
     },
-    "Regal durchsuchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search shelf"
-          }
-        }
-      }
-    },
     "Regal einrichten" : {
       "localizations" : {
         "en" : {
@@ -8512,16 +8532,6 @@
         }
       }
     },
-    "Reihenfolge Collection" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collection order"
-          }
-        }
-      }
-    },
     "Reihenfolge der Bereiche" : {
       "localizations" : {
         "en" : {
@@ -8558,16 +8568,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apply Order"
-          }
-        }
-      }
-    },
-    "Reihenfolge Wantlist" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wantlist order"
           }
         }
       }
@@ -10080,16 +10080,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wantlist"
-          }
-        }
-      }
-    },
-    "Wantlist durchsuchen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search wantlist"
           }
         }
       }

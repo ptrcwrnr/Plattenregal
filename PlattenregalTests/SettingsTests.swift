@@ -119,6 +119,38 @@ extension AllTests {
             }
         }
 
+        /// Page names of one's own: at most twelve characters as typed, no
+        /// line breaks; shown trimmed, an empty or blank one gives the page
+        /// its own name back. Kept across launches, gone on reset.
+        @Test func pageNamesAreLimitedTrimmedAndPersist() throws {
+            #expect(PageNames.maxLength == 12)
+            #expect(PageNames.limited("Meine Sammlung im Wohnzimmer") == "Meine Sammlu")
+            #expect(PageNames.limited("Zwei\nZeilen") == "ZweiZeilen")
+            #expect(PageNames.limited("Plattenkiste") == "Plattenkiste")
+            // Counted as seen: an accented letter or an emoji is one.
+            #expect(PageNames.limited("éééééééééééééé").count == 12)
+            #expect(PageNames.limited("🎵🎵🎵🎵🎵🎵🎵🎵🎵🎵🎵🎵🎵") == "🎵🎵🎵🎵🎵🎵🎵🎵🎵🎵🎵🎵")
+            #expect(PageNames.shown(nil) == nil)
+            #expect(PageNames.shown("   ") == nil)
+            #expect(PageNames.shown(" Kiste ") == "Kiste")
+            #expect(PageNames.shown("Meine Sammlung im Wohnzimmer") == "Meine Sammlu")
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.pageNames.isEmpty)
+                preferences.setPageName("Meine Sammlung im Wohnzimmer", for: .collection)
+                preferences.setPageName("Kiste ", for: .shelf)
+                let again = AppPreferences(defaults: defaults)
+                #expect(again.pageNames == ["Collection": "Meine Sammlu", "Regal": "Kiste "])
+                // Emptied: the page has its own name again.
+                again.setPageName("", for: .shelf)
+                #expect(AppPreferences(defaults: defaults).pageNames == ["Collection": "Meine Sammlu"])
+                again.reset()
+                #expect(AppPreferences(defaults: defaults).pageNames.isEmpty)
+            }
+            // The start page names its page the same way as the toolbar.
+            #expect(StartPage.allCases.map(\.title) == StartPage.allCases.map(\.destination.title))
+        }
+
         /// A click on a match in the search in the menu bar holds it unless
         /// chosen otherwise; the choice is kept, reset brings the hold back,
         /// an unknown stored value falls back to it.

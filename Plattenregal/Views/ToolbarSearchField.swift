@@ -100,12 +100,10 @@ struct ToolbarSearchField: View {
         page == .shelf ? Bindable(shelf).text : Bindable(library).query
     }
 
+    /// Names the page by its name, the user's own if given (`PageNames`).
+    /// The statistics has no search; while its page fades in, the shelf's shows.
     private func placeholder(for page: Destination) -> String {
-        switch page {
-        case .collection: String(localized: "Collection durchsuchen")
-        case .wantlist: String(localized: "Wantlist durchsuchen")
-        case .shelf, .statistics: String(localized: "Regal durchsuchen")
-        }
+        String(localized: "\(page == .statistics ? Destination.shelf.title : page.title) durchsuchen")
     }
 }
 

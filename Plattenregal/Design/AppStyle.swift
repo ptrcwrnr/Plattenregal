@@ -60,6 +60,13 @@ enum AppStyle {
     /// The list of hits that drops from the toolbar's bar on the shelf page:
     /// wide enough for artist and title beside the cover.
     static let searchResultsWidth: CGFloat = 360
+    /// The most a control may take beside a row's title in the settings
+    /// before it gives way to a menu (the start page with long page names
+    /// of one's own); the title keeps room to stay on one or two lines.
+    static let settingsControlMaxWidth: CGFloat = 480
+    /// A short name typed in the settings (a cabinet, a page): room for
+    /// `PageNames.maxLength` wide letters.
+    static let nameFieldWidth: CGFloat = 220
     /// The search in the menu bar: narrower, it hangs under a small symbol
     /// and shows fewer hits. Still room for a rack of six columns (about
     /// 43 pt a compartment) and for most artists in full beside the cover;
