@@ -1,6 +1,6 @@
 # Plattenregal
 
-Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eigenen **Discogs-Collection**, Plattenregal weiß zusätzlich, **wo jede Platte im Regal steht**. Swift 6, SwiftUI, SwiftData und Swift Charts, ohne externe Abhängigkeiten. Deployment Target macOS 27.0. Aktueller Projektstand: **1.0.4 (102031)** in Arbeit, noch nicht veröffentlicht; zuletzt veröffentlicht **1.0.3 (102030)** am 4. November 2026 als GitHub-Release v1.0.3 mit DMG. Dokumentation geprüft am **6. November 2026**.
+Native macOS-App für eine private Vinylsammlung: Die Platten kommen aus der eigenen **Discogs-Collection**, Plattenregal weiß zusätzlich, **wo jede Platte im Regal steht**. Swift 6, SwiftUI, SwiftData und Swift Charts, ohne externe Abhängigkeiten. Deployment Target macOS 27.0. Aktueller Projektstand: **1.0.4 (102031)**, DMG gebaut und geprüft (`dist/Plattenregal-1.0.4.dmg`), noch nicht veröffentlicht; zuletzt veröffentlicht **1.0.3 (102030)** am 4. November 2026 als GitHub-Release v1.0.3 mit DMG. Dokumentation geprüft am **6. November 2026**.
 
 ## Lizenz
 

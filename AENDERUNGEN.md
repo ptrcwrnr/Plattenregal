@@ -1,3 +1,10 @@
+# DMG 1.0.4 gebaut und geprüft · 06.11.2026
+
+- **Wunsch:** Nach der Durchsicht die DMG ausgeben.
+- **DMG** `dist/Plattenregal-1.0.4.dmg` (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 430 594 Bytes), SHA-256 `951313a5…08740`; Release-Hinweise mit den sieben Punkten (Deutsch und Englisch) in `dist/Hinweise-1.0.4.md`. Das Skript hat die Handbücher `Handbuch.pdf`/`Handbook.pdf` für 1.0.4 neu erzeugt; sie sind in diesem Commit.
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.4 (102031), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); Berechtigungen wie in der DMG 1.0.3 bis auf das entfernte `com.apple.security.network.server`; kein `NSLocalNetworkUsageDescription`; keine Debug-Schalter im Programm; die neuen Texte samt englischer Fassung enthalten; Handbücher in der App identisch mit dem Repository; App aus der DMG als Demo gestartet (Protokoll „Start · Version 1.0.4 (102031)“, Fenster sichtbar) und sauber beendet.
+- **Nicht gemacht:** kein GitHub-Release, Webseite unverändert.
+
 # Durchsicht der Änderungen für 1.0.4 · 06.11.2026
 
 - **Wunsch:** Alle Änderungen seit 1.0.3 auf unnötige Mehrarbeit, Fehler und Randfälle prüfen, danach die DMG ausgeben.
