@@ -236,6 +236,10 @@ private struct ScrollsUnderToolbar: ViewModifier {
                 // Above the first row at rest: the fade lies only there.
                 let margin = max(0, proxy.safeAreaInsets.top - contentPadding)
                 content
+                    // The bar's full height, for what must start below it
+                    // (the ring of `pullToRefresh`); `margin` is less by the
+                    // content's own padding.
+                    .environment(\.toolbarClearance, proxy.safeAreaInsets.top)
                     .contentMargins(.top, margin, for: .automatic)
                     .scrollEdgeEffectHidden(true, for: .top)
                     .mask {
@@ -245,6 +249,18 @@ private struct ScrollsUnderToolbar: ViewModifier {
                     .ignoresSafeArea(.container, edges: .top)
             }
         }
+    }
+}
+
+private struct ToolbarClearanceKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+extension EnvironmentValues {
+    /// How far the toolbar reaches over a page that scrolls on under it
+    /// (`scrollsUnderToolbar`, Modern); 0 where the page starts below the bar.
+    var toolbarClearance: CGFloat {
+        get { self[ToolbarClearanceKey.self] }
+        set { self[ToolbarClearanceKey.self] = newValue }
     }
 }
 

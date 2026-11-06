@@ -230,6 +230,16 @@
         }
       }
     },
+    "Beim Herunterziehen zum Aktualisieren erscheint der Ring jetzt unterhalb der Toolbar statt halb dahinter." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you pull down to refresh, the ring now appears below the toolbar instead of half behind it."
+          }
+        }
+      }
+    },
     "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
       "localizations" : {
         "en" : {

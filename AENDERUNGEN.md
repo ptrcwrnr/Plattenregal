@@ -1,3 +1,12 @@
+# Ladekreis beim Herunterziehen unterhalb der Toolbar · 06.11.2026
+
+- **Wunsch:** Der Ring von „Seite aktualisieren“ soll unter der Toolbar beginnen, nicht dahinter.
+- **Nachgestellt** in der Demo (Debug), mit Maus-Zug und nachgeahmtem Trackpad-Zug (Scroll-Ereignisse mit Phasen), Aufnahmen während des Haltens: In Modern tauchte der Ring an der Unterkante der Toolbar auf, seine obere Hälfte noch im Bereich der Leiste und unter deren Ausblendung.
+- **Ursache:** Der Ring richtete sich nach der oberen Einrückung der Scroll-Ansicht (`contentInsets.top`). In Modern ist das die Toolbar-Höhe **minus** der eigenen Polsterung der Seite (`scrollsUnderToolbar`, damit die erste Zeile an der Leiste beginnt) – rund 16 pt zu hoch. Dazu ein freier Abstand von 8.
+- **Neu:** `scrollsUnderToolbar` gibt die volle Höhe der Leiste als Umgebungswert `toolbarClearance` weiter (`Design/AppSurfaces.swift`, 0 wo die Seite unter der Leiste beginnt, also in Klassisch und ohne Modern-Seite); `PullToRefresh` setzt den Ring darunter, Abstand `AppStyle.itemSpacing` aus der Skala. Das Messen von `contentInsets.top` entfällt.
+- **„Was ist neu“ 1.0.4:** fünfter Punkt (Deutsch und Englisch). README (Oberfläche).
+- **Geprüft:** Debug-Build ohne Warnung, 305 Tests bestanden. Aufnahmen in der Demo: Modern, Statistik, kurzer und weiter Zug (Maus und Trackpad) – Ring beginnt unter der Leiste; Modern, Collection (Trackpad) – Ring unter Leiste und Banner, voller Zug löst das Aktualisieren aus; Klassisch, Statistik – Ring unter dem Petrol-Band wie bisher. **Nicht geändert:** Bei einem kurzen Trackpad-Zug weicht der Inhalt nur wenig aus, der noch blasse Ring liegt dann kurz über der ersten Zeile (war vorher genauso). **Nebenbefund:** Startet man die Demo oder die App mit Klassisch über das Startargument `-signatureDesign atelier`, erscheint kein Hauptfenster (auch mit 1.0.3); erst ein erneutes Öffnen bringt es. Ob das auch mit gespeichertem Klassisch passiert, ist nicht geklärt.
+
 # Menü der Schallplatte: ohne Einstellungen, „Plattenregal beenden“ · 06.11.2026
 
 - **Wunsch:** Im Rechtsklick-Menü der Schallplatte in der Menüleiste „Einstellungen …“ entfernen und „Plattenregal ganz beenden“ ohne das Wort „ganz“.
