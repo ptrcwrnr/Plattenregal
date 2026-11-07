@@ -99,8 +99,7 @@ struct WantlistView: View {
                         grid(visibleEntries)
                     } else {
                         table(visibleEntries)
-                            .appTableCard()
-                            .padding(.horizontal, AppStyle.pageMargin)
+                            .appPageTableCard()
                     }
                 }
             }

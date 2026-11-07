@@ -10,6 +10,23 @@ extension View {
             .appGlassSurface(cornerRadius: AppStyle.cardRadius + 4)
     }
 
+    /// The list of a page with the round button (collection, wantlist): its
+    /// card reaches down to the page margin above the window's bottom edge,
+    /// as far from it as from the sides. The page keeps room for the button
+    /// at its end (`floatingClearance`, see `RootView`); the cover grid
+    /// scrolls on through it, a table stopped above it and left a band of
+    /// empty window. Inside the card the last rows still scroll clear of the
+    /// button, which overlaps the card's last `floatingClearance -
+    /// pageMargin` points (`TableBottomInset`: `contentMargins` doesn't reach
+    /// a macOS table). Without the button (the collection in a panel of the
+    /// statistics) the rows run to the card's end.
+    func appPageTableCard(clearsFloatingButton: Bool = true) -> some View {
+        background(TableBottomInset(inset: clearsFloatingButton ? AppStyle.floatingClearance - AppStyle.pageMargin : 0))
+            .appTableCard()
+            .padding([.horizontal, .bottom], AppStyle.pageMargin)
+            .ignoresSafeArea(.container, edges: .bottom)
+    }
+
     func appGlassSurface(cornerRadius: CGFloat) -> some View {
         background {
             if AppStyle.isAtelier {
@@ -305,5 +322,67 @@ private struct ScrollEdgeFadeMask: View {
             return .init(color: .black.opacity(start + (end - start) * eased), location: t)
         }
         return LinearGradient(stops: stops, startPoint: .top, endPoint: .bottom)
+    }
+}
+
+/// Room after the last row of the SwiftUI `Table` beside this view, so it
+/// can scroll clear of something lying over the table's lower end.
+/// `contentMargins` has no effect on a macOS table, and setting the
+/// `NSScrollView`'s insets directly replaces the room SwiftUI keeps there
+/// itself; added to the scroll view's safe area, AppKit's automatic insets
+/// keep both. Only while the rows reach that far: otherwise a list that fits
+/// could be scrolled by the room, its first rows under the header.
+struct TableBottomInset: NSViewRepresentable {
+    let inset: CGFloat
+
+    func makeNSView(context: Context) -> Anchor { Anchor() }
+    func updateNSView(_ view: Anchor, context: Context) {
+        view.inset = inset
+        view.apply()
+    }
+    static func dismantleNSView(_ view: Anchor, coordinator: ()) { view.stop() }
+
+    final class Anchor: NSView {
+        var inset: CGFloat = 0
+        private var observers: [any NSObjectProtocol] = []
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            stop()
+            guard window != nil else { return }
+            // The table joins the window in the same pass; look once it's there.
+            DispatchQueue.main.async { [weak self] in self?.attach() }
+        }
+
+        func stop() {
+            observers.forEach(NotificationCenter.default.removeObserver)
+            observers = []
+        }
+
+        /// Again whenever rows come or go (the table's height) or the
+        /// window is resized (the scroll view's).
+        private func attach() {
+            guard window != nil, let table = nearbyTable(), let scroll = table.enclosingScrollView else { return }
+            for view in [table, scroll] as [NSView] {
+                view.postsFrameChangedNotifications = true
+                observers.append(NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: view, queue: .main) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.apply() }
+                })
+            }
+            apply()
+        }
+
+        func apply() {
+            guard window != nil, let table = nearbyTable(), let scroll = table.enclosingScrollView else { return }
+            let added = scroll.additionalSafeAreaInsets.bottom
+            // What the rows can fill without the added room: the scroll view
+            // less the header and SwiftUI's own insets.
+            let header = table.headerView?.frame.height ?? 0
+            let available = scroll.frame.height - header - scroll.contentInsets.top - (scroll.contentInsets.bottom - added)
+            let rows = table.numberOfRows > 0 ? table.rect(ofRow: table.numberOfRows - 1).maxY : 0
+            let wanted = rows > available - inset ? inset : 0
+            guard added != wanted else { return }
+            scroll.additionalSafeAreaInsets.bottom = wanted
+        }
     }
 }

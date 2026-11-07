@@ -325,8 +325,7 @@ struct CollectionView: View {
                         .background(QuietIconColumnHeaders())
                         .alternatingRowBackgrounds(.disabled)
                         .scrollContentBackground(.hidden)
-                        .appTableCard()
-                        .padding(.horizontal, AppStyle.pageMargin)
+                        .appPageTableCard(clearsFloatingButton: analyticsFilter == nil)
                         // The app's own menu and, on double-click, the quick look – as in the grid.
                         .overlay(TableRowClicks(secondary: { row, point in
                             guard items.indices.contains(row) else { return }

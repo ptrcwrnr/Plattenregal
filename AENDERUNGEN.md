@@ -1,3 +1,12 @@
+# Liste in Collection und Wantlist füllt das Fenster bis unten · 07.11.2026
+
+- **Wunsch:** Die Listenansicht hörte weit über der Fensterkante auf und ließ unten einen leeren Streifen.
+- **Ursache:** Seiten mit dem runden Knopf halten unten `floatingClearance` (80 pt) frei (`RootView`, `safeAreaPadding`). Das Cover-Raster scrollt durch diesen Platz hindurch, die Tabelle hörte davor auf.
+- **Neu:** `appPageTableCard()` (`AppSurfaces.swift`) für beide Listen: Die Karte reicht bis `pageMargin` (28 pt) über die Fensterkante, so weit wie an den Seiten (`ignoresSafeArea` unten). Damit die letzten Zeilen trotzdem über den Knopf hinaus scrollen, gibt `TableBottomInset` der AppKit-Tabelle unten `floatingClearance - pageMargin` Luft. Der Wert kommt auf ihren sicheren Bereich obendrauf (`additionalSafeAreaInsets`), denn `contentMargins` wirkt bei einer macOS-Tabelle nicht (live probiert). Die Abstände direkt zu setzen hätte die 28 pt ersetzt, die SwiftUI dort selbst hält. Die Luft gibt es nur, solange die Zeilen so weit reichen; sonst ließ sich eine kurze Liste um sie verschieben, die ersten Zeilen unter die Kopfzeile. Neu geprüft wird, wenn sich Tabelle oder Scrollbereich in der Größe ändern (Zeilen, Fenster). Im Panel der Statistik (Collection ohne Knopf) gibt es keine zusätzliche Luft.
+- **„Was ist neu“ / Hinweise 1.0.4:** ein Punkt dazu (de/en, Sprachkatalog). README ergänzt.
+- **Geprüft:** Debug-Build ohne Warnung, 320 Tests bestanden. Live in der Demo (Modern, ohne Banner): Collection als Liste reicht bis 28 pt über die Kante, oben unverändert, am Ende steht die letzte Zeile frei über dem Knopf. Die kurze Wantlist lässt sich nicht mehr verschieben. Fenstergröße der echten App unverändert. Nicht live gesehen: Klassisch/Vinyl und das Panel der Statistik (gleicher Baustein, nur andere Fläche bzw. ohne Luft).
+- **Hinweis:** Die Regal-Liste (`ShelfContentsView`) setzt ebenfalls `contentMargins(.bottom, floatingClearance)`; das wirkt dort vermutlich ebenso wenig. Nicht geändert.
+
 # DMG 1.0.4 mit aufgeräumten Einstellungen neu gebaut · 07.11.2026
 
 - **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release), 11 MB (11 486 753 Bytes), SHA-256 `56cb46aa…f9c5877e`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch der neue Punkt zu den Einstellungen); die DMG vom Nachmittag ist überholt. Version bleibt 1.0.4 (102031); Handbücher wie im Repository (mit den Knopfnamen ohne Auslassungspunkte).
