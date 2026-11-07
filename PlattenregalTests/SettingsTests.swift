@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import Testing
+import SwiftUI
 @testable import Plattenregal
 
 extension AllTests {
@@ -117,6 +118,38 @@ extension AllTests {
                     defaults.set(stored, forKey: AppPreferences.Key.quickSearchPosition)
                     #expect(AppPreferences(defaults: defaults).quickSearchPosition == .center)
                 }
+            }
+        }
+
+        /// The lists' columns (order, visibility): the default with nothing
+        /// stored, kept per list across launches, unreadable data counts as
+        /// the default, gone on reset – also data that was never read.
+        @Test func listColumnsAreDefaultPersistPerListAndReset() throws {
+            let keys = [AppPreferences.Key.collectionColumns, AppPreferences.Key.wantlistColumns, AppPreferences.Key.shelfColumns]
+            #expect(Set(keys).count == 3)
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.collectionColumns == TableColumnCustomization())
+                #expect(preferences.wantlistColumns == TableColumnCustomization())
+                #expect(preferences.shelfColumns == TableColumnCustomization())
+                #expect(keys.allSatisfy { defaults.object(forKey: $0) == nil })
+                preferences.collectionColumns[visibility: TableColumnID.year.rawValue] = .hidden
+                preferences.shelfColumns[visibility: TableColumnID.tags.rawValue] = .hidden
+                #expect(defaults.data(forKey: AppPreferences.Key.collectionColumns) != nil)
+                #expect(defaults.object(forKey: AppPreferences.Key.wantlistColumns) == nil)
+                let again = AppPreferences(defaults: defaults)
+                #expect(again.collectionColumns == preferences.collectionColumns)
+                #expect(again.collectionColumns[visibility: TableColumnID.year.rawValue] == .hidden)
+                #expect(again.collectionColumns[visibility: TableColumnID.label.rawValue] != .hidden)
+                #expect(again.shelfColumns[visibility: TableColumnID.tags.rawValue] == .hidden)
+                #expect(again.wantlistColumns == TableColumnCustomization())
+                defaults.set(Data("kaputt".utf8), forKey: AppPreferences.Key.wantlistColumns)
+                #expect(AppPreferences(defaults: defaults).wantlistColumns == TableColumnCustomization())
+                again.reset()
+                #expect(keys.allSatisfy { defaults.object(forKey: $0) == nil })
+                let reset = AppPreferences(defaults: defaults)
+                #expect(reset.collectionColumns == TableColumnCustomization())
+                #expect(reset.shelfColumns == TableColumnCustomization())
             }
         }
 

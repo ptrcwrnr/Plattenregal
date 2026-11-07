@@ -104,6 +104,7 @@ enum Changelog {
                 String(localized: "Die Listen in Collection, Wantlist und Regal reichen jetzt bis knapp über die Fensterkante, und ihre letzten Zeilen scrollen frei über die runden Knöpfe – vorher hörten Collection und Wantlist weit oben auf, und im Regal verschwand die letzte Zeile unter dem „+“."),
                 String(localized: "Fährst du mit der Maus über die Listen in Collection, Wantlist und Regal, hebt ein feiner Schimmer die Zeile hervor, der nach links und rechts ausläuft – so lassen sich die langen Zeilen leichter mit dem Auge verfolgen."),
                 String(localized: "Plaketten gibt es keine mehr: „Gesucht“, „Verkauf“ und „Nicht in der Collection“ zeigt ein farbiger Punkt wie bei den Tags von macOS – in der neuen Spalte „Tags“ der Listen von Regal und Collection, neben der Position auf den Covern im Fach und in der Suche auf der Regalseite. Die Farben wählst du unter Einstellungen → Listen."),
+                String(localized: "In den Listen von Collection, Wantlist und Regal ziehst du Spalten an ihrer Überschrift an einen anderen Platz; ein Rechtsklick auf die Überschriften blendet Spalten ein und aus. Plattenregal merkt sich das für jede Liste."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),

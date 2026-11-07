@@ -11,6 +11,8 @@ struct WantlistView: View {
     private var records: LibraryRecords { .of(context) }
     private var entries: [WantlistEntry] { records.wants }
     @State private var sync = DiscogsSyncService.shared
+    /// Column order and visibility of the list (`AppPreferences.wantlistColumns`).
+    @State private var preferences = AppPreferences.shared
     @State private var changes = LibraryChanges.shared
     /// Shared with the collection (see `LibrarySearch`). An object, read
     /// directly: this page is built once (see `PageStack`), and a binding
@@ -258,40 +260,48 @@ struct WantlistView: View {
     }
 
     private func table(_ rows: [WantlistItem]) -> some View {
-        Table(rows) {
+        // Columns: dragged to another place by their header, shown or hidden
+        // with a right-click on it (`TableColumnID`).
+        Table(rows, columnCustomization: $preferences.wantlistColumns) {
             TableColumn("") { item in
                 let entry = item.entry
                 CoverView(url: entry.release?.shownCoverURL, size: 20)
             }
             .width(24)
+            .tableColumnID(.cover, hideable: false)
             TableColumn("Interpret") { item in
                 let entry = item.entry
                 let artist = entry.release?.displayArtist ?? String(localized: "Unbekannter Interpret")
                 Text(artist).lineLimit(1)
             }
             .width(min: 120, ideal: 200)
+            .tableColumnID(.artist, hideable: false)
             TableColumn("Titel") { item in
                 let entry = item.entry
                 let title = entry.release?.displayTitle ?? String(localized: "Release #\(String(entry.releaseID))")
                 Text(title).lineLimit(1)
             }
             .width(min: 140, ideal: 260)
+            .tableColumnID(.title, hideable: false)
             TableColumn("Jahr") { item in
                 let entry = item.entry
                 Text(entry.release?.year.map(String.init) ?? "–").monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 40, ideal: 48, max: 60)
+            .tableColumnID(.year)
             TableColumn("Notiz") { item in
                 let entry = item.entry
                 Text(entry.notes ?? "").lineLimit(1).foregroundStyle(.secondary)
             }
             .width(min: 80, ideal: 180)
+            .tableColumnID(.note)
             TableColumn("Hinzugefügt") { item in
                 let entry = item.entry
                 Text(DiscogsDate.parse(entry.dateAdded)?.formatted(date: .abbreviated, time: .omitted) ?? "–")
                     .monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 80, ideal: 100, max: 120)
+            .tableColumnID(.added)
             TableColumn("") { item in
                 let entry = item.entry
                 if sourceURL(entry) != nil {
@@ -307,6 +317,7 @@ struct WantlistView: View {
                 }
             }
             .width(24)
+            .tableColumnID(.link, hideable: false)
         }
         .tableStyle(.inset)
         .background(QuietIconColumnHeaders())

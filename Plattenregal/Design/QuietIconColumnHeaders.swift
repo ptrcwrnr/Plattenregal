@@ -1,5 +1,23 @@
 import SwiftUI
 
+/// The fixed names of the lists' columns, under which their order and
+/// visibility are stored (`AppPreferences.collectionColumns` …). Never
+/// rename a case's value: a stored arrangement would lose that column.
+enum TableColumnID: String {
+    case cover, artist, title, year, label, genre, shelf, position, tags, note, added, link
+}
+
+extension TableColumnContent {
+    /// The column's name for its stored order and visibility. Not
+    /// `hideable`: artist and title, so a list never ends up empty, and the
+    /// untitled icon columns, which would show as a blank entry in the
+    /// header's right-click menu.
+    func tableColumnID(_ id: TableColumnID, hideable: Bool = true) -> some TableColumnContent<TableRowValue, TableColumnSortComparator> {
+        customizationID(id.rawValue)
+            .disabledCustomizationBehavior(hideable ? [] : .visibility)
+    }
+}
+
 /// Icon columns (untitled: cover, row actions) don't need dividers in the
 /// table header, and neither does the end of the last column. SwiftUI offers
 /// no switch for that, so this swaps in a header view that leaves those out.
@@ -35,6 +53,9 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
                 if !(header is Header) {
                     let replacement = Header(frame: header.frame)
                     replacement.tableView = table
+                    // SwiftUI's right-click menu for showing and hiding columns
+                    // (lists with `TableColumnID`) hangs on its own header.
+                    replacement.menu = header.menu
                     table.headerView = replacement
                 }
                 table.headerView?.tableView = table
@@ -78,9 +99,21 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
             let secondaryTitleColor = atelier ? titleColor.withAlphaComponent(0.8) : NSColor.secondaryLabelColor
             let dividerColor = atelier ? titleColor.withAlphaComponent(0.18) : NSColor.separatorColor
             let sortKey = table.sortDescriptors.first
-            for (index, column) in table.tableColumns.enumerated() where !column.title.isEmpty {
+            // A column being dragged to another place (lists with
+            // `TableColumnID`) follows the pointer, on its own background so
+            // it never writes over the title it passes.
+            let dragged = draggedColumn
+            // The dragged one last, over the others.
+            let order = table.tableColumns.indices.filter { $0 != dragged } + (table.tableColumns.indices.contains(dragged) ? [dragged] : [])
+            for index in order where !table.tableColumns[index].title.isEmpty {
+                let column = table.tableColumns[index]
                 let cell = column.headerCell
-                let rect = headerRect(ofColumn: index)
+                var rect = headerRect(ofColumn: index)
+                if index == dragged {
+                    rect = rect.offsetBy(dx: draggedDistance, dy: 0)
+                    (atelier ? NSColor(AtelierPalette.petrol) : NSColor.controlBackgroundColor).setFill()
+                    rect.fill()
+                }
                 let sorted = sortKey != nil && column.sortDescriptorPrototype?.key == sortKey?.key
                 let font = NSFont.systemFont(ofSize: cell.font?.pointSize ?? NSFont.systemFontSize,
                                              weight: sorted ? .semibold : .regular)
@@ -100,7 +133,8 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
                 }
             }
             dividerColor.setFill()
-            for index in table.tableColumns.indices.dropLast() {
+            // No dividers while a column is dragged: their places change under it.
+            for index in table.tableColumns.indices.dropLast() where dragged < 0 {
                 let x = headerRect(ofColumn: index).maxX
                 guard !dividers.contains(where: { abs($0 - x) < 1 }) else { continue }
                 NSRect(x: x - 0.5, y: bounds.midY - 7, width: 1, height: 14).fill()

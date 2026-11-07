@@ -21,6 +21,10 @@ import SwiftUI
         static let quickSearchClick = "quickSearchClick"
         static let pageNames = "pageNames"
         static func markColor(_ mark: RecordMark) -> String { "markColor-\(mark.rawValue)" }
+        /// The column order and visibility of the lists (`TableColumnCustomization`, as JSON).
+        static let collectionColumns = "collectionTableColumns"
+        static let wantlistColumns = "wantlistTableColumns"
+        static let shelfColumns = "shelfTableColumns"
         static let keepsRunningInBackground = "keepsRunningInBackground"
         static let updateCheckInterval = "updateCheckInterval"
         /// Up to 1.0.3: the switch for a check once a day. Read while no
@@ -72,6 +76,19 @@ import SwiftUI
         }
     }
     func markColor(_ mark: RecordMark) -> StatusColorChoice { markColors[mark] ?? .standard }
+
+    /// The order and visibility of each list's columns, changed by dragging a
+    /// column's header and with a right-click on the header row; the
+    /// default leaves nothing stored. Written only when it really changed.
+    var collectionColumns: TableColumnCustomization<RecordCopy> {
+        didSet { if collectionColumns != oldValue { storeColumns(collectionColumns, Key.collectionColumns) } }
+    }
+    var wantlistColumns: TableColumnCustomization<WantlistItem> {
+        didSet { if wantlistColumns != oldValue { storeColumns(wantlistColumns, Key.wantlistColumns) } }
+    }
+    var shelfColumns: TableColumnCustomization<ShelfCopyItem> {
+        didSet { if shelfColumns != oldValue { storeColumns(shelfColumns, Key.shelfColumns) } }
+    }
     func setMarkColor(_ choice: StatusColorChoice, for mark: RecordMark) { markColors[mark] = choice }
 
     /// What a click on a match in that search does. Holds it by default.
@@ -114,6 +131,9 @@ import SwiftUI
         quickSearchPosition = defaults.string(forKey: Key.quickSearchPosition).flatMap(QuickSearchPosition.init) ?? .center
         quickSearchClick = defaults.string(forKey: Key.quickSearchClick).flatMap(QuickSearchClick.init) ?? .hold
         pageNames = defaults.dictionary(forKey: Key.pageNames)?.compactMapValues { $0 as? String } ?? [:]
+        collectionColumns = Self.storedColumns(Key.collectionColumns, in: defaults)
+        wantlistColumns = Self.storedColumns(Key.wantlistColumns, in: defaults)
+        shelfColumns = Self.storedColumns(Key.shelfColumns, in: defaults)
         // An unknown value (a later version's color) counts as the default.
         markColors = Dictionary(uniqueKeysWithValues: RecordMark.allCases.map { mark in
             (mark, defaults.string(forKey: Key.markColor(mark)).flatMap(StatusColorChoice.init) ?? .standard)
@@ -144,6 +164,11 @@ import SwiftUI
         quickSearchClick = .hold
         pageNames = [:]
         markColors = Dictionary(uniqueKeysWithValues: RecordMark.allCases.map { ($0, .standard) })
+        collectionColumns = TableColumnCustomization()
+        wantlistColumns = TableColumnCustomization()
+        shelfColumns = TableColumnCustomization()
+        // Also an unreadable value that already counted as the default.
+        for key in [Key.collectionColumns, Key.wantlistColumns, Key.shelfColumns] { defaults.removeObject(forKey: key) }
         keepsRunningInBackground = true
         updateCheckInterval = .weekly
         // The demo's settings are its own; the language is the real app's.
@@ -172,5 +197,19 @@ import SwiftUI
 
     private func store(_ value: String, _ key: String) {
         defaults.set(value, forKey: key)
+    }
+
+    /// A list's stored columns; unreadable (damaged, from another version)
+    /// counts as the default, so the list shows every column in its order.
+    private static func storedColumns<Row>(_ key: String, in defaults: UserDefaults) -> TableColumnCustomization<Row> {
+        guard let data = defaults.data(forKey: key),
+              let stored = try? JSONDecoder().decode(TableColumnCustomization<Row>.self, from: data) else { return TableColumnCustomization() }
+        return stored
+    }
+
+    private func storeColumns<Row>(_ columns: TableColumnCustomization<Row>, _ key: String) {
+        if columns == TableColumnCustomization() { defaults.removeObject(forKey: key); return }
+        guard let data = try? JSONEncoder().encode(columns) else { return }
+        defaults.set(data, forKey: key)
     }
 }

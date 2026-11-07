@@ -48,8 +48,23 @@ struct ShelfContentsView: View, Equatable {
 
     /// Always in physical order. Sorting the table never changes the grid.
     @State private var items: [ShelfCopyItem] = []
+    /// Column order and visibility of the list (`AppPreferences.shelfColumns`).
+    @State private var preferences = AppPreferences.shared
     @State private var tableItems: [ShelfCopyItem] = []
     private var sortOrder: [KeyPathComparator<ShelfCopyItem>] { session.tableSortOrder }
+    /// The sortable columns by what they sort.
+    private static let sortedColumns: [PartialKeyPath<ShelfCopyItem>: TableColumnID] = [
+        \ShelfCopyItem.position: .position, \ShelfCopyItem.artist: .artist, \ShelfCopyItem.title: .title,
+        \ShelfCopyItem.year: .year, \ShelfCopyItem.label: .label, \ShelfCopyItem.genre: .genre,
+    ]
+    /// Sorted by a column that was just hidden: back to the compartment's
+    /// order (by position), so nothing stays sorted by what can't be seen.
+    /// Hiding "Pos." itself keeps that order – it's the shelf's own.
+    private func dropSortingByHiddenColumn(_ columns: TableColumnCustomization<ShelfCopyItem>) {
+        guard let key = sortOrder.first?.keyPath, let column = Self.sortedColumns[key], column != .position,
+              columns[visibility: column.rawValue] == .hidden else { return }
+        session.tableSortOrder = [KeyPathComparator(\ShelfCopyItem.position)]
+    }
     /// A selection made locally must not center itself under the pointer.
     @State private var clickedID: UUID?
     @State private var quickEditID: UUID?
@@ -475,15 +490,19 @@ struct ShelfContentsView: View, Equatable {
     }
 
     private var table: some View {
+        // Columns: dragged to another place by their header, shown or hidden
+        // with a right-click on it (`TableColumnID`).
         Table(tableItems, selection: selection, sortOrder: Binding(
             get: { sortOrder }, set: { session.tableSortOrder = $0 }
-        )) {
+        ), columnCustomization: $preferences.shelfColumns) {
             TableColumn("Pos.", value: \.position) { item in
                 Text(String(item.position)).monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 34, ideal: 40, max: 52)
+            .tableColumnID(.position)
             TableColumn("") { item in CoverView(url: item.copy.release?.shownCoverURL, size: 20) }
                 .width(24)
+                .tableColumnID(.cover, hideable: false)
             TableColumn("Interpret", value: \.artist) { item in
                 Text(item.artist).lineLimit(1).help(item.artist)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -492,28 +511,35 @@ struct ShelfContentsView: View, Equatable {
                     }
             }
             .width(min: 120, ideal: 220)
+            .tableColumnID(.artist, hideable: false)
             TableColumn("Titel", value: \.title) { item in
                 Text(item.title).lineLimit(1).help(item.title)
             }
             .width(min: 120, ideal: 280)
+            .tableColumnID(.title, hideable: false)
             TableColumn("Jahr", value: \.year) { item in
                 Text(item.year > 0 ? String(item.year) : "–").monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 40, ideal: 48, max: 60)
+            .tableColumnID(.year)
             TableColumn("Label", value: \.label) { item in
                 Text(item.label.isEmpty ? "–" : item.label).lineLimit(1).foregroundStyle(.secondary).help(item.label)
             }
             .width(min: 80, ideal: 160)
+            .tableColumnID(.label)
             TableColumn("Genre", value: \.genre) { item in
                 Text(item.genre.isEmpty ? "–" : item.genre).lineLimit(1).foregroundStyle(.secondary).help(item.genre)
             }
             .width(min: 80, ideal: 130)
+            .tableColumnID(.genre)
             // As in the Finder: the tags as dots, last.
             TableColumn("Tags") { item in
                 TagDots(missing: item.missing, forSale: item.forSale, sold: item.sold)
             }
             .width(min: AppStyle.tagColumnWidth.min, ideal: AppStyle.tagColumnWidth.ideal, max: AppStyle.tagColumnWidth.max)
+            .tableColumnID(.tags)
         }
+        .onChange(of: preferences.shelfColumns) { _, columns in dropSortingByHiddenColumn(columns) }
         .tableStyle(.inset)
         .background(QuietIconColumnHeaders())
         .background(TableRowClickToggle { selectLocally(nil) })

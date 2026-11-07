@@ -310,6 +310,16 @@
         }
       }
     },
+    "In den Listen von Collection, Wantlist und Regal ziehst du Spalten an ihrer Überschrift an einen anderen Platz; ein Rechtsklick auf die Überschriften blendet Spalten ein und aus. Plattenregal merkt sich das für jede Liste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Collection, Wantlist and Shelf lists, drag a column by its header to another place; right-click the headers to show or hide columns. Plattenregal remembers this for each list."
+          }
+        }
+      }
+    },
     "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf." : {
       "localizations" : {
         "en" : {
