@@ -280,12 +280,12 @@
         }
       }
     },
-    "In Collection und Wantlist füllt die Liste jetzt das Fenster bis unten aus; die letzten Zeilen scrollen trotzdem über den runden Knopf hinaus." : {
+    "Die Listen in Collection, Wantlist und Regal reichen jetzt bis knapp über die Fensterkante, und ihre letzten Zeilen scrollen frei über die runden Knöpfe – vorher hörten Collection und Wantlist weit oben auf, und im Regal verschwand die letzte Zeile unter dem „+“." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In Collection and Wantlist the list now fills the window down to the bottom; the last rows still scroll clear of the round button."
+            "value" : "The lists in Collection, Wantlist and Shelf now reach down to just above the window’s edge, and their last rows scroll clear of the round buttons – before, Collection and Wantlist stopped well short, and on the shelf the last row disappeared under the “+”."
           }
         }
       }

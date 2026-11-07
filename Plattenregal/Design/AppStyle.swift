@@ -80,6 +80,11 @@ enum AppStyle {
     static let floatingMargin: CGFloat = 20
     /// Room at the end of every page, so content scrolls clear of the button.
     static let floatingClearance: CGFloat = floatingButtonSize + floatingMargin + itemSpacing
+    /// On the shelf page two buttons stand on top of each other („+“ and
+    /// the history, `floatingStackSpacing` apart): room so a list's last rows
+    /// end above both.
+    static let floatingStackSpacing: CGFloat = rowSpacing
+    static let shelfFloatingClearance: CGFloat = floatingClearance + floatingButtonSize + floatingStackSpacing
     // MARK: Switching a whole area
     // A page (`PageStackView.show`) with the toolbar above it, a settings
     // tab, another cabinet: everything that changes fades out quickly on the

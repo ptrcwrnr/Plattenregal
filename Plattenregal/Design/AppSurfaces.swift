@@ -10,20 +10,21 @@ extension View {
             .appGlassSurface(cornerRadius: AppStyle.cardRadius + 4)
     }
 
-    /// The list of a page with the round button (collection, wantlist): its
-    /// card reaches down to the page margin above the window's bottom edge,
-    /// as far from it as from the sides. The page keeps room for the button
-    /// at its end (`floatingClearance`, see `RootView`); the cover grid
-    /// scrolls on through it, a table stopped above it and left a band of
-    /// empty window. Inside the card the last rows still scroll clear of the
-    /// button, which overlaps the card's last `floatingClearance -
-    /// pageMargin` points (`TableBottomInset`: `contentMargins` doesn't reach
-    /// a macOS table). Without the button (the collection in a panel of the
-    /// statistics) the rows run to the card's end.
-    func appPageTableCard(clearsFloatingButton: Bool = true) -> some View {
-        background(TableBottomInset(inset: clearsFloatingButton ? AppStyle.floatingClearance - AppStyle.pageMargin : 0))
+    /// A table on its card at the foot of a page (collection, wantlist,
+    /// shelf): the card ends `pageMargin` above the window's bottom edge, as
+    /// far from it as a page's sides. Collection and wantlist keep room for
+    /// the round button at their end (`floatingClearance`, see `RootView`);
+    /// the cover grid scrolls on through it, a table stopped above it and
+    /// left a band of empty window – ignored here. On the shelf page the card
+    /// ran past the window's edge. Inside the card the last rows scroll clear
+    /// of the buttons by `clearance` (measured from the window's edge;
+    /// `TableBottomInset`, as `contentMargins` doesn't reach a macOS table);
+    /// 0 where there is no button (the collection in a panel of the
+    /// statistics).
+    func appBottomTableCard(clearance: CGFloat = AppStyle.floatingClearance) -> some View {
+        background(TableBottomInset(inset: max(0, clearance - AppStyle.pageMargin)))
             .appTableCard()
-            .padding([.horizontal, .bottom], AppStyle.pageMargin)
+            .padding(.bottom, AppStyle.pageMargin)
             .ignoresSafeArea(.container, edges: .bottom)
     }
 

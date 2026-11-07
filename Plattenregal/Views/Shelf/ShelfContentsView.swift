@@ -531,8 +531,6 @@ struct ShelfContentsView: View, Equatable {
         .background(TableRowClickToggle { selectLocally(nil) })
         .alternatingRowBackgrounds(.disabled)
         .scrollContentBackground(.hidden)
-        // The last rows scroll clear of the round button.
-        .contentMargins(.bottom, AppStyle.floatingClearance, for: .scrollContent)
         .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
             if let id = ids.first, let copy = items.first(where: { $0.id == id })?.copy { activate(copy) }
         }
@@ -554,6 +552,7 @@ struct ShelfContentsView: View, Equatable {
             revealRequest: focusScroll?.layout == .list ? focusScroll?.requestID : nil
         ))
         .id(loadedShelfID)
-        .appTableCard()
+        // Its last rows end above both buttons.
+        .appBottomTableCard(clearance: AppStyle.shelfFloatingClearance)
     }
 }

@@ -34,7 +34,7 @@ struct FloatingControls: View {
             if page.hasActions {
                 controls(page: page).transition(.scale(scale: 0.6).combined(with: .opacity))
             } else if page == .shelf {
-                VStack(spacing: AppStyle.rowSpacing) {
+                VStack(spacing: AppStyle.floatingStackSpacing) {
                     shelfButton(.history)
                     shelfButton(.sortingIn)
                 }
