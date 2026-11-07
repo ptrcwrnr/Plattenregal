@@ -34,6 +34,9 @@ import AppKit
 ///   one by one once the window stands (or at once when switched to first).
 ///   Building all four up front kept the main thread busy for another ~0.6 s
 ///   with a large collection before the window answered.
+/// - Hidden pages follow a new window size only once it rests; while macOS
+///   animates the window frame (snapping to an edge, zooming), the page
+///   shown waits for the end too (see `PageStackView.resizeSubviews`).
 struct PageStack<Page: Hashable, Content: View>: View {
     let pages: [Page]
     let selection: PageSelection<Page>
@@ -190,13 +193,84 @@ final class PageStackView<Page: Hashable>: NSView {
         let host = PageHostingView(rootView: root)
         // The page fills the stack; it must not push its own size onto the window.
         host.sizingOptions = []
+        // Sized by the stack itself, not by autoresizing (see `resizeSubviews`).
         host.frame = bounds
-        host.autoresizingMask = [.width, .height]
         host.wantsLayer = true
         host.alphaValue = 0
         host.isHidden = true
         addSubview(host)
         return host
+    }
+
+    /// The window snapping to a screen edge, zooming or being resized.
+    /// - Hidden pages never follow frame by frame: with autoresizing all four
+    ///   pages did, and SwiftUI laid out the hidden ones in every frame too
+    ///   (grids reflowing, statistics charts). They catch up once the size has
+    ///   rested a moment, one per turn of the run loop, so each is ready
+    ///   before anyone switches to it.
+    /// - The page shown (and one still fading out) follows the pointer while
+    ///   the window is dragged larger or smaller, and any single change at
+    ///   once (full screen, a window restored).
+    /// - When macOS animates the window frame itself – snapping to an edge,
+    ///   zooming; a live resize too, but with no mouse button held – laying
+    ///   out a page took 30–50 ms per step and the animation ran at ~20 frames
+    ///   a second. There the page keeps its size until the animation ends and
+    ///   then lays out once; the window (toolbar, background) still moves in
+    ///   every frame.
+    override func resizeSubviews(withOldSize oldSize: NSSize) {
+        if inLiveResize && NSEvent.pressedMouseButtons == 0 { scheduleSettle() } else { resizeShownPages() }
+        scheduleCatchUp()
+    }
+
+    override func viewDidEndLiveResize() {
+        super.viewDidEndLiveResize()
+        resizeShownPages()
+        scheduleCatchUp()
+    }
+
+    /// The page shown and one still fading out: to the stack's size.
+    private func resizeShownPages() {
+        for host in hosts.values where !host.isHidden && host.frame != bounds {
+            host.frame = bounds
+        }
+    }
+
+    /// In case an animated frame ends without `viewDidEndLiveResize`: once
+    /// its steps have stopped this long, the page shown lays out anyway.
+    private static var settleDelay: TimeInterval { 0.15 }
+    private var settleGeneration = 0
+
+    private func scheduleSettle() {
+        settleGeneration += 1
+        let generation = settleGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.settleDelay) { [weak self] in
+            guard let self, generation == self.settleGeneration else { return }
+            self.resizeShownPages()
+        }
+    }
+
+    /// Each change of size starts the wait anew; only the last one acts.
+    private var catchUpGeneration = 0
+    /// How long the size must rest before hidden pages follow it.
+    private static var catchUpDelay: TimeInterval { 0.4 }
+
+    private func scheduleCatchUp() {
+        guard hosts.values.contains(where: { $0.frame != bounds }) else { return }
+        catchUpGeneration += 1
+        let generation = catchUpGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.catchUpDelay) { [weak self] in
+            self?.catchUpNextPage(generation)
+        }
+    }
+
+    /// One hidden page to the current size, then the next on the following
+    /// turn of the run loop – a click in between is answered first. Not while
+    /// the window is still being dragged larger or smaller.
+    private func catchUpNextPage(_ generation: Int) {
+        guard generation == catchUpGeneration, !inLiveResize,
+              let host = order.lazy.compactMap({ self.hosts[$0] }).first(where: { $0.frame != self.bounds }) else { return }
+        host.frame = bounds
+        DispatchQueue.main.async { [weak self] in self?.catchUpNextPage(generation) }
     }
 
     /// Timing and travel are the app's for switching a whole area
@@ -227,6 +301,8 @@ final class PageStackView<Page: Hashable>: NSView {
         guard page != shown, let incoming = host(for: page) else { return }
         let outgoing = shown.flatMap { hosts[$0] }
         shown = page
+        // Switched to before it caught up with a new window size.
+        if incoming.frame != bounds { incoming.frame = bounds }
 
         // Typing must not go on in a page that is fading out.
         if let outgoing, let responder = window?.firstResponder as? NSView, responder.isDescendant(of: outgoing) {

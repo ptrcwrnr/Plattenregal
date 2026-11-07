@@ -1,3 +1,16 @@
+# Fenster an den Bildschirmrand anlegen ruckelt nicht mehr · 07.11.2026
+
+- **Meldung:** Zieht man das Fenster an einen Bildschirmrand (es legt sich an eine Hälfte an), sieht das ruckelig aus.
+- **Gemessen** (Debug-Demo, Fenster → Bewegen & Skalieren → Links/Rechts und Füllen, je 6 Animationen; „Animation Hitches“ von `xctrace`): pro Anlegen ~6 verspätete Bilder von 40–70 ms, das App-Update brauchte im Median 53 ms je Bild – die Animation lief mit ~20 statt 120 Bildern pro Sekunde, auf jeder Rubrik.
+- **Ursachen:**
+  - Alle vier Seiten hingen per Autoresizing an der Fenstergröße; SwiftUI legte auch die drei verdeckten in jedem Bild neu aus (Raster, Statistik-Diagramme).
+  - Die gezeigte Seite neu auszulegen kostet 30–50 ms je Bild (Zerlegung mit Versuchsschaltern: Cover-Raster ~23 ms, die zwölf Fächer ~17 ms, übrige Seite ~10 ms, das Fenster allein 3 ms; verteilt auf viele Ansichten, kein einzelner Schuldiger – Popovers, Glas, „+“-Knöpfe, Plättchen je 2–5 ms).
+  - macOS meldet das Anlegen und das Zoomen als Live-Resize (`inLiveResize`), wie das Ziehen am Fensterrand – nur ohne gedrückte Maustaste.
+- **Behoben** (`PageStackView`, `Views/PageStack.swift`): Die Seiten werden nicht mehr per Autoresizing geführt (`resizeSubviews`). Verborgene Seiten ziehen nach, sobald die Größe 0,4 s ruht, eine je Durchlauf der Run Loop; `show()` bringt eine noch nicht nachgezogene Seite vor dem Einblenden auf Größe. Animiert macOS den Fensterrahmen (Live-Resize ohne gedrückte Maustaste), behält auch die gezeigte Seite ihre Größe bis zum Ende (`viewDidEndLiveResize`, sonst 0,15 s nach dem letzten Schritt) und legt sich dann einmal aus. Beim Ziehen am Rand (Taste gedrückt) und bei einzelnen Größenwechseln (Vollbild) folgt sie wie bisher sofort.
+- **Ergebnis:** App-Update im Median 11–12 ms je Bild statt 53 ms (Regal 11,6, Collection 12,0, Statistik 11,0), mehr als doppelt so viele Bilder je Animation; übrig bleibt je Anlegen ein längeres Bild am Ende (das eine Auslegen) und das spätere Nachziehen der verdeckten Seiten in Ruhe. Während des Vergrößerns steht rechts kurz der Fensterhintergrund, bis die Seite am Ende umbricht.
+- **Verworfen:** Die Wachstumsanimation des Cover-Rasters (`coverGridMotion`) in Schrittfolgen abzuschalten – beim Anlegen und Zoomen ist sie wegen `inLiveResize` ohnehin aus; zurückgenommen.
+- **Geprüft:** Debug-Build und Testbuild (`build-for-testing`) ohne Warnung; der Testlauf selbst hing beim Start (Bildschirm gesperrt, Nutzer weg) und steht noch aus. Live in der Demo (vorher): Bildfolgen während Verkleinern und Vergrößern; danach füllt die Seite das Fenster genau (gleiche Ränder); Wechsel zu Collection, Statistik und – 0,3 s nach dem Anlegen – Wantlist zeigt sie sofort in richtiger Größe; Ziehen am rechten Fensterrand mit gedrückter Taste: die Seite folgt mitten im Zug. Release-Build gebaut, aber direkt gestartet ohne Fenster – dort nicht gemessen.
+
 # Regal-Bereich auf Leistung untersucht: kein unnötiger Aufwand, ein Designhebel · 07.11.2026
 
 - **Wunsch:** Den ganzen Bereich Regal mit allen Fenstern auf Leistung prüfen und, wo möglich, verbessern.
