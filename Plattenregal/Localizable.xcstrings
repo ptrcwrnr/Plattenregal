@@ -10707,6 +10707,26 @@
           }
         }
       }
+    },
+    "Neues Design „Vinyl“: matte Flächen wie Klassisch, in kühlem Graphit mit hellblauen Akzenten und immer dunkel. Einstellungen → Darstellung → Design." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New design “Vinyl”: matte surfaces like Classic, in cool graphite with light blue accents and always dark. Settings → Appearance → Design."
+          }
+        }
+      }
+    },
+    "Die Statistik scrollt jetzt so flüssig wie die Collection: Kacheln und Diagramme, die beim Scrollen unter dem Mauszeiger durchziehen, leuchten erst auf, wenn die Seite steht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The statistics now scroll as smoothly as the collection: tiles and charts passing under the pointer while you scroll only light up once the page comes to rest."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

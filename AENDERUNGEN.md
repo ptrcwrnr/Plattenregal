@@ -1,3 +1,16 @@
+# Durchsicht aller 1.0.4-Neuerungen vor der DMG · 07.11.2026
+
+- **Wunsch:** Vor dem Bau der DMG alle neuen Dinge in 1.0.4 noch einmal gründlich prüfen, Fehler beheben, Code bei Bedarf verbessern.
+- **Durchgesehen** (29 Commits seit `c5afd34`, 51 Dateien): Apple TV aus und keine eingehenden Verbindungen (Projekt-Einstellungen, Start, Einstellungsreiter); Update-Intervall samt Übernahme des alten Schalters; Menü der Schallplatte; Klick auf einen Treffer der Suche; eigene Rubriknamen überall; Einsortieren ins gezeigte Regal (`AlphabeticalPlacement.fits` an Randfällen nachgerechnet: sauberes Fach, Grenze zweier Fächer, gleiche Schlüssel in zwei Fächern, Fach von A bis Z; Zwischenspeicher und Aufräumen); „Sortierung prüfen“; Design Vinyl (Farben, immer dunkel, Zurücksetzen, Widget bleibt Klassisch); Toolbar-Band und Fensterziehen; Schatten und Leistungsänderungen; Statistik. Sprachkatalog: alle 39 neuen Texte englisch übersetzt und gegengelesen, nichts veraltet. Logikfehler: keine gefunden.
+- **Behoben:**
+  - „Was ist neu“ (`Changelog` in `AboutView`, mit Englisch) und `dist/Hinweise-1.0.4.md` um die zwei neuen Punkte ergänzt, gleich lautend: Design Vinyl und die flüssig scrollende Statistik.
+  - Handbuch (de/en): zählt jetzt alle drei Designs auf, Vinyl fehlte; PDFs neu erzeugt, Seite 9 geprüft (nichts läuft über). README: „Design (Klassisch, Modern oder Vinyl)“.
+  - Eine Stufe für Gedimmtes, `AppStyle.dimmedOpacity` (0,45): gesperrte Knöpfe (0,45), Menüeinträge (0,4), die drei nur für ein Design geltenden Einstellungen (0,4) und abgehakte Schritte in „Sortierung prüfen“ (0,45) hatten freie Zahlen. Menüeinträge und die drei Einstellungen sind damit eine Spur heller gedimmt.
+  - Kommentare: Der Doc-Kommentar von `updateHint` hing an `searchOff`, der Kommentar zur Karte „Collection und Wantlist“ war durch die Karte „Rubriken“ zerteilt, `colorHint` nannte nur Klassisch.
+  - Debug-Vorschau `--preview-switch-tab=` springt nicht mehr auf den ausgeblendeten Apple-TV-Reiter (wie schon `--settings-tab=`).
+- **Nach dem abgebrochenen DMG-Bau:** Kein Volume hing, die alte DMG ist unverändert. Das Skript hatte beide Handbücher neu erzeugt, weil der Bilderordner ein jüngeres Änderungsdatum hatte; der Text war gleich, die eingecheckten PDFs wurden zurückgesetzt (jetzt wegen Vinyl ohnehin neu).
+- **Geprüft:** Debug-Build (clean) ohne Warnung; 313 Tests bestanden. Live in der Demo: Ziehen eines Statistik-Bereichs auf den direkt darunter liegenden verschiebt ihn darunter, mit Zielrahmen; Darstellung in Vinyl mit gedimmtem Modus.
+
 # Statistik scrollt flüssig: Hover ruht beim Scrollen, ein Ablageziel statt zehn · 07.11.2026
 
 - **Anlass:** Bei der Durchsicht der Designs kostete das Scrollen der Statistik in allen Designs gut dreimal so viel App-Rechenzeit wie die Collection.

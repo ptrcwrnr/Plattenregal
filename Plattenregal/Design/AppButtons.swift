@@ -11,7 +11,7 @@ struct AtelierButtonStyle: ButtonStyle {
             .background(primary ? AtelierPalette.gold : configuration.isPressed ? AtelierPalette.soft : AtelierPalette.surface,
                         in: RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius))
             .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(primary ? AtelierPalette.gold : AtelierPalette.border, lineWidth: AppStyle.borderWidth))
-            .opacity(isEnabled ? 1 : 0.45)
+            .opacity(isEnabled ? 1 : AppStyle.dimmedOpacity)
     }
 }
 

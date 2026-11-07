@@ -116,7 +116,7 @@ struct AppSettingsView: View {
         // switches there 3 s after the settings opened.
         .task {
             guard let raw = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--preview-switch-tab=") }),
-                  let next = Tab(rawValue: String(raw.dropFirst("--preview-switch-tab=".count))) else { return }
+                  let next = Tab(rawValue: String(raw.dropFirst("--preview-switch-tab=".count))), Tab.shown.contains(next) else { return }
             try? await Task.sleep(for: .seconds(3))
             tab = next
         }

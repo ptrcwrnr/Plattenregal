@@ -254,6 +254,10 @@ enum AppStyle {
     /// Labels and symbols on the toolbar's bar that aren't chosen: the
     /// page switch's options, the magnifying glass.
     static var toolbarLabel: AnyShapeStyle { isAtelier ? AnyShapeStyle(AtelierPalette.bandLabel) : AnyShapeStyle(.secondary) }
+    /// What can't be used right now – a disabled button or menu entry, a
+    /// choice that only applies to another design – and a move ticked off
+    /// at the shelf: one step back, still readable.
+    static let dimmedOpacity: Double = 0.45
     static var hoverBackground: Color { isAtelier ? AtelierPalette.ink.opacity(0.05) : Color.primary.opacity(0.05) }
     /// The accent chosen in the settings (or the system's). Read in `body`,
     /// so views redraw when it changes.

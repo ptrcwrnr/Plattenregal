@@ -143,10 +143,10 @@ struct GeneralSettingsView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in loginItem.refresh() }
     }
 
-    /// What the last check said, and when.
     /// Neither the record nor the shortcut: there is no search, its choices rest.
     private var searchOff: Bool { !preferences.menuBarSearch && !preferences.quickSearchHotKey }
 
+    /// What the last check said, and when.
     private var updateHint: String {
         if case .available(let release) = updates.state {
             return String(localized: "Version \(release.version.description) ist da.")

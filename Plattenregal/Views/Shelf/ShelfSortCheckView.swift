@@ -245,7 +245,7 @@ private struct SortStepRow: View {
             .padding(.horizontal, AppStyle.itemSpacing)
             .padding(.vertical, AppStyle.itemSpacing)
             .frame(minHeight: AssignmentRowMetrics.height)
-            .opacity(done ? 0.45 : 1)
+            .opacity(done ? AppStyle.dimmedOpacity : 1)
             .contentShape(Rectangle())
             .appHoverable(hovering, cornerRadius: AppStyle.rowRadius)
         }

@@ -26,7 +26,7 @@ struct AppearanceSettingsView: View {
                 set: { storedCoverSize = $0 })
     }
 
-    /// Klassisch brings its own colors; the choices stay stored for Modern.
+    /// Klassisch and Vinyl bring their own colors; the choices stay stored for Modern.
     private var colorHint: String? {
         preferences.signatureDesign.usesColorChoices ? nil : String(localized: "Gilt nur für das Design „Modern“.")
     }
@@ -49,7 +49,7 @@ struct AppearanceSettingsView: View {
                     GlassSegmentedPicker(selection: $preferences.appearance, options: AppearanceMode.allCases) { Text($0.title) }
                         .accessibilityLabel("Modus")
                         .disabled(preferences.signatureDesign.isAlwaysDark)
-                        .opacity(preferences.signatureDesign.isAlwaysDark ? 0.4 : 1)
+                        .opacity(preferences.signatureDesign.isAlwaysDark ? AppStyle.dimmedOpacity : 1)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Akzentfarbe"), hint: colorHint) {
@@ -62,7 +62,7 @@ struct AppearanceSettingsView: View {
                         }
                     }
                     .disabled(!preferences.signatureDesign.usesColorChoices)
-                    .opacity(preferences.signatureDesign.usesColorChoices ? 1 : 0.4)
+                    .opacity(preferences.signatureDesign.usesColorChoices ? 1 : AppStyle.dimmedOpacity)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Ambient-Farbe"), hint: colorHint) {
@@ -75,7 +75,7 @@ struct AppearanceSettingsView: View {
                         }
                     }
                     .disabled(!preferences.signatureDesign.usesColorChoices)
-                    .opacity(preferences.signatureDesign.usesColorChoices ? 1 : 0.4)
+                    .opacity(preferences.signatureDesign.usesColorChoices ? 1 : AppStyle.dimmedOpacity)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Gezeichnete Cover"),
@@ -86,7 +86,6 @@ struct AppearanceSettingsView: View {
                         .disabled(DemoMode.isActive)
                 }
             }
-            // Everything about how the two overview pages show their records,
             SettingsCard(title: String(localized: "Rubriken"),
                          subtitle: String(localized: "Eigene Namen für die Rubriken oben im Fenster, höchstens \(PageNames.maxLength) Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück.")) {
                 ForEach(Destination.allCases) { page in
@@ -96,6 +95,7 @@ struct AppearanceSettingsView: View {
                     }
                 }
             }
+            // Everything about how the two overview pages show their records,
             // in one place: grid or list, order, cover size.
             SettingsCard(title: String(localized: "\(Destination.collection.title) und \(Destination.wantlist.title)"),
                          subtitle: String(localized: "Raster oder Liste auch direkt auf der Seite über den runden Knopf unten rechts, die Covergröße mit ⌘+ und ⌘−.")) {
