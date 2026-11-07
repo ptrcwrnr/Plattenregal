@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Small colored tag beside a record's title ("Gesucht", "Nicht in der
-/// Collection", "Als Nächstes"), the same everywhere on the shelf page.
+/// Small colored tag beside a record's title ("Gesucht", "Verkauf", "Nicht
+/// in der Collection"), the same everywhere on the shelf page.
 struct StatusTag: View {
     let text: String
     let color: Color

@@ -1,3 +1,10 @@
+# Plakette „Als Nächstes“ auch in „Einsortieren“ entfernt · 07.11.2026
+
+- **Wunsch:** Die Plakette „Als Nächstes“ stand noch in Regal → „Einsortieren“ (und „Platte hinzufügen“); sie wird in der App nicht mehr genutzt und soll überall raus.
+- **Gesucht** in Code, Sprachkatalog, README, Handbüchern (HTML, PDF, Bilder), Webseite und Marketing (auch die englische Fassung „Up next“): einzige Stelle im Code war `ShelfAssignmentRow`; „Sortierung prüfen“ hatte sie schon vorher verloren.
+- **Entfernt:** die Plakette samt allem, was nur ihr diente – `suggested` in `ShelfAssignmentRow`, `suggestedID` in `ShelfAssignmentGrid` und dessen Berechnung –, der Eintrag im Sprachkatalog, der Satz im README, die Nennung im Kommentar von `StatusTag` (der für „Gesucht“, „Verkauf“ und „Nicht in der Collection“ bleibt). Handbuchbild `sortin` (de/en) neu aufgenommen (`guide-screenshots.swift`, die übrigen Bilder unverändert gelassen), beide Handbuch-PDFs neu erzeugt; die Webseite verweist auf dieselben Bilder. `VALIDIERUNG.md` und ältere Einträge hier bleiben als Protokoll früherer Stände.
+- **Geprüft:** Debug-Build ohne Warnung, 319 Tests bestanden; „Einsortieren“ live in der Demo (Klassisch) ohne Plakette; Seite 7 beider Handbuch-PDFs angesehen. Die DMG von heute enthält die Plakette noch.
+
 # DMG 1.0.4 mit Leuchten in „Sortierung prüfen“ und ruhigem Anlegen neu gebaut · 07.11.2026
 
 - **„Was ist neu“** (`Changelog` in `AboutView`, mit Englisch im Sprachkatalog) und `dist/Hinweise-1.0.4.md` um zwei Punkte ergänzt, gleich lautend: Platz und Ziel der nächsten Platte leuchten in „Sortierung prüfen“ nacheinander auf; Anlegen an einen Bildschirmrand und Zoomen gleiten flüssig.

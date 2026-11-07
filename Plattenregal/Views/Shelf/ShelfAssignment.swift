@@ -46,8 +46,6 @@ struct ShelfAssignmentView: View {
             ZStack {
                 ShelfAssignmentGrid(items: items, missingEnabled: missingEnabled,
                                     rackWide: session.isRackWide,
-                                    // The next one by artist that fits here: where to go on.
-                                    suggestedID: session.isRackWide ? items.first?.id : items.first { session.belongsElsewhere[$0.id] == nil }?.id,
                                     belongsElsewhere: session.belongsElsewhere,
                                     toggleMissing: { [session, context] copy in session.toggleMissing(copy, in: context) },
                                     hover: { [session] copy, hovering in session.hover(copy, hovering) },
@@ -153,7 +151,6 @@ private struct ShelfAssignmentGrid: View {
     let items: [RecordCopy]
     let missingEnabled: Bool
     let rackWide: Bool
-    let suggestedID: UUID?
     let belongsElsewhere: [UUID: String]
     let toggleMissing: (RecordCopy) -> Void
     let hover: (RecordCopy, Bool) -> Void
@@ -169,7 +166,6 @@ private struct ShelfAssignmentGrid: View {
             LazyVStack(alignment: .leading, spacing: CoverGrid.spacing) {
                 ForEach(items) { copy in
                     ShelfAssignmentRow(copy: copy, location: location(copy),
-                                       suggested: copy.id == suggestedID,
                                        elsewhere: !rackWide && belongsElsewhere[copy.id] != nil,
                                        rackWide: rackWide,
                                        hover: { hover(copy, $0) }) { add(copy) }
@@ -205,8 +201,6 @@ private struct ShelfAssignmentRow: View {
     let copy: RecordCopy
     /// Where it would stand in the compartment it belongs to.
     let location: AssignmentLocation?
-    /// The next one to add by artist.
-    let suggested: Bool
     /// "Platte hinzufügen": belongs in another shelf than the open one.
     let elsewhere: Bool
     let rackWide: Bool
@@ -222,11 +216,8 @@ private struct ShelfAssignmentRow: View {
                 CoverView(url: copy.release?.shownCoverURL, size: AssignmentRowMetrics.largeCoverSize)
                     .atelierRecordSleeve()
                 VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                    VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                        // The same caption as in the compartment, Collection and Wantlist.
-                        RecordCaption(release: copy.release)
-                        if suggested { StatusTag(text: String(localized: "Als Nächstes"), color: AppStyle.accent) }
-                    }
+                    // The same caption as in the compartment, Collection and Wantlist.
+                    RecordCaption(release: copy.release)
                     place
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
