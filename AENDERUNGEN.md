@@ -1,3 +1,24 @@
+# Regal-Bereich auf Leistung untersucht: kein unnötiger Aufwand, ein Designhebel · 07.11.2026
+
+- **Wunsch:** Den ganzen Bereich Regal mit allen Fenstern auf Leistung prüfen und, wo möglich, verbessern.
+- **Gemessen** (Debug-Demo, 1219 × 774 pt, Fenster vorn, synthetische Maus-/Scrollereignisse; App- und WindowServer-CPU je Szenario, Profile mit `sample` und dem SwiftUI-Instrument von `xctrace`; zweiter Lauf, wo der erste Kacheln erst anlegt und Cover lädt):
+
+  | Szenario (~10 s) | App | WindowServer |
+  |---|---|---|
+  | Leerlauf, auch mit offenem Fenster | 0,00 s | 0,06–0,15 s |
+  | Scrollen im Fach, Raster (Modern / Klassisch) | 2,47 / 2,35 s | 2,1 / 1,3 s |
+  | dasselbe in der Collection | 2,27 / 1,82 s | 1,8 / 1,4 s |
+  | Scrollen im Fach, Liste | 2,0 s | 2,6 s |
+  | 16 Fachwechsel | 4,4 s | 5,3 s |
+  | Maus ständig über den Fächern (22 s; Modern / Klassisch) | 3,4 / 1,2 s | 4,7 / 2,4 s |
+  | Maus über den Covern (20 s), zum Vergleich Collection | 0,3 / 0,1 s | 1,0 / 0,9 s |
+  | Verlauf / Einsortieren / Platte hinzufügen, je 6× auf und zu | 2,6 / 2,8 / 3,1 s | 4,9–5,4 s |
+  | Suche in der Menüleiste: 4 Buchstaben, 16 Pfeiltasten | 0,75 s | – |
+
+- **Wo die Zeit hingeht:** fast nur in SwiftUI/AppKit selbst (Ansichtslisten, Layout, Zeichnen, Glas), kaum in App-Code. Ansichten werden nicht unnötig neu berechnet (`View Body` 44 ms beim Scrollen). Fachwechsel: rund 140 ms Hauptthread je Wechsel, davon etwa 6 ms App-Code (Abfrage, Signatur, Kacheln); Animationen abgeschaltet sparten nur ~10 %, Tooltip, Bedienungshilfen und die beiden Popovers je Kachel nichts. Hover über den Fächern: ~70 ms je Wechsel des Fachs unter der Maus, verteilt auf die kurzen Hover-Animationen (~2 ms je Bild) – kein Ruckeln; die unsichtbaren „+“-Knöpfe mit interaktivem Glas waren es nicht (nur bei Bedarf aufgebaut: 3,4 → 3,3 s). Fenster auf/zu: ~100 ms Hauptthread je Ein- oder Ausblenden, Rest ist das große Glasfenster mit Unschärfe; offen und ruhig kostet nichts. Suche: ~7 ms je Tastendruck (Index wird nur nach Datenänderungen neu gebaut).
+- **Einziger deutlicher Hebel:** das Glasplättchen hinter der Positionsnummer jeder Kachel (Modern; in der Collection hat nur eine Kachel mit mehreren Exemplaren ein Plättchen). Ohne Glas beim Scrollen App 2,47 → 1,73 s (−30 %), WindowServer 2,1 → 1,9 s; beim Fachwechsel −9 %. Material statt Glas: App 1,85 s, WindowServer 2,3 s. Nicht geändert – eine Designentscheidung, offen.
+- **Nichts geändert:** Die Versuchsschalter (Plättchen, Tooltip, Bedienungshilfen, Popovers, Animationen, „+“-Knopf) waren nur für die Messung eingebaut und sind wieder entfernt.
+
 # „Sortierung prüfen“: Leuchten nach drei Durchläufen still · 07.11.2026
 
 - **Wunsch:** Das Leuchten von Platz und Ziel soll nach drei Durchläufen stehen bleiben, damit danach auch der WindowServer nichts mehr zu tun hat.
