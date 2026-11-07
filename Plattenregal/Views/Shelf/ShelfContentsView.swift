@@ -234,7 +234,7 @@ struct ShelfContentsView: View, Equatable {
         Button("Aus Fach entfernen") { menuFor = nil; unplace(copy) }
         // An active copy would return on the next sync as a new copy.
         if !copy.isInCurrentCollection(owner: owner) {
-            Button("Aus Sammlung löschen …", role: .destructive) { menuFor = nil; delete(copy) }
+            Button("Aus Sammlung löschen", role: .destructive) { menuFor = nil; delete(copy) }
         }
     }
 

@@ -55,7 +55,7 @@ struct AppleTVSettingsView: View {
         case nil:
             SettingsRow(title: String(localized: "Neues Apple TV"),
                         hint: String(localized: "Auf dem Apple TV: Plattenregal öffnen, dann Einstellungen → „Mit Mac verbinden …“.")) {
-                PrimaryButton(title: String(localized: "Apple TV verbinden …")) { link.startPairing() }
+                PrimaryButton(title: String(localized: "Apple TV verbinden")) { link.startPairing() }
             }
         case .waiting:
             HStack(spacing: AppStyle.rowSpacing) {

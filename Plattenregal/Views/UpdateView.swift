@@ -51,7 +51,7 @@ struct UpdateView: View {
     private var content: some View {
         switch checker.state {
         case .idle, .checking:
-            header(String(localized: "Nach Updates suchen"),
+            header(String(localized: "Suche nach Updates"),
                    String(localized: "Plattenregal fragt bei GitHub nach der neuesten Version …"))
             ProgressView().progressViewStyle(.linear)
                 .accessibilityLabel(String(localized: "Suche nach Updates"))
@@ -197,11 +197,11 @@ struct UpdateView: View {
     }
 }
 
-/// „Nach Updates suchen …“ in the app menu, under „Über Plattenregal“.
+/// „Nach Updates suchen“ in the app menu, under „Über Plattenregal“.
 struct UpdateCommand: View {
     @Environment(\.openWindow) private var openWindow
     var body: some View {
-        Button("Nach Updates suchen …") { UpdateCommand.check(openWindow) }
+        Button("Nach Updates suchen") { UpdateCommand.check(openWindow) }
     }
 
     /// Opens the window and asks GitHub – from the menu, the settings and the

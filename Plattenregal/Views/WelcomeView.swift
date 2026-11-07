@@ -63,7 +63,7 @@ struct HelpCommands: View {
             AppWelcome.shared.show()
         }
         if !DemoMode.isActive {
-            Button("Demo starten …") { DemoMode.confirmStart() }
+            Button("Demo starten") { DemoMode.confirmStart() }
         }
     }
 }
@@ -141,11 +141,11 @@ struct WelcomeView: View {
             HStack(spacing: AppStyle.itemSpacing) {
                 GhostButton(title: String(localized: "Später"), action: close)
                 Spacer()
-                SecondaryButton(title: String(localized: "Demo starten …")) {
+                SecondaryButton(title: String(localized: "Demo starten")) {
                     close()
                     DemoMode.confirmStart()
                 }
-                PrimaryButton(title: String(localized: "Token eintragen …"), action: openDiscogsSettings)
+                PrimaryButton(title: String(localized: "Token eintragen"), action: openDiscogsSettings)
                     .keyboardShortcut(.defaultAction)
             }
         }

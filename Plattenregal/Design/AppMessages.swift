@@ -34,10 +34,11 @@ struct AppBanner: View {
             case .error: AppStyle.errorColor
             }
         }
-        var systemImage: String {
+        /// None for a success: its green tint says enough.
+        var systemImage: String? {
             switch self {
             case .info: "info.circle"
-            case .success: "checkmark.circle"
+            case .success: nil
             case .warning: "exclamationmark.triangle"
             case .error: "exclamationmark.octagon"
             }
@@ -50,7 +51,7 @@ struct AppBanner: View {
     var onDismiss: (() -> Void)?
     var body: some View {
         HStack {
-            Image(systemName: kind.systemImage).foregroundStyle(kind.color)
+            if let symbol = kind.systemImage { Image(systemName: symbol).foregroundStyle(kind.color) }
             Text(message)
             Spacer()
             if let actionTitle, let action {

@@ -276,6 +276,14 @@ import SwiftData
         }
     }
 
+    /// How many backups `retained` keeps at most: the newest `keptCount`, and
+    /// the last one of each of the `keptDays` most recent days with a backup –
+    /// the newest backup is both, so it counts once.
+    nonisolated static func maximumKept(keptCount: Int, keptDays: Int) -> Int {
+        let count = max(1, keptCount), days = max(0, keptDays)
+        return days > 0 ? count + days - 1 : count
+    }
+
     /// Indices (in `dates`, newest first) of the backups to keep.
     nonisolated static func retained(_ dates: [Date], keptCount: Int, keptDays: Int, calendar: Calendar = .current) -> [Int] {
         var kept = Array(dates.indices.prefix(keptCount))

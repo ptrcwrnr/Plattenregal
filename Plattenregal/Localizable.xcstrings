@@ -110,6 +110,176 @@
         }
       }
     },
+    "Alle verkauft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Sold"
+          }
+        }
+      }
+    },
+    "Alles zurücksetzen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Everything"
+          }
+        }
+      }
+    },
+    "Als %@ exportieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export as %@"
+          }
+        }
+      }
+    },
+    "Apple TV verbinden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Apple TV"
+          }
+        }
+      }
+    },
+    "Aus Datei" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From File"
+          }
+        }
+      }
+    },
+    "Automatische Sicherungen der Fach-Belegung. Wie viele bleiben, legst du unter „Sicherung“ fest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic backups of the shelf layout. How many are kept is set under “Backup”."
+          }
+        }
+      }
+    },
+    "Beides" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Both"
+          }
+        }
+      }
+    },
+    "Belegung wiederherstellen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Layout"
+          }
+        }
+      }
+    },
+    "Collection synchronisieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync Collection"
+          }
+        }
+      }
+    },
+    "Collection und Wantlist nacheinander." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection and wantlist, one after the other."
+          }
+        }
+      }
+    },
+    "Der letzte Stand eines Tages, gezählt werden nur Tage, an denen gesichert wurde – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The last version of each day, counting only days with a backup – so a day with many changes doesn’t push out all older backups."
+          }
+        }
+      }
+    },
+    "Die automatische Sicherung um %@ hat nicht geklappt. Sichere die Belegung zur Sicherheit mit „Sichern unter“ in eine Datei." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The automatic backup at %@ failed. To be safe, save the layout to a file with “Save As”."
+          }
+        }
+      }
+    },
+    "Die Einstellungen sind aufgeräumter: Synchronisieren und „Alle verkauft“ stehen als Zeilen mit Erklärung, die automatische Sicherung sagt, wie viele Stände höchstens bleiben, Knöpfe tragen keine Auslassungspunkte mehr, und das Fenster schließt auch mit dem roten Knopf." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings are tidier: syncing and “All Sold” are rows with an explanation, automatic backup says how many versions are kept at most, buttons no longer end in an ellipsis, and the window also closes with the red button."
+          }
+        }
+      }
+    },
+    "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter“ oder automatisch erstellt hat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file isn’t a backup of the shelf layout or it is damaged. Choose a file that Plattenregal created with “Save As” or automatically."
+          }
+        }
+      }
+    },
+    "Erhalten bleiben die %lld neuesten Stände und dazu der letzte Stand jedes der %lld jüngsten Tage, an denen gesichert wurde – zusammen höchstens %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The %lld newest versions are kept, plus the last version of each of the %lld most recent days with a backup – %lld at most in all."
+          }
+        }
+      }
+    },
+    "Erhalten bleiben die %lld neuesten Stände." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The %lld newest versions are kept."
+          }
+        }
+      }
+    },
+    "In %@ – zählt nicht zum Platz der App. Wie viele bleiben, legst du unter „Sicherung“ fest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@ – doesn’t count toward the app’s storage. How many are kept is set under “Backup”."
+          }
+        }
+      }
+    },
     "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf." : {
       "localizations" : {
         "en" : {
@@ -126,6 +296,146 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Snapping the window to a screen edge or zooming it is now smooth instead of stuttering."
+          }
+        }
+      }
+    },
+    "Mitte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Center"
+          }
+        }
+      }
+    },
+    "Nach dem Verkauf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After the sale"
+          }
+        }
+      }
+    },
+    "Namen ändern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        }
+      }
+    },
+    "Neueste Stände" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Newest versions"
+          }
+        }
+      }
+    },
+    "Neueste Stände behalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep newest versions"
+          }
+        }
+      }
+    },
+    "Nimmt alle %lld Platten aus ihren Fächern und setzt sie auf „Ohne Regalplatz“; die übrigen rücken auf. Fragt vorher nach." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takes all %lld records out of their compartments and sets them to “Kept off shelf”; the others move up. Asks first."
+          }
+        }
+      }
+    },
+    "Nimmt die Platte aus ihrem Fach und setzt sie auf „Ohne Regalplatz“; die übrigen rücken auf. Fragt vorher nach." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takes the record out of its compartment and sets it to “Kept off shelf”; the others move up. Asks first."
+          }
+        }
+      }
+    },
+    "Platten, Standorte, Wantlist und Statistik-Verlauf. Löschen lässt sie sich nur unter „Zurücksetzen“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records, locations, wantlist and statistics history. It can only be deleted under “Reset”."
+          }
+        }
+      }
+    },
+    "Rechts" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right"
+          }
+        }
+      }
+    },
+    "Regal umbenennen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename Shelf"
+          }
+        }
+      }
+    },
+    "Sichern unter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save As"
+          }
+        }
+      }
+    },
+    "Wantlist synchronisieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync Wantlist"
+          }
+        }
+      }
+    },
+    "Wird erstellt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creating"
+          }
+        }
+      }
+    },
+    "Ändern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change"
           }
         }
       }
@@ -232,12 +542,12 @@
         }
       }
     },
-    "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein." : {
+    "„Nach Updates suchen“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Check for Updates…” in the Plattenregal menu checks right away; turn it on or off and check by hand under Settings → General."
+            "value" : "“Check for Updates” in the Plattenregal menu checks right away; turn it on or off and check by hand under Settings → General."
           }
         }
       }
@@ -1621,16 +1931,6 @@
         }
       }
     },
-    "Alles zurücksetzen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset Everything…"
-          }
-        }
-      }
-    },
     "Allgemein" : {
       "localizations" : {
         "en" : {
@@ -1647,16 +1947,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alphabetical"
-          }
-        }
-      }
-    },
-    "Als %@ exportieren …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export as %@…"
           }
         }
       }
@@ -1737,16 +2027,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "at the beginning"
-          }
-        }
-      }
-    },
-    "Ändern …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change…"
           }
         }
       }
@@ -1867,16 +2147,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple TV"
-          }
-        }
-      }
-    },
-    "Apple TV verbinden …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connect Apple TV…"
           }
         }
       }
@@ -2011,16 +2281,6 @@
         }
       }
     },
-    "Aus Datei …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "From File…"
-          }
-        }
-      }
-    },
     "Aus den Hinzufügedaten der aktuell enthaltenen Exemplare. Entfernte Collection-Einträge sind nicht enthalten." : {
       "localizations" : {
         "en" : {
@@ -2061,32 +2321,12 @@
         }
       }
     },
-    "Aus Regal nehmen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove from Shelf…"
-          }
-        }
-      }
-    },
     "Aus Sammlung löschen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete from Collection"
-          }
-        }
-      }
-    },
-    "Aus Sammlung löschen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete from Collection…"
           }
         }
       }
@@ -2167,16 +2407,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatic backup"
-          }
-        }
-      }
-    },
-    "Automatische Sicherungen der Fach-Belegung (siehe „Sicherung“)." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatic backups of the shelf layout (see “Backup”)."
           }
         }
       }
@@ -2407,16 +2637,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restore layout from %@?"
-          }
-        }
-      }
-    },
-    "Belegung wiederherstellen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restore Layout…"
           }
         }
       }
@@ -2877,16 +3097,6 @@
         }
       }
     },
-    "Demo starten …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start Demo…"
-          }
-        }
-      }
-    },
     "Demo starten?" : {
       "localizations" : {
         "en" : {
@@ -2993,16 +3203,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The last automatic export failed. %@"
-          }
-        }
-      }
-    },
-    "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The last version of each day – so a day with many changes doesn’t push out all older backups."
           }
         }
       }
@@ -3173,16 +3373,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The app uses %@ on this Mac."
-          }
-        }
-      }
-    },
-    "Die automatische Sicherung um %@ hat nicht geklappt. Sichere die Belegung zur Sicherheit mit „Sichern unter …“ in eine Datei." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The automatic backup at %@ failed. To be safe, save the layout to a file with “Save As…”."
           }
         }
       }
@@ -3677,16 +3867,6 @@
         }
       }
     },
-    "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter …“ oder automatisch erstellt hat." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This file isn’t a backup of the shelf layout or it is damaged. Choose a file that Plattenregal created with “Save As…” or automatically."
-          }
-        }
-      }
-    },
     "Diese Datei ist viel zu groß für eine Sicherung der Fach-Belegung. Wähle eine Datei, die Plattenregal erstellt hat." : {
       "localizations" : {
         "en" : {
@@ -4077,16 +4257,6 @@
         }
       }
     },
-    "Eigene Größe …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Custom Size…"
-          }
-        }
-      }
-    },
     "Eigene Namen für die Rubriken oben im Fenster, höchstens %lld Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück." : {
       "localizations" : {
         "en" : {
@@ -4323,32 +4493,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove"
-          }
-        }
-      }
-    },
-    "Erhalten bleiben die letzten %lld Stände und zusätzlich der letzte Stand jedes Tages der vergangenen %lld Tage." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Erhalten bleiben die letzten %1$lld Stände und zusätzlich der letzte Stand jedes Tages der vergangenen %2$lld Tage."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The last %lld versions are kept, plus the last version of each day for the past %lld days."
-          }
-        }
-      }
-    },
-    "Erhalten bleiben die letzten %lld Stände." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The last %lld versions are kept."
           }
         }
       }
@@ -5722,16 +5866,6 @@
         }
       }
     },
-    "In %@ – zählt nicht zum Platz der App." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In %@ – doesn’t count toward the app’s storage."
-          }
-        }
-      }
-    },
     "In der App" : {
       "localizations" : {
         "en" : {
@@ -6463,26 +6597,6 @@
         }
       }
     },
-    "Letzte Stände" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recent versions"
-          }
-        }
-      }
-    },
-    "Letzte Stände behalten" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep recent versions"
-          }
-        }
-      }
-    },
     "Lila" : {
       "localizations" : {
         "en" : {
@@ -6839,17 +6953,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Checking for Updates"
-          }
-        }
-      }
-    },
-    "Nach Updates suchen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check for Updates…"
+            "value" : "Check for Updates"
           }
         }
       }
@@ -6920,16 +7024,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shelf name"
-          }
-        }
-      }
-    },
-    "Namen ändern …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename…"
           }
         }
       }
@@ -7354,16 +7448,6 @@
         }
       }
     },
-    "Nur Collection" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collection Only"
-          }
-        }
-      }
-    },
     "Nur leere Regale lassen sich löschen." : {
       "localizations" : {
         "en" : {
@@ -7390,36 +7474,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only records on the search list left"
-          }
-        }
-      }
-    },
-    "Nur Wantlist" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wantlist Only"
-          }
-        }
-      }
-    },
-    "Oben mittig" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top Center"
-          }
-        }
-      }
-    },
-    "Oben rechts" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top Right"
           }
         }
       }
@@ -7660,16 +7714,6 @@
         }
       }
     },
-    "Platten, Standorte, Wantlist und Statistik-Verlauf." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Records, locations, wantlist and statistics history."
-          }
-        }
-      }
-    },
     "Plattencover" : {
       "localizations" : {
         "en" : {
@@ -7722,16 +7766,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plattenregal %@ Is Available"
-          }
-        }
-      }
-    },
-    "Plattenregal %@ ist da …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal %@ Is Available…"
           }
         }
       }
@@ -8312,16 +8346,6 @@
         }
       }
     },
-    "Regal umbenennen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename Shelf…"
-          }
-        }
-      }
-    },
     "Regal, Fach und Position" : {
       "localizations" : {
         "en" : {
@@ -8718,16 +8742,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Semicolon"
-          }
-        }
-      }
-    },
-    "Sichern unter …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save As…"
           }
         }
       }
@@ -9248,16 +9262,6 @@
         }
       }
     },
-    "Suchliste …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search list…"
-          }
-        }
-      }
-    },
     "Sucht den Track auf YouTube" : {
       "localizations" : {
         "en" : {
@@ -9444,16 +9448,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter Token"
-          }
-        }
-      }
-    },
-    "Token eintragen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter Token…"
           }
         }
       }
@@ -9974,16 +9968,6 @@
         }
       }
     },
-    "Wählen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose…"
-          }
-        }
-      }
-    },
     "Während der Synchronisierung lässt sich der Token nicht ändern." : {
       "localizations" : {
         "en" : {
@@ -10240,16 +10224,6 @@
         }
       }
     },
-    "Wiederherstellen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restore…"
-          }
-        }
-      }
-    },
     "Willkommen bei Plattenregal" : {
       "localizations" : {
         "en" : {
@@ -10286,16 +10260,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Calculating…"
-          }
-        }
-      }
-    },
-    "Wird erstellt …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Creating…"
           }
         }
       }
@@ -10612,16 +10576,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reset"
-          }
-        }
-      }
-    },
-    "Zurücksetzen …" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset…"
           }
         }
       }

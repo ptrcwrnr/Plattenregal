@@ -293,7 +293,7 @@ import SystemConfiguration
             return
         }
         guard pairing == .waiting, pending == nil else {
-            try await link.send(.declined(reason: "Am Mac ist gerade keine Kopplung offen. Öffne dort Einstellungen → Apple TV und klicke auf „Apple TV verbinden …“."))
+            try await link.send(.declined(reason: "Am Mac ist gerade keine Kopplung offen. Öffne dort Einstellungen → Apple TV und klicke auf „Apple TV verbinden“."))
             link.close()
             return
         }

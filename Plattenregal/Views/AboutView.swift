@@ -100,6 +100,7 @@ enum Changelog {
                 String(localized: "Die Statistik scrollt jetzt so flüssig wie die Collection: Kacheln und Diagramme, die beim Scrollen unter dem Mauszeiger durchziehen, leuchten erst auf, wenn die Seite steht."),
                 String(localized: "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf."),
                 String(localized: "Legst du das Fenster an einen Bildschirmrand an oder zoomst es, gleitet es jetzt flüssig, statt zu ruckeln."),
+                String(localized: "Die Einstellungen sind aufgeräumter: Synchronisieren und „Alle verkauft“ stehen als Zeilen mit Erklärung, die automatische Sicherung sagt, wie viele Stände höchstens bleiben, Knöpfe tragen keine Auslassungspunkte mehr, und das Fenster schließt auch mit dem roten Knopf."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),
@@ -108,7 +109,7 @@ enum Changelog {
             ]),
             Entry(version: "1.0.2", date: day(2026, 11, 3), changes: [
                 String(localized: "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung."),
-                String(localized: "„Nach Updates suchen …“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein."),
+                String(localized: "„Nach Updates suchen“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein."),
                 String(localized: "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet."),
                 String(localized: "Label, Katalognummer und Format stehen auf der Plattenkarte und im Zufallsfund aufgeräumt: jeder Wert nur einmal, ohne das „none“ von Discogs und ohne „1 ·“ vor dem Format."),
                 String(localized: "Schnelle Klicks auf ein Cover gehen nicht mehr verloren: Jeder Klick öffnet oder schließt das Popover – in Collection, Wantlist und Regal."),

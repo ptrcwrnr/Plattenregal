@@ -88,7 +88,7 @@ nonisolated enum ShelfBackupError: LocalizedError {
         case .tooLarge: String(localized: "Diese Datei ist viel zu groß für eine Sicherung der Fach-Belegung. Wähle eine Datei, die Plattenregal erstellt hat.")
         case .noMatchingRecords: String(localized: "Keine Platte aus dieser Sicherung ist gerade in deiner Sammlung. Synchronisiere zuerst die Collection mit Discogs – oder die Sicherung gehört zu einem anderen Discogs-Konto. Es wurde nichts verändert.")
         case .syncRunning: String(localized: "Gerade läuft eine Synchronisierung mit Discogs. Warte, bis sie fertig ist, und stelle die Belegung dann wieder her.")
-        case .unreadable: String(localized: "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter …“ oder automatisch erstellt hat.")
+        case .unreadable: String(localized: "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter“ oder automatisch erstellt hat.")
         case .newerVersion: String(localized: "Diese Sicherung stammt aus einer neueren Version von Plattenregal. Aktualisiere die App zuerst und versuche es dann noch einmal.")
         }
     }

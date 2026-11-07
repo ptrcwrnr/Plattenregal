@@ -351,7 +351,7 @@ nonisolated enum UpdateCheckInterval: String, CaseIterable, Identifiable, Sendab
 
 // MARK: - The check in the app
 
-/// "Nach Updates suchen …": on request from the app menu or the settings, and
+/// "Nach Updates suchen": on request from the app menu or the settings, and
 /// – as often as set (`UpdateCheckInterval`) – on its own. A newer version opens the
 /// update window (`UpdateView`); downloading and installing stay with the
 /// user: the browser loads the DMG, the new app is dragged to „Programme“.
@@ -429,7 +429,7 @@ nonisolated enum UpdateCheckInterval: String, CaseIterable, Identifiable, Sendab
 
     // MARK: Checking
 
-    /// "Nach Updates suchen …": the window shows "Suche …", then the answer.
+    /// "Nach Updates suchen": the window shows "Suche …", then the answer.
     /// A check already under way is joined, not started twice.
     func checkNow() {
         guard manualCheck == nil else { return }
@@ -533,7 +533,7 @@ nonisolated enum UpdateCheckInterval: String, CaseIterable, Identifiable, Sendab
         }
     }
 
-    /// „Plattenregal x ist da …“ in the record's menu: the update window in front.
+    /// „Plattenregal x ist da“ in the record's menu: the update window in front.
     func showAvailableRelease() {
         AppLifecycle.shared.leaveBackground()
         NSApp.activate()

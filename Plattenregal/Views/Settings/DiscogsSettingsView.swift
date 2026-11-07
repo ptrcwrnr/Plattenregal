@@ -84,21 +84,18 @@ struct DiscogsSettingsView: View {
 
             SettingsCard(title: String(localized: "Synchronisierung"),
                          subtitle: String(localized: "Collection und Wantlist lassen sich auch auf ihrer Seite mit ⌘R oder durch Herunterziehen aktualisieren.")) {
-                if let account {
-                    HStack(spacing: AppStyle.itemSpacing) {
-                        let counts = counts(for: account.username)
-                        syncTile(String(localized: "Collection"), count: counts.collection,
-                                 date: account.lastCollectionSync, systemImage: "square.stack")
-                        syncTile(String(localized: "Wantlist"), count: counts.wantlist,
-                                 date: account.lastWantlistSync, systemImage: "heart.text.clipboard")
-                    }
-                }
-                HStack(spacing: AppStyle.itemSpacing) {
+                // Like every other setting: what it is on the left, its button on the right.
+                let counts = account.map { counts(for: $0.username) }
+                syncRow(String(localized: "Collection"), count: counts?.collection, date: account?.lastCollectionSync,
+                        accessibility: String(localized: "Collection synchronisieren")) { start(.collection) }
+                Divider()
+                syncRow(String(localized: "Wantlist"), count: counts?.wantlist, date: account?.lastWantlistSync,
+                        accessibility: String(localized: "Wantlist synchronisieren")) { start(.wantlist) }
+                Divider()
+                SettingsRow(title: String(localized: "Beides"), hint: String(localized: "Collection und Wantlist nacheinander.")) {
                     PrimaryButton(title: String(localized: "Alles synchronisieren")) { start(.all) }
-                    SecondaryButton(title: String(localized: "Nur Collection")) { start(.collection) }
-                    SecondaryButton(title: String(localized: "Nur Wantlist")) { start(.wantlist) }
+                        .disabled(!syncAvailable)
                 }
-                .disabled(sync.busy || model.busy || !canSync)
                 if sync.hasStatus {
                     DiscogsSyncStatusView()
                         .font(.callout)
@@ -179,22 +176,27 @@ struct DiscogsSettingsView: View {
 
     private func start(_ scope: DiscogsSyncScope) { sync.start(scope, container: context.container) }
 
-    private func syncTile(_ title: String, count: Int, date: Date?, systemImage: String) -> some View {
-        HStack(spacing: AppStyle.rowSpacing) {
-            SymbolTile(systemImage: systemImage)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(title).font(.headline)
-                // Ticks along while the window stays open ("vor 2 Minuten" …).
-                TimelineView(.everyMinute) { _ in
-                    Text(AppStyle.records(count) + " · " + (date.map { String(localized: "synchronisiert \($0.formatted(.relative(presentation: .named)))") } ?? String(localized: "noch nicht synchronisiert")))
-                        .monospacedDigit()
-                }
-                .font(.caption).foregroundStyle(.secondary)
-                .help(date?.formatted(date: .abbreviated, time: .shortened) ?? "")
+    /// Collection or Wantlist: how many and when last synced, ticking along
+    /// while the window stays open ("vor 2 Minuten" …), the exact time as
+    /// help; its own sync on the right.
+    private func syncRow(_ title: String, count: Int?, date: Date?, accessibility: String, action: @escaping () -> Void) -> some View {
+        TimelineView(.everyMinute) { _ in
+            SettingsRow(title: title, hint: syncHint(count: count, date: date)) {
+                SecondaryButton(title: String(localized: "Synchronisieren"), action: action)
+                    .disabled(!syncAvailable)
+                    .accessibilityLabel(accessibility)
             }
         }
-        // No tile surface: on the white card it was invisible and only
-        // indented the icon against the card's title and buttons.
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .help(date?.formatted(date: .abbreviated, time: .shortened) ?? "")
     }
+
+    private func syncHint(count: Int?, date: Date?) -> String {
+        let when = date.map { String(localized: "synchronisiert \($0.formatted(.relative(presentation: .named)))") }
+            ?? String(localized: "noch nicht synchronisiert")
+        guard let count else { return when.prefix(1).uppercased() + when.dropFirst() }
+        return AppStyle.records(count) + " · " + when
+    }
+
+    /// Nothing runs and a token is there to sync with.
+    private var syncAvailable: Bool { !sync.busy && !model.busy && canSync }
 }

@@ -113,9 +113,13 @@ struct ListsSettingsView: View {
                                     if copy.id != forSale.last?.id { Divider() }
                                 }
                             }
-                            HStack {
-                                Spacer(minLength: 0)
-                                SecondaryButton(title: String(localized: "Verkauft")) { confirmSold = true }
+                            Divider()
+                            // Says what the button does, instead of a lone "Verkauft".
+                            SettingsRow(title: String(localized: "Nach dem Verkauf"),
+                                        hint: forSale.count == 1
+                                        ? String(localized: "Nimmt die Platte aus ihrem Fach und setzt sie auf „Ohne Regalplatz“; die übrigen rücken auf. Fragt vorher nach.")
+                                        : String(localized: "Nimmt alle \(forSale.count) Platten aus ihren Fächern und setzt sie auf „Ohne Regalplatz“; die übrigen rücken auf. Fragt vorher nach.")) {
+                                SecondaryButton(title: forSale.count == 1 ? String(localized: "Verkauft") : String(localized: "Alle verkauft")) { confirmSold = true }
                             }
                         }
                     }

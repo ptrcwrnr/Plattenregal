@@ -17,6 +17,16 @@ struct AppMenu<Content: View>: View {
     }
 }
 
+/// A quiet line between two groups of rows in an `AppMenu`, inset like the
+/// rows' text.
+struct AppMenuDivider: View {
+    var body: some View {
+        Divider()
+            .padding(.horizontal, AppStyle.itemSpacing)
+            .padding(.vertical, AppStyle.hairSpacing)
+    }
+}
+
 /// Small caption over a group of rows in an `AppMenu`.
 struct AppMenuSection: View {
     let title: String

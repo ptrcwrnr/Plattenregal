@@ -38,11 +38,11 @@ struct KallaxView: View {
     /// A card waiting for its compartment to be built (see `startPlacement`);
     /// cleared when anything else ends or replaces the placement.
     @State private var pendingPlacement: UUID?
-    /// "Namen ändern …" from a locked compartment's menu.
+    /// "Namen ändern" from a locked compartment's menu.
     @State private var showsNameEditor = false
     /// Cabinet tab whose right-click menu is open, and where.
     @State private var cabinetMenu: (id: UUID, anchor: UnitPoint)?
-    /// Cabinet tab whose name popover is open ("Regal umbenennen …").
+    /// Cabinet tab whose name popover is open ("Regal umbenennen").
     @State private var renamingCabinet: UUID?
     @State private var lockPreview = ShelfLockPreview()
     // Last copy taken out of a shelf via the trash button, kept briefly so the
@@ -299,7 +299,7 @@ struct KallaxView: View {
                         if nothingPlaced {
                             // Typically right after a new install and the first sync.
                             AppBanner(message: String(localized: "Noch keine Platte steht in einem Fach. Hast du eine Sicherung deiner Fach-Belegung, stellst du sie hier wieder her."),
-                                      kind: .info, actionTitle: String(localized: "Belegung wiederherstellen …"), action: { settingsTab = .backup })
+                                      kind: .info, actionTitle: String(localized: "Belegung wiederherstellen"), action: { settingsTab = .backup })
                         }
                     }
                 }
@@ -520,7 +520,7 @@ struct KallaxView: View {
                 ), attachmentAnchor: .point(cabinetMenu?.anchor ?? .center), arrowEdge: .bottom) {
                     AppMenu(dismiss: { cabinetMenu = nil }) {
                         Button("Regal anzeigen") { show(cabinet) }
-                        Button("Regal umbenennen …") { renamingCabinet = cabinet.id }
+                        Button("Regal umbenennen") { renamingCabinet = cabinet.id }
                     }
                     // Not the tab's accent or gray: popovers inherit it.
                     .foregroundStyle(.primary)
@@ -556,7 +556,7 @@ struct KallaxView: View {
                     ? String(localized: "Eine Platte im Regal ist nicht mehr in deiner Discogs-Collection.")
                     : String(localized: "\(sold) Platten im Regal sind nicht mehr in deiner Discogs-Collection."),
                   kind: .warning,
-                  actionTitle: String(localized: "Aus Regal nehmen …"),
+                  actionTitle: String(localized: "Aus Regal nehmen"),
                   action: { soldToRemove = sold; confirmRemoveSold = true })
     }
 
@@ -698,8 +698,10 @@ struct KallaxView: View {
             .disabled(locked)
         Button("Sortierung prüfen") { selectShelf(shelf); requests.panel = .sortCheck(ShelfSortCheckRequest(shelf: shelf)) }
             .disabled(locked || shelf.copies.count < 2)
+        AppMenuDivider()
         if locked {
-            Button("Namen ändern …") { selectShelf(shelf); showsNameEditor = true }
+            Button("Namen ändern") { selectShelf(shelf); showsNameEditor = true }
+            AppMenuDivider()
             Button("Fach entsperren") { setLocked(shelf, false) }
         } else {
             Button("Fach sperren") { setLocked(shelf, true) }

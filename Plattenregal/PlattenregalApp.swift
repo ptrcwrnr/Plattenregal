@@ -204,7 +204,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     Button("Demo beenden") { DemoMode.end() }
                     Button("Demo neu starten") { DemoMode.restart() }
                 } else {
-                    Button("Demo starten …") { DemoMode.confirmStart() }
+                    Button("Demo starten") { DemoMode.confirmStart() }
                 }
             }
         }

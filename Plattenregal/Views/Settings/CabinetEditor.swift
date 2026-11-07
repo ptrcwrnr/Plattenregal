@@ -35,7 +35,7 @@ private struct CabinetSizePicker: View {
                     }
                 }
                 Divider()
-                Text("Eigene Größe …").tag("custom")
+                Text("Eigene Größe").tag("custom")
             }
             if selection.wrappedValue == "custom" {
                 HStack(spacing: AppStyle.rowSpacing) {

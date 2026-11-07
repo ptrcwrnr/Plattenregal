@@ -92,10 +92,18 @@ struct DataSettingsView: View {
         SettingsPage {
             SettingsCard(title: String(localized: "Speicherplatz"),
                          subtitle: sizes.covers == nil ? String(localized: "Wird berechnet …") : String(localized: "Die App belegt \(bytes(sizes.total)) auf diesem Mac.")) {
+                // First what the app keeps (no button: neither comes back),
+                // then what may go – the two "Leeren" one below the other.
                 SettingsRow(title: String(localized: "Sammlung"), hint: DemoMode.isActive
                             ? String(localized: "In der Demo liegt die Sammlung nur im Arbeitsspeicher.")
-                            : String(localized: "Platten, Standorte, Wantlist und Statistik-Verlauf.")) {
+                            : String(localized: "Platten, Standorte, Wantlist und Statistik-Verlauf. Löschen lässt sie sich nur unter „Zurücksetzen“.")) {
                     sizeLabel(sizes.database)
+                }
+                Divider()
+                SettingsRow(title: String(localized: "Sicherungen"), hint: autoBackup.usesCustomFolder
+                            ? String(localized: "In \(autoBackup.directory.map(FolderAccess.displayName) ?? "–") – zählt nicht zum Platz der App. Wie viele bleiben, legst du unter „Sicherung“ fest.")
+                            : String(localized: "Automatische Sicherungen der Fach-Belegung. Wie viele bleiben, legst du unter „Sicherung“ fest.")) {
+                    sizeLabel(sizes.backups)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Cover-Cache"), hint: String(localized: "Cover werden bei Bedarf neu von Discogs geladen.")) {
@@ -104,12 +112,6 @@ struct DataSettingsView: View {
                         SecondaryButton(title: String(localized: "Leeren"), action: clearCovers)
                             .disabled(clearingCache || (sizes.covers ?? 0) == 0)
                     }
-                }
-                Divider()
-                SettingsRow(title: String(localized: "Sicherungen"), hint: autoBackup.usesCustomFolder
-                            ? String(localized: "In \(autoBackup.directory.map(FolderAccess.displayName) ?? "–") – zählt nicht zum Platz der App.")
-                            : String(localized: "Automatische Sicherungen der Fach-Belegung (siehe „Sicherung“).")) {
-                    sizeLabel(sizes.backups)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Protokoll"), hint: DemoMode.isActive
@@ -138,7 +140,7 @@ struct DataSettingsView: View {
                                 NSWorkspace.shared.activateFileViewerSelecting([file ?? directory])
                             }
                         }
-                        SecondaryButton(title: String(localized: "Sichern unter …")) {
+                        SecondaryButton(title: String(localized: "Sichern unter")) {
                             logDocument = ExportDocument(data: AppLog.exportData())
                             savingLog = true
                         }
@@ -161,15 +163,15 @@ struct DataSettingsView: View {
             SettingsCard(title: String(localized: "Zurücksetzen"),
                          subtitle: sync.busy ? String(localized: "Während der Synchronisierung lässt sich nichts zurücksetzen.") : nil) {
                 SettingsRow(title: String(localized: "Standorte"), hint: String(localized: "Alle Platten aus den Fächern nehmen, Sperren aufheben.")) {
-                    SecondaryButton(title: String(localized: "Zurücksetzen …")) { pendingReset = .locations }
+                    SecondaryButton(title: String(localized: "Zurücksetzen")) { pendingReset = .locations }
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Einstellungen"), hint: String(localized: "Alle Einstellungen auf Standard, Daten bleiben.")) {
-                    SecondaryButton(title: String(localized: "Zurücksetzen …")) { pendingReset = .settings }
+                    SecondaryButton(title: String(localized: "Zurücksetzen")) { pendingReset = .settings }
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Alles"), hint: String(localized: "Wie eine neue Installation. Sicherungen der Belegung bleiben erhalten.")) {
-                    Button("Alles zurücksetzen …", role: .destructive) { pendingReset = .everything }
+                    Button("Alles zurücksetzen", role: .destructive) { pendingReset = .everything }
                         .appGlassButton()
                 }
                 if resetting { ActivityRing(size: 14).transition(.opacity) }

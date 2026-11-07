@@ -56,7 +56,7 @@ struct ShelfAssignmentView: View {
                     if pausedCount > 0 {
                         AppEmptyState(String(localized: "Nur noch gesuchte Platten"), systemImage: "checkmark.circle",
                                       description: Text("Alle übrigen noch nicht einsortierten Platten stehen auf der Suchliste. In den Einstellungen unter „Listen“ markierst du sie als gefunden."),
-                                      actionTitle: String(localized: "Suchliste …"), action: openMissing)
+                                      actionTitle: String(localized: "Suchliste"), action: openMissing)
                     } else {
                         AppEmptyState(String(localized: "Alles einsortiert"), systemImage: "checkmark.circle",
                                       description: Text("Jede Platte der Sammlung liegt bereits in einem Fach."))

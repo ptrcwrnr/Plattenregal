@@ -34,13 +34,13 @@ struct BackupSettingsView: View {
             SettingsCard(title: String(localized: "Fach-Belegung"),
                          subtitle: String(localized: "Die Platten selbst kommen jederzeit wieder aus Discogs. Wo sie im Regal stehen, gibt es nur hier – die Sicherung bewahrt genau das.")) {
                 SettingsRow(title: String(localized: "Aktuell"), hint: current?.summary ?? String(localized: "Die aktuelle Belegung ließ sich gerade nicht lesen. Bleibt das so, starte Plattenregal neu.")) {
-                    PrimaryButton(title: String(localized: "Sichern unter …"), action: saveToFile)
+                    PrimaryButton(title: String(localized: "Sichern unter"), action: saveToFile)
                         .disabled(current == nil)
                 }
                 Divider()
                 SettingsRow(title: String(localized: "Wiederherstellen"),
                             hint: String(localized: "Zuerst mit Discogs synchronisieren, damit alle Platten da sind. Zugeordnet wird über die Discogs-Exemplar-ID.")) {
-                    SecondaryButton(title: String(localized: "Aus Datei …")) { importing = true }
+                    SecondaryButton(title: String(localized: "Aus Datei")) { importing = true }
                         .disabled(sync.busy)
                 }
                 if sync.busy {
@@ -57,20 +57,21 @@ struct BackupSettingsView: View {
                          subtitle: DemoMode.showsBanner
                             ? String(localized: "In der Demo wird nicht automatisch gesichert, und Speicherort und Aufbewahrung lassen sich nicht ändern – so bleiben deine echten Sicherungen unberührt.")
                             : String(localized: "Ein paar Sekunden nach jeder Änderung am Regal. ") + (keptDays > 0
-                            ? String(localized: "Erhalten bleiben die letzten \(keptCount) Stände und zusätzlich der letzte Stand jedes Tages der vergangenen \(keptDays) Tage.")
-                            : String(localized: "Erhalten bleiben die letzten \(keptCount) Stände."))) {
+                            // Both rules together: says how many files that can make.
+                            ? String(localized: "Erhalten bleiben die \(keptCount) neuesten Stände und dazu der letzte Stand jedes der \(keptDays) jüngsten Tage, an denen gesichert wurde – zusammen höchstens \(ShelfAutoBackup.maximumKept(keptCount: keptCount, keptDays: keptDays)).")
+                            : String(localized: "Erhalten bleiben die \(keptCount) neuesten Stände."))) {
                 SettingsRow(title: String(localized: "Automatisch sichern")) {
                     Toggle("Automatisch sichern", isOn: $autoEnabled).labelsHidden().toggleStyle(.switch)
                         .disabled(DemoMode.showsBanner)
                 }
                 Divider()
-                SettingsRow(title: String(localized: "Letzte Stände behalten")) {
+                SettingsRow(title: String(localized: "Neueste Stände behalten")) {
                     GlassSegmentedPicker(selection: retention(\.count), options: ShelfAutoBackup.keptCountOptions) { Text("\($0)") }
-                        .accessibilityLabel("Letzte Stände")
+                        .accessibilityLabel("Neueste Stände")
                     .disabled(DemoMode.showsBanner)
                 }
                 Divider()
-                SettingsRow(title: String(localized: "Tagesstände behalten"), hint: String(localized: "Der letzte Stand eines Tages – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.")) {
+                SettingsRow(title: String(localized: "Tagesstände behalten"), hint: String(localized: "Der letzte Stand eines Tages, gezählt werden nur Tage, an denen gesichert wurde – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen.")) {
                     GlassMenuPicker(title: String(localized: "Tagesstände"), selection: retention(\.days),
                                     current: keptDays == 0 ? String(localized: "Keine") : String(localized: "\(keptDays) Tage")) {
                         ForEach(ShelfAutoBackup.keptDaysOptions, id: \.self) { Text($0 == 0 ? "Keine" : "\($0) Tage").tag($0) }
@@ -90,7 +91,7 @@ struct BackupSettingsView: View {
                             if ShelfAutoBackup.folder.isSet {
                                 GhostButton(title: String(localized: "Standard")) { changeFolder(to: nil) }
                             }
-                            SecondaryButton(title: String(localized: "Ändern …")) {
+                            SecondaryButton(title: String(localized: "Ändern")) {
                                 if let url = FolderPicker.choose(message: String(localized: "Ordner für die automatischen Sicherungen der Fach-Belegung")) { changeFolder(to: url) }
                             }
                         }
@@ -99,7 +100,7 @@ struct BackupSettingsView: View {
                 }
                 if let folderError { AppBanner(message: folderError, kind: .error).transition(AppStyle.funnelTransition()) }
                 if autoEnabled, let failure = autoBackup.lastFailure {
-                    AppBanner(message: String(localized: "Die automatische Sicherung um \(failure.formatted(date: .omitted, time: .shortened)) hat nicht geklappt. Sichere die Belegung zur Sicherheit mit „Sichern unter …“ in eine Datei."), kind: .warning)
+                    AppBanner(message: String(localized: "Die automatische Sicherung um \(failure.formatted(date: .omitted, time: .shortened)) hat nicht geklappt. Sichere die Belegung zur Sicherheit mit „Sichern unter“ in eine Datei."), kind: .warning)
                         .transition(AppStyle.funnelTransition())
                 }
                 Divider()
@@ -113,7 +114,7 @@ struct BackupSettingsView: View {
                                     Text(entry.backup.summary).font(.caption).foregroundStyle(.secondary).monospacedDigit()
                                 }
                                 Spacer()
-                                GhostButton(title: String(localized: "Wiederherstellen …")) { prepareRestore(entry.backup) }
+                                GhostButton(title: String(localized: "Wiederherstellen")) { prepareRestore(entry.backup) }
                                     .disabled(sync.busy)
                             }
                             .padding(.vertical, AppStyle.tightSpacing)
@@ -201,7 +202,7 @@ struct BackupSettingsView: View {
     private func applyRetention(count: Int, days: Int) {
         guard count != keptCount || days != keptDays else { return }
         keptCount = count; keptDays = days
-        AppLog.info("Sicherung", "Aufbewahrung: letzte \(count) Stände, Tagesstände der letzten \(days) Tage")
+        AppLog.info("Sicherung", "Aufbewahrung: neueste \(count) Stände, Tagesstände der jüngsten \(days) Tage mit Sicherung")
         autoBackup.applyRetention()
     }
 

@@ -94,7 +94,7 @@ struct ExportSettingsView: View {
             SettingsCard(title: String(localized: "Datei")) {
                 SettingsRow(title: AppStyle.records(total),
                             hint: sync.isRunning ? String(localized: "Nach der laufenden Synchronisierung ist der Export vollständig.") : nil) {
-                    PrimaryButton(title: preparing ? String(localized: "Wird erstellt …") : String(localized: "Als \(format.title) exportieren …"), action: export)
+                    PrimaryButton(title: preparing ? String(localized: "Wird erstellt") : String(localized: "Als \(format.title) exportieren"), action: export)
                         .disabled(total == 0 || preparing)
                 }
                 if let status {
@@ -188,7 +188,7 @@ struct ExportSettingsView: View {
                                 try? ScheduledExport.folder.withAccess { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
                             }
                         }
-                        SecondaryButton(title: folder == nil ? String(localized: "Wählen …") : String(localized: "Ändern …")) { chooseExportFolder() }
+                        SecondaryButton(title: folder == nil ? String(localized: "Wählen") : String(localized: "Ändern")) { chooseExportFolder() }
                     }
                 }
                 Divider()

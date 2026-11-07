@@ -178,6 +178,28 @@ extension AllTests {
             #expect(Set(kept) == Set(Array(0..<10) + Array(30..<43)))
         }
 
+        /// The total the settings name ("zusammen höchstens …") is what
+        /// `retained` keeps in the worst case – many backups today, one on
+        /// each earlier day – and never exceeded, for every choice offered.
+        @Test func theNamedMaximumIsWhatRetentionKeepsAtMost() {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
+            let now = Date(timeIntervalSince1970: 1_790_000_000)
+            for count in ShelfAutoBackup.keptCountOptions {
+                for days in ShelfAutoBackup.keptDaysOptions {
+                    let maximum = ShelfAutoBackup.maximumKept(keptCount: count, keptDays: days)
+                    let worst = (0..<count).map { now.addingTimeInterval(-Double($0)) }
+                        + (1...(days + 5)).map { now.addingTimeInterval(-Double($0) * 86_400) }
+                    #expect(ShelfAutoBackup.retained(worst, keptCount: count, keptDays: days, calendar: calendar).count == maximum)
+                    // One backup a day: fewer, never more.
+                    let daily = (0..<(count + days + 5)).map { now.addingTimeInterval(-Double($0) * 86_400) }
+                    #expect(ShelfAutoBackup.retained(daily, keptCount: count, keptDays: days, calendar: calendar).count <= maximum)
+                }
+            }
+            #expect(ShelfAutoBackup.maximumKept(keptCount: 5, keptDays: 14) == 18)
+            #expect(ShelfAutoBackup.maximumKept(keptCount: 5, keptDays: 0) == 5)
+        }
+
         @Test func retentionWithoutDailyStatesKeepsOnlyTheLatest() {
             let now = Date(timeIntervalSince1970: 1_790_000_000)
             let dates = (0..<30).map { now.addingTimeInterval(-Double($0) * 86_400) }

@@ -94,9 +94,10 @@ struct AppSettingsView: View {
         // Wide enough for all ten tabs in the toolbar's switch (nine while
         // Apple TV is off); with less room the toolbar drops the whole switch.
         .frame(width: 860, height: 510)
-        // Only the area switch in the title bar: no window buttons next to
-        // it. Esc and ⌘W close the window instead.
-        .background { WindowButtonsHidden() }
+        // A window of its own (unlike the panels over the shelf page), so it
+        // keeps the red button to close it; minimize and zoom mean nothing
+        // for it. Esc and ⌘W close it too.
+        .background { MinimizeAndZoomHidden() }
         .background {
             Group {
                 Button { dismiss() } label: { EmptyView() }.keyboardShortcut(.cancelAction).disabled(escapeTaken)
@@ -143,15 +144,20 @@ struct SettingsEscapeKey: PreferenceKey {
     static func reduce(value: inout Bool, nextValue: () -> Bool) { value = value || nextValue() }
 }
 
-/// Hides close, minimize and zoom of the window this view sits in.
-private struct WindowButtonsHidden: NSViewRepresentable {
+/// Hides minimize and zoom of the window this view sits in; close stays.
+/// The toolbar is the unified one, as in the main window: macOS gives a
+/// settings window its taller preference toolbar, where the close button
+/// sat well above the area switch.
+private struct MinimizeAndZoomHidden: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { Probe() }
     func updateNSView(_ nsView: NSView, context: Context) {}
     private final class Probe: NSView {
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
-            for kind in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
-                window?.standardWindowButton(kind)?.isHidden = true
+            guard let window else { return }
+            window.toolbarStyle = .unified
+            for kind in [NSWindow.ButtonType.miniaturizeButton, .zoomButton] {
+                window.standardWindowButton(kind)?.isHidden = true
             }
         }
     }

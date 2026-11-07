@@ -32,7 +32,7 @@ struct ShelfLockReader<Content: View>: View {
     }
 }
 
-/// "Namen ändern …" in a locked compartment's menu: the name shown on it
+/// "Namen ändern" in a locked compartment's menu: the name shown on it
 /// instead of the range (e.g. "Plattenspieler"). Saved on Return and when
 /// the popover closes.
 struct ShelfNamePopover: View {
@@ -72,7 +72,7 @@ struct ShelfNamePopover: View {
     }
 }
 
-/// "Regal umbenennen …" in a cabinet tab's right-click menu. Saved on
+/// "Regal umbenennen" in a cabinet tab's right-click menu. Saved on
 /// Return and when the popover closes; an empty field keeps the old name.
 struct CabinetNamePopover: View {
     let cabinet: Cabinet

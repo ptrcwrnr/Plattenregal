@@ -31,7 +31,8 @@ struct ShelfSettingsView: View {
     /// Same entries as the compartment's menu on the shelf page.
     @ViewBuilder private func lockMenu(_ shelf: Shelf) -> some View {
         if shelf.isReserved {
-            Button("Namen ändern …") { namingID = shelf.id }
+            Button("Namen ändern") { namingID = shelf.id }
+            AppMenuDivider()
             Button("Fach entsperren") { setLocked(shelf, false) }
         } else {
             Button("Fach sperren") { setLocked(shelf, true) }

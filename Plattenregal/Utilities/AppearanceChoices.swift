@@ -68,8 +68,9 @@ enum QuickSearchPosition: String, CaseIterable, Identifiable {
     var id: Self { self }
     var title: String {
         switch self {
-        case .center: String(localized: "Oben mittig")
-        case .topRight: String(localized: "Oben rechts")
+        // Short: the hint below says it opens at the top.
+        case .center: String(localized: "Mitte")
+        case .topRight: String(localized: "Rechts")
         }
     }
     /// Always shown, so the row keeps its height when switching.
