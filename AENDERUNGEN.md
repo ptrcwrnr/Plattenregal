@@ -1,3 +1,22 @@
+# Statistik scrollt flüssig: Hover ruht beim Scrollen, ein Ablageziel statt zehn · 07.11.2026
+
+- **Anlass:** Bei der Durchsicht der Designs kostete das Scrollen der Statistik in allen Designs gut dreimal so viel App-Rechenzeit wie die Collection.
+- **Gemessen:** Debug-Build, Demo ohne Hinweis, 10 s gleichmäßiges Scrollen per Mausrad-Ereignissen, Zeiger mitten im Fenster; kleiner Hub (450 pt, oberer Teil der Seite) und großer Hub (über die ganze Seite). Gezählt wurden neben der CPU-Zeit die tatsächlich gescrollten Bilder: Die CPU-Summe allein täuschte, weil eine flüssigere Seite mehr Bilder zeichnet und damit kaum weniger CPU braucht. Ursachen eingegrenzt mit Time Profiler, dem SwiftUI-Instrument von `xctrace` und zeitweiligen Abschaltern.
+- **Ursache 1 – Hover unter dem ruhenden Zeiger:** Beim Scrollen ziehen Kacheln, Legendenzeilen und Diagramme unter dem stillstehenden Zeiger durch. Jede löste ihren Hover aus, und Donut oder Balken zeichneten sich darauf animiert neu. Bei Zeiger im Seitenrand lag die Seite schon bei der Hälfte der Kosten. Jetzt hält `statisticsHover` / `statisticsContinuousHover` (`StatisticsLayout.swift`) den Hover zurück, solange die Seite scrollt (`StatisticsScrolling`, aus `onScrollPhaseChange`), und reicht den letzten Stand nach, sobald sie steht. In Ruhe sieht und verhält sich alles wie vorher; geprüft: Nach dem Scrollen leuchtet die Kachel unter dem Zeiger auf, ein Klick öffnet ihre Platten.
+- **Ursache 2 – zehn Ablageziele:** Jeder Bereich hatte ein eigenes `dropDestination` zum Umsortieren, also je eine AppKit-Ansicht im Scrollinhalt, die bei jedem Bild verschoben und mitgeprüft wurde (Modern: 720 statt ~960 Bilder). Selbst ein einziges Ablageziel im Inhalt kostete fast so viel. Jetzt liegt ein Ablageziel (`StatisticsSectionDrop`) über der Scrollfläche. Den Zielbereich bestimmen die mit `onGeometryChange` gemessenen Rahmen (`StatisticsSectionFrames`); Zielrahmen und Ablegen funktionieren wie vorher (live geprüft, gleiches Ergebnis wie im alten Stand). In den Lücken zwischen den Bereichen wird mit `.forbidden` abgelehnt, nicht mit `.cancel` – Letzteres beendete das Ziehen für die ganze Seite.
+- **Ergebnis** (Bilder in 10 s / ms App-CPU je Bild, vorher → nachher):
+
+  | Design | kleiner Hub | großer Hub |
+  |---|---|---|
+  | Modern | 720 / 10,1 → 994 / 7,2 | 480 / 18,2 → 910 / 8,6 |
+  | Klassisch | 981 / 7,9 → 1006 / 6,0 | 557 / 15,4 → 958 / 7,1 |
+  | Vinyl | 979 / 7,9 → 1007 / 6,0 | 555 / 15,4 → 956 / 7,3 |
+  | Collection (zum Vergleich) | 977 / 3,1 | 735 / 5,3 |
+
+  Die Statistik verliert jetzt keine Bilder mehr, auch über die ganze Seite nicht (Collection: 735–775 Bilder). CPU-Summe je 10 s: Modern 7,2 → 7,1 s (kleiner Hub) bzw. 8,7 → 7,8 s (großer Hub) bei deutlich mehr Bildern; Klassisch/Vinyl 7,7 → 6,0 s bzw. 8,6 → 6,8–7,0 s.
+- **Untersucht und gelassen** (mit Bildzählung gemessen): Die `GeometryReader` der Diagramm-Overlays bauen ihren Inhalt bei jedem Bild neu, aber Swift Charts ruft die Overlays ohnehin pro Bild auf; ein Ersatz durch `onGeometryChange` brachte nichts messbar und blieb weg. Ein festes Raster statt der kleinen `LazyVGrid` war teurer, ein `LazyVStack` für die Seite ebenso. Übrig bleiben Hover und Tooltips an sich (~1 ms je Bild, SwiftUI prüft beim Scrollen jedes Bild den Hover) und die Glas-Umschalter (~0,6 ms) – gewollte Funktionen, keine Mehrarbeit.
+- **Geprüft:** Pixelvergleich der Schnappschüsse (`--snapshot=`) und dreier weiter unten gescrollter Fensterbilder je Design: gleich bis auf die Uhrzeit „Stand …“, die gezogene Zufallsplatte und Abweichungen von höchstens 2/255, die auch zwischen zwei Läufen desselben Stands auftreten. Debug-Build (clean) ohne Warnung; 313 Tests bestanden.
+
 # Designs: weniger Zeichenarbeit beim Scrollen, kein Aufwand für Unsichtbares · 07.11.2026
 
 - **Wunsch:** Die Designs auf Leistung und unnötige Mehrarbeit prüfen und bei Bedarf verbessern.

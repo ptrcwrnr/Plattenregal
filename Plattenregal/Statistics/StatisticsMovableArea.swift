@@ -5,15 +5,16 @@ import SwiftUI
 /// A section of the statistics page: its title (also the drag handle for
 /// reordering) and content. In both designs it lies on the page like the
 /// covers of Collection and Wantlist, a fine rule above it; only its tiles
-/// bring a surface (see `statisticsTile`).
+/// bring a surface (see `statisticsTile`). Drops are taken by the page as a
+/// whole (see `StatisticsSectionDrop`); here only the frame shows the target.
 struct StatisticsMovableArea<Content: View>: View {
     let section: StatisticsSection
     /// The topmost section: without the rule above it.
     var first = false
+    /// A dragged section is over this one.
+    var isTargeted = false
     var accessory: AnyView?
-    let move: (String, StatisticsSection) -> Bool
     @ViewBuilder let content: Content
-    @State private var isTargeted = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: StatisticsLayout.titleSpacing) {
@@ -49,11 +50,55 @@ struct StatisticsMovableArea<Content: View>: View {
             RoundedRectangle(cornerRadius: AppStyle.controlRadius)
                 .strokeBorder(AppStyle.selectedBorder.opacity(isTargeted ? 1 : 0), lineWidth: AppStyle.selectionLineWidth)
         }
-        .dropDestination(for: String.self) { items, _ in
-            guard let first = items.first else { return false }
-            return move(first, section)
-        } isTargeted: { isTargeted = $0 }
         .animation(AppStyle.quickAnimation, value: isTargeted)
+    }
+}
+
+// MARK: - Reordering
+
+/// Where each section lies, in the coordinate space of the scroll view
+/// (where the drop target is). A plain class, not observed: the frames
+/// change as the page scrolls, and nothing needs to be drawn for that.
+@MainActor final class StatisticsSectionFrames {
+    nonisolated static let space = "statistics-sections"
+    var frames: [StatisticsSection: CGRect] = [:]
+    func section(at point: CGPoint) -> StatisticsSection? {
+        frames.first { $0.value.contains(point) }?.key
+    }
+}
+
+/// One drop target for the whole page instead of one per section: each
+/// `dropDestination` brought an AppKit view of its own into the scrolling
+/// page, and the ten of them were moved and hit-tested on every scrolled
+/// frame (a quarter of the frames were dropped). The section under the
+/// pointer is looked up in `frames`.
+struct StatisticsSectionDrop: DropDelegate {
+    let frames: StatisticsSectionFrames
+    @Binding var target: StatisticsSection?
+    let move: (String, StatisticsSection) -> Bool
+
+    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [.plainText]) }
+    func dropEntered(info: DropInfo) { follow(info) }
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        // Between two sections nothing takes the drop, as before. Not
+        // `.cancel`: that ended the drag for the whole page.
+        return follow(info) == nil ? DropProposal(operation: .forbidden) : nil
+    }
+    func dropExited(info: DropInfo) { target = nil }
+    func performDrop(info: DropInfo) -> Bool {
+        target = nil
+        guard let section = frames.section(at: info.location),
+              let provider = info.itemProviders(for: [.plainText]).first else { return false }
+        _ = provider.loadTransferable(type: String.self) { result in
+            guard case .success(let payload) = result else { return }
+            Task { @MainActor in _ = move(payload, section) }
+        }
+        return true
+    }
+    @discardableResult private func follow(_ info: DropInfo) -> StatisticsSection? {
+        let section = frames.section(at: info.location)
+        if section != target { target = section }
+        return section
     }
 }
 

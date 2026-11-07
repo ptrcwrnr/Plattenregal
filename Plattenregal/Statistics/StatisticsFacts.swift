@@ -81,7 +81,7 @@ struct StatisticsFacts: View {
             .buttonStyle(.plain)
             // Tiles without records to open still take the pointer for their tooltip.
             .allowsHitTesting(fact.group != nil || fact.help != nil)
-            .onHover { hovering = $0 }
+            .statisticsHover { hovering = $0 }
             .animation(AppStyle.quickAnimation, value: hovering)
             .help(fact.help ?? fact.group.map { String(localized: "\(AppStyle.records($0.count)) mit \($0.name) anzeigen") } ?? "")
         }

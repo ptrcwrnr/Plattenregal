@@ -142,7 +142,7 @@ private struct SoundDonutChart: View {
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 Rectangle().fill(.clear).contentShape(Rectangle())
-                    .onContinuousHover { phase in
+                    .statisticsContinuousHover { phase in
                         switch phase {
                         case .active(let point):
                             guard let frame = proxy.plotFrame else { return }
@@ -221,7 +221,7 @@ private struct SoundDonutChart: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .onHover { inside in
+                .statisticsHover { inside in
                     if inside { hovered = slice.id } else if hovered == slice.id { hovered = nil }
                 }
                 .help("\(AppStyle.records(slice.group.count)) mit \(slice.label) anzeigen")

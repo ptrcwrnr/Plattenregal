@@ -55,7 +55,7 @@ struct RankingBoard: View {
                 .contentShape(RoundedRectangle(cornerRadius: AppStyle.cardRadius))
             }
             .buttonStyle(.plain)
-            .onHover { hovering = $0 }
+            .statisticsHover { hovering = $0 }
             .animation(AppStyle.quickAnimation, value: hovering)
             .onAppear {
                 if AppStyle.reduceMotion { grown = true } else { withAnimation(AppStyle.growAnimation) { grown = true } }

@@ -24,6 +24,11 @@ struct StatisticsView: View {
     @State private var soundDimension: SoundDimension = .styles
     @State private var yearsByDecade = true
     @State private var additionsByYear = false
+    /// The section a dragged section is over, and where each one lies.
+    @State private var dropTarget: StatisticsSection?
+    @State private var sectionFrames = StatisticsSectionFrames()
+    /// Holds the cards' hover back while the page scrolls (see `statisticsHover`).
+    @State private var scrolling = StatisticsScrolling()
     @AppStorage(DisplaySettings.statisticsOrderKey) private var savedSectionOrder = ""
     let showShelf: (RecordCopy) -> Void
 
@@ -54,7 +59,19 @@ struct StatisticsView: View {
                 .frame(maxWidth: StatisticsLayout.maxWidth, alignment: .leading)
                 .frame(maxWidth: .infinity)
                 .environment(\.statisticsColumns, StatisticsLayout.columnCount(contentWidth: cardContentWidth(for: geometry.size.width)))
+                .environment(\.statisticsScrolling, scrolling)
                 .animation(AppStyle.standardAnimation, value: model.error)
+            }
+            .onScrollPhaseChange { _, phase in scrolling.active = phase != .idle }
+            .coordinateSpace(.named(StatisticsSectionFrames.space))
+            // Over the scroll view, not in its content: a drop target inside
+            // the content is an AppKit view that moved along on every
+            // scrolled frame (a quarter of the frames were dropped, see
+            // `StatisticsSectionDrop`). Beneath the scroll view a drag
+            // never reached it.
+            .overlay {
+                Color.clear
+                    .onDrop(of: [.plainText], delegate: StatisticsSectionDrop(frames: sectionFrames, target: $dropTarget, move: moveSection))
             }
             .pullToRefresh(disabled: { refreshBlocked }, action: refresh)
             .scrollsUnderToolbar(contentPadding: AppStyle.pagePadding)
@@ -223,9 +240,13 @@ struct StatisticsView: View {
     }
     private func movableSection(_ section: StatisticsSection) -> some View {
         StatisticsMovableArea(section: section, first: section == visibleSections.first,
-                              accessory: accessory(for: section), move: moveSection) {
+                              isTargeted: dropTarget == section, accessory: accessory(for: section)) {
             sectionContent(section)
         }
+        .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .named(StatisticsSectionFrames.space)) }) { [sectionFrames] frame in
+            sectionFrames.frames[section] = frame
+        }
+        .onDisappear { sectionFrames.frames[section] = nil }
     }
     /// Controls that sit on the right of a card's title row.
     private func accessory(for section: StatisticsSection) -> AnyView? {

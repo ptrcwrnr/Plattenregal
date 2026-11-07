@@ -67,7 +67,7 @@ struct HoverBarChart: View {
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 Rectangle().fill(.clear).contentShape(Rectangle())
-                    .onContinuousHover { phase in
+                    .statisticsContinuousHover { phase in
                         switch phase {
                         case .active(let point):
                             guard let frame = proxy.plotFrame else { return }
@@ -220,7 +220,7 @@ private struct CoverTile: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
-        .onHover { hovering = $0 }
+        .statisticsHover { hovering = $0 }
         .animation(AppStyle.quickAnimation, value: hovering)
         .help("\(artist) – \(title)")
     }

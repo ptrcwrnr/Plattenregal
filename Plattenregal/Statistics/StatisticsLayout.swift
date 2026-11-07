@@ -100,3 +100,72 @@ struct RollingNumber: View {
         if AppStyle.reduceMotion || !(visibility?.isShown ?? true) { shown = value } else { withAnimation(AppStyle.rollAnimation) { shown = value } }
     }
 }
+
+// MARK: - Hover while scrolling
+
+/// Whether the statistics page is scrolling right now. Read only by the
+/// hover modifiers below, so its changes don't draw the page again.
+@Observable @MainActor final class StatisticsScrolling {
+    var active = false
+}
+
+extension EnvironmentValues {
+    @Entry var statisticsScrolling: StatisticsScrolling?
+}
+
+extension View {
+    /// `onHover` for the statistics page, held back while it scrolls: there
+    /// the tiles, legend rows and charts pass under a resting pointer, and
+    /// each one passed lit up and had its chart drawn again, animated (two
+    /// in five frames were dropped). The last change is handed on as soon
+    /// as the page rests, so what lies under the pointer then lights up.
+    func statisticsHover(_ action: @escaping (Bool) -> Void) -> some View {
+        modifier(DeferredHover(action: action))
+    }
+    /// `onContinuousHover`, held back while the page scrolls (see `statisticsHover`).
+    func statisticsContinuousHover(_ action: @escaping (HoverPhase) -> Void) -> some View {
+        modifier(DeferredContinuousHover(action: action))
+    }
+}
+
+/// What the pointer did while the page scrolled. Not observed: keeping it
+/// must not draw anything.
+@MainActor final class PendingHover<Value> {
+    var value: Value?
+    /// The value kept while `scrolling` is active, otherwise `nil` (hand it on now).
+    func hold(_ value: Value, while scrolling: StatisticsScrolling?) -> Value? {
+        guard scrolling?.active == true else { return value }
+        self.value = value
+        return nil
+    }
+    func take() -> Value? {
+        defer { value = nil }
+        return value
+    }
+}
+
+private struct DeferredHover: ViewModifier {
+    let action: (Bool) -> Void
+    @Environment(\.statisticsScrolling) private var scrolling
+    @State private var pending = PendingHover<Bool>()
+    func body(content: Content) -> some View {
+        content
+            .onHover { inside in pending.hold(inside, while: scrolling).map(action) }
+            .onChange(of: scrolling?.active == true) { _, active in
+                if !active { pending.take().map(action) }
+            }
+    }
+}
+
+private struct DeferredContinuousHover: ViewModifier {
+    let action: (HoverPhase) -> Void
+    @Environment(\.statisticsScrolling) private var scrolling
+    @State private var pending = PendingHover<HoverPhase>()
+    func body(content: Content) -> some View {
+        content
+            .onContinuousHover { phase in pending.hold(phase, while: scrolling).map(action) }
+            .onChange(of: scrolling?.active == true) { _, active in
+                if !active { pending.take().map(action) }
+            }
+    }
+}

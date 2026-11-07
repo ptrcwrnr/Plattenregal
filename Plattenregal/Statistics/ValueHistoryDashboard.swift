@@ -200,7 +200,7 @@ struct HistoryLineChart: View {
                     .frame(height: 180)
                     .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
                     .chartOverlay { proxy in GeometryReader { geometry in
-                        Rectangle().fill(.clear).contentShape(Rectangle()).onContinuousHover { phase in
+                        Rectangle().fill(.clear).contentShape(Rectangle()).statisticsContinuousHover { phase in
                             switch phase {
                             case .active(let point):
                                 if let frame = proxy.plotFrame { select(proxy.value(atX: point.x - geometry[frame].minX)) }
