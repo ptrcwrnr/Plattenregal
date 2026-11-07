@@ -102,6 +102,7 @@ enum Changelog {
                 String(localized: "Legst du das Fenster an einen Bildschirmrand an oder zoomst es, gleitet es jetzt flüssig, statt zu ruckeln."),
                 String(localized: "Die Einstellungen sind aufgeräumter: Synchronisieren und „Alle verkauft“ stehen als Zeilen mit Erklärung, die automatische Sicherung sagt, wie viele Stände höchstens bleiben, Knöpfe tragen keine Auslassungspunkte mehr, und das Fenster schließt auch mit dem roten Knopf."),
                 String(localized: "Die Listen in Collection, Wantlist und Regal reichen jetzt bis knapp über die Fensterkante, und ihre letzten Zeilen scrollen frei über die runden Knöpfe – vorher hörten Collection und Wantlist weit oben auf, und im Regal verschwand die letzte Zeile unter dem „+“."),
+                String(localized: "Fährst du mit der Maus über die Listen in Collection, Wantlist und Regal, hebt ein feiner Schimmer die Zeile hervor, der nach links und rechts ausläuft – so lassen sich die langen Zeilen leichter mit dem Auge verfolgen."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),

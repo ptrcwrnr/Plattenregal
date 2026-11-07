@@ -290,6 +290,16 @@
         }
       }
     },
+    "Fährst du mit der Maus über die Listen in Collection, Wantlist und Regal, hebt ein feiner Schimmer die Zeile hervor, der nach links und rechts ausläuft – so lassen sich die langen Zeilen leichter mit dem Auge verfolgen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moving the pointer over the lists in Collection, Wantlist and Shelf now highlights the row with a soft sheen that fades out to the left and right – making the long rows easier to follow."
+          }
+        }
+      }
+    },
     "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf." : {
       "localizations" : {
         "en" : {

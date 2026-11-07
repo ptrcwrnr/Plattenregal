@@ -264,6 +264,10 @@ enum AppStyle {
     /// at the shelf: one step back, still readable.
     static let dimmedOpacity: Double = 0.45
     static var hoverBackground: Color { isAtelier ? AtelierPalette.ink.opacity(0.05) : Color.primary.opacity(0.05) }
+    /// The hover of a table row runs out to both sides: the share of the
+    /// row's width over which `hoverBackground` fades in at the left and out
+    /// at the right (`TableRowHover`).
+    static let rowHoverFadeShare: CGFloat = 0.12
     /// The accent chosen in the settings (or the system's). Read in `body`,
     /// so views redraw when it changes.
     static var accent: Color { isAtelier ? AtelierPalette.accent : AppPreferences.shared.accent.color }
@@ -316,7 +320,13 @@ enum AppStyle {
     /// System setting "Bewegung reduzieren"; read when an animation starts.
     static var reduceMotion: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
     /// Hover/selection feedback — short and unobtrusive.
-    static let quickAnimation = Animation.smooth(duration: 0.2)
+    static let quickAnimation = Animation.smooth(duration: quickDuration)
+    /// Its length, for AppKit animations of the same feedback (`TableRowHover`).
+    static let quickDuration: TimeInterval = 0.2
+    /// How long a list must rest after scrolling before its row hover comes
+    /// back: while it scrolls, rows pass under a resting pointer and none
+    /// lights up (as in the statistics).
+    static let hoverSettleDelay: TimeInterval = 0.12
     /// State changes — dimming, showing/hiding, focus changes.
     static let standardAnimation = Animation.smooth(duration: 0.25)
     /// Crossfade between pages, sections and grid ↔ list. Kept with reduce motion.
