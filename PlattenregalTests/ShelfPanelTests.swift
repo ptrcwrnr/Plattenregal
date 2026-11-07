@@ -163,3 +163,58 @@ extension AllTests {
         }
     }
 }
+
+extension AllTests {
+    /// The next move in "Sortierung prüfen" lighting up: within a run first
+    /// the record's place, then its new place – as one animation handed to
+    /// the system.
+    @MainActor struct SortMoveGlowTests {
+        @Test func firstTheRecordsPlaceThenItsNewOne() {
+            #expect(SortMoveGlow.glow(at: 0) == .none)
+            let early = SortMoveGlow.glow(at: 0.2)
+            #expect(early.source > 0 && early.target == 0)
+            let late = SortMoveGlow.glow(at: 0.8)
+            #expect(late.source == 0 && late.target > 0)
+            // Overlapping in the middle, so it reads as one movement.
+            let middle = SortMoveGlow.glow(at: 0.5)
+            #expect(middle.source > 0 && middle.target > 0)
+            // Each at its brightest in the middle of its part.
+            #expect(abs(SortMoveGlow.glow(at: 0.3).source - 1) < 1e-9)
+            #expect(abs(SortMoveGlow.glow(at: 0.7).target - 1) < 1e-9)
+            #expect(SortMoveGlow.glow(at: 1) == .none)
+        }
+
+        @Test func itStaysWithinItsRange() {
+            for step in 0...400 {
+                let glow = SortMoveGlow.glow(at: Double(step) / 400)
+                #expect((0...1).contains(glow.source) && (0...1).contains(glow.target))
+            }
+        }
+
+        @Test func outsideARunOrOddValuesLightNothing() {
+            for progress in [-1, 1.5, .nan, .infinity, -.infinity] {
+                #expect(SortMoveGlow.glow(at: progress) == .none)
+            }
+        }
+
+        /// The animation of one run handed to the system: from 0 to 1,
+        /// always forwards, each frame the glow of its moment, dark at both ends.
+        @Test func theKeyframesFollowTheGlowOverARun() {
+            let frames = SortMoveGlow.keyframes()
+            #expect(frames.count == 61)
+            #expect(frames.first?.time == 0 && frames.last?.time == 1)
+            for (a, b) in zip(frames, frames.dropFirst()) { #expect(b.time > a.time) }
+            for frame in frames { #expect(frame.glow == SortMoveGlow.glow(at: frame.time)) }
+            #expect(frames.first?.glow == SortMoveGlow.Glow.none && frames.last?.glow == SortMoveGlow.Glow.none)
+            // Both reach full brightness on a frame.
+            #expect(abs((frames.map(\.glow.source).max() ?? 0) - 1) < 1e-9)
+            #expect(abs((frames.map(\.glow.target).max() ?? 0) - 1) < 1e-9)
+        }
+
+        @Test func noStepsStillGiveAWholeRun() {
+            let frames = SortMoveGlow.keyframes(steps: 0)
+            #expect(frames.count == 2 && frames.first?.time == 0 && frames.last?.time == 1)
+            #expect(frames.allSatisfy { $0.glow == .none })
+        }
+    }
+}

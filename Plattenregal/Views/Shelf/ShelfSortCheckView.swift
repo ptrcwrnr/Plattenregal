@@ -268,14 +268,15 @@ private struct SortStepRow: View {
 
 /// The compartment from left to right, one tick per place, as you stand in
 /// front of it: where the records to move stand now, and for the next move
-/// also where it goes – joined by an arc. Moves ticked off show at their
-/// new place. Gives the rough direction at the shelf ("far right") before
-/// the exact place in the list. All in order (`inOrder`): the check in the
-/// middle instead of marks. As tall as a row of the moves below.
+/// also where it goes – the two light up one after the other, from here to
+/// there (`MoveGlow`). Moves ticked off show at their new place. Gives the
+/// rough direction at the shelf ("far right") before the exact place in the
+/// list. All in order (`inOrder`): the check in the middle instead of marks.
+/// As tall as a row of the moves below.
 private struct ShelfOrderStrip: View {
     /// One record to move: its place now (0-based) and the gap it goes into
     /// (0 = before the first record, `count` = behind the last one).
-    struct Mark: Equatable {
+    struct Mark: Hashable {
         let from: Int
         let gap: Int
         let done: Bool
@@ -285,11 +286,14 @@ private struct ShelfOrderStrip: View {
     let count: Int
     let marks: [Mark]
     var inOrder = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The next move rests while the window is in the background …
+    @Environment(\.appearsActive) private var appearsActive
+    /// … or the shelf page behind another one (see `PageStack`).
+    @Environment(\.pageVisibility) private var visibility
 
     // Drawn geometry of the strip itself.
-    private static let inset: CGFloat = 6
-    /// Room above the marks for the arc of the next move.
-    private static let arcRoom: CGFloat = 14
+    fileprivate static let inset: CGFloat = 6
     private static let tickHeight: CGFloat = 8
     /// Below this width per place the ticks would merge into a gray band.
     private static let minimumTickSpacing: CGFloat = 3
@@ -309,6 +313,17 @@ private struct ShelfOrderStrip: View {
         Canvas { context, size in draw(in: &context, size: size) }
             .frame(height: AssignmentRowMetrics.height)
             .overlay {
+                // Layers of their own that light up without redrawing the
+                // strip. A new move is a new view, so it starts again at
+                // the record's place.
+                if count > 0, let mark = marks.first(where: \.current) {
+                    MoveGlow(count: count, mark: mark,
+                             running: !reduceMotion && appearsActive && (visibility?.isShown ?? true))
+                        .id(mark)
+                        .allowsHitTesting(false)
+                }
+            }
+            .overlay {
                 if inOrder {
                     Image(systemName: "checkmark.circle.fill")
                         .font(AppStyle.statusSymbol)
@@ -326,45 +341,248 @@ private struct ShelfOrderStrip: View {
                 : String(localized: "Fach mit \(count) Plätzen von links nach rechts, \(marks.filter { !$0.done }.count) Platten zum Umstellen markiert"))
     }
 
+    /// Where places, gaps and marks lie across the strip, for the marks here
+    /// and the next move on its own layer alike.
+    fileprivate struct Layout {
+        let count: Int
+        let size: CGSize
+        var slot: CGFloat { (size.width - 2 * ShelfOrderStrip.inset) / CGFloat(count) }
+        var top: CGFloat { ShelfOrderStrip.inset }
+        var bottom: CGFloat { size.height - ShelfOrderStrip.inset }
+        /// A record's mark: as wide as its place allows, 2 to 4 points.
+        var markWidth: CGFloat { min(max(slot - 1, 2), 4) }
+        func center(_ place: Int) -> CGFloat { ShelfOrderStrip.inset + (CGFloat(place) + 0.5) * slot }
+        func edge(_ gap: Int) -> CGFloat { ShelfOrderStrip.inset + CGFloat(min(max(gap, 0), count)) * slot }
+
+        /// A mark from top to bottom, rounded at both ends (radius: half its width).
+        func barFrame(at x: CGFloat, width: CGFloat) -> CGRect {
+            CGRect(x: x - width / 2, y: top, width: width, height: bottom - top)
+        }
+        func bar(at x: CGFloat, width: CGFloat) -> Path {
+            Path(roundedRect: barFrame(at: x, width: width), cornerRadius: width / 2)
+        }
+    }
+
     private func draw(in context: inout GraphicsContext, size: CGSize) {
         guard count > 0 else { return }
-        let width = size.width - 2 * Self.inset
-        let slot = width / CGFloat(count)
-        let top = Self.inset + Self.arcRoom, bottom = size.height - Self.inset
-        func center(_ place: Int) -> CGFloat { Self.inset + (CGFloat(place) + 0.5) * slot }
-        func edge(_ gap: Int) -> CGFloat { Self.inset + CGFloat(min(max(gap, 0), count)) * slot }
-        func bar(at x: CGFloat, width barWidth: CGFloat, from y: CGFloat = top) -> Path {
-            Path(roundedRect: CGRect(x: x - barWidth / 2, y: y, width: barWidth, height: bottom - y), cornerRadius: barWidth / 2)
-        }
-        let markWidth = min(max(slot - 1, 2), 4)
+        let layout = Layout(count: count, size: size)
+        let bottom = layout.bottom
 
         // Every place a short tick at the foot, while they stay apart.
-        if slot >= Self.minimumTickSpacing {
+        if layout.slot >= Self.minimumTickSpacing {
             var ticks = Path()
             for place in 1..<count {
-                let x = edge(place)
+                let x = layout.edge(place)
                 ticks.move(to: CGPoint(x: x, y: bottom - Self.tickHeight))
                 ticks.addLine(to: CGPoint(x: x, y: bottom))
             }
             context.stroke(ticks, with: .color(AppStyle.borderColor), lineWidth: AppStyle.hairlineWidth * 2)
         }
         // Open moves where they stand, quiet; done ones at their new place.
+        // The next move is `MoveGlow`'s.
         for mark in marks where !mark.current {
             if mark.done {
-                context.fill(bar(at: edge(mark.gap), width: 2), with: .color(AppStyle.successColor))
+                context.fill(layout.bar(at: layout.edge(mark.gap), width: 2), with: .color(AppStyle.successColor))
             } else {
-                context.fill(bar(at: center(mark.from), width: markWidth), with: .style(.secondary.opacity(0.6)))
+                context.fill(layout.bar(at: layout.center(mark.from), width: layout.markWidth), with: .style(.secondary.opacity(0.6)))
             }
         }
-        // The next move: where it stands, where it goes and the arc between.
-        if let mark = marks.first(where: \.current) {
-            let from = center(mark.from), to = edge(mark.gap)
-            var arc = Path()
-            arc.move(to: CGPoint(x: from, y: top))
-            arc.addQuadCurve(to: CGPoint(x: to, y: top), control: CGPoint(x: (from + to) / 2, y: Self.inset - Self.arcRoom / 2))
-            context.stroke(arc, with: .color(AppStyle.accent), style: StrokeStyle(lineWidth: AppStyle.selectionLineWidth, lineCap: .round))
-            context.fill(bar(at: to, width: 2), with: .color(AppStyle.accent.opacity(0.6)))
-            context.fill(bar(at: from, width: max(markWidth, 3)), with: .color(AppStyle.accent))
+    }
+}
+
+/// The next move: where the record stands, in the accent, and where it
+/// goes, a little paler. While running, both rest at that paler step and
+/// light up one after the other in the full accent – the record's place,
+/// then its new place – then rest before the next time (`SortMoveGlow`).
+/// Stopped – "Bewegung reduzieren", the window in the background, the page
+/// behind another one – both stand still as described first.
+///
+/// Two Core Animation layers rather than SwiftUI: each run is handed to the
+/// system as one animation and plays without the app. Drawn by SwiftUI
+/// frame by frame, every frame went through the view graph and laid out the
+/// whole window – about a quarter of a core for two marks. Still, every
+/// frame of it makes the window server compose the window anew, so a run
+/// asks for 30 frames a second only, and in the rest between two runs no
+/// animation is attached at all: nothing to compose.
+private struct MoveGlow: NSViewRepresentable {
+    let count: Int
+    let mark: ShelfOrderStrip.Mark
+    let running: Bool
+
+    /// A mark of the next move at rest: the new place always, the record's
+    /// own while it waits to light up.
+    fileprivate static let restOpacity: Double = 0.6
+
+    func makeNSView(context: Context) -> GlowView { GlowView() }
+
+    static func dismantleNSView(_ view: GlowView, coordinator: ()) { view.update(running: false) }
+
+    func updateNSView(_ view: GlowView, context: Context) {
+        // Resolved here: the accent of the design, in the mode shown.
+        view.update(count: count, mark: mark, color: AppStyle.accent.resolve(in: context.environment).cgColor, running: running)
+    }
+
+    final class GlowView: NSView {
+        private let source = CALayer()
+        private let target = CALayer()
+        private var count = 0
+        private var mark: ShelfOrderStrip.Mark?
+        private var running = false
+        /// Starts a run, rests, starts the next – while running.
+        private var runs: Task<Void, Never>?
+        private static let key = "glow"
+        /// A fade needs no more, though the display may run at 120.
+        private static let frameRate = CAFrameRateRange(minimum: 15, maximum: 30, preferred: 30)
+
+        override var isFlipped: Bool { true }
+
+        init() {
+            super.init(frame: .zero)
+            wantsLayer = true
+            layer?.addSublayer(target)
+            layer?.addSublayer(source)
+            // Still: the record's place in the full accent, the new one paler.
+            source.opacity = 1
+            target.opacity = Float(MoveGlow.restOpacity)
+            setAccessibilityElement(false)
         }
+
+        required init?(coder: NSCoder) { nil }
+
+        // Only shows; clicks go to what lies beneath.
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+        func update(count: Int, mark: ShelfOrderStrip.Mark, color: CGColor, running: Bool) {
+            if source.backgroundColor != color {
+                withoutActions {
+                    source.backgroundColor = color
+                    target.backgroundColor = color
+                }
+            }
+            if count != self.count || mark != self.mark {
+                self.count = count
+                self.mark = mark
+                needsLayout = true
+            }
+            update(running: running)
+        }
+
+        func update(running: Bool) {
+            guard running != self.running else { return }
+            self.running = running
+            if running { start() } else { stop() }
+        }
+
+        override func layout() {
+            super.layout()
+            guard count > 0, let mark else { return }
+            let layout = ShelfOrderStrip.Layout(count: count, size: bounds.size)
+            withoutActions {
+                place(source, at: layout.center(mark.from), width: max(layout.markWidth, 3), in: layout)
+                place(target, at: layout.edge(mark.gap), width: 2, in: layout)
+            }
+        }
+
+        private func place(_ bar: CALayer, at x: CGFloat, width: CGFloat, in layout: ShelfOrderStrip.Layout) {
+            bar.frame = layout.barFrame(at: x, width: width)
+            bar.cornerRadius = width / 2
+        }
+
+        /// From the record's place, now; the next run a cycle later, from the
+        /// same start, so the rhythm doesn't drift.
+        private func start() {
+            let frames = SortMoveGlow.keyframes()
+            func animation(_ strength: (SortMoveGlow.Glow) -> Double) -> CAKeyframeAnimation {
+                let animation = CAKeyframeAnimation(keyPath: "opacity")
+                animation.values = frames.map { MoveGlow.restOpacity + (1 - MoveGlow.restOpacity) * strength($0.glow) }
+                animation.keyTimes = frames.map { NSNumber(value: $0.time) }
+                animation.duration = AppStyle.pulseRunDuration
+                animation.preferredFrameRateRange = Self.frameRate
+                return animation
+            }
+            let sourceRun = animation(\.source), targetRun = animation(\.target)
+            // Running, the record's place rests paler too, between the runs
+            // (where no animation holds it) as well.
+            withoutActions { source.opacity = Float(MoveGlow.restOpacity) }
+            let cycle = Duration.seconds(AppStyle.pulseRunDuration + AppStyle.pulseRestDuration)
+            let clock = ContinuousClock()
+            var next = clock.now
+            runs?.cancel()
+            runs = Task { [weak self] in
+                while !Task.isCancelled {
+                    // Held only for this call, not through the rest; gone, it ends.
+                    guard self?.lightUp(sourceRun, targetRun) != nil else { return }
+                    next += cycle
+                    try? await Task.sleep(until: next, tolerance: .milliseconds(20), clock: clock)
+                }
+            }
+        }
+
+        /// Both in one go, so they stay in step.
+        private func lightUp(_ sourceRun: CAAnimation, _ targetRun: CAAnimation) {
+            source.add(sourceRun, forKey: Self.key)
+            target.add(targetRun, forKey: Self.key)
+        }
+
+        private func stop() {
+            runs?.cancel()
+            runs = nil
+            source.removeAnimation(forKey: Self.key)
+            target.removeAnimation(forKey: Self.key)
+            withoutActions { source.opacity = 1 }
+        }
+
+        private func withoutActions(_ change: () -> Void) {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            change()
+            CATransaction.commit()
+        }
+    }
+}
+
+/// The timing of the next move lighting up, apart from drawing so it can
+/// be tested: within each run (`AppStyle.pulseRunDuration`) first the
+/// record's place, then – overlapping, so it reads as one movement – its
+/// new place, each rising and falling on `AppStyle.pulseCurve`. The rest
+/// between two runs is `MoveGlow`'s.
+enum SortMoveGlow {
+    /// How strongly the record's place (`source`) and its new place
+    /// (`target`) light up, from 0 (at rest) to 1.
+    struct Glow: Equatable {
+        var source: Double
+        var target: Double
+        static let none = Glow(source: 0, target: 0)
+    }
+
+    /// The part of a run in which each of the two lights up.
+    private static let sourceWindow = 0.0...0.6
+    private static let targetWindow = 0.4...1.0
+
+    /// The glow at `progress` through a run, from 0 (its start) to 1 (its
+    /// end); dark at both ends and outside.
+    static func glow(at progress: Double) -> Glow {
+        guard progress.isFinite else { return .none }
+        return Glow(source: bump(progress, in: sourceWindow), target: bump(progress, in: targetWindow))
+    }
+
+    /// The glow over one run, for an animation of it: `time` from 0 to 1
+    /// across the run, closely spaced (so the curve stays smooth), the last
+    /// at its end, where both rest again. A multiple of 10 steps puts the
+    /// start, middle and end of both parts exactly on a frame, so each
+    /// reaches its full brightness.
+    static func keyframes(steps: Int = 60) -> [(time: Double, glow: Glow)] {
+        guard steps > 0 else { return [(0, .none), (1, .none)] }
+        return (0...steps).map { step in
+            let time = Double(step) / Double(steps)
+            return (time, glow(at: time))
+        }
+    }
+
+    /// 0 outside `window`, rising to 1 in its middle and back to 0.
+    private static func bump(_ fraction: Double, in window: ClosedRange<Double>) -> Double {
+        let x = (fraction - window.lowerBound) / (window.upperBound - window.lowerBound)
+        guard x > 0, x < 1 else { return 0 }
+        return AppStyle.pulseCurve.value(at: 1 - abs(2 * x - 1))
     }
 }

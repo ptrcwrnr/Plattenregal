@@ -342,6 +342,14 @@ enum AppStyle {
     static let growAnimation = Animation.smooth(duration: 0.7).delay(0.05)
     /// Statistics figures rolling to a new value (after `reduceMotion` is checked).
     static let rollAnimation = Animation.smooth(duration: 0.8)
+    /// The next move in "Sortierung prüfen" lighting up at the shelf (see
+    /// `SortMoveGlow`): the record's place, then its new one, within one
+    /// run on this curve – drawn frame by frame, so a curve of time rather
+    /// than a spring – then a rest before the next. With reduce motion both
+    /// stay still.
+    static let pulseRunDuration: TimeInterval = 1.2
+    static let pulseRestDuration: TimeInterval = 0.8
+    static let pulseCurve = UnitCurve.easeInOut
     /// Insert/remove transition matching the above: slide + fade, or just fade.
     /// The app's one transition for anything that appears or disappears as a
     /// block (cards, banners, status lines, expanding lists, toasts): it pours

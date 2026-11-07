@@ -1,3 +1,17 @@
+# „Sortierung prüfen“: Platz und Ziel leuchten nacheinander auf statt Bogen · 07.11.2026
+
+- **Wunsch:** In der Leiste von „Sortierung prüfen“ (Regal → Fach → Sortierung prüfen) den Strich zum Zielplatz ansprechender zeigen. Nach Mockups (gepunktet, Winkelpfeil, Laufspur) und einem Lauflicht auf dem Bogen fiel die Wahl auf: ohne Bogen, nur die beiden Balken der nächsten Umstellung leuchten nacheinander auf – dezent, der Balken selbst statt eines Scheins drumherum.
+- **Umgesetzt** (`ShelfSortCheckView.swift`):
+  - Der Bogen und sein Platz darüber (`arcRoom`) sind weg; die Striche reichen jetzt über die ganze Höhe der Leiste.
+  - `MoveGlow`: Platz der Platte (Akzent) und Ziel (schmaler, Deckkraft 0,6). Läuft es, ruhen beide bei 0,6 und werden nacheinander voll – erst der Platz, dann überlappend das Ziel –, dann Pause. Steht es (Bewegung reduzieren, Fenster im Hintergrund, Regalseite verdeckt), sieht alles aus wie bisher. Jede neue Umstellung beginnt wieder beim Platz.
+  - Zeitverlauf in `SortMoveGlow` (testbar, ohne Zeichnen); Stufen zentral in `AppStyle`: `pulseRunDuration` 1,2 s, `pulseRestDuration` 0,8 s, `pulseCurve` (easeInOut). Maße der Striche gemeinsam in `ShelfOrderStrip.Layout`.
+- **Leistung, gemessen** (Debug-Demo, 15 s, Fenster vorn, Regalseite mit offenem Fenster):
+  - Erster Versuch mit `TimelineView`/`Canvas`: 3,7 s App-CPU (rund ein Viertel Kern) – jedes Bild lief durch den Ansichtsgraphen und legte das ganze Fenster neu an (`sample`: `NSHostingView.layout`, Suche nach Auto-Layout-Unteransichten). Ohne Leuchten 0,03 s.
+  - Deshalb zwei Core-Animation-Ebenen (AppKit punktuell): App-CPU 0,01–0,04 s, also wie ohne Leuchten. Jedes Bild lässt aber den WindowServer das Fenster neu zusammensetzen: ungebremst (bis 120 Hz) 5,7 s (Modern) bzw. 4,2 s (Vinyl), ohne Leuchten 0,1–0,2 s.
+  - Darum 30 Bilder/s (`preferredFrameRateRange`) und je Durchlauf eine eigene Animation, in der Pause keine: WindowServer 2,3 s (Modern), 1,6 s (Vinyl). 15 Bilder/s brachten kaum mehr (2,1 s), der Rest ist Grundaufwand, solange überhaupt etwas animiert. Im Hintergrund 0 s. Der Schatten des Fensters ist nicht die Ursache (zum Vergleich kurz entfernt: gleiche Werte).
+- **Geprüft:** Debug-Build ohne Warnung; 318 Tests bestanden (5 neue in `SortMoveGlowTests`: Reihenfolge Platz → Ziel, Überlappung, volle Helligkeit genau auf einem Keyframe, Wertebereich, Randfälle). Live in der Demo (Bildfolgen aus Fensteraufnahmen) in Klassisch hell und dunkel, Vinyl, Modern hell und dunkel: Platz, dann Ziel, dann Pause; im Hintergrund still und unverändert. Nicht live geprüft: „Bewegung reduzieren“ (Systemeinstellung nicht verändert; im Code berücksichtigt).
+- **README:** Absatz zu „Sortierung prüfen“ auf den heutigen Stand gebracht (beschrieb noch die alte Karte mit Fortschrittsbalken und Auswahlrand).
+
 # DMG 1.0.4 mit Vinyl und flüssiger Statistik neu gebaut · 07.11.2026
 
 - **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 469 314 Bytes), SHA-256 `141f5753…afa55d06`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch die Punkte zu Vinyl und zur Statistik, gleich lautend wie „Was ist neu“); die DMG vom 06.11., 19:34 ist überholt. Handbücher aus der Durchsicht unverändert übernommen.
