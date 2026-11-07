@@ -1,3 +1,8 @@
+# DMG 1.0.4 mit aufgeräumten Einstellungen neu gebaut · 07.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release), 11 MB (11 486 753 Bytes), SHA-256 `56cb46aa…f9c5877e`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch der neue Punkt zu den Einstellungen); die DMG vom Nachmittag ist überholt. Version bleibt 1.0.4 (102031); Handbücher wie im Repository (mit den Knopfnamen ohne Auslassungspunkte).
+- **Geprüft:** 320 Tests bestanden (vorher); `hdiutil verify` gültig; App und Widget nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); kein `network.server`, kein `NSLocalNetworkUsageDescription`; keine Vorschau- oder Versuchsschalter im Release; Handbücher identisch; die neuen Texte englisch im Bundle, englisch enden nur noch die vier Fortschrittstexte auf „…“. Aus der DMG als Demo gestartet (Beispielsammlung wird gezeigt), über die Prozessnummer beendet. Die Demo-Läufe hatten die Fenstergröße der echten App verstellt (gemeinsamer Schlüssel `NSWindow Frame main`) – auf den alten Wert zurückgesetzt. Nicht veröffentlicht.
+
 # Einstellungen aufgeräumt: neun Punkte aus der Durchsicht · 07.11.2026
 
 - **Wunsch:** Beim Durchgehen der Einstellungen gesammelte Punkte, gesammelt umgesetzt.
