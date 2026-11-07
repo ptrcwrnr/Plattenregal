@@ -1,3 +1,8 @@
+# DMG 1.0.4 mit Vinyl und flüssiger Statistik neu gebaut · 07.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (Release nach `clean`, `Scripts/make-dmg.sh`), 11 MB (11 469 314 Bytes), SHA-256 `141f5753…afa55d06`, in `dist/Hinweise-1.0.4.md` eingetragen (dort auch die Punkte zu Vinyl und zur Statistik, gleich lautend wie „Was ist neu“); die DMG vom 06.11., 19:34 ist überholt. Handbücher aus der Durchsicht unverändert übernommen.
+- **Geprüft:** `hdiutil verify` gültig; App und Widget 1.0.4 (102031), nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); kein `network.server`, kein `NSLocalNetworkUsageDescription`; `get-task-allow` kommt von der Ad-hoc-Signatur und war schon in 1.0.3 so; keine Vorschau-Schalter; Handbücher identisch mit dem Repository; die neuen Punkte von „Was ist neu“ auch englisch im Bundle; aus der DMG als Demo gestartet („Start · Version 1.0.4 (102031)“, Collection wird gezeigt) und über die Prozessnummer beendet (nicht über den Bundle-Namen, der auch die echte App träfe). Nicht veröffentlicht.
+
 # Durchsicht aller 1.0.4-Neuerungen vor der DMG · 07.11.2026
 
 - **Wunsch:** Vor dem Bau der DMG alle neuen Dinge in 1.0.4 noch einmal gründlich prüfen, Fehler beheben, Code bei Bedarf verbessern.
