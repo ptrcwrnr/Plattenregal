@@ -41,7 +41,7 @@ struct SignatureToolbarAppearance: View {
 private struct PaperToolbarBand: View {
     var body: some View {
         // The height is read outside: inside, `ignoresSafeArea` reports no
-        // safe area at all (as in `AmbientGlow`).
+        // safe area at all.
         GeometryReader { outer in
             if AppStyle.isAtelier {
                 AtelierPalette.petrol

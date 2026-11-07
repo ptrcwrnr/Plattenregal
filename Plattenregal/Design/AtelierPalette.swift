@@ -6,7 +6,12 @@ import AppKit
 /// `AppStyle.isAtelier`) and differ only in these colors. Modern's accent
 /// and ambient choices stay intact. Part of the app and of the widget, so it
 /// depends on nothing else.
-nonisolated struct ClassicColors: Sendable {
+///
+/// A class, not a struct: `AtelierPalette` hands out one color per read,
+/// several times in every cover cell, and a struct was copied whole each
+/// time (all its colors retained and released; measured about half the cost
+/// of a read).
+nonisolated final class ClassicColors: Sendable {
     /// The window behind every page.
     let paper: Color
     /// Cards, panels, fields.
@@ -37,6 +42,46 @@ nonisolated struct ClassicColors: Sendable {
     let error: Color
     /// Categories in charts (statistics).
     let chart: [Color]
+
+    init(paper: Color,
+         surface: Color,
+         soft: Color,
+         ink: Color,
+         muted: Color,
+         border: Color,
+         petrol: Color,
+         accent: Color,
+         gold: Color,
+         goldForeground: Color,
+         toolbarSelection: Color,
+         toolbarInk: Color,
+         bandLabel: Color,
+         bandInk: Color,
+         shadow: Color,
+         success: Color,
+         warning: Color,
+         error: Color,
+         chart: [Color]) {
+        self.paper = paper
+        self.surface = surface
+        self.soft = soft
+        self.ink = ink
+        self.muted = muted
+        self.border = border
+        self.petrol = petrol
+        self.accent = accent
+        self.gold = gold
+        self.goldForeground = goldForeground
+        self.toolbarSelection = toolbarSelection
+        self.toolbarInk = toolbarInk
+        self.bandLabel = bandLabel
+        self.bandInk = bandInk
+        self.shadow = shadow
+        self.success = success
+        self.warning = warning
+        self.error = error
+        self.chart = chart
+    }
 
     /// Klassisch: the icon's paper, petrol and label gold, light and dark.
     static let klassisch = ClassicColors(

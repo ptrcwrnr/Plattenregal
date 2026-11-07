@@ -38,27 +38,13 @@ struct AmbientGlow: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        // The toolbar's height is read outside: inside, `ignoresSafeArea`
-        // reports no safe area at all.
-        GeometryReader { outer in
-            glow(toolbarHeight: outer.safeAreaInsets.top)
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-
-    private func glow(toolbarHeight: CGFloat) -> some View {
         GeometryReader { geometry in
             if preferences.signatureDesign.isPaper {
-                // Petrol under the toolbar too, as high as the toolbar takes
-                // from the top. In the window it lies hidden beneath the
-                // petrol bar. On first entering full screen macOS shows the
-                // bar's own window only about half a second after the
-                // transition; until then this band shows instead of cream.
+                // Klassisch and Vinyl: their paper behind the pages, so a page
+                // fading into another never lets the window's gray through.
+                // The band under the toolbar lies over the page instead
+                // (`PaperToolbarBand`).
                 AtelierPalette.paper
-                    .overlay(alignment: .top) {
-                        AtelierPalette.petrol.frame(height: toolbarHeight)
-                    }
             } else if let color = preferences.ambient.color {
                 // Modern's counterpart to the paper: the whole window faintly
                 // in the ambient color, brightest at the top, with a second
@@ -78,6 +64,8 @@ struct AmbientGlow: View {
         }
         .ignoresSafeArea()
         .animation(AppStyle.fadeAnimation, value: preferences.ambient)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -90,7 +78,9 @@ struct AmbientBackdrop: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let shown = Array(covers.prefix(3))
+        // Klassisch and Vinyl show it not at all (paper, no glass to refract):
+        // there no cover is loaded or blurred for it.
+        let shown = AppStyle.isAtelier ? [] : Array(covers.prefix(3))
         ZStack(alignment: .top) {
             HStack(spacing: 0) {
                 ForEach(shown, id: \.self) { url in
@@ -100,7 +90,7 @@ struct AmbientBackdrop: View {
             .frame(maxWidth: shown.count == 1 ? 640 : .infinity)
             .frame(height: 340)
             .blur(radius: 100)
-            .opacity(AppStyle.isAtelier ? 0 : scheme == .dark ? 0.2 : 0.12)
+            .opacity(scheme == .dark ? 0.2 : 0.12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(AppStyle.fadeAnimation.speed(0.5), value: shown)

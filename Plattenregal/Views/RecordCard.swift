@@ -39,9 +39,12 @@ struct RecordCard: View {
 /// `defaults write <bundle id> atelierCoverFrame passepartout`.
 enum AtelierCoverFrame: String {
     case sleeve, passepartout
-    static var current: AtelierCoverFrame {
+    /// Read once per launch: every cover cell asks for it on every redraw
+    /// (in Klassisch and Vinyl), and a lookup in the defaults took about
+    /// 0.4 µs each time. Changed with `defaults write`, it applies from the
+    /// next launch.
+    static let current: AtelierCoverFrame =
         UserDefaults.standard.string(forKey: "atelierCoverFrame").flatMap(Self.init) ?? .sleeve
-    }
     /// Distance of the tags on a cover from its edge, the mat included.
     static var badgeInset: CGFloat { usesMat ? 11 : 8 }
     /// The cover lies on a mat: Klassisch's passepartout, and always in Modern.

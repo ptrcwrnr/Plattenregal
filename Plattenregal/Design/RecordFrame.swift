@@ -29,17 +29,35 @@ nonisolated enum RecordFrame: String, Codable, Sendable {
 extension View {
     /// The frame around a cover that already has its own corners (see
     /// `RecordFrame.coverRadius` for the sleeve's).
-    @ViewBuilder func recordFrame(_ frame: RecordFrame) -> some View {
+    func recordFrame(_ frame: RecordFrame) -> some View {
+        modifier(RecordFrameModifier(frame: frame))
+    }
+}
+
+/// The cover's shadows lie on light ground only. On dark ground – Vinyl
+/// always, Klassisch and Modern in dark mode – they can't be seen (measured:
+/// at most 5 of 255 per channel), yet each costs a shadow pass per cover:
+/// about a quarter of the window server's drawing while a grid scrolls.
+/// There they get no color and radius 0, which SwiftUI skips; the views
+/// stay the same, so switching light and dark rebuilds nothing.
+private struct RecordFrameModifier: ViewModifier {
+    let frame: RecordFrame
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        let lit = scheme == .light
         switch frame {
         case .sleeve:
-            overlay {
-                RoundedRectangle(cornerRadius: DesignScale.sleeveRadius)
-                    .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: DesignScale.hairlineWidth)
-            }
-            .shadow(color: AtelierPalette.petrol.opacity(0.18), radius: 1, y: 1)
-            .shadow(color: AtelierPalette.petrol.opacity(0.14), radius: 10, y: 6)
+            content
+                .overlay {
+                    RoundedRectangle(cornerRadius: DesignScale.sleeveRadius)
+                        .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: DesignScale.hairlineWidth)
+                }
+                .shadow(color: lit ? AtelierPalette.petrol.opacity(0.18) : .clear, radius: lit ? 1 : 0, y: lit ? 1 : 0)
+                .shadow(color: lit ? AtelierPalette.petrol.opacity(0.14) : .clear, radius: lit ? 10 : 0, y: lit ? 6 : 0)
         case .classicMat, .modernMat:
-            padding(RecordFrame.matWidth)
+            content
+                .padding(RecordFrame.matWidth)
                 .background {
                     let shape = RoundedRectangle(cornerRadius: DesignScale.cardRadius)
                     shape
@@ -49,7 +67,7 @@ extension View {
                                                lineWidth: DesignScale.borderWidth)
                         }
                 }
-                .shadow(color: .black.opacity(0.08), radius: 8, y: 3)
+                .shadow(color: lit ? .black.opacity(0.08) : .clear, radius: lit ? 8 : 0, y: lit ? 3 : 0)
         }
     }
 }

@@ -53,7 +53,9 @@ struct RandomRecordCard: View {
                         CoverView(url: release.shownCoverURL, size: nil)
                             .atelierRecordSleeve()
                             .frame(width: min(coverWidth, 380))
-                            .shadow(color: .black.opacity(AppStyle.isAtelier ? 0 : 0.25), radius: 18, y: 8)
+                            // Klassisch and Vinyl: none (radius 0 too, so it is skipped).
+                            .shadow(color: .black.opacity(AppStyle.isAtelier ? 0 : 0.25),
+                                    radius: AppStyle.isAtelier ? 0 : 18, y: AppStyle.isAtelier ? 0 : 8)
                     }
                     .buttonStyle(.plain)
                     .help("Details anzeigen")
