@@ -1,3 +1,9 @@
+# „Sortierung prüfen“: Leuchten nach drei Durchläufen still · 07.11.2026
+
+- **Wunsch:** Das Leuchten von Platz und Ziel soll nach drei Durchläufen stehen bleiben, damit danach auch der WindowServer nichts mehr zu tun hat.
+- **Umgesetzt:** `AppStyle.pulseRepeatCount` = 3. `MoveGlow` hängt drei Durchläufe an und danach keinen mehr. Im letzten bleibt der Platz der Platte ab seinem hellsten Punkt voll (`SortMoveGlow.keyframes(last: true)`), damit es ohne Sprung genau in der stillen Darstellung endet (Platz voll, Ziel blass). Von vorn beginnt es mit der nächsten Umstellung und wenn das Fenster wieder nach vorn kommt oder die Regalseite wieder sichtbar wird.
+- **Geprüft:** Debug-Build ohne Warnung, 319 Tests bestanden (neu: der letzte Durchlauf lässt den Platz hell, das Ziel wie sonst, kein Sprung). Live in Modern hell: Bildfolge über 6 s mit drei Durchläufen, danach still; WindowServer danach 0,47 s je 15 s (während des Leuchtens 2,3 s, ganz ohne 0,1–0,2 s).
+
 # „Sortierung prüfen“: Platz und Ziel leuchten nacheinander auf statt Bogen · 07.11.2026
 
 - **Wunsch:** In der Leiste von „Sortierung prüfen“ (Regal → Fach → Sortierung prüfen) den Strich zum Zielplatz ansprechender zeigen. Nach Mockups (gepunktet, Winkelpfeil, Laufspur) und einem Lauflicht auf dem Bogen fiel die Wahl auf: ohne Bogen, nur die beiden Balken der nächsten Umstellung leuchten nacheinander auf – dezent, der Balken selbst statt eines Scheins drumherum.

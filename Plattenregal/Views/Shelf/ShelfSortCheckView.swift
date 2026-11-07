@@ -391,19 +391,22 @@ private struct ShelfOrderStrip: View {
 }
 
 /// The next move: where the record stands, in the accent, and where it
-/// goes, a little paler. While running, both rest at that paler step and
-/// light up one after the other in the full accent – the record's place,
-/// then its new place – then rest before the next time (`SortMoveGlow`).
-/// Stopped – "Bewegung reduzieren", the window in the background, the page
-/// behind another one – both stand still as described first.
+/// goes, a little paler. When it starts running, both rest at that paler
+/// step and light up one after the other in the full accent – the record's
+/// place, then its new place – a few times with a rest between
+/// (`AppStyle.pulseRepeatCount`, timing in `SortMoveGlow`); in the last run
+/// the record's place stays lit, and both stand still as described first.
+/// It starts again with the next move and whenever it may run again after
+/// "Bewegung reduzieren", the window in the background or the page behind
+/// another one – there it stands still.
 ///
 /// Two Core Animation layers rather than SwiftUI: each run is handed to the
 /// system as one animation and plays without the app. Drawn by SwiftUI
 /// frame by frame, every frame went through the view graph and laid out the
 /// whole window – about a quarter of a core for two marks. Still, every
 /// frame of it makes the window server compose the window anew, so a run
-/// asks for 30 frames a second only, and in the rest between two runs no
-/// animation is attached at all: nothing to compose.
+/// asks for 30 frames a second only, in the rest between two runs no
+/// animation is attached, and after the last run nothing at all.
 private struct MoveGlow: NSViewRepresentable {
     let count: Int
     let mark: ShelfOrderStrip.Mark
@@ -428,7 +431,7 @@ private struct MoveGlow: NSViewRepresentable {
         private var count = 0
         private var mark: ShelfOrderStrip.Mark?
         private var running = false
-        /// Starts a run, rests, starts the next – while running.
+        /// Starts a run, rests, starts the next, until the last.
         private var runs: Task<Void, Never>?
         private static let key = "glow"
         /// A fade needs no more, though the display may run at 120.
@@ -488,11 +491,10 @@ private struct MoveGlow: NSViewRepresentable {
             bar.cornerRadius = width / 2
         }
 
-        /// From the record's place, now; the next run a cycle later, from the
-        /// same start, so the rhythm doesn't drift.
+        /// From the record's place, now; each next run a cycle later, from
+        /// the same start, so the rhythm doesn't drift.
         private func start() {
-            let frames = SortMoveGlow.keyframes()
-            func animation(_ strength: (SortMoveGlow.Glow) -> Double) -> CAKeyframeAnimation {
+            func animation(_ frames: [(time: Double, glow: SortMoveGlow.Glow)], _ strength: (SortMoveGlow.Glow) -> Double) -> CAKeyframeAnimation {
                 let animation = CAKeyframeAnimation(keyPath: "opacity")
                 animation.values = frames.map { MoveGlow.restOpacity + (1 - MoveGlow.restOpacity) * strength($0.glow) }
                 animation.keyTimes = frames.map { NSNumber(value: $0.time) }
@@ -500,7 +502,10 @@ private struct MoveGlow: NSViewRepresentable {
                 animation.preferredFrameRateRange = Self.frameRate
                 return animation
             }
-            let sourceRun = animation(\.source), targetRun = animation(\.target)
+            let frames = SortMoveGlow.keyframes(), lastFrames = SortMoveGlow.keyframes(last: true)
+            let sourceRun = animation(frames, \.source), lastSourceRun = animation(lastFrames, \.source)
+            let targetRun = animation(frames, \.target)
+            let count = max(1, AppStyle.pulseRepeatCount)
             // Running, the record's place rests paler too, between the runs
             // (where no animation holds it) as well.
             withoutActions { source.opacity = Float(MoveGlow.restOpacity) }
@@ -509,17 +514,21 @@ private struct MoveGlow: NSViewRepresentable {
             var next = clock.now
             runs?.cancel()
             runs = Task { [weak self] in
-                while !Task.isCancelled {
+                for run in 1...count {
+                    let last = run == count
                     // Held only for this call, not through the rest; gone, it ends.
-                    guard self?.lightUp(sourceRun, targetRun) != nil else { return }
+                    guard self?.lightUp(last ? lastSourceRun : sourceRun, targetRun, last: last) != nil, !last else { return }
                     next += cycle
                     try? await Task.sleep(until: next, tolerance: .milliseconds(20), clock: clock)
+                    if Task.isCancelled { return }
                 }
             }
         }
 
-        /// Both in one go, so they stay in step.
-        private func lightUp(_ sourceRun: CAAnimation, _ targetRun: CAAnimation) {
+        /// Both in one go, so they stay in step. The last run leaves the
+        /// record's place lit: standing still, it is in the full accent.
+        private func lightUp(_ sourceRun: CAAnimation, _ targetRun: CAAnimation, last: Bool) {
+            if last { withoutActions { source.opacity = 1 } }
             source.add(sourceRun, forKey: Self.key)
             target.add(targetRun, forKey: Self.key)
         }
@@ -570,12 +579,16 @@ enum SortMoveGlow {
     /// across the run, closely spaced (so the curve stays smooth), the last
     /// at its end, where both rest again. A multiple of 10 steps puts the
     /// start, middle and end of both parts exactly on a frame, so each
-    /// reaches its full brightness.
-    static func keyframes(steps: Int = 60) -> [(time: Double, glow: Glow)] {
-        guard steps > 0 else { return [(0, .none), (1, .none)] }
+    /// reaches its full brightness. The `last` run keeps the record's place
+    /// fully lit from its brightest on, so it ends as it stands still.
+    static func keyframes(steps: Int = 60, last: Bool = false) -> [(time: Double, glow: Glow)] {
+        guard steps > 0 else { return [(0, .none), (1, last ? Glow(source: 1, target: 0) : .none)] }
+        let peak = (sourceWindow.lowerBound + sourceWindow.upperBound) / 2
         return (0...steps).map { step in
             let time = Double(step) / Double(steps)
-            return (time, glow(at: time))
+            var value = glow(at: time)
+            if last, time >= peak { value.source = 1 }
+            return (time, value)
         }
     }
 

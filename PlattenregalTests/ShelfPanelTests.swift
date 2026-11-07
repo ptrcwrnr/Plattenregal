@@ -211,6 +211,23 @@ extension AllTests {
             #expect(abs((frames.map(\.glow.target).max() ?? 0) - 1) < 1e-9)
         }
 
+        /// The last run ends as the marks stand still: the record's place
+        /// stays lit from its brightest on, its new place goes back as usual.
+        @Test func theLastRunEndsWithTheRecordsPlaceLit() {
+            let usual = SortMoveGlow.keyframes(), last = SortMoveGlow.keyframes(last: true)
+            #expect(last.count == usual.count)
+            for (a, b) in zip(usual, last) {
+                #expect(a.time == b.time && a.glow.target == b.glow.target)
+                #expect(b.glow.source == (a.time >= 0.3 ? 1 : a.glow.source))
+            }
+            #expect(last.first?.glow == SortMoveGlow.Glow.none)
+            #expect(last.last?.glow == SortMoveGlow.Glow(source: 1, target: 0))
+            // No jump where it stays lit: it is at its brightest there anyway.
+            let peak = usual.first { abs($0.time - 0.3) < 1e-9 }
+            #expect(abs((peak?.glow.source ?? 0) - 1) < 1e-9)
+            #expect(SortMoveGlow.keyframes(steps: 0, last: true).last?.glow == SortMoveGlow.Glow(source: 1, target: 0))
+        }
+
         @Test func noStepsStillGiveAWholeRun() {
             let frames = SortMoveGlow.keyframes(steps: 0)
             #expect(frames.count == 2 && frames.first?.time == 0 && frames.last?.time == 1)

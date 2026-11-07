@@ -344,11 +344,12 @@ enum AppStyle {
     static let rollAnimation = Animation.smooth(duration: 0.8)
     /// The next move in "Sortierung prüfen" lighting up at the shelf (see
     /// `SortMoveGlow`): the record's place, then its new one, within one
-    /// run on this curve – drawn frame by frame, so a curve of time rather
-    /// than a spring – then a rest before the next. With reduce motion both
-    /// stay still.
+    /// run on this curve – a curve of time rather than a spring, as the
+    /// system plays it from keyframes – then a rest before the next, this
+    /// many times; then both stand still. With reduce motion they never move.
     static let pulseRunDuration: TimeInterval = 1.2
     static let pulseRestDuration: TimeInterval = 0.8
+    static let pulseRepeatCount = 3
     static let pulseCurve = UnitCurve.easeInOut
     /// Insert/remove transition matching the above: slide + fade, or just fade.
     /// The app's one transition for anything that appears or disappears as a
