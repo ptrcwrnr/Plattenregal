@@ -120,6 +120,44 @@ extension AllTests {
             }
         }
 
+        /// The colors of the marks („Gesucht“, „Verkauf“, „Nicht in der
+        /// Collection“): the design's own by default with nothing stored,
+        /// kept across launches per mark, the default again removes the
+        /// stored value, an unknown one counts as the default, gone on reset.
+        @Test func markColorsAreStandardByDefaultPersistPerMarkAndReset() throws {
+            #expect(StatusColorChoice.allCases.count == AccentChoice.allCases.count)
+            #expect(StatusColorChoice.allCases.dropFirst().allSatisfy { AccentChoice(rawValue: $0.rawValue) != nil })
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                for mark in RecordMark.allCases {
+                    #expect(preferences.markColor(mark) == .standard)
+                    #expect(defaults.object(forKey: AppPreferences.Key.markColor(mark)) == nil)
+                }
+                preferences.setMarkColor(.green, for: .sale)
+                preferences.setMarkColor(.purple, for: .missing)
+                #expect(defaults.string(forKey: AppPreferences.Key.markColor(.sale)) == "green")
+                #expect(defaults.object(forKey: AppPreferences.Key.markColor(.sold)) == nil)
+                let again = AppPreferences(defaults: defaults)
+                #expect(again.markColor(.sale) == .green)
+                #expect(again.markColor(.missing) == .purple)
+                #expect(again.markColor(.sold) == .standard)
+                // Back to the default: nothing stored, as before.
+                again.setMarkColor(.standard, for: .missing)
+                #expect(defaults.object(forKey: AppPreferences.Key.markColor(.missing)) == nil)
+                defaults.set("future-color", forKey: AppPreferences.Key.markColor(.sold))
+                #expect(AppPreferences(defaults: defaults).markColor(.sold) == .standard)
+                again.reset()
+                let reset = AppPreferences(defaults: defaults)
+                for mark in RecordMark.allCases {
+                    #expect(reset.markColor(mark) == .standard)
+                }
+                #expect(defaults.object(forKey: AppPreferences.Key.markColor(.sale)) == nil)
+            }
+            // The standard is the design's own color, a choice the accent color of that name.
+            #expect(StatusColorChoice.standard.color(standard: .mint) == .mint)
+            #expect(StatusColorChoice.blue.color(standard: .mint) == AccentChoice.blue.color)
+        }
+
         /// Page names of one's own: at most twelve characters as typed, no
         /// line breaks; shown trimmed, an empty or blank one gives the page
         /// its own name back. Kept across launches, gone on reset.

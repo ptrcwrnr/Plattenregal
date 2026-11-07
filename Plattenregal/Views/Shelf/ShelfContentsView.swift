@@ -458,24 +458,18 @@ struct ShelfContentsView: View, Equatable {
                         .strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: AppStyle.selectionLineWidth)
                 }
                 .overlay(alignment: .topLeading) {
-                    Text(String(item.position))
-                        .font(AppStyle.captionMark).monospacedDigit()
+                    // The record's state as dots beside the position.
+                    HStack(spacing: AppStyle.tightSpacing) {
+                        Text(String(item.position))
+                            .font(AppStyle.captionMark).monospacedDigit()
+                        TagDots(missing: item.missing, forSale: item.forSale, sold: item.sold)
+                    }
                         .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
                         .appChipSurface(in: Capsule())
                         .padding(AtelierCoverFrame.badgeInset)
                 }
             // The same caption as in Collection and Wantlist.
             RecordCaption(release: item.copy.release, emphasized: selected)
-            VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
-                if item.missing { MissingBadge() }
-                if item.forSale { SaleBadge() }
-                if item.sold {
-                    Text("Nicht in der Collection")
-                        .font(AppStyle.badge).foregroundStyle(AppStyle.warningColor)
-                        .lineLimit(1).minimumScaleFactor(0.85)
-                }
-            }
-            .frame(minHeight: 14, alignment: .topLeading)
         }
         .contentShape(Rectangle())
     }
@@ -499,18 +493,7 @@ struct ShelfContentsView: View, Equatable {
             }
             .width(min: 120, ideal: 220)
             TableColumn("Titel", value: \.title) { item in
-                HStack(spacing: AppStyle.itemSpacing) {
-                    Text(item.title).lineLimit(1).help(item.title)
-                    if item.missing {
-                        MissingBadge()
-                            .help("Beim Einsortieren nicht gefunden – Rechtsklick → „Wieder gefunden“, sobald sie auftaucht")
-                    }
-                    if item.forSale { SaleBadge() }
-                    if item.sold {
-                        StatusTag(text: String(localized: "Nicht in der Collection"), color: AppStyle.warningColor)
-                            .help("Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen")
-                    }
-                }
+                Text(item.title).lineLimit(1).help(item.title)
             }
             .width(min: 120, ideal: 280)
             TableColumn("Jahr", value: \.year) { item in
@@ -525,6 +508,11 @@ struct ShelfContentsView: View, Equatable {
                 Text(item.genre.isEmpty ? "–" : item.genre).lineLimit(1).foregroundStyle(.secondary).help(item.genre)
             }
             .width(min: 80, ideal: 130)
+            // As in the Finder: the tags as dots, last.
+            TableColumn("Tags") { item in
+                TagDots(missing: item.missing, forSale: item.forSale, sold: item.sold)
+            }
+            .width(min: AppStyle.tagColumnWidth.min, ideal: AppStyle.tagColumnWidth.ideal, max: AppStyle.tagColumnWidth.max)
         }
         .tableStyle(.inset)
         .background(QuietIconColumnHeaders())

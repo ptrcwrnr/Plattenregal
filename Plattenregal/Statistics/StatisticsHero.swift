@@ -119,9 +119,8 @@ private struct DeltaChip: View {
             }
         }
         .font(AppStyle.captionMark).monospacedDigit()
+        // Colored text only, no tinted capsule behind it.
         .foregroundStyle(color)
-        .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
-        .background(color.opacity(0.12), in: Capsule())
         .help("Veränderung seit der letzten Momentaufnahme")
     }
 }

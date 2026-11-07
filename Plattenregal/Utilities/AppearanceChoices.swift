@@ -166,6 +166,32 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
     var color: Color? { AccentChoice(rawValue: rawValue)?.color }
 }
 
+/// A record's tags, each shown as a colored dot (`TagDots`), its color
+/// chosen in the settings (tab „Listen“, card „Tags“).
+enum RecordMark: String, CaseIterable, Identifiable {
+    case missing, sale, sold
+    var id: Self { self }
+    /// Also what VoiceOver reads for the dot.
+    var title: String {
+        switch self {
+        case .missing: String(localized: "Gesucht")
+        case .sale: String(localized: "Verkauf")
+        case .sold: String(localized: "Nicht in der Collection")
+        }
+    }
+}
+
+/// The color of a state's dot: the design's own (`standard`: the signal
+/// color, for „Verkauf“ the accent) or one of the accent colors. Same count
+/// as `AccentChoice`, so the rows of swatches in the settings line up.
+enum StatusColorChoice: String, CaseIterable, Identifiable {
+    case standard, blue, purple, pink, red, orange, yellow, green, graphite
+    var id: Self { self }
+    var title: String { self == .standard ? String(localized: "Standard") : AccentChoice(rawValue: rawValue)?.title ?? rawValue }
+    /// The chosen color; `standard` stands for the design's own.
+    func color(standard: Color) -> Color { AccentChoice(rawValue: rawValue)?.color ?? standard }
+}
+
 /// The complete designs. The appearance settings (mode, accent, ambient)
 /// stay stored independently, so returning to Modern restores them exactly.
 /// The stored values are those of the first names: "none" from when Modern

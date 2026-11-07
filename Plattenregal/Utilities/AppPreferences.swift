@@ -20,6 +20,7 @@ import SwiftUI
         static let quickSearchPosition = "quickSearchPosition"
         static let quickSearchClick = "quickSearchClick"
         static let pageNames = "pageNames"
+        static func markColor(_ mark: RecordMark) -> String { "markColor-\(mark.rawValue)" }
         static let keepsRunningInBackground = "keepsRunningInBackground"
         static let updateCheckInterval = "updateCheckInterval"
         /// Up to 1.0.3: the switch for a check once a day. Read while no
@@ -60,6 +61,19 @@ import SwiftUI
     /// The user's own page names by `Destination.rawValue` (see `PageNames`);
     /// a page without one keeps its own name.
     var pageNames: [String: String] { didSet { defaults.set(pageNames, forKey: Key.pageNames) } }
+    /// The color of each state's dot (`RecordMark`); the design's own by default.
+    var markColors: [RecordMark: StatusColorChoice] {
+        didSet {
+            for mark in RecordMark.allCases where markColors[mark] != oldValue[mark] {
+                // The default leaves nothing stored, like a fresh install.
+                if let choice = markColors[mark], choice != .standard { store(choice.rawValue, Key.markColor(mark)) }
+                else { defaults.removeObject(forKey: Key.markColor(mark)) }
+            }
+        }
+    }
+    func markColor(_ mark: RecordMark) -> StatusColorChoice { markColors[mark] ?? .standard }
+    func setMarkColor(_ choice: StatusColorChoice, for mark: RecordMark) { markColors[mark] = choice }
+
     /// What a click on a match in that search does. Holds it by default.
     var quickSearchClick: QuickSearchClick { didSet { store(quickSearchClick.rawValue, Key.quickSearchClick) } }
     /// ⌘Q and closing the last window keep the app running with only the
@@ -100,6 +114,10 @@ import SwiftUI
         quickSearchPosition = defaults.string(forKey: Key.quickSearchPosition).flatMap(QuickSearchPosition.init) ?? .center
         quickSearchClick = defaults.string(forKey: Key.quickSearchClick).flatMap(QuickSearchClick.init) ?? .hold
         pageNames = defaults.dictionary(forKey: Key.pageNames)?.compactMapValues { $0 as? String } ?? [:]
+        // An unknown value (a later version's color) counts as the default.
+        markColors = Dictionary(uniqueKeysWithValues: RecordMark.allCases.map { mark in
+            (mark, defaults.string(forKey: Key.markColor(mark)).flatMap(StatusColorChoice.init) ?? .standard)
+        })
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
         updateCheckInterval = Self.storedUpdateCheckInterval(in: defaults)
         language = languageAtLaunch
@@ -125,6 +143,7 @@ import SwiftUI
         quickSearchPosition = .center
         quickSearchClick = .hold
         pageNames = [:]
+        markColors = Dictionary(uniqueKeysWithValues: RecordMark.allCases.map { ($0, .standard) })
         keepsRunningInBackground = true
         updateCheckInterval = .weekly
         // The demo's settings are its own; the language is the real app's.

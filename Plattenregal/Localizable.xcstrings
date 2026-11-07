@@ -300,6 +300,16 @@
         }
       }
     },
+    "Plaketten gibt es keine mehr: „Gesucht“, „Verkauf“ und „Nicht in der Collection“ zeigt ein farbiger Punkt wie bei den Tags von macOS – in der neuen Spalte „Tags“ der Listen von Regal und Collection, neben der Position auf den Covern im Fach und in der Suche auf der Regalseite. Die Farben wählst du unter Einstellungen → Listen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No more badges: “Looking for”, “For sale” and “Not in the collection” are shown as a colored dot, like tags in macOS – in the new “Tags” column of the shelf and collection lists, next to the position on the covers in a compartment and in the shelf page’s search. Choose the colors under Settings → Lists."
+          }
+        }
+      }
+    },
     "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf." : {
       "localizations" : {
         "en" : {
@@ -10708,6 +10718,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The statistics now scroll as smoothly as the collection: tiles and charts passing under the pointer while you scroll only light up once the page comes to rest."
+          }
+        }
+      }
+    },
+    "Farbe für „%@“" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color for “%@”"
+          }
+        }
+      }
+    },
+    "Ein Punkt in dieser Farbe steht in der Spalte „Tags“ der Listen, neben der Position auf den Covern im Fach und in der Suche auf der Regalseite. „Standard“ nimmt die Farbe des Designs." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A dot in this color appears in the “Tags” column of the lists, next to the position on the covers in a compartment and in the search on the shelf page. “Default” uses the design’s color."
+          }
+        }
+      }
+    },
+    "Tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
           }
         }
       }

@@ -181,7 +181,11 @@ private struct ShelfHistoryRow: View {
 
     @ViewBuilder private var action: some View {
         if let blocker {
-            StatusTag(text: blocker.title, color: .secondary)
+            // Plain text in the button's place: no tag.
+            Text(blocker.title)
+                .font(AppStyle.captionLabel)
+                .foregroundStyle(.secondary)
+                .fixedSize()
                 .help(blocker.message)
                 .transition(.opacity)
         } else {

@@ -155,7 +155,7 @@ struct SearchResultRow: View {
                     Text(copy.release?.displayTitle ?? "—")
                         .font(.caption)
                         .foregroundStyle(SearchPanelInk.muted)
-                    if missing { MissingBadge() }
+                    if missing { TagDots(missing: true, offersMenu: false) }
                 }
             }
             .lineLimit(1)

@@ -103,9 +103,8 @@ struct RandomRecordCard: View {
                 detail(String(localized: "Format"), release.shownFormat)
                 detail(String(localized: "Tracks"), release.tracks.isEmpty ? nil : "\(release.tracks.count)")
                 detail(String(localized: "Fach"), placement?.location)
-            }
-            if !release.styles.isEmpty {
-                HStack(spacing: AppStyle.itemSpacing) { ForEach(release.styles.prefix(4), id: \.self) { AppBadge(title: $0) } }
+                // Plain text as on the record's card, no tags.
+                detail(String(localized: "Styles"), release.styles.isEmpty ? nil : release.styles.prefix(4).joined(separator: ", "))
             }
             HStack(spacing: AppStyle.itemSpacing) {
                 Button { reroll() } label: {

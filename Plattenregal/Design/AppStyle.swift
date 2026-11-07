@@ -217,8 +217,28 @@ enum AppStyle {
     static let captionMark = DesignScale.captionMark
     /// Small labels with weight: hints and actions inside a result row.
     static let captionLabel = DesignScale.captionLabel
-    /// The tiny badges on covers and rows (sold, missing, status).
-    static let badge = Font.caption2.weight(.medium)
+    /// The tiniest labels: compartment names in the search panel's rack.
+    static let miniLabel = Font.caption2.weight(.medium)
+    /// A record's state as a colored dot instead of a text tag (`StatusDot`:
+    /// „Gesucht“ red, „Verkauf“ accent, „Nicht in der Collection“ warning),
+    /// beside its title or its position.
+    static let statusDotSize: CGFloat = 7
+    /// The column "Tags" of the lists: as narrow as its header – usually one
+    /// dot, three at most (29 pt) still fit.
+    static let tagColumnWidth: (min: CGFloat, ideal: CGFloat, max: CGFloat) = (30, 34, 40)
+    /// The color of a state's dot: chosen in the settings, else the design's
+    /// own. Read in `body`, so dots redraw when it changes.
+    static func markColor(_ mark: RecordMark) -> Color {
+        AppPreferences.shared.markColor(mark).color(standard: standardMarkColor(mark))
+    }
+    /// The design's own color for a state: its signal colors, the accent for „Verkauf“.
+    static func standardMarkColor(_ mark: RecordMark) -> Color {
+        switch mark {
+        case .missing: errorColor
+        case .sale: accent
+        case .sold: warningColor
+        }
+    }
     /// The small capitals over a group of rows in a menu.
     static let menuSectionTitle = Font.caption2.weight(.semibold)
 

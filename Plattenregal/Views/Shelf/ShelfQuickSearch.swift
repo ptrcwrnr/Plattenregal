@@ -785,7 +785,7 @@ struct QuickSearchRack: View {
         let shape = RoundedRectangle(cornerRadius: AppStyle.menuRowRadius)
         // A locked compartment by its name ("Deko"), as on the shelf page.
         return Text(shelf.map { $0.isReserved ? $0.name : labels[$0.id] ?? "" } ?? "")
-            .font(AppStyle.badge)
+            .font(AppStyle.miniLabel)
             .foregroundStyle(marked ? SearchPanelInk.ink : SearchPanelInk.muted)
             .lineLimit(1).minimumScaleFactor(0.7)
             .padding(.horizontal, AppStyle.hairSpacing)

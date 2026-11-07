@@ -1,27 +1,5 @@
 import SwiftUI
 
-/// Capsule badge/pill used for styles and notes on a record.
-struct AppBadge: View {
-    let title: String
-    var systemImage: String?
-    var body: some View {
-        Group {
-            if let systemImage {
-                Label(title, systemImage: systemImage)
-            } else {
-                Text(title)
-            }
-        }
-        .font(.caption2)
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, AppStyle.itemSpacing)
-        .padding(.vertical, AppStyle.tightSpacing)
-        // Like every other tag: glass in Modern, paper with a rim in
-        // Klassisch – no gray fill of its own.
-        .appChipSurface(in: Capsule())
-    }
-}
-
 /// Inline status/error/warning banner. One visual language for anything that
 /// needs the user's attention inline, instead of ad hoc colored text per view.
 struct AppBanner: View {

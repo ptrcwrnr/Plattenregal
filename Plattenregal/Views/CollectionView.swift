@@ -198,7 +198,16 @@ struct CollectionView: View {
         Array(items.lazy.compactMap { $0.release?.shownCoverURL }.prefix(3))
     }
 
+    /// The records with a tag, for the column "Tags": only those of a list
+    /// switched on, as on the shelf page. Read once per update, not per cell.
+    /// "Nicht in der Collection" never applies here.
+    private var taggedIDs: (missing: Set<UUID>, sale: Set<UUID>) {
+        (missingEnabled ? Set(records.missingMarks.map(\.copyID)) : [],
+         saleEnabled ? Set(records.saleMarks.map(\.copyID)) : [])
+    }
+
     var body: some View {
+        let tagged = taggedIDs
         VStack(spacing: 0) {
             // Not in the drill-down sheets of the statistics: only on the page itself.
             if DemoMode.showsBanner && analyticsFilter == nil {
@@ -316,10 +325,14 @@ struct CollectionView: View {
                             }.width(min: 40, ideal: 48, max: 60)
                             TableColumn("Label") { Text($0.release?.displayLabel ?? "").lineLimit(1).foregroundStyle(.secondary) }
                             TableColumn("Genre") { Text($0.release?.primaryStyle ?? "").lineLimit(1).foregroundStyle(.secondary) }
-                            TableColumn("Fach") { Text(placeLabel(for: $0)).lineLimit(1).foregroundStyle(.secondary) }.width(min: 80, ideal: 110)
+                            TableColumn("Fach") { Text(placeLabel(for: $0)).lineLimit(1).foregroundStyle(.secondary) }.width(min: 80, ideal: 140)
                             TableColumn("Pos.") { copy in
                                 Text(copy.shelf == nil ? "–" : String(copy.positionInShelf)).monospacedDigit().foregroundStyle(.secondary)
                             }.width(min: 34, ideal: 40, max: 52)
+                            // As in the Finder and the shelf's list: the tags as dots, last.
+                            TableColumn("Tags") { copy in
+                                TagDots(missing: tagged.missing.contains(copy.id), forSale: tagged.sale.contains(copy.id))
+                            }.width(min: AppStyle.tagColumnWidth.min, ideal: AppStyle.tagColumnWidth.ideal, max: AppStyle.tagColumnWidth.max)
                         }
                         .tableStyle(.inset)
                         .background(QuietIconColumnHeaders())
