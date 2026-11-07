@@ -110,6 +110,26 @@
         }
       }
     },
+    "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In “Check Order” the next record is easier to spot: in the strip, its place and then its destination briefly light up one after the other."
+          }
+        }
+      }
+    },
+    "Legst du das Fenster an einen Bildschirmrand an oder zoomst es, gleitet es jetzt flüssig, statt zu ruckeln." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snapping the window to a screen edge or zooming it is now smooth instead of stuttering."
+          }
+        }
+      }
+    },
     "„%@ – %@“" : {
       "localizations" : {
         "de" : {

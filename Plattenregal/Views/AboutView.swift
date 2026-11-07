@@ -98,6 +98,8 @@ enum Changelog {
                 String(localized: "„Sortierung prüfen“ ist aufgeräumt: Eine Leiste zeigt das Fach von links nach rechts mit den Platten, die umziehen, jeder Schritt sagt „Platz 64 herausnehmen → hinter …“, und die Reihenfolge wählst du oben im Menü. Steht alles richtig, genügt ein Haken."),
                 String(localized: "Neues Design „Vinyl“: matte Flächen wie Klassisch, in kühlem Graphit mit hellblauen Akzenten und immer dunkel. Einstellungen → Darstellung → Design."),
                 String(localized: "Die Statistik scrollt jetzt so flüssig wie die Collection: Kacheln und Diagramme, die beim Scrollen unter dem Mauszeiger durchziehen, leuchten erst auf, wenn die Seite steht."),
+                String(localized: "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf."),
+                String(localized: "Legst du das Fenster an einen Bildschirmrand an oder zoomst es, gleitet es jetzt flüssig, statt zu ruckeln."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),

@@ -1,3 +1,9 @@
+# DMG 1.0.4 mit Leuchten in „Sortierung prüfen“ und ruhigem Anlegen neu gebaut · 07.11.2026
+
+- **„Was ist neu“** (`Changelog` in `AboutView`, mit Englisch im Sprachkatalog) und `dist/Hinweise-1.0.4.md` um zwei Punkte ergänzt, gleich lautend: Platz und Ziel der nächsten Platte leuchten in „Sortierung prüfen“ nacheinander auf; Anlegen an einen Bildschirmrand und Zoomen gleiten flüssig.
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release), 11 MB (11 492 268 Bytes), SHA-256 `47851565…eb30a96`, in den Hinweisen eingetragen; die DMG vom Morgen ist überholt. Version bleibt 1.0.4 (102031), Handbücher unverändert.
+- **Geprüft:** 319 Tests bestanden (vorher); `hdiutil verify` gültig; App und Widget nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); kein `network.server`, kein `NSLocalNetworkUsageDescription`; keine Vorschau- oder Versuchsschalter im Release; Handbücher identisch mit dem Repository; die zwei neuen Punkte englisch im Bundle. Aus der DMG als Demo gestartet (über `open`; direkt aufgerufen zeigt der Release-Build kein Fenster), Beispielsammlung wird gezeigt; Anlegen im Release: App-Update je Bild im Median 9,9 ms (Collection) bzw. 9,6 ms (Regal), nur 28 bzw. 20 Bilder über 12 ms. Über die Prozessnummer beendet, Fenstergröße der echten App zurückgesetzt. Nicht veröffentlicht.
+
 # Fenster an den Bildschirmrand anlegen ruckelt nicht mehr · 07.11.2026
 
 - **Meldung:** Zieht man das Fenster an einen Bildschirmrand (es legt sich an eine Hälfte an), sieht das ruckelig aus.
