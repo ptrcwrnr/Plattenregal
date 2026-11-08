@@ -1,7 +1,5 @@
-# „Was ist neu“ kompakt und in einem Stil für alle Versionen · 08.11.2026
+# DMG 1.0.4 mit Tags, Spalten, Hover und kompaktem „Was ist neu“ neu gebaut · 08.11.2026
 
-- **Wunsch:** Den Verlauf kürzer und allgemeiner fassen, mit einem einheitlichen Stil für alle Versionen.
-- **Stil** (im README unter „Neue Version“ und als Kommentar an `Changelog.entries`): jeder Punkt „Bereich: was sich ändert.“ mit festem Bereich (Design, Listen, Tags, Einsortieren, Einstellungen, Updates, Plattenkarte, Fenster, Leistung, Netzwerk, Korrekturen), höchstens acht Punkte je Version, Neues zuerst, „Korrekturen“ zuletzt, kein „jetzt“/„vorher“, nichts Technisches; Englisch ebenso.
-- **Umgeschrieben:** 1.0.4 von 18 Punkten auf 8, 1.0.3 auf 3, 1.0.2 von 6 auf 3, 1.0.1 von 3 auf 2. 1.0.2 sagt nicht mehr „einmal am Tag“ (seit 1.0.4 überholt). Hinweise 1.0.4 (de/en) mit denselben Punkten; Sprachkatalog abgeglichen (alte Texte entfernt, neue mit Englisch, nichts fehlt, nichts verwaist). Die Release-Texte älterer Versionen auf GitHub bleiben, wie sie sind.
-- **Geprüft:** Debug-Build ohne Warnung, 326 Tests bestanden (auch `changelogStartsWithThisVersion`); das Über-Fenster live angesehen.
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release), 11 MB (11 531 767 Bytes), SHA-256 `407f3758…bd1c8d736`, in `dist/Hinweise-1.0.4.md` eingetragen; die DMG vom 07.11. ist überholt. Version bleibt 1.0.4 (102031). Enthält alles seit gestern Abend: Liste bis zum Fensterrand, Hover, Tags mit festen Farben je Design, Spalten verschieben/ausblenden mit eigenem Menü, Aufräumen, kompakter Verlauf.
+- **Geprüft:** 326 Tests bestanden (vorher); `hdiutil verify` gültig; App und Widget nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); kein `network.server`, kein `NSLocalNetworkUsageDescription`; keine Vorschau- oder Versuchsschalter im Release; Handbücher identisch mit dem Repository; neue englische Texte im Bundle, die entfernten (Farbwahl) nicht mehr. Aus der DMG als Demo gestartet (Beispielsammlung erscheint), beendet. Fenstergröße der echten App unverändert. Nicht veröffentlicht.
 
