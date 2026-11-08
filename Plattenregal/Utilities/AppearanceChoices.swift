@@ -323,9 +323,34 @@ enum AppIconChoice: String, CaseIterable, Identifiable {
     var image: NSImage? { NSImage(named: assetName ?? Self.standardPreviewName) }
     static let standardPreviewName = "AppIcon-Schlicht-Standard"
 
-    /// Shows this icon in the Dock and in ⌘-Tab while the app runs; the
-    /// standard hands the Dock back to the bundle's icon.
+    /// Shows this icon in the Dock and in ⌘-Tab while the app runs (the
+    /// standard hands the Dock back to the bundle's icon) and tells the
+    /// Dock plug-in, which shows it while the app is closed.
     func apply() {
         NSApp.applicationIconImage = assetName.flatMap { NSImage(named: $0) }
+        announceToDockTile()
+    }
+
+    /// The same names as in `PlattenregalDockTile/DockTilePlugIn.swift`.
+    static let dockTileNotification = Notification.Name("de.private.Plattenregal.appIconDidChange")
+    static let dockTileRequest = Notification.Name("de.private.Plattenregal.dockTileNeedsIcon")
+
+    /// The plug-in asks when it comes into the Dock – at the app's launch
+    /// often only after `apply()` has spoken, and again after the Dock
+    /// restarts. Answered with the choice of the moment. Once, at launch.
+    static func answerDockTile() {
+        DistributedNotificationCenter.default().addObserver(forName: dockTileRequest, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { AppPreferences.shared.appIcon.announceToDockTile() }
+        }
+    }
+
+    /// The plug-in can't read the app's settings (they lie in its sandbox
+    /// container): it gets the image's name as the notification's object –
+    /// a sandboxed app's `userInfo` never arrives – and keeps it itself.
+    /// Not from the demo or the tests: the Dock shows the real choice.
+    func announceToDockTile() {
+        guard !DemoMode.isActive, ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        DistributedNotificationCenter.default().postNotificationName(
+            Self.dockTileNotification, object: assetName ?? "", userInfo: nil, deliverImmediately: true)
     }
 }

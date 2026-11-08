@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5D7B00000000000000000001 /* PlattenregalDockTile/DockTilePlugIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B00000000000000000002 /* PlattenregalDockTile/DockTilePlugIn.swift */; };
+		5D7B00000000000000000003 /* PlattenregalDockTile.docktileplugin in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5D7B00000000000000000004 /* PlattenregalDockTile.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A7D0C0DE00000000000000B3 /* PlattenregalTests/UpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0C0DE00000000000000F3 /* PlattenregalTests/UpdateTests.swift */; };
 		A7D0C0DE00000000000000B2 /* Plattenregal/Views/UpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0C0DE00000000000000F2 /* Plattenregal/Views/UpdateView.swift */; };
 		A7D0C0DE00000000000000B1 /* Plattenregal/Services/UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0C0DE00000000000000F1 /* Plattenregal/Services/UpdateChecker.swift */; };
@@ -181,6 +183,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5D7B00000000000000000005 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5D7B00000000000000000006;
+			remoteInfo = PlattenregalDockTile;
+		};
 		D799BAE6088A90139B415FCC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
@@ -198,6 +207,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5D7B00000000000000000002 /* PlattenregalDockTile/DockTilePlugIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalDockTile/DockTilePlugIn.swift; sourceTree = "<group>"; };
+		5D7B00000000000000000007 /* PlattenregalDockTile/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PlattenregalDockTile/Info.plist; sourceTree = "<group>"; };
+		5D7B00000000000000000004 /* PlattenregalDockTile.docktileplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlattenregalDockTile.docktileplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7D0C0DE00000000000000F3 /* PlattenregalTests/UpdateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalTests/UpdateTests.swift; sourceTree = "<group>"; };
 		A7D0C0DE00000000000000F2 /* Plattenregal/Views/UpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/UpdateView.swift; sourceTree = "<group>"; };
 		A7D0C0DE00000000000000F1 /* Plattenregal/Services/UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Services/UpdateChecker.swift; sourceTree = "<group>"; };
@@ -380,6 +392,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				5D7A0000000000000000001D /* PlattenregalWidget.appex in Embed Foundation Extensions */,
+				5D7B00000000000000000003 /* PlattenregalDockTile.docktileplugin in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -387,6 +400,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5D7B00000000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1ABF84E55BD30AC2CEF8FC42 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -411,6 +431,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5D7B00000000000000000009 /* PlattenregalDockTile */ = {
+			isa = PBXGroup;
+			children = (
+				5D7B00000000000000000002 /* PlattenregalDockTile/DockTilePlugIn.swift */,
+				5D7B00000000000000000007 /* PlattenregalDockTile/Info.plist */,
+			);
+			name = PlattenregalDockTile;
+			sourceTree = "<group>";
+		};
 		03FE26E9D2B275B11B82B9A2 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -600,6 +629,7 @@
 				69F8D45498D7E20DA99BB780 /* Plattenregal */,
 				BFC937463906E5DB7A02A37C /* PlattenregalTests */,
 				5D7A00000000000000000029 /* PlattenregalWidget */,
+				5D7B00000000000000000009 /* PlattenregalDockTile */,
 				FBDC4F23F93125BBEEAE800C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -668,6 +698,7 @@
 			isa = PBXGroup;
 			children = (
 				5D7A0000000000000000000D /* PlattenregalWidget.appex */,
+				5D7B00000000000000000004 /* PlattenregalDockTile.docktileplugin */,
 				8BCD5BC4CDFDF0918087C782 /* Plattenregal.app */,
 				F219C0274590DA45E4BEF1EA /* PlattenregalTests.xctest */,
 			);
@@ -696,6 +727,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5D7B00000000000000000006 /* PlattenregalDockTile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5D7B0000000000000000000A /* Build configuration list for PBXNativeTarget "PlattenregalDockTile" */;
+			buildPhases = (
+				5D7B0000000000000000000B /* Sources */,
+				5D7B00000000000000000008 /* Frameworks */,
+				5D7B0000000000000000000C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PlattenregalDockTile;
+			productName = PlattenregalDockTile;
+			productReference = 5D7B00000000000000000004 /* PlattenregalDockTile.docktileplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
 		64BCB755386F844C96A2A5B0 /* PlattenregalTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 72C322F0960ECAD6090B486F /* Build configuration list for PBXNativeTarget "PlattenregalTests" */;
@@ -727,6 +775,7 @@
 			);
 			dependencies = (
 				5D7A00000000000000000024 /* PBXTargetDependency */,
+				5D7B0000000000000000000D /* PBXTargetDependency */,
 			);
 			name = Plattenregal;
 			productName = Plattenregal;
@@ -777,11 +826,19 @@
 				C13732C8E715C9BEE4FA51C9 /* Plattenregal */,
 				64BCB755386F844C96A2A5B0 /* PlattenregalTests */,
 				5D7A00000000000000000022 /* PlattenregalWidget */,
+				5D7B00000000000000000006 /* PlattenregalDockTile */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5D7B0000000000000000000C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		364863F9F2E558B0F50473FC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -811,6 +868,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5D7B0000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D7B00000000000000000001 /* PlattenregalDockTile/DockTilePlugIn.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6E431EB0650617AA1756B320 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1000,6 +1065,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5D7B0000000000000000000D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5D7B00000000000000000006 /* PlattenregalDockTile */;
+			targetProxy = 5D7B00000000000000000005 /* PBXContainerItemProxy */;
+		};
 		DE58E2B17C19600779694943 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C13732C8E715C9BEE4FA51C9 /* Plattenregal */;
@@ -1013,6 +1083,58 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5D7B0000000000000000000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 102031;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlattenregalDockTile/Info.plist;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0.4;
+				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.DockTile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				WRAPPER_EXTENSION = docktileplugin;
+			};
+			name = Debug;
+		};
+		5D7B0000000000000000000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 102031;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlattenregalDockTile/Info.plist;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0.4;
+				PRODUCT_BUNDLE_IDENTIFIER = de.private.Plattenregal.DockTile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				WRAPPER_EXTENSION = docktileplugin;
+			};
+			name = Release;
+		};
 		5A8C91857F674E16E2724F47 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1266,6 +1388,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5D7B0000000000000000000A /* Build configuration list for PBXNativeTarget "PlattenregalDockTile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D7B0000000000000000000E /* Debug */,
+				5D7B0000000000000000000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		49EA05A46B1A86EA7E413B43 /* Build configuration list for PBXProject "Plattenregal" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

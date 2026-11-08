@@ -85,6 +85,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppPreferences.shared.applyAppearance()
         // The chosen icon from the start, so the Dock never shows the standard first.
         AppPreferences.shared.appIcon.apply()
+        AppIconChoice.answerDockTile()
         do {
             if DemoMode.isActive {
                 // Sample collection in memory; the real database stays closed.
