@@ -166,21 +166,6 @@ enum AmbientChoice: String, CaseIterable, Identifiable {
     var color: Color? { AccentChoice(rawValue: rawValue)?.color }
 }
 
-/// A record's tags, each shown as a colored dot (`TagDots`) in a color
-/// fixed per design (`AppStyle.markColor`).
-enum RecordMark: String, CaseIterable, Identifiable {
-    case missing, sale, sold
-    var id: Self { self }
-    /// Also what VoiceOver reads for the dot.
-    var title: String {
-        switch self {
-        case .missing: String(localized: "Gesucht")
-        case .sale: String(localized: "Verkauf")
-        case .sold: String(localized: "Nicht in der Collection")
-        }
-    }
-}
-
 /// The complete designs. The appearance settings (mode, accent, ambient)
 /// stay stored independently, so returning to Modern restores them exactly.
 /// The stored values are those of the first names: "none" from when Modern

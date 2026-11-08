@@ -136,6 +136,14 @@ extension NSView {
         }
         return nil
     }
+
+    /// Whether `point`, in this view's superview, lies on the header row of
+    /// the nearby table: the row menu (`TableRowClicks`) leaves it out, the
+    /// column menu (`TableHeaderClicks`) takes only it.
+    func isOverTableHeader(_ point: NSPoint) -> Bool {
+        guard let superview, let header = nearbyTable()?.headerView, !header.isHiddenOrHasHiddenAncestor else { return false }
+        return header.bounds.contains(header.convert(superview.convert(point, to: nil), from: nil))
+    }
 }
 
 /// Right-click (or Control-click) and, optionally, double-click on a row of
@@ -163,15 +171,9 @@ struct TableRowClicks: NSViewRepresentable {
         override var isFlipped: Bool { true }
 
         override func hitTest(_ point: NSPoint) -> NSView? {
-            guard isSecondaryClick(NSApp.currentEvent), !isOverHeader(point) else { return nil }
+            // The header row has its own menu (`TableHeaderClicks`).
+            guard isSecondaryClick(NSApp.currentEvent), !isOverTableHeader(point) else { return nil }
             return super.hitTest(point)
-        }
-        /// The header row keeps its own right-click menu (showing and hiding
-        /// columns); only clicks on the rows are this view's.
-        private func isOverHeader(_ point: NSPoint) -> Bool {
-            guard let superview, let header = nearbyTable()?.headerView, !header.isHiddenOrHasHiddenAncestor else { return false }
-            let inHeader = header.convert(superview.convert(point, to: nil), from: nil)
-            return header.bounds.contains(inHeader)
         }
         override func rightMouseDown(with event: NSEvent) { fire(event, secondary) }
         override func mouseDown(with event: NSEvent) {
@@ -202,6 +204,51 @@ struct TableRowClicks: NSViewRepresentable {
             guard row >= 0 else { return }
             let p = convert(event.locationInWindow, from: nil)
             action(row, UnitPoint(x: p.x / bounds.width, y: p.y / bounds.height))
+        }
+    }
+}
+
+/// Right-click (or Control-click) on the header row of the SwiftUI `Table`
+/// beneath this overlay, for the column menu (`tableColumnMenu`): reports
+/// every column's header title in the table's order (hidden ones included),
+/// the clicked one (nil between columns), and the click as a unit point of
+/// the overlay. It takes nothing but those clicks, so SwiftUI's own header
+/// menu never opens and everything else goes through to the table.
+struct TableHeaderClicks: NSViewRepresentable {
+    let action: (_ table: NSTableView, _ titles: [String], _ clicked: String?, _ anchor: UnitPoint) -> Void
+
+    func makeNSView(context: Context) -> Catcher { Catcher() }
+    func updateNSView(_ view: Catcher, context: Context) { view.action = action }
+
+    final class Catcher: NSView {
+        var action: ((NSTableView, [String], String?, UnitPoint) -> Void)?
+        override var isFlipped: Bool { true }
+
+        /// A stored arrangement may be wider than the window the list opens
+        /// in; fitted once the table is there.
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard window != nil else { return }
+            DispatchQueue.main.async { [weak self] in self?.nearbyTable()?.fitColumnsIfTheyOverflow() }
+        }
+
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            guard isSecondaryClick(NSApp.currentEvent), isOverTableHeader(point) else { return nil }
+            return super.hitTest(point)
+        }
+        override func rightMouseDown(with event: NSEvent) { fire(event) }
+        override func mouseDown(with event: NSEvent) {
+            if isSecondaryClick(event) { fire(event) } else { super.mouseDown(with: event) }
+        }
+
+        private func fire(_ event: NSEvent) {
+            guard let action, let table = nearbyTable(), let header = table.headerView,
+                  bounds.width > 0, bounds.height > 0 else { return }
+            let column = header.column(at: header.convert(event.locationInWindow, from: nil))
+            let titles = table.tableColumns.map(\.title)
+            let p = convert(event.locationInWindow, from: nil)
+            action(table, titles, titles.indices.contains(column) ? titles[column] : nil,
+                   UnitPoint(x: p.x / bounds.width, y: p.y / bounds.height))
         }
     }
 }

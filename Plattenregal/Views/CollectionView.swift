@@ -316,33 +316,33 @@ struct CollectionView: View {
                         // or hidden with a right-click on it (`TableColumnID`).
                         Table(items, columnCustomization: $preferences.collectionColumns) {
                             TableColumn("") { copy in CoverView(url: copy.release?.shownCoverURL, size: 20) }.width(24)
-                                .tableColumnID(.cover, hideable: false)
-                            TableColumn("Interpret") { copy in
+                                .tableColumnID(.cover)
+                            TableColumn(TableColumnID.artist.title) { copy in
                                 let artist = copy.release?.displayArtist ?? "—"
                                 Text(artist).lineLimit(1)
                             }.width(min: 130, ideal: 190)
-                                .tableColumnID(.artist, hideable: false)
-                            TableColumn("Titel") { copy in
+                                .tableColumnID(.artist)
+                            TableColumn(TableColumnID.title.title) { copy in
                                 let title = copy.release?.displayTitle ?? "—"
                                 Text(title).lineLimit(1)
                             }.width(min: 150, ideal: 230)
-                                .tableColumnID(.title, hideable: false)
-                            TableColumn("Jahr") { copy in
+                                .tableColumnID(.title)
+                            TableColumn(TableColumnID.year.title) { copy in
                                 Text(copy.release?.year.map(String.init) ?? "–").monospacedDigit().foregroundStyle(.secondary)
                             }.width(min: 40, ideal: 48, max: 60)
                                 .tableColumnID(.year)
-                            TableColumn("Label") { Text($0.release?.displayLabel ?? "").lineLimit(1).foregroundStyle(.secondary) }
+                            TableColumn(TableColumnID.label.title) { Text($0.release?.displayLabel ?? "").lineLimit(1).foregroundStyle(.secondary) }
                                 .tableColumnID(.label)
-                            TableColumn("Genre") { Text($0.release?.primaryStyle ?? "").lineLimit(1).foregroundStyle(.secondary) }
+                            TableColumn(TableColumnID.genre.title) { Text($0.release?.primaryStyle ?? "").lineLimit(1).foregroundStyle(.secondary) }
                                 .tableColumnID(.genre)
-                            TableColumn("Fach") { Text(placeLabel(for: $0)).lineLimit(1).foregroundStyle(.secondary) }.width(min: 80, ideal: 140)
+                            TableColumn(TableColumnID.shelf.title) { Text(placeLabel(for: $0)).lineLimit(1).foregroundStyle(.secondary) }.width(min: 80, ideal: 140)
                                 .tableColumnID(.shelf)
-                            TableColumn("Pos.") { copy in
+                            TableColumn(TableColumnID.position.title) { copy in
                                 Text(copy.shelf == nil ? "–" : String(copy.positionInShelf)).monospacedDigit().foregroundStyle(.secondary)
                             }.width(min: 34, ideal: 40, max: 52)
                                 .tableColumnID(.position)
                             // As in the Finder and the shelf's list: the tags as dots, last.
-                            TableColumn("Tags") { copy in
+                            TableColumn(TableColumnID.tags.title) { copy in
                                 TagDots(missing: tagged.missing.contains(copy.id), forSale: tagged.sale.contains(copy.id))
                                     .frame(maxWidth: .infinity)
                             }.width(min: AppStyle.tagColumnWidth.min, ideal: AppStyle.tagColumnWidth.ideal, max: AppStyle.tagColumnWidth.max)
@@ -352,6 +352,7 @@ struct CollectionView: View {
                         .background(QuietIconColumnHeaders())
                         .alternatingRowBackgrounds(.disabled)
                         .scrollContentBackground(.hidden)
+                        .tableColumnMenu($preferences.collectionColumns)
                         .appBottomTableCard(clearance: analyticsFilter == nil ? AppStyle.floatingClearance : 0)
                         .padding(.horizontal, AppStyle.pageMargin)
                         // The app's own menu and, on double-click, the quick look – as in the grid.

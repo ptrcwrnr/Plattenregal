@@ -1,5 +1,20 @@
 import SwiftUI
 
+/// A record's tags, each shown as a colored dot (`TagDots`) in a color
+/// fixed per design (`AppStyle.markColor`).
+enum RecordMark: String, CaseIterable, Identifiable {
+    case missing, sale, sold
+    var id: Self { self }
+    /// Also what VoiceOver reads for the dot.
+    var title: String {
+        switch self {
+        case .missing: String(localized: "Gesucht")
+        case .sale: String(localized: "Verkauf")
+        case .sold: String(localized: "Nicht in der Collection")
+        }
+    }
+}
+
 /// A record's state as a small colored dot where the record is named – no
 /// text tags anywhere. Read out by VoiceOver as `label`; the tooltip says
 /// what it means.
@@ -44,24 +59,5 @@ struct TagDots: View {
                           help: String(localized: "Nicht (mehr) in deiner Discogs-Collection – per Rechtsklick aus dem Fach entfernen"))
             }
         }
-    }
-}
-
-/// The records marked "Gesucht" that the app lists (settings tab "Listen")
-enum MissingCopies {
-    /// Those still standing in a shelf in use (shelf order), then those
-    /// waiting to be sorted in (by artist).
-    static func listed(_ ids: Set<UUID>, in copies: [RecordCopy], owner: String?, excluding excluded: Set<UUID>) -> [RecordCopy] {
-        guard !ids.isEmpty else { return [] }
-        let marked = copies.filter { ids.contains($0.id) }
-        let placed = marked
-            .filter { $0.shelf?.isInUse ?? false }
-            .sorted { a, b in
-                guard let sa = a.shelf, let sb = b.shelf else { return false }
-                if sa.id != sb.id { return Shelf.physicalOrder(sa, sb) }
-                return a.positionInShelf < b.positionInShelf
-            }
-        let waiting = marked.filter { ShelfAssignmentPresentation.isCandidate($0, owner: owner, excluding: excluded) }
-        return placed + ShelfAssignmentPresentation.sortedByArtist(waiting)
     }
 }

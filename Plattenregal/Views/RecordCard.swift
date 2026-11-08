@@ -27,7 +27,7 @@ struct RecordCard: View {
                         .padding(.horizontal, AppStyle.itemSpacing)
                         .padding(.vertical, AppStyle.tightSpacing)
                         .appChipSurface(in: Capsule())
-                        .padding(AtelierCoverFrame.badgeInset)
+                        .padding(AtelierCoverFrame.chipInset)
                 }
             }
     }
@@ -45,8 +45,8 @@ enum AtelierCoverFrame: String {
     /// next launch.
     static let current: AtelierCoverFrame =
         UserDefaults.standard.string(forKey: "atelierCoverFrame").flatMap(Self.init) ?? .sleeve
-    /// Distance of the tags on a cover from its edge, the mat included.
-    static var badgeInset: CGFloat { usesMat ? 11 : 8 }
+    /// Distance of the number chip on a cover (position, „2×“) from its edge, the mat included.
+    static var chipInset: CGFloat { usesMat ? 11 : 8 }
     /// The cover lies on a mat: Klassisch's passepartout, and always in Modern.
     static var usesMat: Bool { frame != .sleeve }
     /// The frame of the design shown.

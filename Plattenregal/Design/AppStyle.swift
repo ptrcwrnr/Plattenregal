@@ -246,9 +246,9 @@ enum AppStyle {
     }
     /// Modern: system-like red, blue and a yellow amber (apart from the
     /// red), deeper on light glass and lighter on dark (`TagColorContrastTests`).
-    private static let modernTagMissing = HexColor.adaptive(0xD8382F, 0xFF6A5E)
-    private static let modernTagSale = HexColor.adaptive(0x2C6BD2, 0x5E9BFF)
-    private static let modernTagSold = HexColor.adaptive(0xB07A00, 0xFFC23D)
+    private static let modernTagMissing = PaletteColor.adaptive(0xD8382F, 0xFF6A5E)
+    private static let modernTagSale = PaletteColor.adaptive(0x2C6BD2, 0x5E9BFF)
+    private static let modernTagSold = PaletteColor.adaptive(0xB07A00, 0xFFC23D)
     /// The small capitals over a group of rows in a menu.
     static let menuSectionTitle = Font.caption2.weight(.semibold)
 
@@ -402,7 +402,7 @@ enum AppStyle {
     /// out of the edge it hangs from like from a funnel – narrower and squashed
     /// at first, then opening up – and back in on removal. It stays in place
     /// instead of sliding across whatever sits next to it. Text swapped inside
-    /// a fixed slot and small badges just fade.
+    /// a fixed slot and small marks just fade.
     static func funnelTransition(from edge: VerticalEdge = .top) -> AnyTransition {
         reduceMotion ? .opacity : .modifier(active: FunnelEffect(progress: 1, anchor: edge == .top ? .top : .bottom),
                                             identity: FunnelEffect(progress: 0, anchor: edge == .top ? .top : .bottom))

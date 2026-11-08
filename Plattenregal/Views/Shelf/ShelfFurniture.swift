@@ -116,9 +116,9 @@ struct ShelfFurniture<Menu: View>: View {
 /// A compartment's recess in the glass body: a little darker than the glass,
 /// shaded under its top edge and catching light along its bottom edge.
 private struct ShelfWell: View {
-    private static let fill = Color.adaptive(NSColor.black.withAlphaComponent(0.06), NSColor.black.withAlphaComponent(0.22))
-    private static let shade = Color.adaptive(NSColor.black.withAlphaComponent(0.2), NSColor.black.withAlphaComponent(0.5))
-    private static let rim = Color.adaptive(NSColor.white.withAlphaComponent(0.7), NSColor.white.withAlphaComponent(0.07))
+    private static let fill = PaletteColor.adaptive(NSColor.black.withAlphaComponent(0.06), NSColor.black.withAlphaComponent(0.22))
+    private static let shade = PaletteColor.adaptive(NSColor.black.withAlphaComponent(0.2), NSColor.black.withAlphaComponent(0.5))
+    private static let rim = PaletteColor.adaptive(NSColor.white.withAlphaComponent(0.7), NSColor.white.withAlphaComponent(0.07))
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
@@ -160,7 +160,7 @@ private struct CompartmentAddButton: View {
 
 /// The compartment under the pointer: its well lit a little from within.
 private struct HoveredWell: View {
-    private static let light = Color.adaptive(NSColor.white.withAlphaComponent(0.4), NSColor.white.withAlphaComponent(0.06))
+    private static let light = PaletteColor.adaptive(NSColor.white.withAlphaComponent(0.4), NSColor.white.withAlphaComponent(0.06))
 
     var body: some View {
         RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
@@ -171,9 +171,9 @@ private struct HoveredWell: View {
 /// The selected compartment lifted out of its well: brighter than the glass,
 /// with a highlight along its top edge and a soft shadow beneath.
 private struct RaisedPlate: View {
-    private static let fill = Color.adaptive(NSColor.white, NSColor.white.withAlphaComponent(0.13))
-    private static let edge = Color.adaptive(NSColor.white, NSColor.white.withAlphaComponent(0.28))
-    private static let shadow = Color.adaptive(NSColor.black.withAlphaComponent(0.2), NSColor.black.withAlphaComponent(0.5))
+    private static let fill = PaletteColor.adaptive(NSColor.white, NSColor.white.withAlphaComponent(0.13))
+    private static let edge = PaletteColor.adaptive(NSColor.white, NSColor.white.withAlphaComponent(0.28))
+    private static let shadow = PaletteColor.adaptive(NSColor.black.withAlphaComponent(0.2), NSColor.black.withAlphaComponent(0.5))
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: ShelfFurnitureMetrics.wellRadius)
@@ -198,7 +198,7 @@ private struct RaisedPlate: View {
 
 /// A locked compartment: its well frosted over like milk glass.
 private struct FrostedWell: View {
-    private static let frost = Color.adaptive(NSColor.white.withAlphaComponent(0.55), NSColor.white.withAlphaComponent(0.07))
+    private static let frost = PaletteColor.adaptive(NSColor.white.withAlphaComponent(0.55), NSColor.white.withAlphaComponent(0.07))
 
     var body: some View {
         let frost = AppStyle.isAtelier ? AtelierPalette.paper.opacity(0.65) : Self.frost
@@ -304,13 +304,5 @@ private struct ShelfCompartment: View {
         if isReserved { return String(localized: "\(shelf.name.isEmpty ? String(localized: "Fach") : shelf.name), gesperrt") }
         if stats.count == 0 { return String(localized: "Leeres Fach") }
         return String(localized: "\(rangeLabel ?? String(localized: "Fach")), \(AppStyle.records(stats.count))")
-    }
-}
-
-private extension Color {
-    static func adaptive(_ light: NSColor, _ dark: NSColor) -> Color {
-        Color(nsColor: NSColor(name: nil) { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? dark : light
-        })
     }
 }

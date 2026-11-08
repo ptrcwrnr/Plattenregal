@@ -110,9 +110,9 @@
 		FAC78A9E620FCF9F9720B09C /* Plattenregal/Views/Shelf/TableRowClickToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 538760D94B849F610AEC36FF /* Plattenregal/Views/Shelf/TableRowClickToggle.swift */; };
 		1DA999A8485EE9DFC05D0000 /* Plattenregal/Views/Shelf/ShelfRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B3FA338250B469D18B3FD6 /* Plattenregal/Views/Shelf/ShelfRequests.swift */; };
 		E57EB11D123931999ADF9452 /* Plattenregal/Views/Shelf/ShelfQuickSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9526C4314AF503B40F412FFD /* Plattenregal/Views/Shelf/ShelfQuickSearch.swift */; };
-		63764DC583916FEC09455C95 /* Plattenregal/Views/Shelf/ShelfStatusMarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66B1A436F92D296003C06F26 /* Plattenregal/Views/Shelf/ShelfStatusMarks.swift */; };
+		63764DC583916FEC09455C95 /* Plattenregal/Design/TagDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66B1A436F92D296003C06F26 /* Plattenregal/Design/TagDots.swift */; };
 		BDE2872993C663E5BE228C54 /* Plattenregal/Views/Shelf/PlacementCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD06A403D9449FEDEA304F66 /* Plattenregal/Views/Shelf/PlacementCard.swift */; };
-		102FE61CE47EDDC83DEE9670 /* Plattenregal/Design/QuietIconColumnHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC763167D901C8D4B28AF15A /* Plattenregal/Design/QuietIconColumnHeaders.swift */; };
+		102FE61CE47EDDC83DEE9670 /* Plattenregal/Design/AppTables.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC763167D901C8D4B28AF15A /* Plattenregal/Design/AppTables.swift */; };
 		FF885F8AA122A4C35F1C698A /* Plattenregal/Views/WantlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0D51019170137D219FE94D /* Plattenregal/Views/WantlistView.swift */; };
 		2C94A2B4A2730DBCDF99B154 /* Plattenregal/Views/RecordCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1358BCE92DD73D54CC36A2F0 /* Plattenregal/Views/RecordCard.swift */; };
 		A6683F37E93DDDF1EA2E34BA /* Plattenregal/Views/FloatingControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3063D60C8C6CE451113DCB9C /* Plattenregal/Views/FloatingControls.swift */; };
@@ -305,9 +305,9 @@
 		538760D94B849F610AEC36FF /* Plattenregal/Views/Shelf/TableRowClickToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/TableRowClickToggle.swift; sourceTree = "<group>"; };
 		36B3FA338250B469D18B3FD6 /* Plattenregal/Views/Shelf/ShelfRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfRequests.swift; sourceTree = "<group>"; };
 		9526C4314AF503B40F412FFD /* Plattenregal/Views/Shelf/ShelfQuickSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfQuickSearch.swift; sourceTree = "<group>"; };
-		66B1A436F92D296003C06F26 /* Plattenregal/Views/Shelf/ShelfStatusMarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/ShelfStatusMarks.swift; sourceTree = "<group>"; };
+		66B1A436F92D296003C06F26 /* Plattenregal/Design/TagDots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/TagDots.swift; sourceTree = "<group>"; };
 		CD06A403D9449FEDEA304F66 /* Plattenregal/Views/Shelf/PlacementCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/Shelf/PlacementCard.swift; sourceTree = "<group>"; };
-		EC763167D901C8D4B28AF15A /* Plattenregal/Design/QuietIconColumnHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/QuietIconColumnHeaders.swift; sourceTree = "<group>"; };
+		EC763167D901C8D4B28AF15A /* Plattenregal/Design/AppTables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Design/AppTables.swift; sourceTree = "<group>"; };
 		8B0D51019170137D219FE94D /* Plattenregal/Views/WantlistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/WantlistView.swift; sourceTree = "<group>"; };
 		1358BCE92DD73D54CC36A2F0 /* Plattenregal/Views/RecordCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/RecordCard.swift; sourceTree = "<group>"; };
 		3063D60C8C6CE451113DCB9C /* Plattenregal/Views/FloatingControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plattenregal/Views/FloatingControls.swift; sourceTree = "<group>"; };
@@ -437,7 +437,7 @@
 				02521F7BA74415A05D4AF390 /* Plattenregal/Design/AppAppearance.swift */,
 				079F8FFB5159397E06B09783 /* Plattenregal/Design/SecondaryClicks.swift */,
 				63DFBC317660E930BF379B80 /* Plattenregal/Design/AppMenu.swift */,
-				EC763167D901C8D4B28AF15A /* Plattenregal/Design/QuietIconColumnHeaders.swift */,
+				EC763167D901C8D4B28AF15A /* Plattenregal/Design/AppTables.swift */,
 				ADA30C7252295ED7A9FA234C /* Plattenregal/Design/PullToRefresh.swift */,
 				F8C458B02C4747EDBB1A7056 /* Plattenregal/Design/ActivityRing.swift */,
 				E3A1E691E150F5E3E0D17F2C /* Plattenregal/Design/RecordGlyph.swift */,
@@ -451,6 +451,7 @@
 				C3DED26E9889880E7A7D091B /* Plattenregal/Design/AppSurfaces.swift */,
 				AA82393A8B00D7957E65889E /* Plattenregal/Design/AppButtons.swift */,
 				2A0EE97AFD6BFAE7E17CA48A /* Plattenregal/Design/RecordCaption.swift */,
+				66B1A436F92D296003C06F26 /* Plattenregal/Design/TagDots.swift */,
 				CF28C0691C87891FCA711544 /* Plattenregal/Design/AtelierPalette.swift */,
 				46D9472EF03721142AC1940B /* Plattenregal/Design/AppStyle.swift */,
 				C1D2E3F4A5B6C7D8E9F0A1B2 /* Plattenregal/Utilities/ErrorMessages.swift */,
@@ -566,7 +567,6 @@
 				06B0696BFA2BA703AC081757 /* Plattenregal/Views/CollectionCoverGroup.swift */,
 				1C3F3637D69FF6FD7DD08D48 /* Plattenregal/Views/Shelf/KallaxView.swift */,
 				CD06A403D9449FEDEA304F66 /* Plattenregal/Views/Shelf/PlacementCard.swift */,
-				66B1A436F92D296003C06F26 /* Plattenregal/Views/Shelf/ShelfStatusMarks.swift */,
 				36B3FA338250B469D18B3FD6 /* Plattenregal/Views/Shelf/ShelfRequests.swift */,
 				9526C4314AF503B40F412FFD /* Plattenregal/Views/Shelf/ShelfQuickSearch.swift */,
 				538760D94B849F610AEC36FF /* Plattenregal/Views/Shelf/TableRowClickToggle.swift */,
@@ -885,7 +885,7 @@
 				9118E50917D51D3B4308F8A4 /* Plattenregal/Design/AppAppearance.swift in Sources */,
 				DA788AF5277795C8B7CF175D /* Plattenregal/Design/SecondaryClicks.swift in Sources */,
 				9AAA9EBFFAB13F7DD61CCB92 /* Plattenregal/Design/AppMenu.swift in Sources */,
-				102FE61CE47EDDC83DEE9670 /* Plattenregal/Design/QuietIconColumnHeaders.swift in Sources */,
+				102FE61CE47EDDC83DEE9670 /* Plattenregal/Design/AppTables.swift in Sources */,
 				C0DA563308E8B621F9E331B7 /* Plattenregal/Design/PullToRefresh.swift in Sources */,
 				6E5DB764F5E98F38CF42507B /* Plattenregal/Design/ActivityRing.swift in Sources */,
 				1CB5D44401101EE451D91F88 /* Plattenregal/Design/RecordGlyph.swift in Sources */,
@@ -959,7 +959,7 @@
 				1C38DE8701BF96E5C83C38CA /* Plattenregal/Views/CollectionCoverGroup.swift in Sources */,
 				C4CCBDD5D67B742E2C954590 /* Plattenregal/Views/Shelf/KallaxView.swift in Sources */,
 				BDE2872993C663E5BE228C54 /* Plattenregal/Views/Shelf/PlacementCard.swift in Sources */,
-				63764DC583916FEC09455C95 /* Plattenregal/Views/Shelf/ShelfStatusMarks.swift in Sources */,
+				63764DC583916FEC09455C95 /* Plattenregal/Design/TagDots.swift in Sources */,
 				1DA999A8485EE9DFC05D0000 /* Plattenregal/Views/Shelf/ShelfRequests.swift in Sources */,
 				E57EB11D123931999ADF9452 /* Plattenregal/Views/Shelf/ShelfQuickSearch.swift in Sources */,
 				FAC78A9E620FCF9F9720B09C /* Plattenregal/Views/Shelf/TableRowClickToggle.swift in Sources */,

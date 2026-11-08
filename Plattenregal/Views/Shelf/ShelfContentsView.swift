@@ -477,7 +477,7 @@ struct ShelfContentsView: View, Equatable {
                         .font(AppStyle.captionMark).monospacedDigit()
                         .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
                         .appChipSurface(in: Capsule())
-                        .padding(AtelierCoverFrame.badgeInset)
+                        .padding(AtelierCoverFrame.chipInset)
                 }
             // The same caption as in Collection and Wantlist.
             RecordCaption(release: item.copy.release, emphasized: selected)
@@ -491,15 +491,15 @@ struct ShelfContentsView: View, Equatable {
         Table(tableItems, selection: selection, sortOrder: Binding(
             get: { sortOrder }, set: { session.tableSortOrder = $0 }
         ), columnCustomization: $preferences.shelfColumns) {
-            TableColumn("Pos.", value: \.position) { item in
+            TableColumn(TableColumnID.position.title, value: \.position) { item in
                 Text(String(item.position)).monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 34, ideal: 40, max: 52)
             .tableColumnID(.position)
             TableColumn("") { item in CoverView(url: item.copy.release?.shownCoverURL, size: 20) }
                 .width(24)
-                .tableColumnID(.cover, hideable: false)
-            TableColumn("Interpret", value: \.artist) { item in
+                .tableColumnID(.cover)
+            TableColumn(TableColumnID.artist.title, value: \.artist) { item in
                 Text(item.artist).lineLimit(1).help(item.artist)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .popover(isPresented: quickEditBinding(item.id), arrowEdge: .trailing) {
@@ -507,29 +507,29 @@ struct ShelfContentsView: View, Equatable {
                     }
             }
             .width(min: 120, ideal: 220)
-            .tableColumnID(.artist, hideable: false)
-            TableColumn("Titel", value: \.title) { item in
+            .tableColumnID(.artist)
+            TableColumn(TableColumnID.title.title, value: \.title) { item in
                 Text(item.title).lineLimit(1).help(item.title)
             }
             .width(min: 120, ideal: 280)
-            .tableColumnID(.title, hideable: false)
-            TableColumn("Jahr", value: \.year) { item in
+            .tableColumnID(.title)
+            TableColumn(TableColumnID.year.title, value: \.year) { item in
                 Text(item.year > 0 ? String(item.year) : "–").monospacedDigit().foregroundStyle(.secondary)
             }
             .width(min: 40, ideal: 48, max: 60)
             .tableColumnID(.year)
-            TableColumn("Label", value: \.label) { item in
+            TableColumn(TableColumnID.label.title, value: \.label) { item in
                 Text(item.label.isEmpty ? "–" : item.label).lineLimit(1).foregroundStyle(.secondary).help(item.label)
             }
             .width(min: 80, ideal: 160)
             .tableColumnID(.label)
-            TableColumn("Genre", value: \.genre) { item in
+            TableColumn(TableColumnID.genre.title, value: \.genre) { item in
                 Text(item.genre.isEmpty ? "–" : item.genre).lineLimit(1).foregroundStyle(.secondary).help(item.genre)
             }
             .width(min: 80, ideal: 130)
             .tableColumnID(.genre)
             // As in the Finder: the tags as dots, last.
-            TableColumn("Tags") { item in
+            TableColumn(TableColumnID.tags.title) { item in
                 TagDots(missing: item.missing, forSale: item.forSale, sold: item.sold)
                     .frame(maxWidth: .infinity)
             }
@@ -542,6 +542,7 @@ struct ShelfContentsView: View, Equatable {
         .background(TableRowClickToggle { selectLocally(nil) })
         .alternatingRowBackgrounds(.disabled)
         .scrollContentBackground(.hidden)
+        .tableColumnMenu($preferences.shelfColumns)
         .contextMenu(forSelectionType: UUID.self) { _ in } primaryAction: { ids in
             if let id = ids.first, let copy = items.first(where: { $0.id == id })?.copy { activate(copy) }
         }

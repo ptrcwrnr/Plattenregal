@@ -218,3 +218,22 @@ private struct ListSettingsRow: View {
         .frame(height: AssignmentRowMetrics.height)
     }
 }
+
+/// The records marked "Gesucht" that the app lists (settings tab "Listen")
+enum MissingCopies {
+    /// Those still standing in a shelf in use (shelf order), then those
+    /// waiting to be sorted in (by artist).
+    static func listed(_ ids: Set<UUID>, in copies: [RecordCopy], owner: String?, excluding excluded: Set<UUID>) -> [RecordCopy] {
+        guard !ids.isEmpty else { return [] }
+        let marked = copies.filter { ids.contains($0.id) }
+        let placed = marked
+            .filter { $0.shelf?.isInUse ?? false }
+            .sorted { a, b in
+                guard let sa = a.shelf, let sb = b.shelf else { return false }
+                if sa.id != sb.id { return Shelf.physicalOrder(sa, sb) }
+                return a.positionInShelf < b.positionInShelf
+            }
+        let waiting = marked.filter { ShelfAssignmentPresentation.isCandidate($0, owner: owner, excluding: excluded) }
+        return placed + ShelfAssignmentPresentation.sortedByArtist(waiting)
+    }
+}

@@ -17,9 +17,7 @@ nonisolated enum RecordFrame: String, Codable, Sendable {
     static let matWidth: CGFloat = 6
     /// Modern's mat: white in light mode; a light veil in dark mode, so it
     /// sits a little above the window like Klassisch's surface on its paper.
-    static let modernMatColor = Color(nsColor: NSColor(name: nil) { appearance in
-        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(white: 1, alpha: 0.1) : .white
-    })
+    static let modernMatColor = PaletteColor.adaptive(.white, NSColor(white: 1, alpha: 0.1))
 
     /// The corner radius the cover itself takes inside this frame: on a mat
     /// its corners run parallel to the mat's.
