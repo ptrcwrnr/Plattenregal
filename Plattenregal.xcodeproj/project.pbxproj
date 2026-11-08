@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5D7B00000000000000000010 /* PlattenregalDockTile/DockTileMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B00000000000000000011 /* PlattenregalDockTile/DockTileMessage.swift */; };
+		5D7B00000000000000000012 /* PlattenregalDockTile/DockTileMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B00000000000000000011 /* PlattenregalDockTile/DockTileMessage.swift */; };
 		5D7B00000000000000000001 /* PlattenregalDockTile/DockTilePlugIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B00000000000000000002 /* PlattenregalDockTile/DockTilePlugIn.swift */; };
 		5D7B00000000000000000003 /* PlattenregalDockTile.docktileplugin in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5D7B00000000000000000004 /* PlattenregalDockTile.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A7D0C0DE00000000000000B3 /* PlattenregalTests/UpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0C0DE00000000000000F3 /* PlattenregalTests/UpdateTests.swift */; };
@@ -207,6 +209,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5D7B00000000000000000011 /* PlattenregalDockTile/DockTileMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalDockTile/DockTileMessage.swift; sourceTree = "<group>"; };
 		5D7B00000000000000000002 /* PlattenregalDockTile/DockTilePlugIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlattenregalDockTile/DockTilePlugIn.swift; sourceTree = "<group>"; };
 		5D7B00000000000000000007 /* PlattenregalDockTile/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PlattenregalDockTile/Info.plist; sourceTree = "<group>"; };
 		5D7B00000000000000000004 /* PlattenregalDockTile.docktileplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlattenregalDockTile.docktileplugin; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -435,6 +438,7 @@
 			isa = PBXGroup;
 			children = (
 				5D7B00000000000000000002 /* PlattenregalDockTile/DockTilePlugIn.swift */,
+				5D7B00000000000000000011 /* PlattenregalDockTile/DockTileMessage.swift */,
 				5D7B00000000000000000007 /* PlattenregalDockTile/Info.plist */,
 			);
 			name = PlattenregalDockTile;
@@ -873,6 +877,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5D7B00000000000000000001 /* PlattenregalDockTile/DockTilePlugIn.swift in Sources */,
+				5D7B00000000000000000010 /* PlattenregalDockTile/DockTileMessage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -914,6 +919,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5D7B00000000000000000012 /* PlattenregalDockTile/DockTileMessage.swift in Sources */,
 				A7D0C0DE00000000000000B2 /* Plattenregal/Views/UpdateView.swift in Sources */,
 				A7D0C0DE00000000000000B1 /* Plattenregal/Services/UpdateChecker.swift in Sources */,
 				5D7A0000000000000000000E /* Plattenregal/Design/DesignScale.swift in Sources */,

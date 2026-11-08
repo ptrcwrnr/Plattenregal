@@ -70,6 +70,17 @@ extension AllTests {
             #expect(Set(AppIconChoice.allCases.compactMap(\.assetName)).count == AppIconChoice.allCases.count - 1)
         }
 
+        /// The Dock plug-in takes every icon's name and the standard (empty),
+        /// nothing else – any process may post its notification.
+        @Test func dockTileAcceptsOnlyIconNames() {
+            #expect(AppIconChoice.allCases.allSatisfy { DockTileMessage.isImageName($0.assetName ?? "") })
+            #expect(DockTileMessage.isImageName(""))
+            for name in ["Memphis", "AppIcon", "AppIcon-../x", "AppIcon-a/b", "AppIcon-Ä", "AppIcon- x",
+                         "/Applications/Plattenregal.app", "AppIcon-" + String(repeating: "x", count: 60)] {
+                #expect(!DockTileMessage.isImageName(name), "angenommen: \(name)")
+            }
+        }
+
         @Test func drawnCoversAreOffByDefaultAndPersist() throws {
             try withSignatureDefaults { defaults in
                 let preferences = AppPreferences(defaults: defaults)

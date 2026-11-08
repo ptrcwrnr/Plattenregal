@@ -7,19 +7,12 @@ import os
 /// `NSDockTilePlugIn`) into a sandboxed helper of the Dock for as long as
 /// the app's icon is in the Dock, running or not. The app's settings lie in
 /// its own sandbox container, out of reach from here, so the app tells the
-/// plug-in the image's name: in a distributed notification, as its object
-/// (a sandboxed app's `userInfo` never arrives), on every change and at
-/// every launch, and when the plug-in asks after coming into the Dock (the
-/// app's launch may pass before the plug-in listens). The plug-in keeps the
-/// name in its own defaults and loads
-/// the image from the app's asset catalog. An empty name is the standard:
-/// without a content view the Dock shows the bundle's icon.
+/// plug-in the image's name (`DockTileMessage`). The plug-in confirms each
+/// one, keeps the name in its own defaults and loads the image from the
+/// app's asset catalog. An empty name is the standard: without a content
+/// view the Dock shows the bundle's icon.
 @objc(PlattenregalDockTilePlugIn)
 final class DockTilePlugIn: NSObject, NSDockTilePlugIn {
-    /// The same name as `AppIconChoice.dockTileNotification` in the app.
-    private static let notification = Notification.Name("de.private.Plattenregal.appIconDidChange")
-    /// The same name as `AppIconChoice.dockTileRequest` in the app.
-    private static let request = Notification.Name("de.private.Plattenregal.dockTileNeedsIcon")
     private static let key = "appIconImage"
     private let defaults = UserDefaults(suiteName: "de.private.Plattenregal.DockTile")
     private var dockTile: NSDockTile?
@@ -45,20 +38,27 @@ final class DockTilePlugIn: NSObject, NSDockTilePlugIn {
             return
         }
         if observer == nil {
-            observer = DistributedNotificationCenter.default().addObserver(forName: Self.notification, object: nil, queue: .main) { [weak self] note in
+            observer = DistributedNotificationCenter.default().addObserver(forName: DockTileMessage.iconDidChange, object: nil, queue: .main) { [weak self] note in
                 let name = note.object as? String ?? ""
-                MainActor.assumeIsolated { self?.store(name) }
+                MainActor.assumeIsolated { self?.receive(name) }
             }
         }
-        show(defaults?.string(forKey: Self.key) ?? "")
+        // Stored by an older or newer version and unknown here: the standard.
+        let stored = defaults?.string(forKey: Self.key) ?? ""
+        show(DockTileMessage.isImageName(stored) ? stored : "")
         // A running app answers with its choice; a closed one keeps the stored one.
-        DistributedNotificationCenter.default().postNotificationName(Self.request, object: nil, userInfo: nil, deliverImmediately: true)
+        DistributedNotificationCenter.default().postNotificationName(DockTileMessage.needsIcon, object: nil, userInfo: nil, deliverImmediately: true)
     }
 
-    private func store(_ name: String) {
+    private func receive(_ name: String) {
+        guard DockTileMessage.isImageName(name) else {
+            Self.log.error("Ungültiger Name ignoriert")
+            return
+        }
         Self.log.info("Neues Symbol: \(name.isEmpty ? "Standard" : name, privacy: .public)")
         defaults?.set(name, forKey: Self.key)
         show(name)
+        DistributedNotificationCenter.default().postNotificationName(DockTileMessage.received, object: nil, userInfo: nil, deliverImmediately: true)
     }
 
     private func show(_ name: String) {
@@ -67,6 +67,7 @@ final class DockTilePlugIn: NSObject, NSDockTilePlugIn {
             let view = NSImageView(frame: NSRect(origin: .zero, size: dockTile.size))
             view.image = image
             view.imageScaling = .scaleProportionallyUpOrDown
+            view.autoresizingMask = [.width, .height]
             dockTile.contentView = view
         } else {
             if !name.isEmpty { Self.log.error("Bild nicht gefunden: \(name, privacy: .public)") }

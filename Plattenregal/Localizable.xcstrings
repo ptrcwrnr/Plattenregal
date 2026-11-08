@@ -280,6 +280,26 @@
         }
       }
     },
+    "Damit das Symbol auch bei geschlossener App im Dock bleibt, Plattenregal im Dock behalten. Lag es dort schon vor diesem Update, einmal aus dem Dock ziehen und wieder hineinlegen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To keep the icon in the Dock while the app is closed, keep Plattenregal in the Dock. If it was there before this update, drag it out of the Dock once and put it back."
+          }
+        }
+      }
+    },
+    "Das Symbol bleibt auch bei geschlossener App im Dock, solange Plattenregal dort liegt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The icon stays in the Dock even while the app is closed, as long as Plattenregal is kept there."
+          }
+        }
+      }
+    },
     "Der letzte Stand eines Tages, gezählt werden nur Tage, an denen gesichert wurde – so verdrängt ein Tag mit vielen Änderungen nicht alle älteren Sicherungen." : {
       "localizations" : {
         "en" : {
@@ -376,6 +396,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In %@ – doesn’t count toward the app’s storage. How many are kept is set under “Backup”."
+          }
+        }
+      }
+    },
+    "In der Demo gilt das Symbol nur, solange sie läuft." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the demo, the icon only applies while it runs."
           }
         }
       }

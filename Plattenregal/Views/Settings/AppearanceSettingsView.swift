@@ -4,6 +4,7 @@ import SwiftUI
 
 struct AppearanceSettingsView: View {
     @State private var preferences = AppPreferences.shared
+    @State private var dockTile = DockTileLink.shared
     @AppStorage(DisplaySettings.collectionLayoutKey) private var collectionLayout = OverviewLayout.grid
     @AppStorage(DisplaySettings.wantlistLayoutKey) private var wantlistLayout = OverviewLayout.grid
     @AppStorage(DisplaySettings.collectionOrderKey) private var collectionOrder = OverviewOrder.alphabetical
@@ -24,6 +25,16 @@ struct AppearanceSettingsView: View {
     private var coverSize: Binding<Double> {
         Binding(get: { DisplaySettings.coverSize(storedCoverSize) },
                 set: { storedCoverSize = $0 })
+    }
+
+    /// What it takes for the icon to stay in the Dock while the app is
+    /// closed: the Dock plug-in confirmed (`DockTileLink`) or not yet – then
+    /// most likely the app was kept in the Dock since before the plug-in.
+    private var closedAppHint: String {
+        if DemoMode.isActive { return String(localized: "In der Demo gilt das Symbol nur, solange sie läuft.") }
+        return dockTile.isLoaded
+            ? String(localized: "Das Symbol bleibt auch bei geschlossener App im Dock, solange Plattenregal dort liegt.")
+            : String(localized: "Damit das Symbol auch bei geschlossener App im Dock bleibt, Plattenregal im Dock behalten. Lag es dort schon vor diesem Update, einmal aus dem Dock ziehen und wieder hineinlegen.")
     }
 
     /// Klassisch and Vinyl bring their own colors; the choices stay stored for Modern.
@@ -101,6 +112,8 @@ struct AppearanceSettingsView: View {
                         }
                     }
                 }
+                Divider()
+                SettingsNote(closedAppHint)
             }
             SettingsCard(title: String(localized: "Rubriken"),
                          subtitle: String(localized: "Eigene Namen für die Rubriken oben im Fenster, höchstens \(PageNames.maxLength) Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück.")) {

@@ -328,29 +328,46 @@ enum AppIconChoice: String, CaseIterable, Identifiable {
     /// Dock plug-in, which shows it while the app is closed.
     func apply() {
         NSApp.applicationIconImage = assetName.flatMap { NSImage(named: $0) }
-        announceToDockTile()
+        DockTileLink.shared.announce(self)
+    }
+}
+
+/// The app's side of the Dock plug-in (`PlattenregalDockTile`), which shows
+/// the chosen icon while the app is closed: it tells the plug-in each choice
+/// (`DockTileMessage`) and learns from its confirmation whether the Dock
+/// has loaded it. The Dock decides that when the app is put into it: an app
+/// kept in the Dock since before the plug-in existed gets none until it is
+/// taken out of the Dock and put back. Silent in the demo and the tests:
+/// the Dock shows the real choice.
+@Observable final class DockTileLink {
+    static let shared = DockTileLink()
+
+    /// The plug-in confirmed a choice in this launch.
+    private(set) var isLoaded = false
+    @ObservationIgnored private var started = false
+
+    static var isEnabled: Bool {
+        !DemoMode.isActive && ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil
     }
 
-    /// The same names as in `PlattenregalDockTile/DockTilePlugIn.swift`.
-    static let dockTileNotification = Notification.Name("de.private.Plattenregal.appIconDidChange")
-    static let dockTileRequest = Notification.Name("de.private.Plattenregal.dockTileNeedsIcon")
-
-    /// The plug-in asks when it comes into the Dock – at the app's launch
-    /// often only after `apply()` has spoken, and again after the Dock
-    /// restarts. Answered with the choice of the moment. Once, at launch.
-    static func answerDockTile() {
-        DistributedNotificationCenter.default().addObserver(forName: dockTileRequest, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { AppPreferences.shared.appIcon.announceToDockTile() }
+    /// Once, at launch, before the first `announce`, so its confirmation counts.
+    func start() {
+        guard Self.isEnabled, !started else { return }
+        started = true
+        let center = DistributedNotificationCenter.default()
+        // The plug-in asks when it comes into the Dock – at the app's launch
+        // often after the first announcement, and again after the Dock restarts.
+        center.addObserver(forName: DockTileMessage.needsIcon, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { DockTileLink.shared.announce(AppPreferences.shared.appIcon) }
+        }
+        center.addObserver(forName: DockTileMessage.received, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { DockTileLink.shared.isLoaded = true }
         }
     }
 
-    /// The plug-in can't read the app's settings (they lie in its sandbox
-    /// container): it gets the image's name as the notification's object –
-    /// a sandboxed app's `userInfo` never arrives – and keeps it itself.
-    /// Not from the demo or the tests: the Dock shows the real choice.
-    func announceToDockTile() {
-        guard !DemoMode.isActive, ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+    func announce(_ choice: AppIconChoice) {
+        guard Self.isEnabled else { return }
         DistributedNotificationCenter.default().postNotificationName(
-            Self.dockTileNotification, object: assetName ?? "", userInfo: nil, deliverImmediately: true)
+            DockTileMessage.iconDidChange, object: choice.assetName ?? "", userInfo: nil, deliverImmediately: true)
     }
 }

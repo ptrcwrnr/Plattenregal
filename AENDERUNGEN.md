@@ -1,3 +1,11 @@
+# Dock-Plugin robuster, Hinweis in den Einstellungen · 08.11.2026
+
+- **Hinweis:** In der Karte „App-Symbol“ steht unten, was es braucht, damit das Symbol auch bei geschlossener App im Dock bleibt (Deutsch und Englisch). Hat das Dock das Plugin geladen, eine kurze Bestätigung; sonst die Anleitung: Plattenregal im Dock behalten, und lag es dort schon vor diesem Update, einmal heraus- und wieder hineinziehen. In der Demo ein eigener Satz.
+- **Bestätigung:** Das Plugin bestätigt jede Wahl (`DockTileMessage.received`); `DockTileLink` (neu, in `AppearanceChoices.swift`) merkt sich das für den Hinweis, beantwortet die Rückfrage des Plugins und schickt die Wahl – vorher Teil von `AppIconChoice`. Es hört zu, bevor die App beim Start zum ersten Mal spricht.
+- **Gemeinsame Namen:** Die drei Nachrichtennamen und die Prüfung stehen einmal in `PlattenregalDockTile/DockTileMessage.swift`, Teil von App und Plugin (vorher doppelt).
+- **Prüfung im Plugin:** Jedes Programm kann die Nachricht schicken; das Plugin nimmt nur „leer“ (Standard) oder einen Bildnamen der App (`AppIcon-…`, nur Buchstaben, Ziffern, Bindestrich, höchstens 64 Zeichen) und ignoriert alles andere. Ein gespeicherter unbekannter Name zeigt das Standard-Symbol. Die Bildansicht passt sich der Kachelgröße an.
+- **Geprüft:** gebaut, 329 Tests bestanden (neu: Namensprüfung – alle Symbole und leer angenommen, Pfade, Umlaute, Leerzeichen, zu lange Namen abgelehnt). Mit der installierten Release-Fassung bei geschlossener App: ungültige Namen (`../../etc/x`, `Memphis`) ignoriert, das Dock zeigt weiter „Weiß“; unbekannter Bildname → Standard-Symbol; zurück auf „Weiß“; nach hartem Neustart des Plugin-Helfers steht „Weiß“ sofort wieder da (gespeichert). Gefunden: Der Helfer des Docks behält nach einem Update den alten Plugin-Code, bis er neu startet (sanftes Beenden ignoriert er); bei Nutzern spätestens nach dem Abmelden oder Neustart.
+
 # Gewähltes App-Symbol auch bei geschlossener App (Dock-Plugin) · 08.11.2026
 
 - **Neu:** Ziel `PlattenregalDockTile`, ein Dock-Plugin (`PlattenregalDockTile.docktileplugin` in `Contents/PlugIns`, `NSDockTilePlugIn` in der `Info.plist` der App). Es zeigt das gewählte Symbol, solange Plattenregal im Dock liegt und geschlossen ist.
