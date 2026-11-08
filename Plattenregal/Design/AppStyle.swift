@@ -368,7 +368,9 @@ enum AppStyle {
     /// lights up (as in the statistics).
     static let hoverSettleDelay: TimeInterval = 0.12
     /// State changes — dimming, showing/hiding, focus changes.
-    static let standardAnimation = Animation.smooth(duration: 0.25)
+    static let standardAnimation = Animation.smooth(duration: standardDuration)
+    /// Its length, for work that waits until it has settled (`revealsWhenExpanded`).
+    static let standardDuration: TimeInterval = 0.25
     /// Crossfade between pages, sections and grid ↔ list. Kept with reduce motion.
     static let fadeAnimation = Animation.smooth(duration: 0.25)
     /// Anything that moves or resizes: records travelling to a new sort

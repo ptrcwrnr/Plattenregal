@@ -178,6 +178,8 @@ struct AppearanceSettingsView: View {
                     .transition(AppStyle.funnelTransition())
                 }
             }
+            // The last card: switched on, its gallery opens below the window's edge.
+            .revealsWhenExpanded(preferences.customAppIcon)
         }
         .animation(AppStyle.quickAnimation, value: preferences.signatureDesign)
         // Changes every page's look: worth a line in the protocol for bug reports.

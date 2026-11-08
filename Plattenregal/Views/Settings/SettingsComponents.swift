@@ -6,24 +6,74 @@ import SwiftUI
 struct SettingsPage<Content: View>: View {
     @ViewBuilder let content: Content
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
-                if DemoMode.showsBanner {
-                    AppBanner(message: String(localized: "Demo: Diese Einstellungen gelten nur für die Demo. Deine eigenen bleiben, wie sie sind."), kind: .info,
-                              actionTitle: String(localized: "Demo beenden"), action: { DemoMode.end() })
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
+                    if DemoMode.showsBanner {
+                        AppBanner(message: String(localized: "Demo: Diese Einstellungen gelten nur für die Demo. Deine eigenen bleiben, wie sie sind."), kind: .info,
+                                  actionTitle: String(localized: "Demo beenden"), action: { DemoMode.end() })
+                    }
+                    content
                 }
-                content
+                    .padding(AppStyle.pagePadding)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    // For a card that grows (`revealsWhenExpanded`).
+                    .environment(\.settingsScroll, proxy)
             }
-                .padding(AppStyle.pagePadding)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            // The edge effect draws a line under the toolbar when hovered.
+            .scrollEdgeEffectHidden(true, for: .top)
+            // In Modern the toolbar is see-through: scrolled cards ran on behind
+            // the tab switch at full strength and looked broken. Now they fade
+            // out just before it; the page starts at the toolbar's edge like the
+            // main window's pages.
+            .scrollsUnderToolbar(contentPadding: AppStyle.pagePadding, showsBehindBar: false)
         }
-        // The edge effect draws a line under the toolbar when hovered.
-        .scrollEdgeEffectHidden(true, for: .top)
-        // In Modern the toolbar is see-through: scrolled cards ran on behind
-        // the tab switch at full strength and looked broken. Now they fade
-        // out just before it; the page starts at the toolbar's edge like the
-        // main window's pages.
-        .scrollsUnderToolbar(contentPadding: AppStyle.pagePadding, showsBehindBar: false)
+    }
+}
+
+extension EnvironmentValues {
+    /// The scrolling of the `SettingsPage` around a view, nil outside one.
+    @Entry var settingsScroll: ScrollViewProxy? = nil
+}
+
+extension View {
+    /// When `expanded` turns true, scrolls the settings page so this view's
+    /// top shows: a card low on its page that opens more rows (behind a
+    /// switch) would otherwise grow below the window's edge, unseen.
+    func revealsWhenExpanded(_ expanded: Bool) -> some View {
+        modifier(RevealsWhenExpanded(expanded: expanded))
+    }
+}
+
+private struct RevealsWhenExpanded: ViewModifier {
+    let expanded: Bool
+    @Environment(\.settingsScroll) private var scroll
+    @State private var id = UUID()
+    /// The latest state of the switch, read again once the page has settled.
+    @State private var wanted = false
+
+    func body(content: Content) -> some View {
+        content
+            .id(id)
+            .onChange(of: expanded) { _, now in
+                wanted = now
+                guard now, let scroll else { return }
+                Task { @MainActor in
+                    // Not in this update yet: the page hasn't grown, and at
+                    // its end there would be nowhere to scroll to.
+                    await Task.yield()
+                    reveal(scroll)
+                    // Switched off and on again quickly, the page was still
+                    // scrolling back and took this scroll along: once more
+                    // after it settled. Changes nothing if it already shows.
+                    try? await Task.sleep(for: .seconds(AppStyle.standardDuration * 2))
+                    if wanted { reveal(scroll) }
+                }
+            }
+    }
+
+    private func reveal(_ scroll: ScrollViewProxy) {
+        withAnimation(AppStyle.standardAnimation) { scroll.scrollTo(id, anchor: .top) }
     }
 }
 

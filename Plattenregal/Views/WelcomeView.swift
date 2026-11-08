@@ -92,10 +92,7 @@ struct WelcomeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppStyle.sectionSpacing) {
             HStack(spacing: AppStyle.rowSpacing) {
-                Image(nsImage: NSApp.applicationIconImage)
-                    .resizable()
-                    .frame(width: AppStyle.appIconSmallSize, height: AppStyle.appIconSmallSize)
-                    .accessibilityHidden(true)
+                CurrentAppIcon(size: AppStyle.appIconSmallSize)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text("Willkommen bei Plattenregal").font(AppStyle.dialogTitle)
                     Text("Deine Schallplatten auf dem Mac: die ganze Sammlung auf einen Blick und immer die Antwort, wo eine Platte im Regal steht.")

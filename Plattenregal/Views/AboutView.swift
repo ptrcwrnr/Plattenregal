@@ -18,9 +18,7 @@ struct AboutView: View {
 
     var body: some View {
         VStack(spacing: AppStyle.itemSpacing) {
-            Image(nsImage: NSApp.applicationIconImage)
-                .resizable().frame(width: AppStyle.aboutIconSize, height: AppStyle.aboutIconSize)
-                .accessibilityHidden(true)
+            CurrentAppIcon(size: AppStyle.aboutIconSize)
             Text("Plattenregal").font(AppStyle.dialogTitle)
             Text(Self.versionLine)
                 .font(.callout).foregroundStyle(.secondary)
@@ -128,5 +126,19 @@ struct AboutCommand: View {
     @Environment(\.openWindow) private var openWindow
     var body: some View {
         Button("Über Plattenregal") { openWindow(id: AboutView.windowID) }
+    }
+}
+
+/// The icon the Dock shows now – the chosen one or the standard – and it
+/// follows a change at once, also in a window open meanwhile:
+/// `NSApp.applicationIconImage` alone is nothing SwiftUI watches.
+struct CurrentAppIcon: View {
+    let size: CGFloat
+    @State private var preferences = AppPreferences.shared
+    var body: some View {
+        Image(nsImage: preferences.dockIcon.assetName.flatMap { NSImage(named: $0) } ?? NSApp.applicationIconImage)
+            .resizable()
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }
