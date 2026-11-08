@@ -105,7 +105,9 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
             let dragged = draggedColumn
             // The dragged one last, over the others.
             let order = table.tableColumns.indices.filter { $0 != dragged } + (table.tableColumns.indices.contains(dragged) ? [dragged] : [])
-            for index in order where !table.tableColumns[index].title.isEmpty {
+            // Hidden columns (switched off with a right-click) keep their
+            // place in `tableColumns` with no width: nothing to draw.
+            for index in order where !table.tableColumns[index].title.isEmpty && !table.tableColumns[index].isHidden {
                 let column = table.tableColumns[index]
                 let cell = column.headerCell
                 var rect = headerRect(ofColumn: index)
@@ -134,7 +136,8 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
             }
             dividerColor.setFill()
             // No dividers while a column is dragged: their places change under it.
-            for index in table.tableColumns.indices.dropLast() where dragged < 0 {
+            let shown = table.tableColumns.indices.filter { !table.tableColumns[$0].isHidden }
+            for index in shown.dropLast() where dragged < 0 {
                 let x = headerRect(ofColumn: index).maxX
                 guard !dividers.contains(where: { abs($0 - x) < 1 }) else { continue }
                 NSRect(x: x - 0.5, y: bounds.midY - 7, width: 1, height: 14).fill()
@@ -173,14 +176,17 @@ struct QuietIconColumnHeaders: NSViewRepresentable {
         override func draw(_ dirtyRect: NSRect) {
             guard let table = tableView else { return super.draw(dirtyRect) }
             let columns = table.tableColumns
+            // Only the columns shown; hidden ones keep a place without width.
+            let shown = columns.indices.filter { !columns[$0].isHidden }
             // Skip dividers on an icon column, just before one and at the end
             // of the last column. The inset style's empty lead-in before the
             // first column has nothing to separate either.
-            var edges: [CGFloat] = columns.isEmpty ? [] : [headerRect(ofColumn: 0).minX]
-            for index in columns.indices {
+            var edges: [CGFloat] = shown.first.map { [headerRect(ofColumn: $0).minX] } ?? []
+            for (position, index) in shown.enumerated() {
                 let isIcon = columns[index].title.isEmpty
-                let beforeIcon = index + 1 < columns.count && columns[index + 1].title.isEmpty
-                let isLast = index == columns.count - 1
+                let next = position + 1 < shown.count ? shown[position + 1] : nil
+                let beforeIcon = next.map { columns[$0].title.isEmpty } ?? false
+                let isLast = next == nil
                 guard isIcon || beforeIcon || isLast else { continue }
                 edges.append(headerRect(ofColumn: index).maxX)
             }

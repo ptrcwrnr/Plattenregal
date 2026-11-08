@@ -163,7 +163,15 @@ struct TableRowClicks: NSViewRepresentable {
         override var isFlipped: Bool { true }
 
         override func hitTest(_ point: NSPoint) -> NSView? {
-            isSecondaryClick(NSApp.currentEvent) ? super.hitTest(point) : nil
+            guard isSecondaryClick(NSApp.currentEvent), !isOverHeader(point) else { return nil }
+            return super.hitTest(point)
+        }
+        /// The header row keeps its own right-click menu (showing and hiding
+        /// columns); only clicks on the rows are this view's.
+        private func isOverHeader(_ point: NSPoint) -> Bool {
+            guard let superview, let header = nearbyTable()?.headerView, !header.isHiddenOrHasHiddenAncestor else { return false }
+            let inHeader = header.convert(superview.convert(point, to: nil), from: nil)
+            return header.bounds.contains(inHeader)
         }
         override func rightMouseDown(with event: NSEvent) { fire(event, secondary) }
         override func mouseDown(with event: NSEvent) {
