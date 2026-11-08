@@ -83,6 +83,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Before the first window, so it never flashes in the wrong mode –
         // also the error window, which has no `appAppearance()`.
         AppPreferences.shared.applyAppearance()
+        // The chosen icon from the start, so the Dock never shows the standard first.
+        AppPreferences.shared.appIcon.apply()
         do {
             if DemoMode.isActive {
                 // Sample collection in memory; the real database stays closed.

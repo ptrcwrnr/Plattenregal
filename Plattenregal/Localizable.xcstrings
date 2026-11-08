@@ -140,12 +140,42 @@
         }
       }
     },
+    "App-Symbol" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Icon"
+          }
+        }
+      }
+    },
+    "App-Symbol %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Icon %@"
+          }
+        }
+      }
+    },
     "Apple TV verbinden" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connect Apple TV"
+          }
+        }
+      }
+    },
+    "Archiv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive"
           }
         }
       }
@@ -190,6 +220,36 @@
         }
       }
     },
+    "Braun" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brown"
+          }
+        }
+      }
+    },
+    "Champagner" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Champagne"
+          }
+        }
+      }
+    },
+    "Collage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collage"
+          }
+        }
+      }
+    },
     "Collection synchronisieren" : {
       "localizations" : {
         "en" : {
@@ -206,6 +266,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collection and wantlist, one after the other."
+          }
+        }
+      }
+    },
+    "Cutout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cutout"
           }
         }
       }
@@ -240,6 +310,16 @@
         }
       }
     },
+    "Editorial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editorial"
+          }
+        }
+      }
+    },
     "Erhalten bleiben die %lld neuesten Stände und dazu der letzte Stand jedes der %lld jüngsten Tage, an denen gesichert wurde – zusammen höchstens %lld." : {
       "localizations" : {
         "en" : {
@@ -260,12 +340,52 @@
         }
       }
     },
+    "Flower Power" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flower Power"
+          }
+        }
+      }
+    },
+    "Für das Dock und den App-Umschalter (⌘-Tab), unabhängig vom Design. Finder, Launchpad und Spotlight zeigen immer das Standard-Symbol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For the Dock and the app switcher (⌘-Tab), independent of the design. Finder, Launchpad and Spotlight always show the default icon."
+          }
+        }
+      }
+    },
+    "Geometrisch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geometric"
+          }
+        }
+      }
+    },
     "In %@ – zählt nicht zum Platz der App. Wie viele bleiben, legst du unter „Sicherung“ fest." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "In %@ – doesn’t count toward the app’s storage. How many are kept is set under “Backup”."
+          }
+        }
+      }
+    },
+    "Memphis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memphis"
           }
         }
       }
@@ -340,12 +460,52 @@
         }
       }
     },
+    "Oliv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olive"
+          }
+        }
+      }
+    },
+    "Op-Art" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Op Art"
+          }
+        }
+      }
+    },
+    "Pastell" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pastel"
+          }
+        }
+      }
+    },
     "Platten, Standorte, Wantlist und Statistik-Verlauf. Löschen lässt sie sich nur unter „Zurücksetzen“." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Records, locations, wantlist and statistics history. It can only be deleted under “Reset”."
+          }
+        }
+      }
+    },
+    "Punk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punk"
           }
         }
       }
@@ -370,12 +530,52 @@
         }
       }
     },
+    "Retro" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retro"
+          }
+        }
+      }
+    },
+    "Schlicht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simple"
+          }
+        }
+      }
+    },
     "Sichern unter" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save As"
+          }
+        }
+      }
+    },
+    "Siebdruck" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Print"
+          }
+        }
+      }
+    },
+    "Violett" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violet"
           }
         }
       }
@@ -406,6 +606,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change"
+          }
+        }
+      }
+    },
+    "Zeitung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Newspaper"
           }
         }
       }

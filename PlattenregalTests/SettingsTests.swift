@@ -34,6 +34,41 @@ extension AllTests {
             }
         }
 
+        /// The app icon: the standard by default, stored by name, an unknown
+        /// name falls back to the standard; switching the design keeps it.
+        @Test func appIconIsStandardByDefaultPersistsAndIgnoresDesign() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.appIcon == .standard)
+                preferences.appIcon = .memphis
+                #expect(defaults.string(forKey: AppPreferences.Key.appIcon) == "memphis")
+                #expect(AppPreferences(defaults: defaults).appIcon == .memphis)
+                for design in SignatureDesign.allCases { preferences.signatureDesign = design }
+                #expect(preferences.appIcon == .memphis)
+                #expect(AppPreferences(defaults: defaults).appIcon == .memphis)
+                defaults.set("future-icon", forKey: AppPreferences.Key.appIcon)
+                #expect(AppPreferences(defaults: defaults).appIcon == .standard)
+                preferences.appIcon = .punk
+                preferences.reset()
+                #expect(AppPreferences(defaults: defaults).appIcon == .standard)
+            }
+            // The test host's Dock shows the standard again.
+            AppIconChoice.standard.apply()
+        }
+
+        /// Six icons per theme, the standard first; each one but the standard
+        /// has its image in the app.
+        @Test func everyAppIconHasItsImage() {
+            #expect(AppIconTheme.allCases.allSatisfy { $0.choices.count == 6 })
+            #expect(AppIconTheme.plain.choices.first == .standard)
+            #expect(AppIconChoice.standard.assetName == nil)
+            for choice in AppIconChoice.allCases where choice != .standard {
+                let image = choice.assetName.flatMap { NSImage(named: $0) }
+                #expect(image != nil, "Bild fehlt: \(choice)")
+            }
+            #expect(Set(AppIconChoice.allCases.compactMap(\.assetName)).count == AppIconChoice.allCases.count - 1)
+        }
+
         @Test func drawnCoversAreOffByDefaultAndPersist() throws {
             try withSignatureDefaults { defaults in
                 let preferences = AppPreferences(defaults: defaults)

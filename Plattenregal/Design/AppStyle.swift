@@ -272,6 +272,11 @@ enum AppStyle {
     static let symbolTileSize: CGFloat = 28
     /// The app icon heading „Über Plattenregal“.
     static let aboutIconSize: CGFloat = 72
+    /// A smaller app icon: on the welcome page and as a choice under
+    /// Einstellungen → Darstellung → App-Symbol.
+    static let appIconSmallSize: CGFloat = 64
+    /// One app icon choice with its name below: room for the longest name.
+    static let appIconOptionWidth: CGFloat = 84
     /// A list of changes in a small window („Über Plattenregal“, update window) scrolls beyond this height.
     static let changesMaxHeight: CGFloat = 240
     /// The little chevron of a menu button, the arrow between two places.

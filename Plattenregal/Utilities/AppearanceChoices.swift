@@ -231,3 +231,102 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         else { UserDefaults.standard.set([language.rawValue], forKey: key) }
     }
 }
+
+/// The groups the app icons are shown in (Einstellungen → Darstellung →
+/// App-Symbol). Only for the order on screen: an icon belongs to no design.
+enum AppIconTheme: String, CaseIterable, Identifiable {
+    case plain, retro, collage
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .plain: String(localized: "Schlicht")
+        case .retro: String(localized: "Retro")
+        case .collage: String(localized: "Collage")
+        }
+    }
+    var choices: [AppIconChoice] { AppIconChoice.allCases.filter { $0.theme == self } }
+}
+
+/// The icon in the Dock and in ⌘-Tab, chosen freely and independent of the
+/// design. macOS has no way for an app to swap its icon in Finder,
+/// Launchpad or Spotlight: they always show the standard icon. Each one but
+/// the standard is an image in `Assets.xcassets/AppIconChoices`, named
+/// `AppIcon-<Thema>-<Name>`. The raw value is what is stored; an unknown one
+/// falls back to the standard.
+enum AppIconChoice: String, CaseIterable, Identifiable {
+    case standard, white, champagne, brown, violet, graphite
+    case flowerPower, geometric, memphis, olive, opArt, screenPrint
+    case archive, cutout, editorial, pastel, punk, newspaper
+    var id: Self { self }
+
+    var theme: AppIconTheme {
+        switch self {
+        case .standard, .white, .champagne, .brown, .violet, .graphite: .plain
+        case .flowerPower, .geometric, .memphis, .olive, .opArt, .screenPrint: .retro
+        case .archive, .cutout, .editorial, .pastel, .punk, .newspaper: .collage
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .standard: String(localized: "Standard")
+        case .white: String(localized: "Weiß")
+        case .champagne: String(localized: "Champagner")
+        case .brown: String(localized: "Braun")
+        case .violet: String(localized: "Violett")
+        case .graphite: String(localized: "Graphit")
+        case .flowerPower: String(localized: "Flower Power")
+        case .geometric: String(localized: "Geometrisch")
+        case .memphis: String(localized: "Memphis")
+        case .olive: String(localized: "Oliv")
+        case .opArt: String(localized: "Op-Art")
+        case .screenPrint: String(localized: "Siebdruck")
+        case .archive: String(localized: "Archiv")
+        case .cutout: String(localized: "Cutout")
+        case .editorial: String(localized: "Editorial")
+        case .pastel: String(localized: "Pastell")
+        case .punk: String(localized: "Punk")
+        case .newspaper: String(localized: "Zeitung")
+        }
+    }
+
+    /// The image's name in the asset catalog; none for the standard, which
+    /// is the app's own icon.
+    var assetName: String? {
+        let name: String
+        switch self {
+        case .standard: return nil
+        case .white: name = "Schlicht-Weiss"
+        case .champagne: name = "Schlicht-Champagner"
+        case .brown: name = "Schlicht-Braun"
+        case .violet: name = "Schlicht-Violett"
+        case .graphite: name = "Schlicht-Graphit"
+        case .flowerPower: name = "Retro-FlowerPower"
+        case .geometric: name = "Retro-Geometrisch"
+        case .memphis: name = "Retro-Memphis"
+        case .olive: name = "Retro-Oliv"
+        case .opArt: name = "Retro-OpArt"
+        case .screenPrint: name = "Retro-Siebdruck"
+        case .archive: name = "Collage-Archiv"
+        case .cutout: name = "Collage-Cutout"
+        case .editorial: name = "Collage-Editorial"
+        case .pastel: name = "Collage-Pastell"
+        case .punk: name = "Collage-Punk"
+        case .newspaper: name = "Collage-Zeitung"
+        }
+        return "AppIcon-\(name)"
+    }
+
+    /// The icon as shown in the settings. The standard comes from the app
+    /// bundle, not from `NSApp.applicationIconImage`, which holds the chosen one.
+    var image: NSImage? {
+        guard let assetName else { return NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath) }
+        return NSImage(named: assetName)
+    }
+
+    /// Shows this icon in the Dock and in ⌘-Tab while the app runs; the
+    /// standard hands the Dock back to the bundle's icon.
+    func apply() {
+        NSApp.applicationIconImage = assetName.flatMap { NSImage(named: $0) }
+    }
+}

@@ -14,6 +14,7 @@ import SwiftUI
         static let ambient = "ambientChoice"
         static let signatureDesign = "signatureDesign"
         static let drawnCovers = "drawnCovers"
+        static let appIcon = "appIcon"
         static let menuBarSearch = "menuBarSearch"
         static let quickSearchHotKey = "quickSearchHotKey"
         static let quickSearchLook = "quickSearchLook"
@@ -46,6 +47,9 @@ import SwiftUI
         }
     }
     var language: AppLanguage { didSet { AppLanguage.store(language) } }
+    /// The icon in the Dock, free of the design: switching the design keeps
+    /// it. The standard by default.
+    var appIcon: AppIconChoice { didSet { store(appIcon.rawValue, Key.appIcon); appIcon.apply() } }
     /// Drawn covers as in the demo (colour, artist, title) instead of the
     /// Discogs images. Off by default.
     var drawnCovers: Bool { didSet { defaults.set(drawnCovers, forKey: Key.drawnCovers) } }
@@ -111,6 +115,7 @@ import SwiftUI
         ambient = defaults.string(forKey: Key.ambient).flatMap(AmbientChoice.init) ?? .blue
         signatureDesign = defaults.string(forKey: Key.signatureDesign).flatMap(SignatureDesign.init) ?? .liquidGlass
         drawnCovers = defaults.bool(forKey: Key.drawnCovers)
+        appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconChoice.init) ?? .standard
         // On unless switched off; `bool(forKey:)` also reads "NO" from a launch argument.
         menuBarSearch = defaults.object(forKey: Key.menuBarSearch) == nil || defaults.bool(forKey: Key.menuBarSearch)
         quickSearchHotKey = defaults.object(forKey: Key.quickSearchHotKey) == nil || defaults.bool(forKey: Key.quickSearchHotKey)
@@ -140,6 +145,7 @@ import SwiftUI
         ambient = .blue
         signatureDesign = .liquidGlass
         drawnCovers = false
+        appIcon = .standard
         menuBarSearch = true
         quickSearchHotKey = true
         quickSearchLook = .darkGlass

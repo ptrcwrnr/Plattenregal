@@ -1,3 +1,11 @@
+# Wählbare App-Symbole · 08.11.2026
+
+- **Neu:** Einstellungen → Darstellung → **App-Symbol**. 18 Symbole in drei Themen, je eine Reihe mit sechs: Schlicht (Standard und fünf weitere), Retro und Collage, jeweils mit Namen darunter (Deutsch und Englisch). Ein Klick wechselt das Symbol im Dock und im App-Umschalter sofort; die Wahl ist eine eigene Einstellung und bleibt beim Wechsel des Designs erhalten.
+- **Grenzen von macOS:** Finder, Launchpad und Spotlight zeigen weiter das Standard-Symbol, ebenso das Dock bei geschlossener App (Stufe 2 mit Dock-Plugin ist nicht eingebaut).
+- **Technik:** `AppIconTheme` und `AppIconChoice` in `AppearanceChoices.swift`, `AppPreferences.appIcon` (Schlüssel `appIcon`, auch in „Einstellungen zurücksetzen“), gesetzt beim Start und beim Zurückkommen aus dem Hintergrund (`AppLifecycle.leaveBackground`); Protokollzeile beim Wechsel. Die Bilder als `AppIcon-<Thema>-<Name>` in `Assets.xcassets/AppIconChoices/`, auf 512 px verkleinert (5,7 MB statt 23 MB in 1024 px). Kachel `AppIconOption` mit Auswahl-Tönung und -Rahmen wie die Design-Wahl; neue zentrale Maße `AppStyle.appIconSmallSize` (64, jetzt auch auf der Willkommensseite statt der freien Zahl) und `AppStyle.appIconOptionWidth` (84). 21 neue Übersetzungen.
+- **Vorlagen:** im Ordner `App Icons Sammlung` einheitlich benannt (`AppIcon-<Thema>-<Name>.png`), der Ordner `macOS` heißt jetzt `Schlicht`.
+- **Geprüft:** gebaut, alle 328 Tests bestanden (2 neu: Standard, Speichern, unbekannter Wert, Zurücksetzen, Designwechsel lässt das Symbol stehen; jedes Symbol hat sein Bild, sechs je Thema). In der Demo per Bildschirmfoto: Karte in Modern, Vinyl und Klassisch, alle Namen vollständig; Klick auf „Zeitung“ wechselt das Dock-Symbol sofort; Wechsel auf Vinyl und Klassisch lässt es stehen; Start mit gespeichertem „Memphis“ zeigt es von Anfang an im Dock. Nicht geprüft: das Zurückkommen aus dem Hintergrund (in der Demo abgeschaltet).
+
 # Zähler in „Platte hinzufügen“ und im Verlauf ruhiger · 08.11.2026
 
 - **Vorher** stand rechts auf der Karte „✓ 1 einsortiert“ (bzw. „hinzugefügt“, im Verlauf „rückgängig gemacht“) in Akzentfarbe mit Häkchen – das sah aus wie ein Knopf, und neben dem Titel „Noch nicht einsortiert“ las es sich wie ein Widerspruch.

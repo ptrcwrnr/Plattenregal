@@ -94,7 +94,7 @@ struct WelcomeView: View {
             HStack(spacing: AppStyle.rowSpacing) {
                 Image(nsImage: NSApp.applicationIconImage)
                     .resizable()
-                    .frame(width: 64, height: 64)
+                    .frame(width: AppStyle.appIconSmallSize, height: AppStyle.appIconSmallSize)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: AppStyle.tightSpacing) {
                     Text("Willkommen bei Plattenregal").font(AppStyle.dialogTitle)

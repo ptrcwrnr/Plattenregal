@@ -86,6 +86,22 @@ struct AppearanceSettingsView: View {
                         .disabled(DemoMode.isActive)
                 }
             }
+            // Free of the design: switching the design keeps the icon.
+            SettingsCard(title: String(localized: "App-Symbol"),
+                         subtitle: String(localized: "Für das Dock und den App-Umschalter (⌘-Tab), unabhängig vom Design. Finder, Launchpad und Spotlight zeigen immer das Standard-Symbol.")) {
+                ForEach(AppIconTheme.allCases) { theme in
+                    if theme != AppIconTheme.allCases.first { Divider() }
+                    SettingsRow(title: theme.title) {
+                        HStack(spacing: AppStyle.hairSpacing) {
+                            ForEach(theme.choices) { choice in
+                                AppIconOption(choice: choice, selected: preferences.appIcon == choice) {
+                                    withAnimation(AppStyle.quickAnimation) { preferences.appIcon = choice }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             SettingsCard(title: String(localized: "Rubriken"),
                          subtitle: String(localized: "Eigene Namen für die Rubriken oben im Fenster, höchstens \(PageNames.maxLength) Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück.")) {
                 ForEach(Destination.allCases) { page in
@@ -133,6 +149,9 @@ struct AppearanceSettingsView: View {
         // Changes every page's look: worth a line in the protocol for bug reports.
         .onChange(of: preferences.signatureDesign) { old, new in
             AppLog.info("Einstellungen", "Design: \(new.logName) statt \(old.logName)")
+        }
+        .onChange(of: preferences.appIcon) { old, new in
+            AppLog.info("Einstellungen", "App-Symbol: \(new.rawValue) statt \(old.rawValue)")
         }
     }
 }
@@ -215,6 +234,48 @@ private struct SignatureDesignOption: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(design.title)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
+/// One app icon to choose, its name below; the chosen one sits on the
+/// selection tint with the selection rim, like the design choices above.
+private struct AppIconOption: View {
+    let choice: AppIconChoice
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: AppStyle.tightSpacing) {
+                Group {
+                    if let image = choice.image {
+                        Image(nsImage: image).resizable().interpolation(.high)
+                    } else {
+                        Color.clear
+                    }
+                }
+                .frame(width: AppStyle.appIconSmallSize, height: AppStyle.appIconSmallSize)
+                Text(choice.title)
+                    .font(.caption)
+                    .foregroundStyle(selected ? .primary : .secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+            .frame(width: AppStyle.appIconOptionWidth)
+            .padding(.vertical, AppStyle.tightSpacing)
+            .background(selected ? AppStyle.selectedBackground : Color.clear,
+                        in: RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+            .overlay {
+                RoundedRectangle(cornerRadius: AppStyle.rowRadius)
+                    .strokeBorder(selected ? AppStyle.selectedBorder.opacity(AppStyle.isAtelier ? 1 : 0.5) : Color.clear,
+                                  lineWidth: AppStyle.selectionLineWidth)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
+        }
+        .buttonStyle(.plain)
+        .help(choice.title)
+        .accessibilityLabel(String(localized: "App-Symbol \(choice.title)"))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
