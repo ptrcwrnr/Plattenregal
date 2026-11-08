@@ -95,7 +95,7 @@ enum Changelog {
                 String(localized: "Tags: farbige Punkte statt Plaketten für „Gesucht“, „Verkauf“ und „Nicht in der Collection“."),
                 String(localized: "Einsortieren: Vorschlag im gezeigten Regal, „Sortierung prüfen“ mit übersichtlicher Leiste."),
                 String(localized: "Einstellungen: aufgeräumt, mit eigenen Namen für die Rubriken, Intervall für Updates und Klick in der Menüleisten-Suche."),
-                String(localized: "Leistung: flüssigere Statistik und ruhiges Anlegen des Fensters an den Bildschirmrand."),
+                String(localized: "Leistung: flüssigere Statistik und Designwechsel, ruhiges Anlegen des Fensters an den Bildschirmrand."),
                 String(localized: "Netzwerk: keine eingehenden Verbindungen mehr, Apple TV vorerst ausgeblendet."),
                 String(localized: "Korrekturen: Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste."),
             ]),

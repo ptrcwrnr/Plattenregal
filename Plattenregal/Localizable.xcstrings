@@ -10752,12 +10752,12 @@
         }
       }
     },
-    "Leistung: flüssigere Statistik und ruhiges Anlegen des Fensters an den Bildschirmrand." : {
+    "Leistung: flüssigere Statistik und Designwechsel, ruhiges Anlegen des Fensters an den Bildschirmrand." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Performance: smoother statistics and calm window snapping."
+            "value" : "Performance: smoother statistics and design switching, calm window snapping."
           }
         }
       }
