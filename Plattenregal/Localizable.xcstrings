@@ -953,16 +953,6 @@
         }
       }
     },
-    "%lld einsortiert" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld sorted in"
-          }
-        }
-      }
-    },
     "%lld Fächern" : {
       "localizations" : {
         "en" : {
@@ -989,16 +979,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld locked compartments"
-          }
-        }
-      }
-    },
-    "%lld hinzugefügt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld added"
           }
         }
       }
@@ -1229,16 +1209,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "%lld rückgängig gemacht" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld undone"
           }
         }
       }
@@ -10618,6 +10588,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fixes: “Show on Shelf” scrolls calmly to the record."
+          }
+        }
+      }
+    },
+    "Platte einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "record sorted in"
+          }
+        }
+      }
+    },
+    "Platten einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "records sorted in"
+          }
+        }
+      }
+    },
+    "Platte hinzugefügt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "record added"
+          }
+        }
+      }
+    },
+    "Platten hinzugefügt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "records added"
+          }
+        }
+      }
+    },
+    "Änderung rückgängig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "change undone"
+          }
+        }
+      }
+    },
+    "Änderungen rückgängig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "changes undone"
           }
         }
       }

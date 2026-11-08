@@ -1,3 +1,9 @@
+# Zähler in „Platte hinzufügen“ und im Verlauf ruhiger · 08.11.2026
+
+- **Vorher** stand rechts auf der Karte „✓ 1 einsortiert“ (bzw. „hinzugefügt“, im Verlauf „rückgängig gemacht“) in Akzentfarbe mit Häkchen – das sah aus wie ein Knopf, und neben dem Titel „Noch nicht einsortiert“ las es sich wie ein Widerspruch.
+- **Jetzt** ein gemeinsamer Baustein `AssignmentTally` (`AssignmentCard.swift`): rechtsbündig die Zahl im Stil des Kartentitels, darunter als Nebentext, was geschah – „Platte einsortiert“/„Platten einsortiert“, „Platte hinzugefügt“/„Platten hinzugefügt“, im Verlauf „Änderung rückgängig“/„Änderungen rückgängig“. Ohne Häkchen und Akzentfarbe; zwei Zeilen auf Höhe von Titel und Nebenzeile links, die Karte wird beim ersten Eintrag nicht höher. Englische Texte ergänzt, die drei alten aus dem Katalog entfernt.
+- **Geprüft:** gebaut, alle Tests bestanden. In der Demo mit offenem Panel („Einsortieren“ über den großen runden „+“-Knopf und Verlauf) per Bildschirmfoto angesehen, in Modern, Klassisch und Vinyl, mit 0, 1, 3 und 12 – Einzahl/Mehrzahl stimmen, Kartenhöhe mit und ohne Zähler gleich. Für die Fotos war der Zähler kurz über eine Umgebungsvariable vorbelegt, das ist wieder entfernt. Nebenbei: `--snapshot` liefert bei offenem Panel nach 30 s „kein Fenster“, auch ohne diese Änderung.
+
 # DMG 1.0.4 mit Tags, Spalten, Hover und kompaktem „Was ist neu“ neu gebaut · 08.11.2026
 
 - **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release), 11 MB (11 531 767 Bytes), SHA-256 `407f3758…bd1c8d736`, in `dist/Hinweise-1.0.4.md` eingetragen; die DMG vom 07.11. ist überholt. Version bleibt 1.0.4 (102031). Enthält alles seit gestern Abend: Liste bis zum Fensterrand, Hover, Tags mit festen Farben je Design, Spalten verschieben/ausblenden mit eigenem Menü, Aufräumen, kompakter Verlauf.

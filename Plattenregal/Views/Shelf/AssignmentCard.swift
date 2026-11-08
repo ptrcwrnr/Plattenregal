@@ -41,3 +41,27 @@ enum AssignmentRowMetrics {
     /// about as wide as in a compartment's grid.
     static let largeCoverSize: CGFloat = 132
 }
+
+/// What the open panel has done so far, at the card's trailing edge: the
+/// count in the title's style, below it what was done in the detail's – two
+/// lines level with those on the left, so the card keeps its height when the
+/// count appears. Plain text, so it doesn't read as a button.
+struct AssignmentTally: View {
+    let count: Int
+    /// "Platte einsortiert" for 1, "Platten einsortiert" otherwise.
+    let one: String
+    let many: String
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: AppStyle.hairSpacing) {
+            Text(count, format: .number)
+                .font(.headline).monospacedDigit()
+                .contentTransition(.numericText(value: Double(count)))
+            Text(count == 1 ? one : many)
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .lineLimit(1)
+        .fixedSize()
+        .accessibilityElement(children: .combine)
+    }
+}

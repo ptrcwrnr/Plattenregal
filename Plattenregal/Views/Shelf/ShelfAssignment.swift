@@ -77,11 +77,9 @@ struct ShelfAssignmentView: View {
                            : rangeLabel.map { String(localized: "Fach „\($0)“") } ?? String(localized: "Dieses Fach"),
                        detail: detail) {
             if session.addedCount > 0 {
-                Label(session.isRackWide ? "\(session.addedCount) einsortiert" : "\(session.addedCount) hinzugefügt", systemImage: "checkmark")
-                    .font(AppStyle.rowTitle)
-                    .foregroundStyle(AppStyle.accent)
-                    .contentTransition(.numericText())
-                    .fixedSize()
+                AssignmentTally(count: session.addedCount,
+                                one: session.isRackWide ? String(localized: "Platte einsortiert") : String(localized: "Platte hinzugefügt"),
+                                many: session.isRackWide ? String(localized: "Platten einsortiert") : String(localized: "Platten hinzugefügt"))
                     .transition(.opacity)
             }
         }

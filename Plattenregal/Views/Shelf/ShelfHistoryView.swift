@@ -37,11 +37,8 @@ struct ShelfHistoryView: View {
                 AssignmentCard(systemImage: "clock.arrow.circlepath", title: String(localized: "Verlauf"),
                                detail: String(localized: "„Rückgängig“ stellt eine Platte wieder dorthin, wo sie vorher stand")) {
                     if undoneCount > 0 {
-                        Label("\(undoneCount) rückgängig gemacht", systemImage: "checkmark")
-                            .font(AppStyle.rowTitle)
-                            .foregroundStyle(AppStyle.accent)
-                            .contentTransition(.numericText())
-                            .fixedSize()
+                        AssignmentTally(count: undoneCount, one: String(localized: "Änderung rückgängig"),
+                                        many: String(localized: "Änderungen rückgängig"))
                             .transition(.opacity)
                     }
                 }
