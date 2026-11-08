@@ -84,45 +84,36 @@ enum Changelog {
         var id: String { version }
     }
 
+    /// Style of every entry (see README, „Was ist neu“): one short sentence
+    /// „Bereich: was sich ändert.“ with a fixed area (Design, Listen, Tags,
+    /// Einsortieren, Einstellungen, Updates, Plattenkarte, Fenster, Leistung,
+    /// Netzwerk, Korrekturen), at most eight per version, new things first and
+    /// „Korrekturen“ last; no „jetzt“, no „vorher“, nothing technical.
     static var entries: [Entry] {
         [
             Entry(version: "1.0.4", date: day(2026, 11, 6), changes: [
-                String(localized: "Die Rubriken oben im Fenster lassen sich umbenennen: Einstellungen → Darstellung → Rubriken, höchstens zwölf Zeichen je Name."),
-                String(localized: "Was ein Klick auf einen Treffer in der Suche in der Menüleiste tut, wählst du jetzt unter Einstellungen → Allgemein: markieren wie bisher, die Platte in der App zeigen oder sie auf Discogs öffnen."),
-                String(localized: "Wie oft Plattenregal nach Updates sucht, wählst du jetzt unter Einstellungen → Allgemein: wöchentlich, monatlich oder nie. Hattest du die tägliche Suche eingeschaltet, sucht Plattenregal jetzt wöchentlich."),
-                String(localized: "Im Menü der Schallplatte in der Menüleiste heißt es jetzt „Plattenregal beenden“ statt „Plattenregal ganz beenden“, und „Einstellungen …“ ist dort weggefallen – die Einstellungen öffnest du im Hauptfenster mit ⌘,."),
-                String(localized: "Plattenregal nimmt keine Verbindungen aus dem Netzwerk mehr an; die Einstellungen für Apple TV sind dafür vorerst ausgeblendet. Discogs und die Suche nach Updates funktionieren wie bisher."),
-                String(localized: "Beim Herunterziehen zum Aktualisieren erscheint der Ring jetzt unterhalb der Toolbar statt halb dahinter."),
-                String(localized: "Einen Bereich der Statistik auf den direkt darunter liegenden zu ziehen, verschiebt ihn jetzt auch – vorher blieb dann alles, wie es war."),
-                String(localized: "Beim Einsortieren schlägt Plattenregal jetzt einen Platz im gerade gezeigten Regal vor – im Fach, in das die Platte alphabetisch am besten passt. Ein Fach mit Platten quer durchs Alphabet zieht nicht mehr jede neue Platte an. Wechselst du das Regal, zieht die Karte mit."),
-                String(localized: "„Sortierung prüfen“ ist aufgeräumt: Eine Leiste zeigt das Fach von links nach rechts mit den Platten, die umziehen, jeder Schritt sagt „Platz 64 herausnehmen → hinter …“, und die Reihenfolge wählst du oben im Menü. Steht alles richtig, genügt ein Haken."),
-                String(localized: "Neues Design „Vinyl“: matte Flächen wie Klassisch, in kühlem Graphit mit hellblauen Akzenten und immer dunkel. Einstellungen → Darstellung → Design."),
-                String(localized: "Die Statistik scrollt jetzt so flüssig wie die Collection: Kacheln und Diagramme, die beim Scrollen unter dem Mauszeiger durchziehen, leuchten erst auf, wenn die Seite steht."),
-                String(localized: "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf."),
-                String(localized: "Legst du das Fenster an einen Bildschirmrand an oder zoomst es, gleitet es jetzt flüssig, statt zu ruckeln."),
-                String(localized: "Die Einstellungen sind aufgeräumter: Synchronisieren und „Alle verkauft“ stehen als Zeilen mit Erklärung, die automatische Sicherung sagt, wie viele Stände höchstens bleiben, Knöpfe tragen keine Auslassungspunkte mehr, und das Fenster schließt auch mit dem roten Knopf."),
-                String(localized: "Die Listen in Collection, Wantlist und Regal reichen jetzt bis knapp über die Fensterkante, und ihre letzten Zeilen scrollen frei über die runden Knöpfe – vorher hörten Collection und Wantlist weit oben auf, und im Regal verschwand die letzte Zeile unter dem „+“."),
-                String(localized: "Fährst du mit der Maus über die Listen in Collection, Wantlist und Regal, hebt ein feiner Schimmer die Zeile hervor, der nach links und rechts ausläuft – so lassen sich die langen Zeilen leichter mit dem Auge verfolgen."),
-                String(localized: "Plaketten gibt es keine mehr: „Gesucht“, „Verkauf“ und „Nicht in der Collection“ zeigt ein farbiger Punkt wie bei den Tags von macOS – mittig in der neuen Spalte „Tags“ der Listen von Regal und Collection und in der Suche auf der Regalseite. Die Farben passen zum Design, hell wie dunkel."),
-                String(localized: "In den Listen von Collection, Wantlist und Regal ziehst du Spalten an ihrer Überschrift an einen anderen Platz; ein Rechtsklick auf die Überschriften blendet Spalten ein und aus. Plattenregal merkt sich das für jede Liste."),
+                String(localized: "Design: neues Design „Vinyl“ in kühlem Graphit mit hellblauen Akzenten, immer dunkel."),
+                String(localized: "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden."),
+                String(localized: "Tags: farbige Punkte statt Plaketten für „Gesucht“, „Verkauf“ und „Nicht in der Collection“."),
+                String(localized: "Einsortieren: Vorschlag im gezeigten Regal, „Sortierung prüfen“ mit übersichtlicher Leiste."),
+                String(localized: "Einstellungen: aufgeräumt, mit eigenen Namen für die Rubriken, Intervall für Updates und Klick in der Menüleisten-Suche."),
+                String(localized: "Leistung: flüssigere Statistik und ruhiges Anlegen des Fensters an den Bildschirmrand."),
+                String(localized: "Netzwerk: keine eingehenden Verbindungen mehr, Apple TV vorerst ausgeblendet."),
+                String(localized: "Korrekturen: Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
-                String(localized: "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen."),
-                String(localized: "Der rote Knopf am Fenster beendet Plattenregal jetzt wie ⌘Q, statt die App ohne Fenster im Dock zu lassen – oder schickt sie in den Hintergrund, wenn das eingeschaltet ist."),
-                String(localized: "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund."),
+                String(localized: "Fenster: der rote Knopf beendet Plattenregal wie ⌘Q oder schickt es in den Hintergrund."),
+                String(localized: "Listen: „Zufällig“ mischt bei jedem Öffnen neu."),
+                String(localized: "Einstellungen: erklären, wie man Statistik-Bereiche umsortiert."),
             ]),
             Entry(version: "1.0.2", date: day(2026, 11, 3), changes: [
-                String(localized: "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung."),
-                String(localized: "„Nach Updates suchen“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein."),
-                String(localized: "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet."),
-                String(localized: "Label, Katalognummer und Format stehen auf der Plattenkarte und im Zufallsfund aufgeräumt: jeder Wert nur einmal, ohne das „none“ von Discogs und ohne „1 ·“ vor dem Format."),
-                String(localized: "Schnelle Klicks auf ein Cover gehen nicht mehr verloren: Jeder Klick öffnet oder schließt das Popover – in Collection, Wantlist und Regal."),
-                String(localized: "Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden."),
+                String(localized: "Updates: Plattenregal sucht selbst nach neuen Versionen und zeigt, was neu ist, mit Download."),
+                String(localized: "Plattenkarte: Label, Katalognummer und Format aufgeräumt, auch im Zufallsfund."),
+                String(localized: "Korrekturen: schnelle Klicks auf Cover, Schließen der Einstellungen beim Klick ins Hauptfenster."),
             ]),
             Entry(version: "1.0.1", date: day(2026, 11, 2), changes: [
-                String(localized: "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts."),
-                String(localized: "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr."),
-                String(localized: "„Im Regal anzeigen“ kommt ruhig bei der Platte an, statt hastig durch das Fach zu scrollen."),
+                String(localized: "Plattenkarte: aufgeräumt, der Standort ist auch im Dunkeln gut lesbar."),
+                String(localized: "Korrekturen: „Im Regal anzeigen“ scrollt ruhig zur Platte."),
             ]),
         ]
     }

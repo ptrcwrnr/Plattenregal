@@ -230,16 +230,6 @@
         }
       }
     },
-    "Die Einstellungen sind aufgeräumter: Synchronisieren und „Alle verkauft“ stehen als Zeilen mit Erklärung, die automatische Sicherung sagt, wie viele Stände höchstens bleiben, Knöpfe tragen keine Auslassungspunkte mehr, und das Fenster schließt auch mit dem roten Knopf." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings are tidier: syncing and “All Sold” are rows with an explanation, automatic backup says how many versions are kept at most, buttons no longer end in an ellipsis, and the window also closes with the red button."
-          }
-        }
-      }
-    },
     "Diese Datei ist keine Sicherung der Fach-Belegung oder sie ist beschädigt. Wähle eine Datei, die Plattenregal mit „Sichern unter“ oder automatisch erstellt hat." : {
       "localizations" : {
         "en" : {
@@ -276,66 +266,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In %@ – doesn’t count toward the app’s storage. How many are kept is set under “Backup”."
-          }
-        }
-      }
-    },
-    "Die Listen in Collection, Wantlist und Regal reichen jetzt bis knapp über die Fensterkante, und ihre letzten Zeilen scrollen frei über die runden Knöpfe – vorher hörten Collection und Wantlist weit oben auf, und im Regal verschwand die letzte Zeile unter dem „+“." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The lists in Collection, Wantlist and Shelf now reach down to just above the window’s edge, and their last rows scroll clear of the round buttons – before, Collection and Wantlist stopped well short, and on the shelf the last row disappeared under the “+”."
-          }
-        }
-      }
-    },
-    "Fährst du mit der Maus über die Listen in Collection, Wantlist und Regal, hebt ein feiner Schimmer die Zeile hervor, der nach links und rechts ausläuft – so lassen sich die langen Zeilen leichter mit dem Auge verfolgen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moving the pointer over the lists in Collection, Wantlist and Shelf now highlights the row with a soft sheen that fades out to the left and right – making the long rows easier to follow."
-          }
-        }
-      }
-    },
-    "Plaketten gibt es keine mehr: „Gesucht“, „Verkauf“ und „Nicht in der Collection“ zeigt ein farbiger Punkt wie bei den Tags von macOS – mittig in der neuen Spalte „Tags“ der Listen von Regal und Collection und in der Suche auf der Regalseite. Die Farben passen zum Design, hell wie dunkel." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No more badges: “Looking for”, “For sale” and “Not in the collection” are shown as a colored dot, like tags in macOS – centered in the new “Tags” column of the shelf and collection lists and in the shelf page’s search. The colors suit the design, light and dark."
-          }
-        }
-      }
-    },
-    "In den Listen von Collection, Wantlist und Regal ziehst du Spalten an ihrer Überschrift an einen anderen Platz; ein Rechtsklick auf die Überschriften blendet Spalten ein und aus. Plattenregal merkt sich das für jede Liste." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In the Collection, Wantlist and Shelf lists, drag a column by its header to another place; right-click the headers to show or hide columns. Plattenregal remembers this for each list."
-          }
-        }
-      }
-    },
-    "In „Sortierung prüfen“ fällt die nächste Platte leichter ins Auge: In der Leiste leuchten ihr Platz und danach ihr Ziel kurz nacheinander auf." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In “Check Order” the next record is easier to spot: in the strip, its place and then its destination briefly light up one after the other."
-          }
-        }
-      }
-    },
-    "Legst du das Fenster an einen Bildschirmrand an oder zoomst es, gleitet es jetzt flüssig, statt zu ruckeln." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Snapping the window to a screen edge or zooming it is now smooth instead of stuttering."
           }
         }
       }
@@ -572,26 +502,6 @@
         }
       }
     },
-    "„Im Regal anzeigen“ kommt ruhig bei der Platte an, statt hastig durch das Fach zu scrollen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Show on Shelf” now arrives calmly at the record instead of rushing through the compartment."
-          }
-        }
-      }
-    },
-    "„Nach Updates suchen“ im Menü Plattenregal prüft sofort; einschalten, ausschalten und von Hand prüfen unter Einstellungen → Allgemein." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Check for Updates” in the Plattenregal menu checks right away; turn it on or off and check by hand under Settings → General."
-          }
-        }
-      }
-    },
     "„Rückgängig“ stellt eine Platte wieder dorthin, wo sie vorher stand" : {
       "localizations" : {
         "en" : {
@@ -608,16 +518,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“Found Again”"
-          }
-        }
-      }
-    },
-    "„Zufällig“ in Collection und Wantlist mischt jedes Mal neu, wenn du Plattenregal öffnest – auch aus dem Hintergrund." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Random” in collection and wantlist shuffles anew each time you open Plattenregal – also from the background."
           }
         }
       }
@@ -2611,36 +2511,6 @@
         }
       }
     },
-    "Beim Einsortieren schlägt Plattenregal jetzt einen Platz im gerade gezeigten Regal vor – im Fach, in das die Platte alphabetisch am besten passt. Ein Fach mit Platten quer durchs Alphabet zieht nicht mehr jede neue Platte an. Wechselst du das Regal, zieht die Karte mit." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When placing a record, Plattenregal now suggests a spot in the cabinet shown – in the compartment it fits best alphabetically. A compartment holding records from all over the alphabet no longer draws in every new record. Switch cabinets and the card follows."
-          }
-        }
-      }
-    },
-    "„Sortierung prüfen“ ist aufgeräumt: Eine Leiste zeigt das Fach von links nach rechts mit den Platten, die umziehen, jeder Schritt sagt „Platz 64 herausnehmen → hinter …“, und die Reihenfolge wählst du oben im Menü. Steht alles richtig, genügt ein Haken." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "“Check Order” is tidier: a strip shows the compartment from left to right with the records that move, each step reads “Take out position 64 → behind …”, and you pick the order from the menu at the top. If everything is in place, a check mark is all you see."
-          }
-        }
-      }
-    },
-    "Beim Herunterziehen zum Aktualisieren erscheint der Ring jetzt unterhalb der Toolbar statt halb dahinter." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When you pull down to refresh, the ring now appears below the toolbar instead of half behind it."
-          }
-        }
-      }
-    },
     "Beim Öffnen zeigen" : {
       "localizations" : {
         "en" : {
@@ -3267,26 +3137,6 @@
         }
       }
     },
-    "Der rote Knopf am Fenster beendet Plattenregal jetzt wie ⌘Q, statt die App ohne Fenster im Dock zu lassen – oder schickt sie in den Hintergrund, wenn das eingeschaltet ist." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The red button on the window now quits Plattenregal like ⌘Q instead of leaving the app in the Dock without a window – or sends it to the background if that is switched on."
-          }
-        }
-      }
-    },
-    "Der Standort auf der Plattenkarte ist im dunklen Design gut lesbar und hat keinen Blaustich mehr." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The location on the record card reads well in dark mode and no longer has a blue cast."
-          }
-        }
-      }
-    },
     "Der Token enthält Leerzeichen, Zeilenumbrüche oder Sonderzeichen. Kopiere ihn noch einmal vollständig von Discogs und füge ihn neu ein." : {
       "localizations" : {
         "en" : {
@@ -3547,26 +3397,6 @@
         }
       }
     },
-    "Die Einstellungen sagen jetzt genau, wie man die Bereiche der Statistik umsortiert: einen Bereich am Titel greifen und auf einen anderen ziehen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings now say exactly how to rearrange the statistics sections: grab a section by its title and drag it onto another."
-          }
-        }
-      }
-    },
-    "Die Einstellungen schließen sich, wenn du daneben ins Hauptfenster klickst, statt dahinter zu verschwinden." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings close when you click into the main window beside them, instead of disappearing behind it."
-          }
-        }
-      }
-    },
     "Die Fächer behalten ihre Reihenfolge von links oben. Fallen Fächer weg, müssen sie leer sein – gesperrte verlieren dabei Sperre und Namen." : {
       "localizations" : {
         "en" : {
@@ -3753,26 +3583,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The records themselves can always be fetched again from Discogs. Where they stand on the shelf exists only here – the backup preserves exactly that."
-          }
-        }
-      }
-    },
-    "Die Plattenkarte ist aufgeräumt: die Angaben als ruhige Liste, die Styles ohne Plaketten und „Auf Discogs öffnen“ oben rechts." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The record card is tidier: the details as a calm list, styles without badges and “Open on Discogs” at the top right."
-          }
-        }
-      }
-    },
-    "Die Rubriken oben im Fenster lassen sich umbenennen: Einstellungen → Darstellung → Rubriken, höchstens zwölf Zeichen je Name." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can rename the sections at the top of the window: Settings → Appearance → Sections, twelve characters at most per name."
           }
         }
       }
@@ -4383,16 +4193,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A record at the top of the menu bar. A click opens the search in your shelves: matches with their compartment, below them the shelf in miniature."
-          }
-        }
-      }
-    },
-    "Einen Bereich der Statistik auf den direkt darunter liegenden zu ziehen, verschiebt ihn jetzt auch – vorher blieb dann alles, wie es war." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dragging a statistics section onto the one directly below it now moves it too – before, everything stayed as it was."
           }
         }
       }
@@ -5806,16 +5606,6 @@
         }
       }
     },
-    "Im Menü der Schallplatte in der Menüleiste heißt es jetzt „Plattenregal beenden“ statt „Plattenregal ganz beenden“, und „Einstellungen …“ ist dort weggefallen – die Einstellungen öffnest du im Hauptfenster mit ⌘,." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The record’s menu in the menu bar now says “Quit Plattenregal” instead of “Quit Plattenregal Completely”, and “Settings…” is gone from it – open the settings in the main window with ⌘,."
-          }
-        }
-      }
-    },
     "Im Ordner der App. Ein Ordner in iCloud Drive schützt die Belegung auch, wenn der Mac verloren geht." : {
       "localizations" : {
         "en" : {
@@ -6356,16 +6146,6 @@
         }
       }
     },
-    "Klappt die Prüfung nicht, sagt Plattenregal, woran es liegt, etwa ohne Internet oder wenn GitHub gerade nicht antwortet." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If the check fails, Plattenregal says why, for example without internet or when GitHub isn’t answering."
-          }
-        }
-      }
-    },
     "Klassiker" : {
       "localizations" : {
         "en" : {
@@ -6543,16 +6323,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Label"
-          }
-        }
-      }
-    },
-    "Label, Katalognummer und Format stehen auf der Plattenkarte und im Zufallsfund aufgeräumt: jeder Wert nur einmal, ohne das „none“ von Discogs und ohne „1 ·“ vor dem Format." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Label, catalog number and format on the record card and in the random find are tidier: each value only once, without Discogs’ “none” and without “1 ·” before the format."
           }
         }
       }
@@ -7986,16 +7756,6 @@
         }
       }
     },
-    "Plattenregal nimmt keine Verbindungen aus dem Netzwerk mehr an; die Einstellungen für Apple TV sind dafür vorerst ausgeblendet. Discogs und die Suche nach Updates funktionieren wie bisher." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal no longer accepts connections from the network; the Apple TV settings are hidden for now. Discogs and checking for updates work as before."
-          }
-        }
-      }
-    },
     "Plattenregal öffnen" : {
       "localizations" : {
         "en" : {
@@ -8022,16 +7782,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plattenregal restarts – with a sample collection to try out. You can change everything: place records, add shelves, change settings. None of it is saved, and your own collection stays untouched.\n\nYou can end the demo at any time with “End Demo”."
-          }
-        }
-      }
-    },
-    "Plattenregal sucht einmal am Tag selbst nach einer neuen Version und zeigt dann, was neu ist – mit Download und kurzer Anleitung." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plattenregal checks for a new version once a day and then shows what’s new – with the download and short instructions."
           }
         }
       }
@@ -8672,16 +8422,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keychain not readable"
-          }
-        }
-      }
-    },
-    "Schnelle Klicks auf ein Cover gehen nicht mehr verloren: Jeder Klick öffnet oder schließt das Popover – in Collection, Wantlist und Regal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quick clicks on a cover no longer get lost: every click opens or closes the popover – in Collection, Wantlist and Shelf."
           }
         }
       }
@@ -10108,16 +9848,6 @@
         }
       }
     },
-    "Was ein Klick auf einen Treffer in der Suche in der Menüleiste tut, wählst du jetzt unter Einstellungen → Allgemein: markieren wie bisher, die Platte in der App zeigen oder sie auf Discogs öffnen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You now choose what a click on a match in the menu bar search does under Settings → General: mark it as before, show the record in the app or open it on Discogs."
-          }
-        }
-      }
-    },
     "Was ist neu" : {
       "localizations" : {
         "en" : {
@@ -10210,16 +9940,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "As on the shelf"
-          }
-        }
-      }
-    },
-    "Wie oft Plattenregal nach Updates sucht, wählst du jetzt unter Einstellungen → Allgemein: wöchentlich, monatlich oder nie. Hattest du die tägliche Suche eingeschaltet, sucht Plattenregal jetzt wöchentlich." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You now choose how often Plattenregal looks for updates under Settings → General: weekly, monthly or never. If you had the daily check on, Plattenregal now looks weekly."
           }
         }
       }
@@ -10712,26 +10432,6 @@
         }
       }
     },
-    "Neues Design „Vinyl“: matte Flächen wie Klassisch, in kühlem Graphit mit hellblauen Akzenten und immer dunkel. Einstellungen → Darstellung → Design." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New design “Vinyl”: matte surfaces like Classic, in cool graphite with light blue accents and always dark. Settings → Appearance → Design."
-          }
-        }
-      }
-    },
-    "Die Statistik scrollt jetzt so flüssig wie die Collection: Kacheln und Diagramme, die beim Scrollen unter dem Mauszeiger durchziehen, leuchten erst auf, wenn die Seite steht." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The statistics now scroll as smoothly as the collection: tiles and charts passing under the pointer while you scroll only light up once the page comes to rest."
-          }
-        }
-      }
-    },
     "Tags" : {
       "localizations" : {
         "en" : {
@@ -10758,6 +10458,166 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hide “%@”"
+          }
+        }
+      }
+    },
+    "Design: neues Design „Vinyl“ in kühlem Graphit mit hellblauen Akzenten, immer dunkel." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Design: new “Vinyl” design in cool graphite with light blue accents, always dark."
+          }
+        }
+      }
+    },
+    "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lists: fill the window, light up under the pointer, columns can be moved and hidden."
+          }
+        }
+      }
+    },
+    "Tags: farbige Punkte statt Plaketten für „Gesucht“, „Verkauf“ und „Nicht in der Collection“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags: colored dots instead of badges for “Looking for”, “For sale” and “Not in the collection”."
+          }
+        }
+      }
+    },
+    "Einsortieren: Vorschlag im gezeigten Regal, „Sortierung prüfen“ mit übersichtlicher Leiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Placing: a suggestion in the cabinet shown, “Check Order” with a clear strip."
+          }
+        }
+      }
+    },
+    "Einstellungen: aufgeräumt, mit eigenen Namen für die Rubriken, Intervall für Updates und Klick in der Menüleisten-Suche." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings: tidier, with your own section names, an update interval and the click in the menu bar search."
+          }
+        }
+      }
+    },
+    "Leistung: flüssigere Statistik und ruhiges Anlegen des Fensters an den Bildschirmrand." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance: smoother statistics and calm window snapping."
+          }
+        }
+      }
+    },
+    "Netzwerk: keine eingehenden Verbindungen mehr, Apple TV vorerst ausgeblendet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network: no incoming connections any more, Apple TV hidden for now."
+          }
+        }
+      }
+    },
+    "Korrekturen: Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixes: refresh ring, moving statistics sections, menu bar menu."
+          }
+        }
+      }
+    },
+    "Fenster: der rote Knopf beendet Plattenregal wie ⌘Q oder schickt es in den Hintergrund." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Window: the red button quits Plattenregal like ⌘Q or sends it to the background."
+          }
+        }
+      }
+    },
+    "Listen: „Zufällig“ mischt bei jedem Öffnen neu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lists: “Shuffle” reshuffles every time you open the app."
+          }
+        }
+      }
+    },
+    "Einstellungen: erklären, wie man Statistik-Bereiche umsortiert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings: explain how to rearrange statistics sections."
+          }
+        }
+      }
+    },
+    "Updates: Plattenregal sucht selbst nach neuen Versionen und zeigt, was neu ist, mit Download." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updates: Plattenregal looks for new versions by itself and shows what’s new, with the download."
+          }
+        }
+      }
+    },
+    "Plattenkarte: Label, Katalognummer und Format aufgeräumt, auch im Zufallsfund." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record card: label, catalog number and format tidied, in the random pick too."
+          }
+        }
+      }
+    },
+    "Korrekturen: schnelle Klicks auf Cover, Schließen der Einstellungen beim Klick ins Hauptfenster." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixes: quick clicks on covers, closing the settings when clicking into the main window."
+          }
+        }
+      }
+    },
+    "Plattenkarte: aufgeräumt, der Standort ist auch im Dunkeln gut lesbar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record card: tidied, the location reads well in dark mode too."
+          }
+        }
+      }
+    },
+    "Korrekturen: „Im Regal anzeigen“ scrollt ruhig zur Platte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixes: “Show on Shelf” scrolls calmly to the record."
           }
         }
       }
