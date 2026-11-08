@@ -1,3 +1,8 @@
+# DMG 1.0.4 mit wählbaren App-Symbolen und Dock-Plugin neu gebaut · 08.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release nach `clean`), 15 MB (14 788 815 Bytes), SHA-256 `a0056e19…ff1ea003042`, in `dist/Hinweise-1.0.4.md` eingetragen; alle früheren DMGs vom 08.11. sind überholt (die erste von heute Abend hatte noch zu große Symbole). Version bleibt 1.0.4 (102031). Enthält die 18 App-Symbole, das Dock-Plugin und den Hinweis dazu; „Was ist neu“ nennt die App-Symbole in der Design-Zeile. In den Hinweisen (de/en) unter „Aktualisieren“: einmal aus dem Dock nehmen und wieder hineinlegen, damit ein eigenes Symbol auch bei geschlossener App bleibt.
+- **Geprüft:** 329 Tests bestanden (vorher); `hdiutil verify` gültig; App, Widget und Dock-Plugin nur arm64, ab macOS 27.0, Signatur gültig (`--deep --strict`); `NSDockTilePlugIn` gesetzt, Plugin mit `NSPrincipalClass`; Berechtigungen von App und Widget unverändert, das Plugin hat keine (es läuft im Dock); kein `NSLocalNetworkUsageDescription`; keine Vorschau- oder Versuchsschalter im Release; Handbücher identisch mit dem Repository; neue englische Texte im Bundle; 18 Symbolbilder im Asset-Katalog. Nicht veröffentlicht.
+
 # Dock-Plugin robuster, Hinweis in den Einstellungen · 08.11.2026
 
 - **Hinweis:** In der Karte „App-Symbol“ steht unten, was es braucht, damit das Symbol auch bei geschlossener App im Dock bleibt (Deutsch und Englisch). Hat das Dock das Plugin geladen, eine kurze Bestätigung; sonst die Anleitung: Plattenregal im Dock behalten, und lag es dort schon vor diesem Update, einmal heraus- und wieder hineinziehen. In der Demo ein eigener Satz.
