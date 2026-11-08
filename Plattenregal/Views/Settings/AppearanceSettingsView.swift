@@ -144,6 +144,7 @@ struct AppearanceSettingsView: View {
             SettingsCard(title: String(localized: "App-Symbol"),
                          subtitle: String(localized: "Für das Dock und den App-Umschalter (⌘-Tab), unabhängig vom Design. Finder, Launchpad und Spotlight zeigen immer das Standard-Symbol.")) {
                 SettingsRow(title: String(localized: "Eigenes App-Symbol"),
+                            badge: String(localized: "Experimentell"),
                             hint: preferences.customAppIcon ? nil
                                 : String(localized: "Aus: das Standard-Symbol. Ein gewähltes Symbol bleibt gemerkt, falls du es wieder einschaltest.")) {
                     Toggle("Eigenes App-Symbol", isOn: $preferences.customAppIcon.animation(AppStyle.standardAnimation))

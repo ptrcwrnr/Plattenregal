@@ -1,3 +1,8 @@
+# Badge „Experimentell“ am Umschalter „Eigenes App-Symbol“ · 08.11.2026
+
+- **Neu:** Hinter „Eigenes App-Symbol“ steht ein kleines Badge **Experimentell** (englisch „Experimental“). Neuer gemeinsamer Baustein `StatusBadge` (`SettingsComponents.swift`): Schriftstil `captionMark`, Warnfarbe des Designs (`AppStyle.warningColor`) auf einer hellen Tönung davon (`AppStyle.badgeTintOpacity`, neu, 0,15), Kapsel, Abstände aus der Skala. `SettingsRow` nimmt dafür einen optionalen `badge` hinter dem Titel; die übrigen Zeilen sind unverändert.
+- **Geprüft:** gebaut, 330 Tests bestanden. In der Demo per Bildschirmfoto: Modern (aus), Klassisch (an, alle Symbole) und Vinyl (aus) – Badge in Orange bzw. den Warntönen von Klassisch und Vinyl, gut lesbar, auf einer Linie mit dem Titel. Nicht im Bild: die englische Fassung.
+
 # App-Symbol per Umschalter, ab Werk aus, ganz unten in Darstellung · 08.11.2026
 
 - **Neu:** Die Karte „App-Symbol“ steht jetzt als letzte auf der Seite Darstellung (vorher nach „Erscheinungsbild“) und beginnt mit dem Umschalter **Eigenes App-Symbol**. Ab Werk aus – auch wenn vorher schon ein Symbol gewählt war –, dann zeigen Dock und ⌘-Tab das Standard-Symbol, und die Karte ist eine Zeile mit Hinweis („Aus: das Standard-Symbol. Ein gewähltes Symbol bleibt gemerkt …“). Eingeschaltet klappen die 18 Symbole und der Hinweis zum Dock darunter auf (gleicher Übergang wie bei Such- und Verkaufsliste).

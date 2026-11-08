@@ -47,15 +47,19 @@ struct SettingsCard<Content: View>: View {
     }
 }
 
-/// Label (+ optional hint) on the left, control on the right.
+/// Label (+ optional badge after it, + optional hint) on the left, control on the right.
 struct SettingsRow<Control: View>: View {
     let title: String
+    var badge: String?
     var hint: String?
     @ViewBuilder let control: Control
     var body: some View {
         HStack(alignment: .center, spacing: AppStyle.rowSpacing) {
             VStack(alignment: .leading, spacing: AppStyle.hairSpacing) {
-                Text(title)
+                HStack(spacing: AppStyle.itemSpacing) {
+                    Text(title)
+                    if let badge { StatusBadge(title: badge) }
+                }
                 if let hint {
                     Text(hint).font(.caption).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -64,6 +68,21 @@ struct SettingsRow<Control: View>: View {
             Spacer(minLength: AppStyle.rowSpacing)
             control
         }
+    }
+}
+
+/// A small mark after a title, e.g. "Experimentell": the design's warning
+/// color on a light tint of it, in a capsule.
+struct StatusBadge: View {
+    let title: String
+    var body: some View {
+        Text(title)
+            .font(AppStyle.captionMark)
+            .foregroundStyle(AppStyle.warningColor)
+            .padding(.horizontal, AppStyle.itemSpacing)
+            .padding(.vertical, AppStyle.hairSpacing)
+            .background(AppStyle.warningColor.opacity(AppStyle.badgeTintOpacity), in: Capsule())
+            .accessibilityElement(children: .combine)
     }
 }
 

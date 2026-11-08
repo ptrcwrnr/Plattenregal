@@ -380,6 +380,16 @@
         }
       }
     },
+    "Experimentell" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental"
+          }
+        }
+      }
+    },
     "Flower Power" : {
       "localizations" : {
         "en" : {

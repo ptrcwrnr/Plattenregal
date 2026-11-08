@@ -316,6 +316,8 @@ enum AppStyle {
     static var successColor: Color { isAtelier ? AtelierPalette.success : Color.green }
     static var warningColor: Color { isAtelier ? AtelierPalette.warning : Color.orange }
     static var errorColor: Color { isAtelier ? AtelierPalette.error : Color.red }
+    /// The tint behind a status badge, in the badge's own color (`StatusBadge`).
+    static let badgeTintOpacity: Double = 0.15
 
     // MARK: Glass
     // The tints of Liquid Glass in Modern, by role. Klassisch draws paper instead.
