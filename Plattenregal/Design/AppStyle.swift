@@ -373,6 +373,9 @@ enum AppStyle {
     static let standardDuration: TimeInterval = 0.25
     /// Crossfade between pages, sections and grid ↔ list. Kept with reduce motion.
     static let fadeAnimation = Animation.smooth(duration: 0.25)
+    /// Switching the design: each window crossfades as a whole from the old
+    /// look to the new one (`AppPreferences.switchDesign`). Kept with reduce motion.
+    static let designFadeDuration: CFTimeInterval = 0.25
     /// Anything that moves or resizes: records travelling to a new sort
     /// position, columns reflowing, a search bar sliding in. `nil` (= instant)
     /// with reduce motion.

@@ -1,4 +1,5 @@
 import AppKit
+import QuartzCore
 import SwiftUI
 
 /// Settings that change the whole app at once. Observable, so every view
@@ -144,6 +145,34 @@ import SwiftUI
     /// Vinyl is always dark; the chosen mode stays stored for the others.
     func applyAppearance() {
         NSApplication.shared.appearance = signatureDesign.isAlwaysDark ? NSAppearance(named: .darkAqua) : appearance.appearance
+    }
+
+    /// Switches the whole app to another design, as a click in Einstellungen
+    /// → Darstellung → Design does.
+    ///
+    /// Every window crossfades as a whole: Core Animation keeps the old
+    /// picture and fades to the new one in the window server, while SwiftUI
+    /// draws the new design once, without animation. Animated in SwiftUI
+    /// (`withAnimation`), every color, shadow and spacing of every view – in
+    /// all four pages, the hidden ones too – was interpolated on the main
+    /// thread frame by frame: about two thirds of a switch's work, and the
+    /// fade stuttered.
+    func switchDesign(to design: SignatureDesign) {
+        guard design != signatureDesign else { return }
+        let fade = CATransition()
+        fade.type = .fade
+        fade.duration = AppStyle.designFadeDuration
+        fade.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        // The window's frame view, so the toolbar fades along with the page.
+        // Added in this turn of the run loop, which SwiftUI also draws the
+        // new design in: both go out in the same Core Animation transaction.
+        for window in NSApp.windows where window.isVisible {
+            window.contentView?.superview?.layer?.add(fade, forKey: "designFade")
+        }
+        var transaction = Transaction(animation: nil)
+        // Also no implicit animations (`.animation(_:value:)`) on top of the fade.
+        transaction.disablesAnimations = true
+        withTransaction(transaction) { signatureDesign = design }
     }
 
     /// Back to the defaults (used by "Einstellungen zurücksetzen").

@@ -115,22 +115,23 @@ extension View {
     /// The bar in the middle of a window's toolbar around the page switch:
     /// Liquid Glass in Modern, a darker band on the petrol in Klassisch. Its
     /// controls bring no background of their own.
-    @ViewBuilder func toolbarBar() -> some View {
-        if AppStyle.isAtelier {
-            padding(.horizontal, AppStyle.controlInset)
-                .background {
+    /// One structure in both: a branch per design rebuilt the toolbar's
+    /// items on every switch.
+    func toolbarBar() -> some View {
+        let paper = AppStyle.isAtelier
+        return padding(.horizontal, AppStyle.controlInset)
+            .background {
+                if paper {
                     RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).fill(Color.black.opacity(0.16))
                         .overlay(RoundedRectangle(cornerRadius: AppStyle.atelierControlRadius).strokeBorder(Color.white.opacity(0.08), lineWidth: AppStyle.borderWidth))
                 }
-                // Always dark on the petrol, set here instead of taken from
-                // the toolbar's scheme, which doesn't reliably reach views
-                // hosted in the toolbar (the old search field came out white
-                // now and then). The search's text, placeholder and separator
-                // follow it.
-                .environment(\.colorScheme, .dark)
-        } else {
-            padding(.horizontal, AppStyle.controlInset).glassEffect(.regular, in: .capsule)
-        }
+            }
+            .glassEffect(paper ? .identity : .regular, in: .capsule)
+            // Klassisch: always dark on the petrol, set here instead of taken
+            // from the toolbar's scheme, which doesn't reliably reach views
+            // hosted in the toolbar (the old search field came out white now
+            // and then). The search's text, placeholder and separator follow it.
+            .transformEnvironment(\.colorScheme) { if paper { $0 = .dark } }
     }
 
     /// The round floating button and the actions around it (see
@@ -149,17 +150,20 @@ extension View {
             }
     }
 
-    @ViewBuilder private func floatingCircleSurface(prominent: Bool) -> some View {
-        if AppStyle.isAtelier {
-            background {
+    /// One structure in both designs, so a switch keeps the buttons.
+    private func floatingCircleSurface(prominent: Bool) -> some View {
+        let paper = AppStyle.isAtelier
+        return background {
+            if paper {
                 Circle().fill(prominent ? AtelierPalette.petrol : AtelierPalette.surface)
                     .overlay(Circle().strokeBorder(prominent ? Color.clear : AtelierPalette.border, lineWidth: AppStyle.borderWidth))
                     .shadow(color: .black.opacity(prominent ? 0.18 : 0.1), radius: prominent ? 10 : 6, y: prominent ? 4 : 2)
             }
-        } else {
-            glassEffect(.regular.interactive(), in: .circle)
-                .shadow(color: .black.opacity(prominent ? 0.12 : 0.06), radius: prominent ? 10 : 6, y: prominent ? 4 : 2)
         }
+        .glassEffect(paper ? .identity : .regular.interactive(), in: .circle)
+        // Modern's shadow lies under the glass; Klassisch's is the paper circle's own.
+        .shadow(color: paper ? .clear : .black.opacity(prominent ? 0.12 : 0.06),
+                radius: paper ? 0 : prominent ? 10 : 6, y: paper ? 0 : prominent ? 4 : 2)
     }
 
     /// A small capsule or circle on the page – tags on covers, steppers,
@@ -228,26 +232,39 @@ extension View {
 private struct ScrollsUnderToolbar: ViewModifier {
     let contentPadding: CGFloat
     let showsBehindBar: Bool
+    /// One structure in every design, only the values differ: a branch per
+    /// design made a switch between Modern and the paper designs build the
+    /// scroll view anew – every cell, and back to the top of the page.
+    /// Klassisch takes no margin and an opaque mask, which SwiftUI turns
+    /// into a plain clip instead of a mask layer – nothing extra to draw
+    /// while the page scrolls.
     func body(content: Content) -> some View {
-        if AppStyle.isAtelier {
+        let paper = AppStyle.isAtelier
+        GeometryReader { proxy in
+            // The toolbar's height where the page runs on beneath it.
+            let bar = paper ? 0 : proxy.safeAreaInsets.top
+            // Above the first row at rest: the fade lies only there.
+            let margin = max(0, bar - contentPadding)
             content
-        } else {
-            GeometryReader { proxy in
-                // Above the first row at rest: the fade lies only there.
-                let margin = max(0, proxy.safeAreaInsets.top - contentPadding)
-                content
-                    // The bar's full height, for what must start below it
-                    // (the ring of `pullToRefresh`); `margin` is less by the
-                    // content's own padding.
-                    .environment(\.toolbarClearance, proxy.safeAreaInsets.top)
-                    .contentMargins(.top, margin, for: .automatic)
-                    .scrollEdgeEffectHidden(true, for: .top)
-                    .mask {
-                        ScrollEdgeFadeMask(top: showsBehindBar ? margin : proxy.safeAreaInsets.top,
+                // The bar's full height, for what must start below it
+                // (the ring of `pullToRefresh`); `margin` is less by the
+                // content's own padding.
+                .environment(\.toolbarClearance, bar)
+                .contentMargins(.top, margin, for: .automatic)
+                .scrollEdgeEffectHidden(!paper, for: .top)
+                .mask {
+                    if paper {
+                        // Over the safe areas too: the scroll view draws its
+                        // content on beneath the toolbar and the floating button.
+                        Color.black
+                            .padding(.top, -proxy.safeAreaInsets.top)
+                            .padding(.bottom, -proxy.safeAreaInsets.bottom)
+                    } else {
+                        ScrollEdgeFadeMask(top: showsBehindBar ? margin : bar,
                                            showsBehindBar: showsBehindBar, bottom: proxy.safeAreaInsets.bottom)
                     }
-                    .ignoresSafeArea(.container, edges: .top)
-            }
+                }
+                .ignoresSafeArea(.container, edges: paper ? [] : .top)
         }
     }
 }

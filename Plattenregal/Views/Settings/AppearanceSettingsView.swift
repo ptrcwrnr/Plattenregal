@@ -48,7 +48,7 @@ struct AppearanceSettingsView: View {
             SettingsCard(title: String(localized: "Design")) {
                 ForEach(SignatureDesign.allCases) { design in
                     SignatureDesignOption(design: design, selected: preferences.signatureDesign == design) {
-                        withAnimation(AppStyle.fadeAnimation) { preferences.signatureDesign = design }
+                        preferences.switchDesign(to: design)
                     }
                 }
             }

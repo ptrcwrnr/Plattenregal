@@ -42,22 +42,18 @@ private struct RecordFrameModifier: ViewModifier {
     let frame: RecordFrame
     @Environment(\.colorScheme) private var scheme
 
+    /// One structure for every frame, only the values differ: a branch per
+    /// frame rebuilt every cover – its loaded image included – on a switch
+    /// between Modern and Klassisch. What a frame doesn't use is clear and
+    /// of radius 0, which SwiftUI skips.
     func body(content: Content) -> some View {
         let lit = scheme == .light
-        switch frame {
-        case .sleeve:
-            content
-                .overlay {
-                    RoundedRectangle(cornerRadius: DesignScale.sleeveRadius)
-                        .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: DesignScale.hairlineWidth)
-                }
-                .shadow(color: lit ? AtelierPalette.petrol.opacity(0.18) : .clear, radius: lit ? 1 : 0, y: lit ? 1 : 0)
-                .shadow(color: lit ? AtelierPalette.petrol.opacity(0.14) : .clear, radius: lit ? 10 : 0, y: lit ? 6 : 0)
-        case .classicMat, .modernMat:
-            content
-                .padding(RecordFrame.matWidth)
-                .background {
-                    let shape = RoundedRectangle(cornerRadius: DesignScale.cardRadius)
+        let sleeve = frame == .sleeve
+        let shape = RoundedRectangle(cornerRadius: DesignScale.cardRadius)
+        content
+            .padding(sleeve ? 0 : RecordFrame.matWidth)
+            .background {
+                if !sleeve {
                     shape
                         .fill(frame == .classicMat ? AtelierPalette.surface : RecordFrame.modernMatColor)
                         .overlay {
@@ -65,7 +61,17 @@ private struct RecordFrameModifier: ViewModifier {
                                                lineWidth: DesignScale.borderWidth)
                         }
                 }
-                .shadow(color: lit ? .black.opacity(0.08) : .clear, radius: lit ? 8 : 0, y: lit ? 3 : 0)
-        }
+            }
+            .overlay {
+                if sleeve {
+                    RoundedRectangle(cornerRadius: DesignScale.sleeveRadius)
+                        .strokeBorder(AtelierPalette.ink.opacity(0.14), lineWidth: DesignScale.hairlineWidth)
+                }
+            }
+            // The sleeve: a close and a soft shadow; a mat: one soft shadow.
+            .shadow(color: lit && sleeve ? AtelierPalette.petrol.opacity(0.18) : .clear,
+                    radius: lit && sleeve ? 1 : 0, y: lit && sleeve ? 1 : 0)
+            .shadow(color: !lit ? .clear : sleeve ? AtelierPalette.petrol.opacity(0.14) : .black.opacity(0.08),
+                    radius: !lit ? 0 : sleeve ? 10 : 8, y: !lit ? 0 : sleeve ? 6 : 3)
     }
 }

@@ -100,23 +100,37 @@ struct AmbientBackdrop: View {
 }
 
 /// One cover of `AmbientBackdrop`; nothing at all until the image is there,
-/// so no placeholder ever flashes behind the page.
+/// so no placeholder ever flashes behind the page. A cover decoded before
+/// is there in the first frame, without fading in: switching back to Modern
+/// builds these anew, and the backdrop then belongs to the window's
+/// crossfade instead of fading in a second time after it.
 private struct AmbientCover: View {
     let url: String
     @State private var image: NSImage?
 
+    private static let pixelSize = 96
+
+    /// The cover at this size, if the cache has it decoded already.
+    private var memoryImage: NSImage? {
+        guard let parsed = URL(string: url),
+              let payload = CoverCache.shared.cachedImage(parsed, maximumPixelSize: Self.pixelSize) else { return nil }
+        return NSImage(cgImage: payload.image, size: .zero)
+    }
+
     var body: some View {
+        // The cache's first: `image` may still be an earlier address's.
+        let shown = memoryImage ?? image
         Color.clear
             .overlay {
-                if let image {
-                    Image(nsImage: image).resizable().scaledToFill().transition(.opacity)
+                if let shown {
+                    Image(nsImage: shown).resizable().scaledToFill().transition(.opacity)
                 }
             }
             .clipped()
-            .animation(AppStyle.fadeAnimation.speed(0.5), value: image != nil)
+            .animation(AppStyle.fadeAnimation.speed(0.5), value: shown != nil)
             .task(id: url) {
                 guard let parsed = URL(string: url),
-                      let loaded = try? await CoverCache.shared.image(parsed, maximumPixelSize: 96) else { return }
+                      let loaded = try? await CoverCache.shared.image(parsed, maximumPixelSize: Self.pixelSize) else { return }
                 image = NSImage(cgImage: loaded.image, size: .zero)
             }
     }

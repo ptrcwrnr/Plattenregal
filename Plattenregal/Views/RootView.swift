@@ -81,6 +81,9 @@ struct RootView: View {
     @State private var welcome = AppWelcome.shared
     /// A record picked in the widget „Platte des Tages“ opens here (`pendingCopy`).
     @State private var quickSearch = ShelfQuickSearch.shared
+    #if DEBUG
+    @Environment(\.openSettings) private var openSettings
+    #endif
     var body: some View {
         library
             .onAppear { takeQuickSearchRequest() }
@@ -144,6 +147,34 @@ struct RootView: View {
             .background(GlobalShortcuts(selection: destination))
             .background { AmbientGlow() }
             #if DEBUG
+            // Measuring the design switch: --preview-design-cycle opens the
+            // settings on „Darstellung“ 3 s after launch, then switches the
+            // design every 1.5 s as a click there does – every way between
+            // the three designs, three rounds after one at rest – and logs the
+            // app's CPU time per round.
+            .task {
+                guard ProcessInfo.processInfo.arguments.contains("--preview-design-cycle") else { return }
+                try? await Task.sleep(for: .seconds(3))
+                SettingsRequest.shared.show(.appearance)
+                openSettings()
+                try? await Task.sleep(for: .seconds(2))
+                func cpuSeconds() -> Double {
+                    var usage = rusage()
+                    getrusage(RUSAGE_SELF, &usage)
+                    return Double(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)
+                        + Double(usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1_000_000
+                }
+                // Round 0 switches nothing: what the window costs at rest.
+                for round in 0...3 {
+                    let start = cpuSeconds()
+                    AppLog.info("Debug", "Designwechsel Runde \(round): Beginn")
+                    for design in [SignatureDesign.atelier, .vinyl, .liquidGlass, .vinyl, .atelier, .liquidGlass] {
+                        if round > 0 { AppPreferences.shared.switchDesign(to: design) }
+                        try? await Task.sleep(for: .seconds(1.5))
+                    }
+                    AppLog.info("Debug", "Designwechsel Runde \(round): Ende, CPU \(String(format: "%.2f", cpuSeconds() - start)) s")
+                }
+            }
             // Recording a page switch without clicking: --preview-switch=Statistik
             // switches there 3 s after launch.
             .task {

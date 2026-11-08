@@ -34,6 +34,24 @@ extension AllTests {
             }
         }
 
+        /// Switching the design as the settings do: stored at once, also in
+        /// and out of Vinyl (always dark); the same design again changes nothing.
+        @Test func switchDesignStoresTheChoice() throws {
+            try withSignatureDefaults { defaults in
+                let preferences = AppPreferences(defaults: defaults)
+                for design in [SignatureDesign.atelier, .vinyl, .liquidGlass, .vinyl, .atelier] {
+                    preferences.switchDesign(to: design)
+                    #expect(preferences.signatureDesign == design)
+                    #expect(defaults.string(forKey: AppPreferences.Key.signatureDesign) == design.rawValue)
+                }
+                defaults.removeObject(forKey: AppPreferences.Key.signatureDesign)
+                preferences.switchDesign(to: .atelier)
+                #expect(defaults.object(forKey: AppPreferences.Key.signatureDesign) == nil)
+                preferences.switchDesign(to: .liquidGlass)
+                #expect(AppPreferences(defaults: defaults).signatureDesign == .liquidGlass)
+            }
+        }
+
         /// The app icon: the standard by default, stored by name, an unknown
         /// name falls back to the standard; switching the design keeps it.
         @Test func appIconIsStandardByDefaultPersistsAndIgnoresDesign() throws {
