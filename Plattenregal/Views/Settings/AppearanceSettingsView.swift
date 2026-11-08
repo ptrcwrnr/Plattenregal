@@ -153,16 +153,23 @@ struct AppearanceSettingsView: View {
                 // The choices pour out below their switch and back in.
                 if preferences.customAppIcon {
                     VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
-                        ForEach(AppIconTheme.allCases) { theme in
-                            Divider()
-                            SettingsRow(title: theme.title) {
-                                HStack(spacing: AppStyle.hairSpacing) {
+                        Divider()
+                        // A gallery: one row per theme, no names, no lines – the
+                        // themes tell apart by their look. The six icons of a
+                        // row spread over the card's width.
+                        VStack(alignment: .leading, spacing: AppStyle.itemSpacing) {
+                            ForEach(AppIconTheme.allCases) { theme in
+                                HStack(spacing: 0) {
                                     ForEach(theme.choices) { choice in
+                                        if choice != theme.choices.first { Spacer(minLength: AppStyle.tightSpacing) }
                                         AppIconOption(choice: choice, selected: preferences.appIcon == choice) {
                                             withAnimation(AppStyle.quickAnimation) { preferences.appIcon = choice }
                                         }
                                     }
                                 }
+                                // The theme's name only for VoiceOver.
+                                .accessibilityElement(children: .contain)
+                                .accessibilityLabel(theme.title)
                             }
                         }
                         Divider()
@@ -285,7 +292,7 @@ private struct AppIconOption: View {
                         Color.clear
                     }
                 }
-                .frame(width: AppStyle.appIconSmallSize, height: AppStyle.appIconSmallSize)
+                .frame(width: AppStyle.appIconChoiceSize, height: AppStyle.appIconChoiceSize)
                 Text(choice.title)
                     .font(.caption)
                     .foregroundStyle(selected ? .primary : .secondary)
@@ -303,8 +310,8 @@ private struct AppIconOption: View {
             }
             .contentShape(RoundedRectangle(cornerRadius: AppStyle.rowRadius))
         }
+        // No tooltip: the name stands under the icon already.
         .buttonStyle(.plain)
-        .help(choice.title)
         .accessibilityLabel(String(localized: "App-Symbol \(choice.title)"))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }

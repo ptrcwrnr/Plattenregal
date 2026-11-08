@@ -1,3 +1,10 @@
+# App-Symbole als Galerie ohne Themennamen · 08.11.2026
+
+- **Vorher** standen links „Schlicht“, „Retro“, „Collage“ als Zeilentitel; sie nahmen gut ein Drittel der Kartenbreite, die Symbole drängten sich rechts (64 pt), Linien trennten die Reihen, und ein Tooltip wiederholte den Namen, der schon darunter stand (und verdeckte ihn).
+- **Jetzt** eine Galerie: drei Reihen untereinander, ohne Namen und ohne Linien, nur durch Abstand getrennt – die Themen erkennt man am Aussehen. Die sechs Symbole einer Reihe verteilen sich über die ganze Kartenbreite und sind größer (80 pt, neu `AppStyle.appIconChoiceSize`); die Kachel ist 96 statt 84 pt breit, die Auswahltönung sitzt damit enger um das Symbol. Kein Tooltip mehr. VoiceOver liest je Reihe den Themennamen. `appIconSmallSize` (64) gilt nur noch für die Willkommensseite.
+- **Zwischendurch** probiert und verworfen: kleine Überschriften in Versalien über jeder Reihe.
+- **Geprüft:** gebaut, 330 Tests bestanden. In der Demo per Bildschirmfoto in Modern (Weiß gewählt), Klassisch (Editorial) und Vinyl (Flower Power): alle Namen vollständig, Abstände gleichmäßig, Auswahl in den Farben des Designs. Nicht geprüft: VoiceOver, englische Fassung. Die DMG von heute Abend enthält das noch nicht.
+
 # DMG 1.0.4 mit Umschalter fürs App-Symbol neu gebaut · 08.11.2026
 
 - **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release nach `clean`), 14 MB (14 798 508 Bytes), SHA-256 `e9a4885e…40451f26d`, in `dist/Hinweise-1.0.4.md` eingetragen; die DMG von 19:52 ist überholt. Version bleibt 1.0.4 (102031). Enthält den Umschalter „Eigenes App-Symbol“ (ab Werk aus, Badge „Experimentell“, Karte ganz unten in Darstellung).
