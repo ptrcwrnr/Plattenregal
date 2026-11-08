@@ -22,6 +22,9 @@ nonisolated enum LegacyDefaults {
         // A one-time shelf name migration, removed 25.09.2026 – one flag per
         // database file, test databases included.
         "LibraryStorage.legacyShelfNameMigratedV5",
+        // The colors of the tags, choosable for a few hours on 08.11.2026,
+        // fixed per design since.
+        "markColor-",
     ]
 
     static func isObsolete(_ key: String) -> Bool {

@@ -344,6 +344,7 @@ struct CollectionView: View {
                             // As in the Finder and the shelf's list: the tags as dots, last.
                             TableColumn("Tags") { copy in
                                 TagDots(missing: tagged.missing.contains(copy.id), forSale: tagged.sale.contains(copy.id))
+                                    .frame(maxWidth: .infinity)
                             }.width(min: AppStyle.tagColumnWidth.min, ideal: AppStyle.tagColumnWidth.ideal, max: AppStyle.tagColumnWidth.max)
                                 .tableColumnID(.tags)
                         }

@@ -219,26 +219,36 @@ enum AppStyle {
     static let captionLabel = DesignScale.captionLabel
     /// The tiniest labels: compartment names in the search panel's rack.
     static let miniLabel = Font.caption2.weight(.medium)
-    /// A record's state as a colored dot instead of a text tag (`StatusDot`:
-    /// „Gesucht“ red, „Verkauf“ accent, „Nicht in der Collection“ warning),
-    /// beside its title or its position.
+    /// A record's state as a colored dot instead of a text tag (`StatusDot`,
+    /// colors `markColor`).
     static let statusDotSize: CGFloat = 7
     /// The column "Tags" of the lists: as narrow as its header – usually one
     /// dot, three at most (29 pt) still fit.
     static let tagColumnWidth: (min: CGFloat, ideal: CGFloat, max: CGFloat) = (30, 34, 40)
-    /// The color of a state's dot: chosen in the settings, else the design's
-    /// own. Read in `body`, so dots redraw when it changes.
-    static func markColor(_ mark: RecordMark) -> Color {
-        AppPreferences.shared.markColor(mark).color(standard: standardMarkColor(mark))
-    }
-    /// The design's own color for a state: its signal colors, the accent for „Verkauf“.
-    static func standardMarkColor(_ mark: RecordMark) -> Color {
+    /// The color of a tag's dot, fixed per design and for light and dark,
+    /// so the dots suit the design and stay readable. Read in `body`, so
+    /// dots redraw when the design changes.
+    static func markColor(_ mark: RecordMark) -> Color { markColor(mark, design: AppPreferences.shared.signatureDesign) }
+    static func markColor(_ mark: RecordMark, design: SignatureDesign) -> Color {
+        if design.isPaper {
+            let colors = design.paperColors
+            switch mark {
+            case .missing: return colors.tagMissing
+            case .sale: return colors.tagSale
+            case .sold: return colors.tagSold
+            }
+        }
         switch mark {
-        case .missing: errorColor
-        case .sale: accent
-        case .sold: warningColor
+        case .missing: return modernTagMissing
+        case .sale: return modernTagSale
+        case .sold: return modernTagSold
         }
     }
+    /// Modern: system-like red, blue and a yellow amber (apart from the
+    /// red), deeper on light glass and lighter on dark (`TagColorContrastTests`).
+    private static let modernTagMissing = HexColor.adaptive(0xD8382F, 0xFF6A5E)
+    private static let modernTagSale = HexColor.adaptive(0x2C6BD2, 0x5E9BFF)
+    private static let modernTagSold = HexColor.adaptive(0xB07A00, 0xFFC23D)
     /// The small capitals over a group of rows in a menu.
     static let menuSectionTitle = Font.caption2.weight(.semibold)
 

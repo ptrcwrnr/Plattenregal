@@ -22,7 +22,6 @@ struct ListsSettingsView: View {
     @State private var error: String?
     @State private var saleError: String?
     @State private var confirmSold = false
-    @State private var preferences = AppPreferences.shared
 
     /// On the "Verkauf" list, by artist.
     private var forSale: [RecordCopy] {
@@ -127,25 +126,6 @@ struct ListsSettingsView: View {
                     .transition(AppStyle.funnelTransition())
                 }
                 if let saleError { AppBanner(message: saleError, kind: .error).transition(AppStyle.funnelTransition()) }
-            }
-            // The tags as dots, as macOS shows them.
-            SettingsCard(title: String(localized: "Tags"),
-                         subtitle: String(localized: "Ein Punkt in dieser Farbe steht in der Spalte „Tags“ der Listen, neben der Position auf den Covern im Fach und in der Suche auf der Regalseite. „Standard“ nimmt die Farbe des Designs.")) {
-                ForEach(RecordMark.allCases) { mark in
-                    if mark != RecordMark.allCases.first { Divider() }
-                    SettingsRow(title: mark.title) {
-                        HStack(spacing: AppStyle.itemSpacing) {
-                            ForEach(StatusColorChoice.allCases) { choice in
-                                ColorSwatch(title: choice.title, color: choice.color(standard: AppStyle.standardMarkColor(mark)),
-                                            selected: preferences.markColor(mark) == choice) {
-                                    withAnimation(AppStyle.quickAnimation) { preferences.setMarkColor(choice, for: mark) }
-                                }
-                            }
-                        }
-                        .accessibilityElement(children: .contain)
-                        .accessibilityLabel(String(localized: "Farbe für „\(mark.title)“"))
-                    }
-                }
             }
         }
         .confirmationDialog(forSale.count == 1 ? "Die Platte auf der Verkaufsliste ist verkauft?" : "Alle \(forSale.count) Platten auf der Verkaufsliste sind verkauft?",

@@ -473,12 +473,8 @@ struct ShelfContentsView: View, Equatable {
                         .strokeBorder(selected ? AppStyle.selectedBorder : .clear, lineWidth: AppStyle.selectionLineWidth)
                 }
                 .overlay(alignment: .topLeading) {
-                    // The record's state as dots beside the position.
-                    HStack(spacing: AppStyle.tightSpacing) {
-                        Text(String(item.position))
-                            .font(AppStyle.captionMark).monospacedDigit()
-                        TagDots(missing: item.missing, forSale: item.forSale, sold: item.sold)
-                    }
+                    Text(String(item.position))
+                        .font(AppStyle.captionMark).monospacedDigit()
                         .padding(.horizontal, AppStyle.itemSpacing).padding(.vertical, AppStyle.tightSpacing)
                         .appChipSurface(in: Capsule())
                         .padding(AtelierCoverFrame.badgeInset)
@@ -535,6 +531,7 @@ struct ShelfContentsView: View, Equatable {
             // As in the Finder: the tags as dots, last.
             TableColumn("Tags") { item in
                 TagDots(missing: item.missing, forSale: item.forSale, sold: item.sold)
+                    .frame(maxWidth: .infinity)
             }
             .width(min: AppStyle.tagColumnWidth.min, ideal: AppStyle.tagColumnWidth.ideal, max: AppStyle.tagColumnWidth.max)
             .tableColumnID(.tags)

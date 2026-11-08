@@ -299,6 +299,44 @@ private struct AtelierDesignPreview: View {
     }
 }
 
+/// One round color choice; `rainbow` for "System", `off` (a white ball) for "Aus".
+private struct ColorSwatch: View {
+    let title: String
+    let color: Color
+    var rainbow = false
+    var off = false
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                if rainbow {
+                    Circle().fill(AngularGradient(colors: [.red, .orange, .yellow, .green, .blue, .purple, .red], center: .center))
+                } else if off {
+                    Circle().fill(.white)
+                } else {
+                    Circle().fill(color)
+                }
+                // Shadowed, so the mark stays visible on light swatches like yellow.
+                if selected {
+                    Circle().fill(.white).frame(width: 6, height: 6)
+                        .shadow(color: .black.opacity(0.45), radius: 1)
+                }
+            }
+            .frame(width: 18, height: 18)
+            .overlay(Circle().strokeBorder(Color.primary.opacity(0.15)))
+            .padding(3)
+            .overlay(Circle().strokeBorder(selected ? (off ? Color.secondary : color) : .clear, lineWidth: AppStyle.selectionLineWidth))
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .help(title)
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
 /// A page's own name as typed; empty shows the app's name as placeholder.
 /// The field itself stops at `PageNames.maxLength` characters: a binding
 /// that only shortens what it stores leaves the extra letters standing in

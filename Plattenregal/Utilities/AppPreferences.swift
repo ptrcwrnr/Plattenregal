@@ -20,7 +20,6 @@ import SwiftUI
         static let quickSearchPosition = "quickSearchPosition"
         static let quickSearchClick = "quickSearchClick"
         static let pageNames = "pageNames"
-        static func markColor(_ mark: RecordMark) -> String { "markColor-\(mark.rawValue)" }
         /// The column order and visibility of the lists (`TableColumnCustomization`, as JSON).
         static let collectionColumns = "collectionTableColumns"
         static let wantlistColumns = "wantlistTableColumns"
@@ -65,17 +64,6 @@ import SwiftUI
     /// The user's own page names by `Destination.rawValue` (see `PageNames`);
     /// a page without one keeps its own name.
     var pageNames: [String: String] { didSet { defaults.set(pageNames, forKey: Key.pageNames) } }
-    /// The color of each state's dot (`RecordMark`); the design's own by default.
-    var markColors: [RecordMark: StatusColorChoice] {
-        didSet {
-            for mark in RecordMark.allCases where markColors[mark] != oldValue[mark] {
-                // The default leaves nothing stored, like a fresh install.
-                if let choice = markColors[mark], choice != .standard { store(choice.rawValue, Key.markColor(mark)) }
-                else { defaults.removeObject(forKey: Key.markColor(mark)) }
-            }
-        }
-    }
-    func markColor(_ mark: RecordMark) -> StatusColorChoice { markColors[mark] ?? .standard }
 
     /// The order and visibility of each list's columns, changed by dragging a
     /// column's header and with a right-click on the header row; the
@@ -89,7 +77,6 @@ import SwiftUI
     var shelfColumns: TableColumnCustomization<ShelfCopyItem> {
         didSet { if shelfColumns != oldValue { storeColumns(shelfColumns, Key.shelfColumns) } }
     }
-    func setMarkColor(_ choice: StatusColorChoice, for mark: RecordMark) { markColors[mark] = choice }
 
     /// What a click on a match in that search does. Holds it by default.
     var quickSearchClick: QuickSearchClick { didSet { store(quickSearchClick.rawValue, Key.quickSearchClick) } }
@@ -134,10 +121,6 @@ import SwiftUI
         collectionColumns = Self.storedColumns(Key.collectionColumns, in: defaults)
         wantlistColumns = Self.storedColumns(Key.wantlistColumns, in: defaults)
         shelfColumns = Self.storedColumns(Key.shelfColumns, in: defaults)
-        // An unknown value (a later version's color) counts as the default.
-        markColors = Dictionary(uniqueKeysWithValues: RecordMark.allCases.map { mark in
-            (mark, defaults.string(forKey: Key.markColor(mark)).flatMap(StatusColorChoice.init) ?? .standard)
-        })
         keepsRunningInBackground = defaults.object(forKey: Key.keepsRunningInBackground) == nil || defaults.bool(forKey: Key.keepsRunningInBackground)
         updateCheckInterval = Self.storedUpdateCheckInterval(in: defaults)
         language = languageAtLaunch
@@ -163,7 +146,6 @@ import SwiftUI
         quickSearchPosition = .center
         quickSearchClick = .hold
         pageNames = [:]
-        markColors = Dictionary(uniqueKeysWithValues: RecordMark.allCases.map { ($0, .standard) })
         collectionColumns = TableColumnCustomization()
         wantlistColumns = TableColumnCustomization()
         shelfColumns = TableColumnCustomization()

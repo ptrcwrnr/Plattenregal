@@ -40,6 +40,12 @@ nonisolated final class ClassicColors: Sendable {
     let success: Color
     let warning: Color
     let error: Color
+    /// The tags' dots (`TagDots`): „Gesucht“, „Verkauf“, „Nicht in der
+    /// Collection“ – each readable on the list's surface (at least 3:1,
+    /// see `TagColorContrastTests`) and set apart from the others.
+    let tagMissing: Color
+    let tagSale: Color
+    let tagSold: Color
     /// Categories in charts (statistics).
     let chart: [Color]
 
@@ -61,6 +67,9 @@ nonisolated final class ClassicColors: Sendable {
          success: Color,
          warning: Color,
          error: Color,
+         tagMissing: Color,
+         tagSale: Color,
+         tagSold: Color,
          chart: [Color]) {
         self.paper = paper
         self.surface = surface
@@ -80,68 +89,86 @@ nonisolated final class ClassicColors: Sendable {
         self.success = success
         self.warning = warning
         self.error = error
+        self.tagMissing = tagMissing
+        self.tagSale = tagSale
+        self.tagSold = tagSold
         self.chart = chart
     }
 
     /// Klassisch: the icon's paper, petrol and label gold, light and dark.
     static let klassisch = ClassicColors(
-        paper: adaptive(0xF4EFE5, 0x172B32),
-        surface: adaptive(0xFFFAF2, 0x213940),
-        soft: adaptive(0xEBE5DA, 0x1B3138),
-        ink: adaptive(0x233A3E, 0xEEE8DB),
-        muted: adaptive(0x63716E, 0xB3C1BE),
-        border: adaptive(0xDCD7CB, 0x3E5155),
-        petrol: adaptive(0x1D4C5B, 0x123C4B),
-        accent: adaptive(0x246074, 0xA5CCCF),
-        gold: rgb(0xE2B660),
-        goldForeground: rgb(0x293C39),
-        toolbarSelection: rgb(0xF4EFE5),
-        toolbarInk: rgb(0x233A3E),
+        paper: HexColor.adaptive(0xF4EFE5, 0x172B32),
+        surface: HexColor.adaptive(0xFFFAF2, 0x213940),
+        soft: HexColor.adaptive(0xEBE5DA, 0x1B3138),
+        ink: HexColor.adaptive(0x233A3E, 0xEEE8DB),
+        muted: HexColor.adaptive(0x63716E, 0xB3C1BE),
+        border: HexColor.adaptive(0xDCD7CB, 0x3E5155),
+        petrol: HexColor.adaptive(0x1D4C5B, 0x123C4B),
+        accent: HexColor.adaptive(0x246074, 0xA5CCCF),
+        gold: HexColor.rgb(0xE2B660),
+        goldForeground: HexColor.rgb(0x293C39),
+        toolbarSelection: HexColor.rgb(0xF4EFE5),
+        toolbarInk: HexColor.rgb(0x233A3E),
         bandLabel: Color.white.opacity(0.8),
-        bandInk: rgb(0xF4EFE5),
-        shadow: adaptive(0x1D3C42, 0x000000).opacity(0.08),
+        bandInk: HexColor.rgb(0xF4EFE5),
+        shadow: HexColor.adaptive(0x1D3C42, 0x000000).opacity(0.08),
         // Moss, ochre, brick.
-        success: adaptive(0x3E7A55, 0x8FC4A0),
-        warning: adaptive(0xA8711C, 0xE2B660),
-        error: adaptive(0xA9443A, 0xE69384),
+        success: HexColor.adaptive(0x3E7A55, 0x8FC4A0),
+        warning: HexColor.adaptive(0xA8711C, 0xE2B660),
+        error: HexColor.adaptive(0xA9443A, 0xE69384),
+        // Brick, a dusty blue apart from the petrol, old gold – the gold
+        // leans to yellow, so it never reads as a second brick.
+        tagMissing: HexColor.adaptive(0xB2453A, 0xF07A70),
+        tagSale: HexColor.adaptive(0x3A6EA5, 0x8DB7E8),
+        tagSold: HexColor.adaptive(0xA08410, 0xE3CB5A),
         // Petrol and gold first, then muted earth tones that sit well on
         // cream and on the dark paper.
-        chart: [0x2F6F80, 0xD9A441, 0x7FA38A, 0xC2714F, 0x5B7DA6, 0x8C5A7A, 0xA8A060].map(rgb))
+        chart: [0x2F6F80, 0xD9A441, 0x7FA38A, 0xC2714F, 0x5B7DA6, 0x8C5A7A, 0xA8A060].map(HexColor.rgb))
 
     /// Vinyl: cool graphite with light blue, always dark (the app then shows
     /// itself dark, see `SignatureDesign.isAlwaysDark`), so one value each.
     static let vinyl = ClassicColors(
-        paper: rgb(0x22272F),
-        surface: rgb(0x2C313B),
-        soft: rgb(0x272C35),
-        ink: rgb(0xEDEDEE),
-        muted: rgb(0x9CA2AD),
-        border: rgb(0x454D5A),
-        petrol: rgb(0x2C313B),
-        accent: rgb(0xA3BDFA),
-        gold: rgb(0x6B84C7),
-        goldForeground: rgb(0xFFFFFF),
-        toolbarSelection: rgb(0x6B84C7),
-        toolbarInk: rgb(0xFFFFFF),
+        paper: HexColor.rgb(0x22272F),
+        surface: HexColor.rgb(0x2C313B),
+        soft: HexColor.rgb(0x272C35),
+        ink: HexColor.rgb(0xEDEDEE),
+        muted: HexColor.rgb(0x9CA2AD),
+        border: HexColor.rgb(0x454D5A),
+        petrol: HexColor.rgb(0x2C313B),
+        accent: HexColor.rgb(0xA3BDFA),
+        gold: HexColor.rgb(0x6B84C7),
+        goldForeground: HexColor.rgb(0xFFFFFF),
+        toolbarSelection: HexColor.rgb(0x6B84C7),
+        toolbarInk: HexColor.rgb(0xFFFFFF),
         bandLabel: Color.white.opacity(0.8),
-        bandInk: rgb(0xEDEDEE),
+        bandInk: HexColor.rgb(0xEDEDEE),
         shadow: Color.black.opacity(0.25),
         // Mint, sand, coral – soft enough for the dark graphite.
-        success: rgb(0x8FD0A6),
-        warning: rgb(0xE2C07E),
-        error: rgb(0xE9A499),
+        success: HexColor.rgb(0x8FD0A6),
+        warning: HexColor.rgb(0xE2C07E),
+        error: HexColor.rgb(0xE9A499),
+        // Coral, the light blue of the accent, a yellow sand – bright enough
+        // on graphite and well apart from the coral.
+        tagMissing: HexColor.rgb(0xF27A70),
+        tagSale: HexColor.rgb(0x8FB0FA),
+        tagSold: HexColor.rgb(0xE3CC66),
         // Blues first, then cool, muted tones.
-        chart: [0x6B84C7, 0xA3BDFA, 0x7FB8A8, 0xD59A7A, 0xA88FD8, 0xD9B26F, 0x8FA0B3].map(rgb))
+        chart: [0x6B84C7, 0xA3BDFA, 0x7FB8A8, 0xD59A7A, 0xA88FD8, 0xD9B26F, 0x8FA0B3].map(HexColor.rgb))
+}
 
-    private static func nsRGB(_ hex: UInt32) -> NSColor {
+/// Colors written as sRGB hex values, for the designs' fixed palettes:
+/// one value, or one each for light and dark (resolved by the appearance
+/// they are drawn in). Shared by the paper designs and Modern's tag colors.
+nonisolated enum HexColor {
+    static func ns(_ hex: UInt32) -> NSColor {
         NSColor(srgbRed: Double((hex >> 16) & 0xFF) / 255,
                 green: Double((hex >> 8) & 0xFF) / 255,
                 blue: Double(hex & 0xFF) / 255, alpha: 1)
     }
-    private static func rgb(_ hex: UInt32) -> Color { Color(nsColor: nsRGB(hex)) }
-    private static func adaptive(_ light: UInt32, _ dark: UInt32) -> Color {
+    static func rgb(_ hex: UInt32) -> Color { Color(nsColor: ns(hex)) }
+    static func adaptive(_ light: UInt32, _ dark: UInt32) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
-            nsRGB(appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light)
+            ns(appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light)
         })
     }
 }

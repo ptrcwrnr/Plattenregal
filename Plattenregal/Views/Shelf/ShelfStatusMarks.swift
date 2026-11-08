@@ -18,10 +18,9 @@ struct StatusDot: View {
 }
 
 /// A record's tags as dots, as macOS shows tags, in a fixed order:
-/// "Gesucht", "Verkauf", "Nicht in der Collection" (colors:
-/// `AppStyle.markColor`, by default red, accent, orange). In the column
-/// "Tags" of the lists (shelf, collection), beside the position on a cover
-/// in a compartment, behind the title in the shelf search.
+/// "Gesucht", "Verkauf", "Nicht in der Collection" (colors fixed per design
+/// and mode, `AppStyle.markColor`). Centered in the column "Tags" of the
+/// lists (shelf, collection) and behind the title in the shelf search.
 struct TagDots: View {
     var missing = false
     var forSale = false
