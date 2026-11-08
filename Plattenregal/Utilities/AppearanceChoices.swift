@@ -249,10 +249,13 @@ enum AppIconTheme: String, CaseIterable, Identifiable {
 
 /// The icon in the Dock and in ⌘-Tab, chosen freely and independent of the
 /// design. macOS has no way for an app to swap its icon in Finder,
-/// Launchpad or Spotlight: they always show the standard icon. Each one but
-/// the standard is an image in `Assets.xcassets/AppIconChoices`, named
-/// `AppIcon-<Thema>-<Name>`. The raw value is what is stored; an unknown one
-/// falls back to the standard.
+/// Launchpad or Spotlight: they always show the standard icon. Each one is
+/// an image in `Assets.xcassets/AppIconChoices`, named `AppIcon-<Thema>-<Name>`,
+/// laid out on Apple's grid like the bundle's icon in the Dock (the body
+/// fills 824 of 1024 px): the Dock shows a set image as it is, so a fuller
+/// one looked larger than the standard. The standard's image is only its
+/// preview. The raw value is what is stored; an unknown one falls back to
+/// the standard.
 enum AppIconChoice: String, CaseIterable, Identifiable {
     case standard, white, champagne, brown, violet, graphite
     case flowerPower, geometric, memphis, olive, opArt, screenPrint
@@ -290,8 +293,7 @@ enum AppIconChoice: String, CaseIterable, Identifiable {
         }
     }
 
-    /// The image's name in the asset catalog; none for the standard, which
-    /// is the app's own icon.
+    /// The image the Dock shows; none for the standard, which is the app's own icon.
     var assetName: String? {
         let name: String
         switch self {
@@ -317,12 +319,9 @@ enum AppIconChoice: String, CaseIterable, Identifiable {
         return "AppIcon-\(name)"
     }
 
-    /// The icon as shown in the settings. The standard comes from the app
-    /// bundle, not from `NSApp.applicationIconImage`, which holds the chosen one.
-    var image: NSImage? {
-        guard let assetName else { return NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath) }
-        return NSImage(named: assetName)
-    }
+    /// The icon as shown in the settings, all on the same grid.
+    var image: NSImage? { NSImage(named: assetName ?? Self.standardPreviewName) }
+    static let standardPreviewName = "AppIcon-Schlicht-Standard"
 
     /// Shows this icon in the Dock and in ⌘-Tab while the app runs; the
     /// standard hands the Dock back to the bundle's icon.

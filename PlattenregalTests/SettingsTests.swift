@@ -62,6 +62,7 @@ extension AllTests {
             #expect(AppIconTheme.allCases.allSatisfy { $0.choices.count == 6 })
             #expect(AppIconTheme.plain.choices.first == .standard)
             #expect(AppIconChoice.standard.assetName == nil)
+            #expect(AppIconChoice.allCases.allSatisfy { $0.image != nil })
             for choice in AppIconChoice.allCases where choice != .standard {
                 let image = choice.assetName.flatMap { NSImage(named: $0) }
                 #expect(image != nil, "Bild fehlt: \(choice)")

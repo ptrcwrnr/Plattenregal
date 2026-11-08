@@ -10642,12 +10642,12 @@
         }
       }
     },
-    "Design: neues Design „Vinyl“ in kühlem Graphit mit hellblauen Akzenten, immer dunkel." : {
+    "Design: neues Design „Vinyl“ in kühlem Graphit, immer dunkel; dazu 18 App-Symbole fürs Dock." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Design: new “Vinyl” design in cool graphite with light blue accents, always dark."
+            "value" : "Design: new “Vinyl” design in cool graphite, always dark; plus 18 app icons for the Dock."
           }
         }
       }

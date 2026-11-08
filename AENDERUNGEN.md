@@ -1,3 +1,11 @@
+# App-Symbole so groß wie das Original · 08.11.2026
+
+- **Vorher** wirkten die gewählten Symbole im Dock rund 10 % größer als das Standard-Symbol und die anderen Apps: macOS zeigt das Symbol einer App nach Apples Raster (sichtbarer Körper 824 von 1024 px), ein gesetztes Bild (`NSApp.applicationIconImage`) aber so, wie es ist – und die Vorlagen füllen 88 % ihrer Fläche.
+- **Jetzt** sind alle 17 Bilder aus den Vorlagen neu erzeugt, auf genau dieses Raster verkleinert und mittig (512 px, zusammen 5 MB). Dazu ein Vorschaubild `AppIcon-Schlicht-Standard`, damit „Standard“ in den Einstellungen gleich groß erscheint wie die anderen (vorher das Finder-Symbol der App, das macOS bei der installierten Fassung in einen grauen Rahmen setzt).
+- **„Was ist neu“ in 1.0.4:** die Design-Zeile nennt die App-Symbole mit („…, immer dunkel; dazu 18 App-Symbole fürs Dock.“), so bleibt es bei acht Zeilen; ebenso in `dist/Hinweise-1.0.4.md`.
+- **Geprüft:** alle Bilder vermessen (Körper 80 % der Fläche wie das Standard-Symbol in der Darstellung von macOS); 328 Tests bestanden (der Bildtest prüft jetzt auch die Vorschau des Standards); im Dock die Demo mit „Zeitung“ neben dem installierten Plattenregal mit Standard-Symbol fotografiert – beide gleich groß, so groß wie die übrigen Apps.
+- **Unverändert:** Bei geschlossener App zeigt das Dock das Standard-Symbol (dafür bräuchte es Stufe 2, ein Dock-Plugin).
+
 # Wählbare App-Symbole · 08.11.2026
 
 - **Neu:** Einstellungen → Darstellung → **App-Symbol**. 18 Symbole in drei Themen, je eine Reihe mit sechs: Schlicht (Standard und fünf weitere), Retro und Collage, jeweils mit Namen darunter (Deutsch und Englisch). Ein Klick wechselt das Symbol im Dock und im App-Umschalter sofort; die Wahl ist eine eigene Einstellung und bleibt beim Wechsel des Designs erhalten.

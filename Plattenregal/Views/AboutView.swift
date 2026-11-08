@@ -92,7 +92,7 @@ enum Changelog {
     static var entries: [Entry] {
         [
             Entry(version: "1.0.4", date: day(2026, 11, 6), changes: [
-                String(localized: "Design: neues Design „Vinyl“ in kühlem Graphit mit hellblauen Akzenten, immer dunkel."),
+                String(localized: "Design: neues Design „Vinyl“ in kühlem Graphit, immer dunkel; dazu 18 App-Symbole fürs Dock."),
                 String(localized: "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden."),
                 String(localized: "Tags: farbige Punkte statt Plaketten für „Gesucht“, „Verkauf“ und „Nicht in der Collection“."),
                 String(localized: "Einsortieren: Vorschlag im gezeigten Regal, „Sortierung prüfen“ mit übersichtlicher Leiste."),
