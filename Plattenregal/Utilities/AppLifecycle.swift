@@ -150,7 +150,7 @@ import ServiceManagement
         isInBackground = false
         NSApp.setActivationPolicy(.regular)
         // The Dock tile is new: it shows the chosen icon again.
-        AppPreferences.shared.appIcon.apply()
+        AppPreferences.shared.dockIcon.apply()
         ProcessInfo.processInfo.enableAutomaticTermination(Self.terminationReason)
         AppLog.info("App", "Wieder im Vordergrund")
         // A newer version found meanwhile shows now.

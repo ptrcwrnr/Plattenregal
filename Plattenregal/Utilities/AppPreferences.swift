@@ -15,6 +15,7 @@ import SwiftUI
         static let signatureDesign = "signatureDesign"
         static let drawnCovers = "drawnCovers"
         static let appIcon = "appIcon"
+        static let customAppIcon = "customAppIcon"
         static let menuBarSearch = "menuBarSearch"
         static let quickSearchHotKey = "quickSearchHotKey"
         static let quickSearchLook = "quickSearchLook"
@@ -47,9 +48,16 @@ import SwiftUI
         }
     }
     var language: AppLanguage { didSet { AppLanguage.store(language) } }
-    /// The icon in the Dock, free of the design: switching the design keeps
-    /// it. The standard by default.
-    var appIcon: AppIconChoice { didSet { store(appIcon.rawValue, Key.appIcon); appIcon.apply() } }
+    /// The chosen icon, free of the design: switching the design keeps it.
+    /// The standard by default. Shows only while `customAppIcon` is on, and
+    /// stays stored while it is off.
+    var appIcon: AppIconChoice { didSet { store(appIcon.rawValue, Key.appIcon); dockIcon.apply() } }
+    /// The switch for an own icon (Einstellungen → Darstellung → App-Symbol).
+    /// Off (the default, also for an icon chosen before the switch existed):
+    /// Dock and ⌘-Tab show the standard, and the Dock plug-in holds no image.
+    var customAppIcon: Bool { didSet { defaults.set(customAppIcon, forKey: Key.customAppIcon); dockIcon.apply() } }
+    /// The icon the Dock shows: the chosen one with the switch on, else the standard.
+    var dockIcon: AppIconChoice { customAppIcon ? appIcon : .standard }
     /// Drawn covers as in the demo (colour, artist, title) instead of the
     /// Discogs images. Off by default.
     var drawnCovers: Bool { didSet { defaults.set(drawnCovers, forKey: Key.drawnCovers) } }
@@ -116,6 +124,7 @@ import SwiftUI
         signatureDesign = defaults.string(forKey: Key.signatureDesign).flatMap(SignatureDesign.init) ?? .liquidGlass
         drawnCovers = defaults.bool(forKey: Key.drawnCovers)
         appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconChoice.init) ?? .standard
+        customAppIcon = defaults.bool(forKey: Key.customAppIcon)
         // On unless switched off; `bool(forKey:)` also reads "NO" from a launch argument.
         menuBarSearch = defaults.object(forKey: Key.menuBarSearch) == nil || defaults.bool(forKey: Key.menuBarSearch)
         quickSearchHotKey = defaults.object(forKey: Key.quickSearchHotKey) == nil || defaults.bool(forKey: Key.quickSearchHotKey)
@@ -146,6 +155,7 @@ import SwiftUI
         signatureDesign = .liquidGlass
         drawnCovers = false
         appIcon = .standard
+        customAppIcon = false
         menuBarSearch = true
         quickSearchHotKey = true
         quickSearchLook = .darkGlass

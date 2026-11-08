@@ -86,7 +86,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // The chosen icon from the start, so the Dock never shows the standard
         // first; the link to the Dock plug-in listens before it speaks.
         DockTileLink.shared.start()
-        AppPreferences.shared.appIcon.apply()
+        AppPreferences.shared.dockIcon.apply()
         do {
             if DemoMode.isActive {
                 // Sample collection in memory; the real database stays closed.

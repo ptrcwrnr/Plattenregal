@@ -56,6 +56,30 @@ extension AllTests {
             AppIconChoice.standard.apply()
         }
 
+        /// The switch for an own icon: off by default, also with an icon chosen
+        /// before it existed; off shows the standard and keeps the choice.
+        @Test func customAppIconIsOffByDefaultAndKeepsTheChoice() throws {
+            try withSignatureDefaults { defaults in
+                defaults.set("memphis", forKey: AppPreferences.Key.appIcon)
+                let preferences = AppPreferences(defaults: defaults)
+                #expect(preferences.customAppIcon == false)
+                #expect(preferences.appIcon == .memphis)
+                #expect(preferences.dockIcon == .standard)
+                preferences.customAppIcon = true
+                #expect(preferences.dockIcon == .memphis)
+                #expect(AppPreferences(defaults: defaults).customAppIcon)
+                preferences.customAppIcon = false
+                #expect(preferences.dockIcon == .standard)
+                #expect(AppPreferences(defaults: defaults).appIcon == .memphis)
+                #expect(AppPreferences(defaults: defaults).customAppIcon == false)
+                preferences.customAppIcon = true
+                preferences.reset()
+                #expect(preferences.customAppIcon == false)
+                #expect(AppPreferences(defaults: defaults).customAppIcon == false)
+            }
+            AppIconChoice.standard.apply()
+        }
+
         /// Six icons per theme, the standard first; each one but the standard
         /// has its image in the app.
         @Test func everyAppIconHasItsImage() {

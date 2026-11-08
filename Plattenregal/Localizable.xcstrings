@@ -190,6 +190,16 @@
         }
       }
     },
+    "Aus: das Standard-Symbol. Ein gewähltes Symbol bleibt gemerkt, falls du es wieder einschaltest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off: the default icon. A chosen icon is remembered in case you turn it back on."
+          }
+        }
+      }
+    },
     "Automatische Sicherungen der Fach-Belegung. Wie viele bleiben, legst du unter „Sicherung“ fest." : {
       "localizations" : {
         "en" : {
@@ -336,6 +346,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editorial"
+          }
+        }
+      }
+    },
+    "Eigenes App-Symbol" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom app icon"
           }
         }
       }

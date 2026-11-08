@@ -358,7 +358,7 @@ enum AppIconChoice: String, CaseIterable, Identifiable {
         // The plug-in asks when it comes into the Dock – at the app's launch
         // often after the first announcement, and again after the Dock restarts.
         center.addObserver(forName: DockTileMessage.needsIcon, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { DockTileLink.shared.announce(AppPreferences.shared.appIcon) }
+            MainActor.assumeIsolated { DockTileLink.shared.announce(AppPreferences.shared.dockIcon) }
         }
         center.addObserver(forName: DockTileMessage.received, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated { DockTileLink.shared.isLoaded = true }

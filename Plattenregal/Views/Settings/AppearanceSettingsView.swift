@@ -97,24 +97,6 @@ struct AppearanceSettingsView: View {
                         .disabled(DemoMode.isActive)
                 }
             }
-            // Free of the design: switching the design keeps the icon.
-            SettingsCard(title: String(localized: "App-Symbol"),
-                         subtitle: String(localized: "Für das Dock und den App-Umschalter (⌘-Tab), unabhängig vom Design. Finder, Launchpad und Spotlight zeigen immer das Standard-Symbol.")) {
-                ForEach(AppIconTheme.allCases) { theme in
-                    if theme != AppIconTheme.allCases.first { Divider() }
-                    SettingsRow(title: theme.title) {
-                        HStack(spacing: AppStyle.hairSpacing) {
-                            ForEach(theme.choices) { choice in
-                                AppIconOption(choice: choice, selected: preferences.appIcon == choice) {
-                                    withAnimation(AppStyle.quickAnimation) { preferences.appIcon = choice }
-                                }
-                            }
-                        }
-                    }
-                }
-                Divider()
-                SettingsNote(closedAppHint)
-            }
             SettingsCard(title: String(localized: "Rubriken"),
                          subtitle: String(localized: "Eigene Namen für die Rubriken oben im Fenster, höchstens \(PageNames.maxLength) Zeichen. Ein leeres Feld gibt der Rubrik ihren ursprünglichen Namen zurück.")) {
                 ForEach(Destination.allCases) { page in
@@ -157,6 +139,37 @@ struct AppearanceSettingsView: View {
                         .disabled(StatisticsSection.ordered(from: statisticsOrder) == StatisticsSection.allCases)
                 }
             }
+            // Last on the page: optional, off by default. Free of the design:
+            // switching the design keeps the icon.
+            SettingsCard(title: String(localized: "App-Symbol"),
+                         subtitle: String(localized: "Für das Dock und den App-Umschalter (⌘-Tab), unabhängig vom Design. Finder, Launchpad und Spotlight zeigen immer das Standard-Symbol.")) {
+                SettingsRow(title: String(localized: "Eigenes App-Symbol"),
+                            hint: preferences.customAppIcon ? nil
+                                : String(localized: "Aus: das Standard-Symbol. Ein gewähltes Symbol bleibt gemerkt, falls du es wieder einschaltest.")) {
+                    Toggle("Eigenes App-Symbol", isOn: $preferences.customAppIcon.animation(AppStyle.standardAnimation))
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                // The choices pour out below their switch and back in.
+                if preferences.customAppIcon {
+                    VStack(alignment: .leading, spacing: AppStyle.rowSpacing) {
+                        ForEach(AppIconTheme.allCases) { theme in
+                            Divider()
+                            SettingsRow(title: theme.title) {
+                                HStack(spacing: AppStyle.hairSpacing) {
+                                    ForEach(theme.choices) { choice in
+                                        AppIconOption(choice: choice, selected: preferences.appIcon == choice) {
+                                            withAnimation(AppStyle.quickAnimation) { preferences.appIcon = choice }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Divider()
+                        SettingsNote(closedAppHint)
+                    }
+                    .transition(AppStyle.funnelTransition())
+                }
+            }
         }
         .animation(AppStyle.quickAnimation, value: preferences.signatureDesign)
         // Changes every page's look: worth a line in the protocol for bug reports.
@@ -165,6 +178,9 @@ struct AppearanceSettingsView: View {
         }
         .onChange(of: preferences.appIcon) { old, new in
             AppLog.info("Einstellungen", "App-Symbol: \(new.rawValue) statt \(old.rawValue)")
+        }
+        .onChange(of: preferences.customAppIcon) { _, on in
+            AppLog.info("Einstellungen", "Eigenes App-Symbol \(on ? "an" : "aus")")
         }
     }
 }
