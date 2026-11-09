@@ -4,7 +4,7 @@ import SwiftData
 /// The round button at the bottom right of the window, on every page. A click
 /// opens the page's actions in a column straight above it, each the size of
 /// the button itself, springing out one after the other
-/// (`AppStyle.openAnimation`); they close again calmly, and so does Esc, a
+/// (`AppStyle.floatingOpenAnimation`); they close again calmly, and so does Esc, a
 /// click beside them or choosing one. Which actions and in which order is
 /// `FloatingAction.actions(on:)`.
 ///
@@ -196,10 +196,11 @@ struct FloatingControls: View {
         withAnimation(Self.closeAnimation) { expanded = false }
     }
 
-    /// The app's opening spring (`AppStyle.openAnimation`) and calm closing;
-    /// with reduce motion the column only fades in and out (see `body`).
-    private static var openAnimation: Animation { AppStyle.openAnimation ?? .default }
-    private static var closeAnimation: Animation { AppStyle.closeAnimation ?? .default }
+    /// Springing out and calm closing, both ending on time (see
+    /// `AppStyle.floatingOpenAnimation`); with reduce motion the column only
+    /// fades in and out (see `body`).
+    private static var openAnimation: Animation { AppStyle.floatingOpenAnimation }
+    private static var closeAnimation: Animation { AppStyle.floatingCloseAnimation }
 }
 
 /// The round button and its actions. Unlike `.plain`, a disabled one isn't
@@ -216,7 +217,7 @@ private struct FloatingButtonStyle: ButtonStyle {
 
 /// The three dots of the round button: side by side while the column is
 /// closed; opening it, they go up into a line like the column itself – the
-/// left one first, the same spring and the same beat apart – and come back
+/// left one first, the same curve and the same beat apart – and come back
 /// calmly together. Drawn instead of the `ellipsis` symbol, whose dots can
 /// only turn as a whole.
 private struct ActionDots: View {

@@ -389,7 +389,8 @@ enum AppStyle {
     static var layoutAnimation: Animation? { reduceMotion ? nil : moveAnimation }
     /// Something opened from a button springs out of it, a little past its
     /// end and back: the search from its magnifying glass (which bounces
-    /// once), the actions opening above the round button. Only these – page
+    /// once); the actions above the round button take a curve of the same
+    /// look (`floatingOpenAnimation`). Only these – page
     /// switches, moving records and panels stay calm (the selection pill has
     /// its own springs, `pillLeadAnimation`).
     /// `nil` (= instant) with reduce motion; callers that should still fade
@@ -397,6 +398,19 @@ enum AppStyle {
     static var openAnimation: Animation? { reduceMotion ? nil : .bouncy(duration: 0.45, extraBounce: 0.12) }
     /// Closing it again: calm, without the spring.
     static var closeAnimation: Animation? { layoutAnimation }
+    /// The column of the round button and its three dots (`FloatingControls`)
+    /// spring out like `openAnimation` – about 10 % past their place at
+    /// 0.28 s, then back –, but on a curve that ends after its duration. The
+    /// spring settled for a second, the window drawn anew in every frame for
+    /// movements too small to see: opening and closing cost about twice the
+    /// main thread's time (measured: Klassisch 0.55 → 0.28 s, Modern with its
+    /// glass 0.65 → 0.55 s). With reduce motion only the fade of
+    /// `floatingCloseAnimation`.
+    static var floatingOpenAnimation: Animation {
+        reduceMotion ? floatingCloseAnimation : .timingCurve(0.34, 1.56, 0.64, 1, duration: 0.5)
+    }
+    /// Closing it again: calm, ending on time as well.
+    static let floatingCloseAnimation = Animation.easeOut(duration: 0.3)
     /// The curve of `layoutAnimation`, for things that also animate with
     /// reduce motion on (they choose their own fallback).
     static let moveAnimation = Animation.smooth(duration: 0.3)
