@@ -89,7 +89,7 @@ enum Changelog {
     /// „Korrekturen“ last; no „jetzt“, no „vorher“, nothing technical.
     static var entries: [Entry] {
         [
-            Entry(version: "1.0.4", date: day(2026, 11, 6), changes: [
+            Entry(version: "1.0.4", date: day(2026, 11, 9), changes: [
                 String(localized: "Design: neues Design „Vinyl“ in kühlem Graphit, immer dunkel; dazu 18 App-Symbole fürs Dock (experimentell)."),
                 String(localized: "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden; Tags als farbige Punkte."),
                 String(localized: "Einsortieren: Vorschlag im gezeigten Regal, „Sortierung prüfen“ mit übersichtlicher Leiste."),
@@ -97,7 +97,7 @@ enum Changelog {
                 String(localized: "Fenster: der runde Knopf unten rechts auf jeder Seite, seine Aktionen klappen nach oben auf."),
                 String(localized: "Leistung: flüssigere Statistik und Designwechsel, ruhiges Anlegen des Fensters an den Bildschirmrand."),
                 String(localized: "Netzwerk: keine eingehenden Verbindungen mehr, Apple TV vorerst ausgeblendet."),
-                String(localized: "Korrekturen: Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste."),
+                String(localized: "Korrekturen: Fenster in Klassisch wieder verschiebbar, Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste."),
             ]),
             Entry(version: "1.0.3", date: day(2026, 11, 4), changes: [
                 String(localized: "Fenster: der rote Knopf beendet Plattenregal wie ⌘Q oder schickt es in den Hintergrund."),

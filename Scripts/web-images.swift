@@ -26,8 +26,8 @@ let pictures = [
     Picture(name: "shelf", shot: "shelf", crop: nil, width: 1600),
     Picture(name: "card", shot: "detail", crop: CGRect(x: 480, y: 152, width: 1600, height: 854), width: 1200),
     Picture(name: "collection", shot: "modern", crop: nil, width: 1600),
-    Picture(name: "settings", shot: "modern-settings", crop: CGRect(x: 0, y: 0, width: 1720, height: 1046), width: 1400),
-    Picture(name: "sortcheck", shot: "sortcheck", crop: CGRect(x: 722, y: 154, width: 1116, height: 1144), width: 1000),
+    Picture(name: "settings", shot: "modern-settings", crop: CGRect(x: 0, y: 0, width: 1720, height: 875), width: 1400),
+    Picture(name: "sortcheck", shot: "sortcheck", crop: CGRect(x: 722, y: 154, width: 1116, height: 654), width: 1000),
 ]
 
 func fail(_ message: String) -> Never {

@@ -10772,12 +10772,12 @@
         }
       }
     },
-    "Korrekturen: Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste." : {
+    "Korrekturen: Fenster in Klassisch wieder verschiebbar, Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fixes: refresh ring, moving statistics sections, menu bar menu."
+            "value" : "Fixes: window movable again in Classic, refresh ring, moving statistics sections, menu bar menu."
           }
         }
       }
