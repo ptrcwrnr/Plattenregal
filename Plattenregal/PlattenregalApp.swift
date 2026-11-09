@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         // Only here: macOS hands over the open event while launching finishes.
         let atLogin = AppLifecycle.launchedAsLoginItem
+        AppMenuSymbols.start()
         ShelfQuickSearch.shared.start()
         AppLifecycle.shared.start(launchedAtLogin: atLogin)
         // Once a day, quietly; not in the demo or preview starts.
@@ -51,6 +52,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         AppLifecycle.shared.leaveBackground()
         return true
+    }
+}
+
+/// macOS puts a gear in front of „Einstellungen …“ in the Plattenregal menu,
+/// the only entry there with a symbol. It is taken off as soon as SwiftUI
+/// adds the entry (only after launch, and anew now and then when it builds
+/// the main menu again), and once more whenever a menu of the menu bar opens.
+@MainActor enum AppMenuSymbols {
+    private static var observers: [NSObjectProtocol] = []
+
+    static func start() {
+        guard observers.isEmpty else { return }
+        clear()
+        observers = [NSMenu.didAddItemNotification, NSMenu.didBeginTrackingNotification].map { name in
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { _ in
+                MainActor.assumeIsolated { clear() }
+            }
+        }
+    }
+
+    /// The settings entry of the app's own menu, found by its shortcut ⌘,:
+    /// SwiftUI's entry runs its own action, not AppKit's `showSettingsWindow:`.
+    private static func clear() {
+        for item in NSApp.mainMenu?.items.first?.submenu?.items ?? []
+        where item.keyEquivalent == "," && item.keyEquivalentModifierMask == .command && item.image != nil {
+            item.image = nil
+        }
     }
 }
 
@@ -201,16 +229,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 AboutCommand()
                 UpdateCommand()
             }
-            CommandGroup(replacing: .appTermination) { QuitCommands() }
-            CommandGroup(replacing: .help) { HelpCommands() }
-            CommandGroup(after: .appSettings) {
-                if DemoMode.isActive {
-                    Button("Demo beenden") { DemoMode.end() }
-                    Button("Demo neu starten") { DemoMode.restart() }
-                } else {
-                    Button("Demo starten") { DemoMode.confirmStart() }
-                }
+            // The demo near the end, right above quitting: rarely needed,
+            // and not between the settings and the app's own entries.
+            CommandGroup(replacing: .appTermination) {
+                DemoCommands()
+                Divider()
+                QuitCommands()
             }
+            CommandGroup(replacing: .help) { HelpCommands() }
         }
         Window("Über Plattenregal", id: AboutView.windowID) {
             AboutView().appAppearance().windowMinimizeBehavior(.disabled)
@@ -270,6 +296,18 @@ private struct ReleasedInBackground<Content: View>: View {
             let search = ShelfQuickSearch.shared
             search.openMainWindow = { [openWindow] in openWindow(id: DemoMode.mainWindowID) }
             UpdateChecker.shared.openWindow = { [openWindow] in openWindow(id: UpdateView.windowID) }
+        }
+    }
+}
+
+/// Starting the demo, or ending and restarting it while it runs.
+private struct DemoCommands: View {
+    var body: some View {
+        if DemoMode.isActive {
+            Button("Demo beenden") { DemoMode.end() }
+            Button("Demo neu starten") { DemoMode.restart() }
+        } else {
+            Button("Demo starten") { DemoMode.confirmStart() }
         }
     }
 }
