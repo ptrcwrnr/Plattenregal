@@ -108,6 +108,8 @@ private struct PanelEscapeMonitor: NSViewRepresentable {
                 guard let self, event.keyCode == 53,
                       event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty,
                       let window = self.window, event.window === window, window.attachedSheet == nil,
+                      // The open column of the round button closes first.
+                      FloatingActionsEscape.window !== window,
                       self.isShown() else { return event }
                 self.close()
                 return nil

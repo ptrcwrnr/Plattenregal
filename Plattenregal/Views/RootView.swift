@@ -31,9 +31,10 @@ enum Destination: String, CaseIterable, Identifiable {
     }
     /// Pages with the search field in the toolbar (⌘F, see `ToolbarSearchField`).
     var hasSearch: Bool { self != .statistics }
-    /// Pages with grid and list, and with the round button of actions at the
-    /// bottom right (see `FloatingControls`).
-    var hasActions: Bool { self == .collection || self == .wantlist }
+    /// Pages whose end gets room for the round button at the bottom right
+    /// (`floatingClearance`, see `FloatingControls`). The shelf page makes
+    /// that room itself, under its compartment's covers and list.
+    var padsForFloatingButton: Bool { self != .shelf }
 }
 
 struct RootView: View {
@@ -117,14 +118,14 @@ struct RootView: View {
 
     /// No sidebar: one bar centered in the toolbar, the page switch and the
     /// search behind its magnifying glass (⌘F), so the pages start right
-    /// below it. On collection
-    /// and wantlist grid or list, sync and settings fan out of the round
-    /// button at the bottom right (see `FloatingControls`). The settings are
+    /// below it. On every page
+    /// the page's actions open above the round button at the bottom right
+    /// (see `FloatingControls`). The settings are
     /// also where a Mac app has them: Plattenregal menu and ⌘,.
     private var library: some View {
         pages
             .environment(\.searchRequests, searchRequests)
-            .overlay(alignment: .bottomTrailing) { FloatingControls(selection: destination, shelfRequests: shelfRequests) }
+            .overlay(alignment: .bottomTrailing) { FloatingControls(selection: destination, shelfRequests: shelfRequests, statistics: statisticsModel) }
             // Names the window in the Fenster menu and Mission Control; the
             // toolbar shows the page switch instead of a title.
             .navigationTitle("Plattenregal")
@@ -225,9 +226,9 @@ struct RootView: View {
     private var pages: some View {
         PageStack(pages: Destination.allCases, selection: destination) {
             pageContent($0)
-                // Room at the end of the pages with the floating button, so
-                // the last covers and rows scroll clear of it.
-                .safeAreaPadding(.bottom, $0.hasActions ? AppStyle.floatingClearance : 0)
+                // Room at the end of the pages, so the last covers, rows and
+                // cards scroll clear of the round button.
+                .safeAreaPadding(.bottom, $0.padsForFloatingButton ? AppStyle.floatingClearance : 0)
                 .appPageEnvironment(context)
         }
         // The stack reaches up to the window's top edge, so each page's own

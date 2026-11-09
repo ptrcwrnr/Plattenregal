@@ -198,3 +198,36 @@ extension AllTests {
         }
     }
 }
+
+extension AllTests {
+    /// The column above the round button (`FloatingControls`).
+    struct FloatingActionTests {
+        /// From the button upwards, as asked for each page.
+        @Test func actionsPerPage() {
+            #expect(FloatingAction.actions(on: .collection) == [.reload, .layout, .settings])
+            #expect(FloatingAction.actions(on: .wantlist) == [.reload, .layout, .settings])
+            #expect(FloatingAction.actions(on: .shelf) == [.sortingIn, .history, .settings])
+            #expect(FloatingAction.actions(on: .statistics) == [.reload, .settings])
+        }
+
+        /// Every page has the column, each action at most once and the
+        /// settings at the top; every action belongs to some page.
+        @Test func everyPageEndsWithSettings() {
+            for page in Destination.allCases {
+                let actions = FloatingAction.actions(on: page)
+                #expect(actions.last == .settings, "\(page)")
+                #expect(Set(actions).count == actions.count, "\(page)")
+            }
+            let used = Set(Destination.allCases.flatMap { FloatingAction.actions(on: $0) })
+            #expect(used == Set(FloatingAction.allCases))
+        }
+
+        /// The open column on the page with the most actions: margin, button
+        /// and three more buttons with their gaps.
+        @Test func columnReachCoversTheTallestColumn() {
+            let step = AppStyle.floatingButtonSize + AppStyle.floatingStackSpacing
+            #expect(FloatingAction.columnReach == AppStyle.floatingMargin + AppStyle.floatingButtonSize + 3 * step)
+            #expect(FloatingAction.columnReach > AppStyle.floatingClearance)
+        }
+    }
+}

@@ -91,10 +91,10 @@ enum Changelog {
         [
             Entry(version: "1.0.4", date: day(2026, 11, 6), changes: [
                 String(localized: "Design: neues Design „Vinyl“ in kühlem Graphit, immer dunkel; dazu 18 App-Symbole fürs Dock (experimentell)."),
-                String(localized: "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden."),
-                String(localized: "Tags: farbige Punkte statt Plaketten für „Gesucht“, „Verkauf“ und „Nicht in der Collection“."),
+                String(localized: "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden; Tags als farbige Punkte."),
                 String(localized: "Einsortieren: Vorschlag im gezeigten Regal, „Sortierung prüfen“ mit übersichtlicher Leiste."),
                 String(localized: "Einstellungen: aufgeräumt, mit eigenen Namen für die Rubriken, Intervall für Updates und Klick in der Menüleisten-Suche."),
+                String(localized: "Fenster: der runde Knopf unten rechts auf jeder Seite, seine Aktionen klappen nach oben auf."),
                 String(localized: "Leistung: flüssigere Statistik und Designwechsel, ruhiges Anlegen des Fensters an den Bildschirmrand."),
                 String(localized: "Netzwerk: keine eingehenden Verbindungen mehr, Apple TV vorerst ausgeblendet."),
                 String(localized: "Korrekturen: Ring beim Aktualisieren, Verschieben der Statistik-Bereiche, Menü in der Menüleiste."),

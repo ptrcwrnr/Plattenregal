@@ -537,8 +537,9 @@ struct TableRowHover: NSViewRepresentable {
             let visible = table.enclosingScrollView.map { $0.contentView.convert($0.contentView.bounds, to: table) } ?? table.visibleRect
             guard hovered >= 0, visible.contains(point) else { show(-1); return }
             // Still the same row away from the edges: nothing new can lie
-            // over it there, so no hit test (it walks the whole window).
-            let edge = AppStyle.shelfFloatingClearance
+            // over it there, so no hit test (it walks the whole window). At
+            // the bottom the round button's open column can.
+            let edge = FloatingAction.columnReach
             if hovered == row, point.y > visible.minY + edge, point.y < visible.maxY - edge { return }
             guard window.contentView?.hitTest(pointer)?.isDescendant(of: table) == true else { show(-1); return }
             show(hovered)

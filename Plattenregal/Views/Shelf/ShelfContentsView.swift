@@ -564,7 +564,7 @@ struct ShelfContentsView: View, Equatable {
             revealRequest: focusScroll?.layout == .list ? focusScroll?.requestID : nil
         ))
         .id(loadedShelfID)
-        // Its last rows end above both buttons.
-        .appBottomTableCard(clearance: AppStyle.shelfFloatingClearance)
+        // Its last rows end above the round button.
+        .appBottomTableCard()
     }
 }

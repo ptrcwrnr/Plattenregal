@@ -10712,22 +10712,22 @@
         }
       }
     },
-    "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden." : {
+    "Listen: füllen das Fenster, leuchten unter der Maus auf, Spalten lassen sich verschieben und ausblenden; Tags als farbige Punkte." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lists: fill the window, light up under the pointer, columns can be moved and hidden."
+            "value" : "Lists: fill the window, light up under the pointer, columns can be moved and hidden; tags as colored dots."
           }
         }
       }
     },
-    "Tags: farbige Punkte statt Plaketten für „Gesucht“, „Verkauf“ und „Nicht in der Collection“." : {
+    "Fenster: der runde Knopf unten rechts auf jeder Seite, seine Aktionen klappen nach oben auf." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tags: colored dots instead of badges for “Looking for”, “For sale” and “Not in the collection”."
+            "value" : "Window: the round button at the bottom right of every page, its actions open upwards."
           }
         }
       }

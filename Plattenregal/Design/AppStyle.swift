@@ -73,18 +73,26 @@ enum AppStyle {
     /// at 300 pt titles were cut to a few letters, 330 pt hardly helped
     /// the longest names.
     static let quickSearchWidth: CGFloat = 320
-    /// The round button at the bottom right and the actions around it.
+    /// The round button at the bottom right, and every action in the column
+    /// above it the same size (see `FloatingControls`).
     static let floatingButtonSize: CGFloat = 52
-    static let floatingItemSize: CGFloat = 40
     /// Its distance from the window's edges.
     static let floatingMargin: CGFloat = 20
     /// Room at the end of every page, so content scrolls clear of the button.
     static let floatingClearance: CGFloat = floatingButtonSize + floatingMargin + itemSpacing
-    /// On the shelf page two buttons stand on top of each other („+“ and
-    /// the history, `floatingStackSpacing` apart): room so a list's last rows
-    /// end above both.
+    /// Between the buttons of the open column.
     static let floatingStackSpacing: CGFloat = rowSpacing
-    static let shelfFloatingClearance: CGFloat = floatingClearance + floatingButtonSize + floatingStackSpacing
+    /// How small an action is while it waits inside the button.
+    static let floatingHiddenScale: CGFloat = 0.3
+    /// The actions spring out one after the other, this much apart.
+    static let floatingStagger: TimeInterval = 0.03
+    /// A round button held down gives way to this size.
+    static let floatingPressedScale: CGFloat = 0.94
+    /// The three dots drawn in the button (`ActionDots`), sized like the
+    /// `ellipsis` symbol in `floatingSymbol` they replace: diameter and the
+    /// distance between their centers.
+    static let floatingDotSize: CGFloat = 3.5
+    static let floatingDotSpacing: CGFloat = 6
     // MARK: Switching a whole area
     // A page (`PageStackView.show`) with the toolbar above it, a settings
     // tab, another cabinet: everything that changes fades out quickly on the
@@ -284,10 +292,9 @@ enum AppStyle {
     static let changesMaxHeight: CGFloat = 240
     /// The little chevron of a menu button, the arrow between two places.
     static let indicatorSymbol = Font.caption2.weight(.semibold)
-    /// The glyph in the large round floating button (see `FloatingControls`).
+    /// The glyph in the round floating button and in every action of its
+    /// column (see `FloatingControls`).
     static let floatingSymbol = Font.title3.weight(.semibold)
-    /// The glyph in the smaller actions fanned out around it.
-    static let floatingItemSymbol = Font.body.weight(.medium)
 
     // MARK: Colors
     // All dynamic/system-based so Light and Dark mode stay correct automatically.
@@ -382,7 +389,7 @@ enum AppStyle {
     static var layoutAnimation: Animation? { reduceMotion ? nil : moveAnimation }
     /// Something opened from a button springs out of it, a little past its
     /// end and back: the search from its magnifying glass (which bounces
-    /// once), the actions fanned out of the round button. Only these – page
+    /// once), the actions opening above the round button. Only these – page
     /// switches, moving records and panels stay calm (the selection pill has
     /// its own springs, `pillLeadAnimation`).
     /// `nil` (= instant) with reduce motion; callers that should still fade

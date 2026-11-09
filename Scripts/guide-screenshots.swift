@@ -72,7 +72,7 @@ struct Shot {
 let shots: [Shot] = [
     Shot(name: "collection", arguments: ["--preview-page=Collection"], crop: .top(0.70), maxWidth: 1600),
     Shot(name: "fan", arguments: ["--preview-page=Collection", "--preview-actions"],
-         crop: .bottomRight(width: 318, height: 182), maxWidth: 700),
+         crop: .bottomRight(width: 490, height: 280), maxWidth: 900),
     Shot(name: "shelf", arguments: ["--preview-page=Regal"], crop: .top(0.78), maxWidth: 1600),
     Shot(name: "sortin", arguments: ["--preview-page=Regal", "--preview-sortin"],
          crop: .centered(width: 660, y: 76, height: 639), maxWidth: 1100),
