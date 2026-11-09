@@ -1,3 +1,9 @@
+# DMG 1.0.4 mit den Zeitkurven des runden Knopfs neu gebaut · 09.11.2026
+
+- **Tests** zum Eintrag darunter nachgeholt, nachdem der Bildschirm entsperrt war: 334 bestanden. Das Glas von Modern bleibt interaktiv (entschieden).
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release nach `clean`), 14 869 650 Bytes, SHA-256 `0de7d3cb…0450946f`, in `dist/Hinweise-1.0.4.md` eingetragen; die DMG von 11:16 (`f234bd00…`) ist überholt. Der erste Versuch brach ab, weil genau diese alte DMG noch eingehängt war (das Skript verlangt dann das Auswerfen); ausgeworfen, von dort lief nichts.
+- **Geprüft:** `hdiutil verify` gültig; in der eingehängten DMG App 1.0.4 (102031), nur arm64, `codesign --verify --deep --strict` ohne Befund, Widget und Dock-Plugin dabei, Handbücher identisch mit dem Repository, `floatingOpenAnimation`/`floatingCloseAnimation` im Programm, keine Vorschau-Schalter im Release. Nicht notarisiert, nicht veröffentlicht, nicht in `/Programme` installiert.
+
 # Runder Knopf: Mehrarbeit beim Auf- und Zuklappen gemessen, Federn durch Zeitkurven ersetzt · 09.11.2026
 
 - **Gemessen** (Demo, je frischer Start, Rechenzeit der App, Zeiger abseits der Cover; Debug und Release gleich – die Zeit liegt in SwiftUI und Core Animation, nicht im eigenen Code): Nicht das erste Mal ist teuer, sondern **jedes** Auf- und Zuklappen, Modern 0,65 s, Klassisch 0,55 s. Die Aktionen selbst sind günstig: Listenansicht 0,21–0,23 s, Einstellungen 0,30 s (ebenso über das Menü). Der alte Fächer (Stand `7c2876d`) kostete genauso viel (0,61–0,65 s) – der Umbau hatte nichts hinzugefügt. Ruht der Zeiger nur über dem Knopf: nichts. Unser Code lief pro Bild nicht (Time Profiler: kein Aufruf aus Plattenregal, nur Zeichnen und Layout des Fensters).
