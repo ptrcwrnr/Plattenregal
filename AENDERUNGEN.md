@@ -1,3 +1,8 @@
+# DMG 1.0.4 mit dem runden Knopf auf jeder Seite neu gebaut · 09.11.2026
+
+- **DMG** `dist/Plattenregal-1.0.4.dmg` neu (`Scripts/make-dmg.sh`, Release nach `clean`), 14 MB (14 864 768 Bytes), SHA-256 `4140fef4…554a5da8a`, in `dist/Hinweise-1.0.4.md` eingetragen; die DMG vom 08.11. ist überholt. Version bleibt 1.0.4 (102031). Enthält den runden Knopf auf jeder Seite mit nach oben aufklappenden Aktionen (Eintrag darunter) und die neu gerenderten Handbücher (`Plattenregal/Handbuch.pdf`, `Handbook.pdf`, neues Bild des Knopfs).
+- **Geprüft:** `hdiutil verify` gültig; in der eingehängten DMG App 1.0.4 (102031), nur arm64, `codesign --verify --deep --strict` ohne Befund, Widget und Dock-Plugin dabei, beide Handbücher identisch mit dem Repository, `FloatingActionsEscape` im Programm (Symbol), neue englische Zeile „Window: …“ im Katalog der App, keine Vorschau-Schalter (`--preview-actions`, `--preview-design-cycle`) im Release. 334 Tests bestanden. Nicht notarisiert, nicht veröffentlicht, nicht in `/Programme` installiert.
+
 # Runder Knopf auf jeder Seite, Aktionen klappen nach oben auf · 09.11.2026
 
 - **Vorher** fächerte der runde Knopf nur in Collection und Wantlist seine drei Aktionen auf einem Viertelkreis auf, kleiner als er selbst (40 statt 52 pt, kleineres Symbol); das Regal hatte stattdessen zwei feste Knöpfe übereinander („+“ und Verlauf), die Statistik gar keinen.
