@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<title>Plattenregal – Bilder zu Updates</title>
+<!--
+  Marketing-Bilder zu neuen Versionen, ohne Cover und ohne Sammlungswert (darf ins Repository):
+  - je Version eine Karte für Threads/Instagram, 1080 × 1350 (id update-<Version>),
+    jede in ihrer eigenen Farbe (Liste COLORS, der Reihe nach, oder "color" in RELEASES);
+  - eine Zusammenfassung „Neu seit …“ mit den besten Punkten (HIGHLIGHTS) als Beitrag
+    1080 × 1350 (seit-post) und als Story 1080 × 1920 (seit-story; oben und unten je
+    rund 220 px frei für die Bedienelemente von Instagram).
+  Rendern: swift Scripts/make-marketing.swift --updates [id …] → Marketing/Bilder/<id>.jpg.
+  Maße hier in CSS-Pixeln, das Skript rendert in doppelter Größe.
+  Neue Version: oben in RELEASES eintragen (2–5 Punkte, kurze Zeilen), bei Bedarf HIGHLIGHTS
+  und SINCE anpassen. Die Datei lässt sich auch im Browser öffnen und zeigt alle Bilder.
+-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=block">
+<style>
+  :root {
+    --serif: "New York", ui-serif, "Source Serif 4", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #888; padding: 20px; display: grid; gap: 20px; justify-content: start; -webkit-font-smoothing: antialiased; }
+  /* Beim Rendern nur das gewählte Bild, oben links (make-marketing.swift setzt data-only und .only) */
+  [data-only] body { padding: 0; background: none; }
+  [data-only] .frame:not(.only) { display: none; }
+
+  .frame {
+    position: relative; overflow: hidden; width: 540px; height: 675px;
+    color: var(--ink); font-family: var(--sans);
+    background: radial-gradient(90% 55% at 50% 0%, var(--top) 0%, transparent 100%), linear-gradient(180deg, var(--mid) 0%, var(--low) 100%);
+  }
+  .frame.story { height: 960px; }
+  .big { position: absolute; right: -15px; top: 75px; font: 600 200px/1 var(--serif); letter-spacing: -0.04em; color: var(--ink); opacity: 0.06; white-space: nowrap; }
+  .page { position: absolute; inset: 0; padding: 42px; display: flex; flex-direction: column; }
+  .story .page { padding: 100px 44px 115px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand img { width: 36px; height: 36px; }
+  .brand span { font: 600 18px/1 var(--serif); }
+  .kicker { margin-top: 40px; font: 600 13px/1 var(--sans); letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+  .frame h1 { margin-top: 12px; font: 600 46px/1.02 var(--serif); letter-spacing: -0.02em; }
+  .story h1 { font-size: 52px; }
+  .rule { width: 42px; height: 2.5px; border-radius: 2px; background: var(--accent); margin-top: 20px; }
+  ol { list-style: none; padding: 0; counter-reset: n; flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; margin: 12px 0; }
+  li { counter-increment: n; position: relative; padding-left: 44px; }
+  li::before { content: counter(n); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--dot); color: var(--dot-ink); font: 600 14.5px/28px var(--serif); text-align: center; }
+  li h2 { font: 600 21px/1.15 var(--serif); letter-spacing: -0.01em; }
+  li p { margin-top: 3px; font: 400 14px/1.35 var(--sans); color: var(--muted); }
+  .story li { padding-left: 48px; }
+  .story li::before { width: 31px; height: 31px; font-size: 16px; line-height: 31px; }
+  .story li h2 { font-size: 25px; }
+  .story li p { font-size: 15.5px; }
+  .foot { display: flex; align-items: center; gap: 10px; }
+  .pill { padding: 9px 17px; border-radius: 999px; background: var(--dot); color: var(--dot-ink); font: 600 14px/1 var(--sans); }
+  .meta { font: 500 12.5px/1.3 var(--sans); color: var(--muted); }
+  .record { position: absolute; right: -85px; bottom: -110px; width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, var(--accent) 0 15%, #111 15.4% 16.6%, transparent 16.8%), repeating-radial-gradient(circle, #121317 0 1.5px, #1b1d22 1.5px 3px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5), inset 0 0 0 5px #0e0f12; }
+  .story .record { right: -95px; bottom: -125px; width: 280px; height: 280px; }
+  .record::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 200deg, transparent 0 8%, rgba(255,255,255,0.10) 12%, transparent 18% 58%, rgba(255,255,255,0.07) 62%, transparent 68%); }
+  .record i { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: var(--low); }
+</style>
+<body>
+<script>
+  // Farben der Karten, der Reihe nach je Version (älteste zuerst). top/mid/low: Verlauf,
+  // accent: Kennzeile, Strich, Plattenmitte; dot: Ziffern und Knopf mit dotInk als Schrift.
+  const COLORS = {
+    petrol:    { top: "#2A6273", mid: "#1D4C5B", low: "#0F3340", accent: "#E2B660", dot: "#E2B660", dotInk: "#293C39", ink: "#F4EFE5", muted: "rgba(244,239,229,0.74)" },
+    nacht:     { top: "#1B2A4A", mid: "#121A2E", low: "#0B0F19", accent: "#5EA8FF", dot: "#0A84FF", dotInk: "#FFFFFF", ink: "#F5F5F7", muted: "rgba(235,235,245,0.68)" },
+    aubergine: { top: "#5A3552", mid: "#432740", low: "#2B1829", accent: "#F0B7A4", dot: "#E58F7A", dotInk: "#2B1829", ink: "#F7EEF2", muted: "rgba(247,238,242,0.72)" },
+    vinyl:     { top: "#3A4560", mid: "#272D38", low: "#1B1F26", accent: "#A3BDFA", dot: "#6B84C7", dotInk: "#FFFFFF", ink: "#EDEDEE", muted: "#9CA2AD" },
+    wald:      { top: "#36604A", mid: "#264536", low: "#172B21", accent: "#E9D9A6", dot: "#8FD0A6", dotInk: "#172B21", ink: "#F1F3EC", muted: "rgba(241,243,236,0.72)" },
+    ziegel:    { top: "#8A4A36", mid: "#6B3526", low: "#43201A", accent: "#F2C98B", dot: "#F2C98B", dotInk: "#43201A", ink: "#FBF1E8", muted: "rgba(251,241,232,0.74)" },
+  };
+  const ORDER = ["petrol", "nacht", "aubergine", "vinyl", "wald", "ziegel"];
+
+  // Je Version: Titel (<br> für den Umbruch) und 2–5 Punkte [Überschrift, eine kurze Zeile].
+  const RELEASES = [
+    { version: "1.0.1", title: "Die Plattenkarte,<br>aufgeräumt.", items: [
+      ["Ruhige Angaben", "Als Liste, die Styles ohne Plaketten."],
+      ["Gut lesbar im Dunkeln", "Der Standort ohne Blaustich."],
+      ["Sanft ins Regal", "„Im Regal anzeigen“ kommt ruhig an."],
+      ["Was ist neu", "„Über Plattenregal“ zeigt jede Version."]] },
+    { version: "1.0.2", title: "Neue Versionen<br>kommen von selbst.", items: [
+      ["Einmal am Tag", "Plattenregal sucht selbst nach Updates."],
+      ["Mit Anleitung", "Was neu ist, Download und kurze Schritte."],
+      ["Sofort prüfen", "„Nach Updates suchen …“ im Menü."],
+      ["Schnelle Klicks", "Jeder Klick aufs Cover kommt an."]] },
+    { version: "1.0.3", title: "Kleine Version,<br>ruhiger Alltag.", items: [
+      ["Der rote Knopf", "Beendet wie ⌘Q oder schickt in den Hintergrund."],
+      ["Immer neu gemischt", "„Zufällig“ mischt bei jedem Öffnen."],
+      ["Statistik nach Wunsch", "Bereiche am Titel greifen und ziehen."]] },
+    { version: "1.0.4", title: "Ein drittes Design:<br>Vinyl.", items: [
+      ["Kühles Graphit", "Immer dunkel, dazu 18 App-Symbole."],
+      ["Listen nach Wahl", "Spalten verschieben, Tags als Punkte."],
+      ["Einsortieren", "Der Vorschlag im gezeigten Regal."],
+      ["Der runde Knopf", "Alle Aktionen unten rechts."],
+      ["Flüssiger", "Statistik und Designwechsel."]] },
+  ];
+
+  // Zusammenfassung: das Beste seit SINCE (höchstens 6 Punkte), in der Farbe der neuesten Version.
+  const SINCE = "1.0.0";
+  const SUMMARY_TITLE = "Vier Updates.<br>Das Beste daraus.";
+  const HIGHLIGHTS = [
+    ["Ein drittes Design: Vinyl", "Kühles Graphit, dazu 18 App-Symbole fürs Dock."],
+    ["Updates kommen von selbst", "Neue Versionen mit Download und Anleitung."],
+    ["Listen nach deinem Geschmack", "Spalten nach Wahl, Tags als farbige Punkte."],
+    ["Einsortieren mit Überblick", "Der Vorschlag direkt im gezeigten Regal."],
+    ["Die Plattenkarte, aufgeräumt", "Alle Angaben als ruhige Liste."],
+    ["Der runde Knopf", "Alle Aktionen unten rechts, auf jeder Seite."],
+  ];
+
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function frame({ id, story, color, version, kicker, title, items }) {
+    const c = COLORS[color];
+    const section = document.createElement("section");
+    section.className = "frame" + (story ? " story" : "");
+    section.id = id;
+    section.style.cssText = Object.entries(c).map(([k, v]) => `--${k.replace(/[A-Z]/g, m => "-" + m.toLowerCase())}: ${v}`).join("; ");
+    section.innerHTML = `
+      ${story ? "" : `<div class="big" aria-hidden="true">${version}</div>`}
+      <div class="record"><i></i></div>
+      <div class="page">
+        <div class="brand"><img src="../Handbuch/Bilder/icon.png" alt=""><span>Plattenregal</span></div>
+        <div class="kicker">${kicker}</div>
+        <h1>${title}</h1>
+        <div class="rule"></div>
+        <ol>${items.map(([h, p]) => `<li><h2>${esc(h)}</h2><p>${esc(p)}</p></li>`).join("")}</ol>
+        <div class="foot"><div class="pill">${story || id.startsWith("seit") ? "Version" : "Plattenregal"} ${version}</div><span class="meta">Kostenlos für den Mac</span></div>
+      </div>`;
+    document.body.appendChild(section);
+  }
+
+  RELEASES.forEach((r, i) => frame({
+    id: `update-${r.version}`, color: r.color || ORDER[i % ORDER.length], version: r.version,
+    kicker: `Neu in ${r.version}`, title: r.title, items: r.items }));
+  const latest = RELEASES[RELEASES.length - 1];
+  const latestColor = latest.color || ORDER[(RELEASES.length - 1) % ORDER.length];
+  for (const story of [false, true]) frame({
+    id: story ? "seit-story" : "seit-post", story, color: latestColor, version: latest.version,
+    kicker: `Neu seit ${SINCE}`, title: SUMMARY_TITLE, items: HIGHLIGHTS.slice(0, 6) });
+</script>
+</body>
+</html>

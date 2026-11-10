@@ -5,13 +5,18 @@
 // as in Safari. The screenshots come from Scripts/marketing-shots.sh.
 //
 //   swift Scripts/make-marketing.swift [id …]   (all frames without argument)
+//   swift Scripts/make-marketing.swift --updates [id …]
+//     (the pictures for new versions from Scripts/update-bilder.html, no covers:
+//      update-<version>, seit-post, seit-story)
 import AppKit
 import WebKit
 
 let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-let page = root.appendingPathComponent("Marketing/Produktbilder.html")
+let arguments = Array(CommandLine.arguments.dropFirst())
+let updates = arguments.contains("--updates")
+let page = root.appendingPathComponent(updates ? "Scripts/update-bilder.html" : "Marketing/Produktbilder.html")
 let output = root.appendingPathComponent("Marketing/Bilder")
-let wanted = Set(CommandLine.arguments.dropFirst())
+let wanted = Set(arguments.filter { $0 != "--updates" })
 let scale: CGFloat = 2
 
 func fail(_ message: String) -> Never {
